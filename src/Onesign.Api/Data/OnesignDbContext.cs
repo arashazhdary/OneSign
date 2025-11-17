@@ -7,6 +7,8 @@ using Onesign.Modules.Authorization.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Authorization.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Billing.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Billing.Infrastructure.EfCore.Entities;
+using Onesign.Modules.Developer.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Developer.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Federation.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Federation.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Observability.Infrastructure.EfCore.Configurations;
@@ -86,6 +88,13 @@ public class OnesignDbContext : DbContext
     public DbSet<PolicyTargetEntity> PolicyTargets => Set<PolicyTargetEntity>();
     public DbSet<PolicyAssignmentEntity> PolicyAssignments => Set<PolicyAssignmentEntity>();
 
+    // Developer
+    public DbSet<ApiKeyEntity> ApiKeys => Set<ApiKeyEntity>();
+    public DbSet<ServiceAccountEntity> ServiceAccounts => Set<ServiceAccountEntity>();
+    public DbSet<SdkConfigurationEntity> SdkConfigurations => Set<SdkConfigurationEntity>();
+    public DbSet<WebhookEndpointEntity> WebhookEndpoints => Set<WebhookEndpointEntity>();
+    public DbSet<ApiUsageLogEntity> ApiUsageLogs => Set<ApiUsageLogEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -147,6 +156,13 @@ public class OnesignDbContext : DbContext
         modelBuilder.ApplyConfiguration(new PolicyConditionEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new PolicyTargetEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new PolicyAssignmentEntityTypeConfiguration());
+
+        // Developer
+        modelBuilder.ApplyConfiguration(new ApiKeyEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new ServiceAccountEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new SdkConfigurationEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new WebhookEndpointEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new ApiUsageLogEntityTypeConfiguration());
     }
 }
 

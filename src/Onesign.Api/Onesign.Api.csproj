@@ -32,6 +32,7 @@
     <ProjectReference Include="..\Onesign.Modules.Billing\Onesign.Modules.Billing.csproj" />
     <ProjectReference Include="..\Onesign.Modules.Observability\Onesign.Modules.Observability.csproj" />
     <ProjectReference Include="..\Onesign.Modules.Authorization\Onesign.Modules.Authorization.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Developer\Onesign.Modules.Developer.csproj" />
   </ItemGroup>
 
 </Project>

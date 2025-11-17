@@ -13,6 +13,10 @@ using Onesign.Modules.Authorization.Application.Services;
 using Onesign.Modules.Authorization.Domain.Repositories;
 using Onesign.Modules.Authorization.Domain.Services;
 using Onesign.Modules.Authorization.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.Developer.Domain.Repositories;
+using Onesign.Modules.Developer.Domain.Services;
+using Onesign.Modules.Developer.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.Developer.Infrastructure.Services;
 using Onesign.Modules.Identity.Domain.Repositories;
 using Onesign.Modules.Identity.Domain.Services;
 using Onesign.Modules.Identity.Infrastructure.EfCore.Repositories;
@@ -87,7 +91,8 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
     typeof(Onesign.Modules.Audit.Application.Commands.AppendAuditEventCommand).Assembly,
     typeof(Onesign.Modules.Organization.Application.Commands.CreateOrgUnitCommand).Assembly,
     typeof(Onesign.Modules.Security.Application.Commands.UpdateSecurityPolicyCommand).Assembly,
-    typeof(Onesign.Modules.Authorization.Application.Commands.CreatePolicyCommand).Assembly));
+    typeof(Onesign.Modules.Authorization.Application.Commands.CreatePolicyCommand).Assembly,
+    typeof(Onesign.Modules.Developer.Application.Commands.CreateApiKeyCommand).Assembly));
 
 // Repositories
 builder.Services.AddScoped<ITenantRepository>(sp => 
@@ -156,6 +161,17 @@ builder.Services.AddScoped<IPolicyAssignmentRepository>(sp =>
 
 // Authorization Services
 builder.Services.AddScoped<IPolicyEvaluationService, PolicyEvaluationService>();
+
+// Developer Repositories
+builder.Services.AddScoped<IApiKeyRepository>(sp =>
+    new ApiKeyRepository(sp.GetRequiredService<OnesignDbContext>()));
+builder.Services.AddScoped<IServiceAccountRepository>(sp =>
+    new ServiceAccountRepository(sp.GetRequiredService<OnesignDbContext>()));
+builder.Services.AddScoped<IApiUsageLogRepository>(sp =>
+    new ApiUsageLogRepository(sp.GetRequiredService<OnesignDbContext>()));
+
+// Developer Services
+builder.Services.AddScoped<IApiKeyService, ApiKeyService>();
 
 // JWT Signing Key Provider
 builder.Services.AddSingleton<Onesign.Shared.Security.IJwtSigningKeyProvider, Onesign.Shared.Security.ConfigurationJwtSigningKeyProvider>();

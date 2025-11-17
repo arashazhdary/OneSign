@@ -472,6 +472,35 @@
       "deniedScopes": "Denied Scopes",
       "denyReason": "Deny Reason",
       "testPolicy": "Test Policy"
+    },
+    "developer": {
+      "title": "Developer Portal",
+      "apiKeys": "API Keys",
+      "createApiKey": "Create API Key",
+      "keyName": "Key Name",
+      "keyPrefix": "Key Prefix",
+      "scopes": "Scopes",
+      "status": "Status",
+      "active": "Active",
+      "revoked": "Revoked",
+      "expired": "Expired",
+      "lastUsed": "Last Used",
+      "expiresAt": "Expires At",
+      "createdAt": "Created At",
+      "revokeKey": "Revoke Key",
+      "revokeReason": "Revoke Reason",
+      "keyRevealed": "Key revealed once - copy now!",
+      "serviceAccounts": "Service Accounts",
+      "createServiceAccount": "Create Service Account",
+      "accountName": "Account Name",
+      "description": "Description",
+      "email": "Email",
+      "roles": "Roles",
+      "lastAccess": "Last Access",
+      "apiKeyCount": "API Key Count",
+      "webhooks": "Webhooks",
+      "sdkConfigurations": "SDK Configurations",
+      "usageAnalytics": "Usage Analytics"
     }
   }
 }

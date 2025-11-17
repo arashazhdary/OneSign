@@ -472,6 +472,35 @@
       "deniedScopes": "محدوده‌های رد شده",
       "denyReason": "دلیل رد",
       "testPolicy": "تست سیاست"
+    },
+    "developer": {
+      "title": "پورتال توسعه‌دهنده",
+      "apiKeys": "کلیدهای API",
+      "createApiKey": "ایجاد کلید API",
+      "keyName": "نام کلید",
+      "keyPrefix": "پیشوند کلید",
+      "scopes": "محدوده‌ها",
+      "status": "وضعیت",
+      "active": "فعال",
+      "revoked": "لغو شده",
+      "expired": "منقضی شده",
+      "lastUsed": "آخرین استفاده",
+      "expiresAt": "تاریخ انقضا",
+      "createdAt": "تاریخ ایجاد",
+      "revokeKey": "لغو کلید",
+      "revokeReason": "دلیل لغو",
+      "keyRevealed": "کلید فقط یکبار نمایش داده می‌شود - اکنون کپی کنید!",
+      "serviceAccounts": "حساب‌های سرویس",
+      "createServiceAccount": "ایجاد حساب سرویس",
+      "accountName": "نام حساب",
+      "description": "توضیحات",
+      "email": "ایمیل",
+      "roles": "نقش‌ها",
+      "lastAccess": "آخرین دسترسی",
+      "apiKeyCount": "تعداد کلیدهای API",
+      "webhooks": "وب‌هوک‌ها",
+      "sdkConfigurations": "پیکربندی SDK",
+      "usageAnalytics": "تحلیل استفاده"
     }
   }
 }
