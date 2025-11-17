@@ -11,17 +11,20 @@ public class RemoveDelegatedAdminCommandHandler : IRequestHandler<RemoveDelegate
 {
     private readonly IDelegatedAdminRepository _delegatedAdminRepository;
     private readonly IOrgUnitRepository _orgUnitRepository;
+    private readonly IOrgAuthorizationService _orgAuthorizationService;
     private readonly IMediator _mediator;
     private readonly ILogger<RemoveDelegatedAdminCommandHandler> _logger;
 
     public RemoveDelegatedAdminCommandHandler(
         IDelegatedAdminRepository delegatedAdminRepository,
         IOrgUnitRepository orgUnitRepository,
+        IOrgAuthorizationService orgAuthorizationService,
         IMediator mediator,
         ILogger<RemoveDelegatedAdminCommandHandler> logger)
     {
         _delegatedAdminRepository = delegatedAdminRepository;
         _orgUnitRepository = orgUnitRepository;
+        _orgAuthorizationService = orgAuthorizationService;
         _mediator = mediator;
         _logger = logger;
     }
@@ -29,6 +32,14 @@ public class RemoveDelegatedAdminCommandHandler : IRequestHandler<RemoveDelegate
     public async Task<Result> Handle(RemoveDelegatedAdminCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Removing delegated admin: Id={Id}", request.DelegatedAdminId);
+
+        // Authorization check - only global admins can remove delegated admins
+        var effectiveScope = await _orgAuthorizationService.GetEffectiveScopeAsync(request.ActorId, cancellationToken);
+        if (!effectiveScope.IsGlobalAdmin)
+        {
+            _logger.LogWarning("User {ActorId} is not authorized to remove delegated admins (not a global admin)", request.ActorId);
+            return Result.Failure("UNAUTHORIZED", "Only global administrators can remove delegated admins");
+        }
 
         var delegatedAdmin = await _delegatedAdminRepository.GetByIdAsync(request.DelegatedAdminId, cancellationToken);
         if (delegatedAdmin == null)

@@ -8,9 +8,8 @@ using Onesign.Shared.Result;
 
 namespace Onesign.Api.Controllers.Tenant;
 
-[ApiController]
 [Route("api/tenant/org-units")]
-public class OrgUnitsController : ControllerBase
+public class OrgUnitsController : Onesign.Api.Controllers.TenantControllerBase
 {
     private readonly IMediator _mediator;
     private readonly ILocalizationService _localizationService;
@@ -19,12 +18,6 @@ public class OrgUnitsController : ControllerBase
     {
         _mediator = mediator;
         _localizationService = localizationService;
-    }
-
-    private System.Globalization.CultureInfo GetCulture()
-    {
-        var cultureName = Request.Headers["Accept-Language"].FirstOrDefault() ?? "en";
-        return new System.Globalization.CultureInfo(cultureName);
     }
 
     [HttpGet("tree")]
@@ -62,7 +55,6 @@ public class OrgUnitsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<OrgUnitDto>> Create([FromBody] CreateOrgUnitRequest request, [FromQuery] Guid tenantId)
     {
-        // TODO: Get ActorId from authenticated user context
         var command = new CreateOrgUnitCommand
         {
             TenantId = tenantId,
@@ -70,7 +62,7 @@ public class OrgUnitsController : ControllerBase
             Name = request.Name,
             Code = request.Code,
             SortOrder = request.SortOrder,
-            ActorId = Guid.Empty // TODO: Get from authenticated user
+            ActorId = GetCurrentUserId()
         };
 
         var result = await _mediator.Send(command);
@@ -94,7 +86,7 @@ public class OrgUnitsController : ControllerBase
             TenantId = tenantId,
             Name = request.Name,
             SortOrder = request.SortOrder,
-            ActorId = Guid.Empty // TODO: Get from authenticated user
+            ActorId = GetCurrentUserId()
         };
 
         var result = await _mediator.Send(command);
@@ -117,7 +109,7 @@ public class OrgUnitsController : ControllerBase
             OrgUnitId = orgUnitId,
             TenantId = tenantId,
             NewParentId = request.NewParentId,
-            ActorId = Guid.Empty // TODO: Get from authenticated user
+            ActorId = GetCurrentUserId()
         };
 
         var result = await _mediator.Send(command);
@@ -139,7 +131,7 @@ public class OrgUnitsController : ControllerBase
         {
             OrgUnitId = orgUnitId,
             TenantId = tenantId,
-            ActorId = Guid.Empty // TODO: Get from authenticated user
+            ActorId = GetCurrentUserId()
         };
 
         var result = await _mediator.Send(command);

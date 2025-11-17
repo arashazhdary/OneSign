@@ -14,6 +14,7 @@ public class DeleteOrgUnitCommandHandler : IRequestHandler<DeleteOrgUnitCommand,
     private readonly IOrgUnitRepository _orgUnitRepository;
     private readonly IUserOrgUnitRepository _userOrgUnitRepository;
     private readonly IApplicationOrgUnitRepository _applicationOrgUnitRepository;
+    private readonly IOrgAuthorizationService _orgAuthorizationService;
     private readonly IMediator _mediator;
     private readonly ILogger<DeleteOrgUnitCommandHandler> _logger;
 
@@ -22,6 +23,7 @@ public class DeleteOrgUnitCommandHandler : IRequestHandler<DeleteOrgUnitCommand,
         IOrgUnitRepository orgUnitRepository,
         IUserOrgUnitRepository userOrgUnitRepository,
         IApplicationOrgUnitRepository applicationOrgUnitRepository,
+        IOrgAuthorizationService orgAuthorizationService,
         IMediator mediator,
         ILogger<DeleteOrgUnitCommandHandler> logger)
     {
@@ -29,6 +31,7 @@ public class DeleteOrgUnitCommandHandler : IRequestHandler<DeleteOrgUnitCommand,
         _orgUnitRepository = orgUnitRepository;
         _userOrgUnitRepository = userOrgUnitRepository;
         _applicationOrgUnitRepository = applicationOrgUnitRepository;
+        _orgAuthorizationService = orgAuthorizationService;
         _mediator = mediator;
         _logger = logger;
     }
@@ -36,6 +39,14 @@ public class DeleteOrgUnitCommandHandler : IRequestHandler<DeleteOrgUnitCommand,
     public async Task<Result> Handle(DeleteOrgUnitCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Deleting OrgUnit: Id={Id}", request.OrgUnitId);
+
+        // Authorization check
+        var canManage = await _orgAuthorizationService.CanManageOrgUnitAsync(request.ActorId, request.OrgUnitId, cancellationToken);
+        if (!canManage)
+        {
+            _logger.LogWarning("User {ActorId} is not authorized to manage OrgUnit {OrgUnitId}", request.ActorId, request.OrgUnitId);
+            return Result.Failure("UNAUTHORIZED", "You are not authorized to delete this organizational unit");
+        }
 
         var orgUnit = await _orgUnitRepository.GetByIdAsync(request.OrgUnitId, cancellationToken);
         if (orgUnit == null)

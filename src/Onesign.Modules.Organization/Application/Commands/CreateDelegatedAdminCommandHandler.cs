@@ -16,6 +16,7 @@ public class CreateDelegatedAdminCommandHandler : IRequestHandler<CreateDelegate
     private readonly IOrgUnitRepository _orgUnitRepository;
     private readonly ITenantUserRepository _tenantUserRepository;
     private readonly IGlobalUserRepository _globalUserRepository;
+    private readonly IOrgAuthorizationService _orgAuthorizationService;
     private readonly IMediator _mediator;
     private readonly ILogger<CreateDelegatedAdminCommandHandler> _logger;
 
@@ -24,6 +25,7 @@ public class CreateDelegatedAdminCommandHandler : IRequestHandler<CreateDelegate
         IOrgUnitRepository orgUnitRepository,
         ITenantUserRepository tenantUserRepository,
         IGlobalUserRepository globalUserRepository,
+        IOrgAuthorizationService orgAuthorizationService,
         IMediator mediator,
         ILogger<CreateDelegatedAdminCommandHandler> logger)
     {
@@ -31,14 +33,23 @@ public class CreateDelegatedAdminCommandHandler : IRequestHandler<CreateDelegate
         _orgUnitRepository = orgUnitRepository;
         _tenantUserRepository = tenantUserRepository;
         _globalUserRepository = globalUserRepository;
+        _orgAuthorizationService = orgAuthorizationService;
         _mediator = mediator;
         _logger = logger;
     }
 
     public async Task<Result<DelegatedAdminDto>> Handle(CreateDelegatedAdminCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Creating delegated admin: TenantUserId={TenantUserId}, OrgUnitId={OrgUnitId}", 
+        _logger.LogInformation("Creating delegated admin: TenantUserId={TenantUserId}, OrgUnitId={OrgUnitId}",
             request.TenantUserId, request.OrgUnitId);
+
+        // Authorization check - only global admins can create delegated admins
+        var effectiveScope = await _orgAuthorizationService.GetEffectiveScopeAsync(request.ActorId, cancellationToken);
+        if (!effectiveScope.IsGlobalAdmin)
+        {
+            _logger.LogWarning("User {ActorId} is not authorized to create delegated admins (not a global admin)", request.ActorId);
+            return Result.Failure<DelegatedAdminDto>("UNAUTHORIZED", "Only global administrators can create delegated admins");
+        }
 
         var tenantUser = await _tenantUserRepository.GetByIdAsync(request.TenantUserId, cancellationToken);
         if (tenantUser == null || tenantUser.TenantId != request.TenantId)

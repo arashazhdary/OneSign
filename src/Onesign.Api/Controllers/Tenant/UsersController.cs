@@ -12,9 +12,8 @@ using Onesign.Shared.Result;
 
 namespace Onesign.Api.Controllers.Tenant;
 
-[ApiController]
 [Route("api/tenant/users")]
-public class UsersController : ControllerBase
+public class UsersController : Onesign.Api.Controllers.TenantControllerBase
 {
     private readonly IMediator _mediator;
     private readonly ILocalizationService _localizationService;
@@ -25,7 +24,7 @@ public class UsersController : ControllerBase
         _localizationService = localizationService;
     }
 
-    private string GetCulture()
+    private new string GetCulture()
     {
         return HttpContext.Items["Culture"]?.ToString() ?? "en";
     }
@@ -133,7 +132,7 @@ public class UsersController : ControllerBase
             TenantId = tenantId,
             PrimaryOrgUnitId = request.PrimaryOrgUnitId,
             SecondaryOrgUnitIds = request.SecondaryOrgUnitIds,
-            ActorId = Guid.Empty // TODO: Get from authenticated user
+            ActorId = GetCurrentUserId()
         };
 
         var result = await _mediator.Send(command);
@@ -146,6 +145,29 @@ public class UsersController : ControllerBase
         }
 
         return NoContent();
+    }
+
+    [HttpGet("current/scope")]
+    public async Task<ActionResult<CurrentUserScopeDto>> GetCurrentUserScope()
+    {
+        var currentUserId = GetCurrentUserId();
+
+        if (currentUserId == Guid.Empty)
+        {
+            return Unauthorized(new { errorCode = "UNAUTHORIZED", errorMessage = "User not authenticated" });
+        }
+
+        var query = new GetCurrentUserScopeQuery { TenantUserId = currentUserId };
+        var result = await _mediator.Send(query);
+
+        if (result.IsFailure)
+        {
+            var culture = GetCulture();
+            var localizedMessage = _localizationService.GetString(result.ErrorCode ?? "UNKNOWN_ERROR", culture);
+            return BadRequest(new { errorCode = result.ErrorCode, errorMessage = localizedMessage });
+        }
+
+        return Ok(result.Value);
     }
 }
 

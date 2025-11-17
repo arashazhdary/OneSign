@@ -81,5 +81,11 @@ public class UserOrgUnitRepository : IUserOrgUnitRepository
             await _dbContext.SaveChangesAsync(cancellationToken);
         }
     }
+
+    public async Task<bool> HasUsersAsync(Guid orgUnitId, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Set<UserOrgUnitEntity>()
+            .AnyAsync(x => x.OrgUnitId == orgUnitId, cancellationToken);
+    }
 }
 

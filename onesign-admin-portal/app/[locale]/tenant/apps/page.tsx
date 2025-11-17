@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { getCurrentUserScope, CurrentUserScopeDto } from '@/lib/api/users';
 
 interface Application {
   id: string;
@@ -46,6 +47,8 @@ export default function TenantAppsPage() {
   const [newRedirectUri, setNewRedirectUri] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [userScope, setUserScope] = useState<CurrentUserScopeDto | null>(null);
+  const [scopeLoading, setScopeLoading] = useState(true);
 
   useEffect(() => {
     const contextTenantId = getTenantId();
@@ -55,6 +58,29 @@ export default function TenantAppsPage() {
       setTenantIdState('00000000-0000-0000-0000-000000000000');
     }
   }, []);
+
+  useEffect(() => {
+    if (tenantId) {
+      fetchUserScope(tenantId);
+    }
+  }, [tenantId]);
+
+  const fetchUserScope = async (tid: string) => {
+    try {
+      setScopeLoading(true);
+      const scope = await getCurrentUserScope(tid);
+      setUserScope(scope);
+
+      // Auto-select first rootOrgUnitId for delegated admins
+      if (scope && !scope.isGlobalAdmin && scope.rootOrgUnitIds.length > 0) {
+        setSelectedOrgUnitId(scope.rootOrgUnitIds[0]);
+      }
+    } catch (err) {
+      console.error('Error fetching user scope:', err);
+    } finally {
+      setScopeLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (tenantId) {
@@ -127,6 +153,15 @@ export default function TenantAppsPage() {
       }
     });
     return result;
+  };
+
+  const getFilteredOrgTree = (): OrgUnitTreeNode[] => {
+    if (!userScope || userScope.isGlobalAdmin) {
+      return orgTree;
+    }
+    // Filter to show only allowed org units
+    const allNodes = getAllNodes(orgTree);
+    return allNodes.filter(node => userScope.allowedOrgUnitIds.includes(node.id));
   };
 
   const handleAssignOrgUnits = async (app: Application) => {
@@ -345,7 +380,7 @@ export default function TenantAppsPage() {
     }
   };
 
-  if (loading) {
+  if (loading || scopeLoading) {
     return <div className="p-8">{t('common.loading')}</div>;
   }
 
@@ -371,8 +406,8 @@ export default function TenantAppsPage() {
           }}
           className="w-full max-w-xs px-3 py-2 border rounded"
         >
-          <option value="">{t('common.all') || 'All'}</option>
-          {getAllNodes(orgTree).map(node => (
+          {(!userScope || userScope.isGlobalAdmin) && <option value="">{t('common.all') || 'All'}</option>}
+          {getFilteredOrgTree().map(node => (
             <option key={node.id} value={node.id}>{node.name}</option>
           ))}
         </select>
@@ -593,7 +628,7 @@ export default function TenantAppsPage() {
                 className="w-full border rounded px-3 py-2"
                 size={8}
               >
-                {getAllNodes(orgTree).map(node => (
+                {getFilteredOrgTree().map(node => (
                   <option key={node.id} value={node.id}>{node.name}</option>
                 ))}
               </select>
