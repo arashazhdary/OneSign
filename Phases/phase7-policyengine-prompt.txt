@@ -1,0 +1,866 @@
+You are an expert .NET 10, EF Core, and React/Next.js engineer, working as an implementation assistant for the onesign SSO SaaS platform.
+
+Context
+The platform already has:
+
+- Phase 1: core multi-tenant SSO, OIDC, admin flows
+  - Phase1-Onesign-CoreSSO.md
+
+- Phase 2: Organization hierarchy, OrgUnits, user/app assignments, delegated admins
+  - Phase2-Onesign-OrgHierarchy.md
+
+- Phase 3: Advanced security, MFA, trusted devices, risk events, Security Center
+  - Phase3-Onesign-AdvancedSecurity.md
+
+- Phase 4: Federation and provisioning – SAML, OIDC federation, attribute mapping, SCIM provider
+  - Phase4-Onesign-FederationProvisioning.md
+
+- Phase 5: Billing – plans, plan features, tenant subscriptions, usage, quota enforcement, billing UIs
+  - Phase5-Onesign-BillingPlans.md
+
+- Phase 6: Observability – audit center, alerts, log streaming, global/tenant observability
+  - Phase6-Onesign-ObservabilityCompliance.md
+
+Now there is Phase 7 spec focusing on Authorization & Policy Engine:
+
+- Phase7-Onesign-PolicyEngine.md
+
+Your job:
+- Read ALL these phase documents.
+- Understand the existing modular architecture, multi-tenant, multi-language and audit requirements.
+- Implement Phase 7 exactly as defined in Phase7-Onesign-PolicyEngine.md:
+  - Create Onesign.Modules.Authorization.
+  - Implement Policy definitions, conditions, targets and assignments.
+  - Implement a Policy Evaluation Engine.
+  - Integrate evaluation into all login/token flows (core + federation).
+  - Add tenant Policy management UI + Policy Test UI.
+  - Add a PolicyEngineEnabled toggle and safe migration behavior.
+- Do NOT break previous phases.
+
+Global constraints (very important)
+
+1) Multi-language
+- The platform is multilingual (at least English and Persian).
+- Any new user-facing text (errors, labels, descriptions) must be localizable:
+  - Use message codes in API results.
+  - Use the existing i18n mechanism in the frontend (no hardcoded strings).
+- Do NOT hardcode user-facing strings in controllers or React components.
+
+2) No TODO / No partial implementations
+- DO NOT leave any TODO comments anywhere.
+- DO NOT throw NotImplementedException anywhere.
+- DO NOT create public methods/classes that are empty.
+- If something is out of scope for Phase 7, do not scaffold it at all.
+
+3) Modular monolith
+- Keep the existing modular monolith style.
+- Authorization is a dedicated module with clear boundaries.
+- Use dependency injection and clean layering (Domain → Application → Infrastructure → API).
+
+4) Backwards compatibility & rollout
+- Existing tenants must not break when Policy Engine is introduced.
+- Add a per-tenant flag: PolicyEngineEnabled.
+- When PolicyEngineEnabled = false:
+  - Old RBAC behavior remains (as in existing implementation).
+- When PolicyEngineEnabled = true:
+  - Token and scope decisions must always go through the Policy Engine.
+- Ensure a safe migration path.
+
+Step 1: Read the specs
+
+1) Read:
+
+- Phase1-Onesign-CoreSSO.md
+- Phase2-Onesign-OrgHierarchy.md
+- Phase3-Onesign-AdvancedSecurity.md
+- Phase4-Onesign-FederationProvisioning.md
+- Phase5-Onesign-BillingPlans.md
+- Phase6-Onesign-ObservabilityCompliance.md
+- Phase7-Onesign-PolicyEngine.md
+
+2) From Phase7 spec, build a checklist:
+
+- Authorization module layout.
+- PolicyDefinition / Condition / Target / Assignment models.
+- Evaluation semantics (Effect, Priority, Groups, Conditions).
+- Integration points in Auth and Federation flows.
+- Tenant Policy management API + UI.
+- Policy Test endpoint + UI.
+- PolicyEngineEnabled flag.
+- Observability (audit) hooks for policy actions and deny events.
+
+Treat Phase7-Onesign-PolicyEngine.md as the blueprint for Phase 7.
+
+Step 2: Backend module – Onesign.Modules.Authorization
+
+Create a new module:
+
+- src/Onesign.Modules.Authorization
+
+Structure it as:
+
+- Domain
+  - Entities
+    - PolicyDefinition
+    - PolicyConditionGroup
+    - PolicyCondition
+    - PolicyTarget
+    - PolicyAssignment
+  - Enums
+    - PolicyEffect               // Allow, Deny
+    - PolicyTargetType           // Application, Scope, TenantFeature
+    - ConditionOperator          // Equals, NotEquals, In, NotIn, GreaterOrEqual, LessOrEqual
+    - ConditionLogicalOperator   // And, Or
+    - AttributeSourceType        // UserClaim, UserRole, OrgUnit, Tenant, Client, RiskContext
+  - Services
+    - IPolicyEvaluationService
+    - IPolicyDefinitionService
+  - Repositories
+    - IPolicyDefinitionRepository
+    - IPolicyAssignmentRepository
+
+- Application
+  - DTOs
+    - PolicyDefinitionDto
+    - PolicyConditionGroupDto
+    - PolicyConditionDto
+    - PolicyTargetDto
+    - CreateOrUpdatePolicyRequest
+    - PolicyTestRequestDto
+    - PolicyTestResultDto
+  - Commands
+    - CreateOrUpdatePolicyDefinitionCommand
+    - DeletePolicyDefinitionCommand
+    - ReorderPolicyDefinitionsCommand
+    - AssignPolicyToTargetCommand
+    - UnassignPolicyFromTargetCommand
+    - TestPolicyCommand
+  - Queries
+    - GetPoliciesQuery
+    - GetPolicyDetailsQuery
+    - GetPolicyAssignmentsQuery
+
+- Infrastructure
+  - EfCore/Entities
+    - PolicyDefinitionEntity
+    - PolicyConditionGroupEntity
+    - PolicyConditionEntity
+    - PolicyTargetEntity
+    - PolicyAssignmentEntity
+  - EfCore/Configurations
+    - PolicyDefinitionEntityTypeConfiguration
+    - PolicyConditionGroupEntityTypeConfiguration
+    - PolicyConditionEntityTypeConfiguration
+    - PolicyTargetEntityTypeConfiguration
+    - PolicyAssignmentEntityTypeConfiguration
+  - EfCore/Repositories
+    - PolicyDefinitionRepository
+    - PolicyAssignmentRepository
+
+Implement all classes, configurations and repositories completely.
+
+Step 3: Data model & EF configuration
+
+Implement the entities matching the Phase 7 spec.
+
+PolicyDefinition:
+
+- Fields:
+  - Id
+  - TenantId
+  - Name
+  - Description
+  - PolicyEffect (Allow/Deny)
+  - Priority (int, smaller = higher precedence)
+- Relationships:
+  - ICollection<PolicyConditionGroup>
+
+PolicyConditionGroup:
+
+- Fields:
+  - Id
+  - PolicyDefinitionId
+  - LogicalOperator (And/Or)
+- Relationships:
+  - ICollection<PolicyCondition>
+
+PolicyCondition:
+
+- Fields:
+  - Id
+  - ConditionGroupId
+  - AttributeSourceType (UserRole, OrgUnit, UserClaim, RiskContext, Client, etc.)
+  - SourceKey (claim type, risk property name, etc.)
+  - ConditionOperator (Equals, NotEquals, In, NotIn, GreaterOrEqual, LessOrEqual)
+  - Value (string, parsed by source & operator)
+
+PolicyTarget:
+
+- Fields:
+  - Id
+  - TenantId
+  - PolicyTargetType (Application, Scope, TenantFeature)
+  - TargetKey (clientId, scope name, or feature key)
+
+PolicyAssignment:
+
+- Fields:
+  - Id
+  - TenantId
+  - PolicyDefinitionId
+  - PolicyTargetId
+  - Order (evaluation order for that target)
+
+EF configuration:
+
+- PolicyDefinition:
+  - Index (TenantId, Name).
+  - Index (TenantId, Priority).
+- PolicyTarget:
+  - Unique index (TenantId, PolicyTargetType, TargetKey).
+- PolicyAssignment:
+  - Index (TenantId, PolicyTargetId, Order).
+
+Extend OnesignDbContext:
+
+- Add DbSet for Policies:
+  - PolicyDefinitions
+  - PolicyConditionGroups
+  - PolicyConditions
+  - PolicyTargets
+  - PolicyAssignments
+
+Add Phase 7 migration:
+
+- Create these tables with appropriate foreign keys and indexes.
+- No destructive changes to existing tables.
+
+Also extend tenant config:
+
+- Add column `PolicyEngineEnabled` (bool) to TenantConfig (or equivalent table).
+- Default = false for existing tenants.
+
+Step 4: Domain services – PolicyDefinition & Evaluation
+
+Implement IPolicyDefinitionService:
+
+- Responsible for:
+  - Creating/updating/deleting PolicyDefinition with its ConditionGroups and Conditions.
+  - Validating Conditions:
+    - Non-empty ConditionGroups.
+    - Valid operators per AttributeSourceType.
+  - Managing assignments:
+    - AssignPolicyToTarget.
+    - UnassignPolicyFromTarget.
+    - ReorderPolicyDefinitions per target.
+
+Implement IPolicyEvaluationService:
+
+Define:
+
+```csharp
+public sealed class PolicyEvaluationContext
+{
+    public Guid TenantId { get; init; }
+
+    public string UserId { get; init; }
+    public IReadOnlyCollection<string> UserRoles { get; init; }
+    public IReadOnlyDictionary<string, string> UserClaims { get; init; }
+    public IReadOnlyCollection<string> OrgUnitCodes { get; init; }
+
+    public string ClientId { get; init; }
+    public IReadOnlyCollection<string> RequestedScopes { get; init; }
+
+    public string RiskLevel { get; init; }   // e.g. Low, Medium, High
+    public double? RiskScore { get; init; }  // optional numeric score
+}
+
+
+Decision result:
+
+public sealed class PolicyDecision
+{
+    public bool IsAllowed { get; init; }
+    public IReadOnlyCollection<string> AllowedScopes { get; init; }
+    public string DeniedReasonCode { get; init; }
+    public IReadOnlyCollection<Guid> MatchedPolicyIds { get; init; }
+}
+
+
+Behavior:
+
+If PolicyEngineEnabled == false for this tenant:
+
+Fall back to existing RBAC logic:
+
+Determine allowed scopes using the existing role-based rules.
+
+Return IsAllowed/AllowedScopes accordingly.
+
+If PolicyEngineEnabled == true:
+
+Resolve PolicyTargets relevant for this context:
+
+For application: TargetType = Application, TargetKey = ClientId.
+
+For scopes: TargetType = Scope, TargetKey in RequestedScopes (and combine).
+
+Load PolicyAssignments for relevant targets (ordered by Order/Priority).
+
+Evaluate policies:
+
+For each PolicyDefinition in order:
+
+Evaluate ConditionGroups:
+
+A group is true if its Conditions combine according to its LogicalOperator (AND/OR).
+
+A PolicyDefinition matches if ANY of its ConditionGroups is true.
+
+For each Condition:
+
+Resolve value from context based on AttributeSourceType and SourceKey:
+
+UserRole: roles collection.
+
+OrgUnit: orgUnitCodes.
+
+UserClaim: from UserClaims dictionary.
+
+RiskContext: RiskLevel or RiskScore.
+
+Client: ClientId or client properties.
+
+Apply ConditionOperator (Equals, In, etc.).
+
+When evaluating effect:
+
+Deny overrides Allow.
+
+Recommended behavior:
+
+Collect matching Deny and Allow policies.
+
+If any Deny matches → IsAllowed = false.
+
+Otherwise if any Allow matches → IsAllowed = true.
+
+If none matches → fall back to RBAC baseline.
+
+Compute AllowedScopes:
+
+If Deny:
+
+AllowedScopes may be empty.
+
+If Allow:
+
+AllowedScopes should be a subset of RequestedScopes consistent with RBAC and matching policies.
+
+Return PolicyDecision:
+
+IsAllowed
+
+AllowedScopes
+
+DeniedReasonCode (message code, not raw string).
+
+MatchedPolicyIds (for observability/testing).
+
+Add caching:
+
+Cache PolicyDefinitions/Assignments per tenant in-memory with invalidation when policies change.
+
+Ensure evaluation path is efficient for high RPS (no N+1 queries).
+
+Step 5: API – Tenant Policy management
+
+Add tenant-scoped Policy API under:
+
+/api/tenant/policies
+
+Endpoints:
+
+Policy CRUD:
+
+GET /api/tenant/policies
+
+Returns list of PolicyDefinitionDto with basic data and counts (targets/conditions).
+
+GET /api/tenant/policies/{id}
+
+Returns full PolicyDefinitionDto with ConditionGroups and Conditions.
+
+POST /api/tenant/policies
+
+Body: CreateOrUpdatePolicyRequest (create).
+
+PUT /api/tenant/policies/{id}
+
+Body: CreateOrUpdatePolicyRequest (update).
+
+DELETE /api/tenant/policies/{id}
+
+Policy Assignments:
+
+GET /api/tenant/policies/assignments
+
+Returns mapping of policies to targets.
+
+POST /api/tenant/policies/{id}/assignments
+
+Body: includes TargetType and TargetKey or PolicyTargetId.
+
+Creates PolicyAssignment.
+
+DELETE /api/tenant/policies/assignments/{assignmentId}
+
+POST /api/tenant/policies/assignments/reorder
+
+Body: list of assignmentId + new Order per target.
+
+Policy Test:
+
+POST /api/tenant/policies/test
+
+Body: PolicyTestRequestDto
+
+optional:
+
+userId
+
+override roles, claims, orgUnits
+
+required:
+
+clientId
+
+requestedScopes
+
+riskLevel (Low/Medium/High) and optional score.
+
+Use IPolicyEvaluationService to simulate evaluation without issuing token.
+
+Return PolicyTestResultDto:
+
+IsAllowed
+
+AllowedScopes
+
+DeniedReasonCode
+
+MatchedPolicyIds and names.
+
+All tenant policy endpoints:
+
+Must be tenant-scoped (use ITenantContext).
+
+Must require Tenant Admin role.
+
+Must use localized message codes for errors.
+
+Step 6: Integration – Auth & token pipeline
+
+Integrate IPolicyEvaluationService into all relevant flows:
+
+Core OIDC Authorization Code + PKCE
+
+In the main authorization flow (after user authentication, before token issuance):
+
+Build PolicyEvaluationContext with:
+
+TenantId
+
+UserId
+
+UserRoles
+
+UserClaims
+
+OrgUnitCodes (from Phase 2)
+
+ClientId
+
+RequestedScopes
+
+RiskLevel/RiskScore (from Phase 3 if available)
+
+Call IPolicyEvaluationService.EvaluateAsync.
+
+If PolicyEngineEnabled == false:
+
+Keep current behavior but still use IPolicyEvaluationService to wrap decision.
+
+If decision.IsAllowed == false:
+
+Return OAuth2 error:
+
+error = "access_denied"
+
+error_description from localized message code representing DeniedReasonCode.
+
+Log AuditEvent via IAuditWriter with Category=Authorization, Action="Policy.Deny".
+
+If decision.IsAllowed == true:
+
+Use decision.AllowedScopes instead of requested scopes when issuing tokens.
+
+Federation logins (SAML/OIDC)
+
+After external IdP login and JIT provisioning (Phase 4), but before token issuance:
+
+Build PolicyEvaluationContext same as above, including federation attributes and risk.
+
+Call IPolicyEvaluationService.
+
+Apply same decision logic:
+
+Deny → no token + access_denied + AuditEvent.
+
+Allow → token with AllowedScopes.
+
+Other flows (client credentials, etc.)
+
+If you have client_credentials or other flows that mint tokens bound to tenants:
+
+For now, either:
+
+Not governed by user-based policies (if Phase 7 spec says so), or
+
+Add minimal evaluation based on Client and Tenant.
+
+Implement clearly and consistently with Phase7 spec.
+
+Step 7: Tenant settings – PolicyEngineEnabled flag
+
+Extend tenant settings:
+
+Add PolicyEngineEnabled field in TenantConfig / TenantSettings API.
+
+Backend:
+
+Extend existing Tenant settings API, e.g. /api/tenant/settings/security or equivalent, to include:
+
+GET returns PolicyEngineEnabled status.
+
+PUT allows toggling it (only by Tenant Admin).
+
+Behavior:
+
+When false:
+
+Policy Evaluation path must take RBAC baseline result and return decisions consistent with current behavior.
+
+When true:
+
+All login/token decisions must go through policy evaluation and enforce policies.
+
+Step 8: Observability & Audit (Phase 6 integration)
+
+Use IAuditWriter to log key policy-related events:
+
+Policy lifecycle:
+
+"Policy.Created"
+
+"Policy.Updated"
+
+"Policy.Deleted"
+
+"Policy.Assigned"
+
+"Policy.Unassigned"
+
+Category = Authorization.
+
+Policy decisions:
+
+On Deny:
+
+Category = Authorization
+
+Action = "Policy.Deny"
+
+TargetType = Application/Scope
+
+DataJson includes:
+
+ClientId
+
+RequestedScopes
+
+MatchedPolicyIds
+
+On Allow:
+
+Optionally log (e.g. less frequently or with lower severity).
+
+Ensure these events appear in:
+
+Tenant Observability → Activity/Audit Log.
+
+Global Observability views (cross-tenant).
+
+Step 9: Frontend – Tenant Policy UI
+
+In the Admin Portal (tenant scope):
+
+Policy list page: /tenant/policies
+
+Table columns:
+
+Name
+
+Effect (Allow/Deny with colored badge)
+
+Priority
+
+TargetsCount
+
+Actions:
+
+Create new policy.
+
+Edit.
+
+Delete (with confirmation).
+
+Policy editor (page or modal):
+
+Form fields:
+
+Name
+
+Description
+
+Effect (Allow/Deny)
+
+Priority (integer)
+
+ConditionGroups editor:
+
+For each group:
+
+LogicalOperator: AND/OR.
+
+List of conditions:
+
+AttributeSourceType dropdown:
+
+UserRole
+
+OrgUnit
+
+UserClaim
+
+RiskContext
+
+Client
+
+SourceKey:
+
+For UserRole: fixed "role".
+
+For OrgUnit: "orgUnitCode" or similar.
+
+For RiskContext: "RiskLevel" or "RiskScore".
+
+For UserClaim: free text for claim type (e.g. "department", "country").
+
+Operator dropdown:
+
+Equals
+
+NotEquals
+
+In
+
+NotIn
+
+GreaterOrEqual
+
+LessOrEqual (for numeric values).
+
+Value field:
+
+text or multi-value, depending on operator.
+
+Targets configuration:
+
+Applications:
+
+Load applications list from Applications module.
+
+Multi-select / checkbox to assign the policy to specific clientIds.
+
+Scopes:
+
+Load known scopes for the tenant.
+
+Multi-select for scope-level targets.
+
+All labels and texts:
+
+Must use i18n (no hardcoded language).
+
+Must be designed to support both English and Persian.
+
+Policy Test UI:
+
+Accessible from Policy list or detail:
+
+Button "Test Policy".
+
+Form:
+
+Select a real user from the tenant (searchable).
+
+Optionally override:
+
+Roles
+
+OrgUnits
+
+Claims (key/value pairs)
+
+Select application (clientId).
+
+Enter requested scopes list.
+
+Select RiskLevel (Low/Medium/High) and optional numeric RiskScore.
+
+On submit:
+
+Call POST /api/tenant/policies/test.
+
+Show result:
+
+Allow/Deny badge.
+
+AllowedScopes.
+
+DeniedReasonCode (localized).
+
+MatchedPolicies (names and ids).
+
+Step 10: Frontend – Tenant Settings: Policy Engine toggle
+
+Update Tenant Settings UI, e.g. /tenant/settings/security:
+
+Add a toggle:
+
+Label: “Advanced Policy Engine” (text via i18n).
+
+Info text (short, localized) explaining:
+
+When OFF: simple role-based access behavior.
+
+When ON: centralized Policy Engine decides access and scopes.
+
+Call Tenant Settings API to read/update PolicyEngineEnabled field.
+
+Step 11: Cross-cutting – localization, performance, safety
+
+Localization:
+
+All error messages from Policy Engine (e.g. denied reason codes) must use codes, not raw English.
+
+Frontend must map codes to localized strings.
+
+Performance:
+
+Use caching for policy sets per tenant to avoid frequent DB hits.
+
+Minimize allocations and expensive operations in evaluation path.
+
+Ensure no N+1 queries when evaluating policies.
+
+Safety:
+
+If evaluation throws an exception:
+
+Fail closed (deny) with a safe error code.
+
+Log an AuditEvent and internal log.
+
+Deny events should always be auditable and visible in Observability.
+
+Step 12: Testing
+
+Add unit/integration tests:
+
+PolicyDefinitionService:
+
+Create, update, delete, assign, reorder.
+
+PolicyEvaluationService:
+
+Basic scenarios:
+
+No policies → fall back to RBAC.
+
+Single Allow policy → allow.
+
+Single Deny policy → deny.
+
+Deny and Allow both match → deny wins.
+
+Condition combinations (AND/OR, In/NotIn).
+
+Risk-level triggering stricter policies.
+
+Auth integration:
+
+For tenants with PolicyEngineEnabled:
+
+Token issuance respects policies (scopes trimmed / denied).
+
+For tenants without PolicyEngineEnabled:
+
+Behavior unchanged vs pre-Phase7 (except going through evaluation wrapper).
+
+Frontend:
+
+Policy list renders correctly.
+
+Editor correctly constructs CreateOrUpdatePolicyRequest payloads.
+
+Policy Test UI calls test endpoint and presents results.
+
+Step 13: Final verification
+
+Backend builds with Onesign.Modules.Authorization integrated.
+
+Phase 7 migration applies cleanly on top of Phase 1–6.
+
+Existing tenants function normally with PolicyEngineEnabled = false.
+
+Enabling PolicyEngineEnabled for a tenant:
+
+Applies policy decisions in all login/token flows.
+
+Deny events audited and visible in Activity/Audit Log.
+
+Tenant admins can:
+
+Create/assign policies.
+
+Test them.
+
+Toggle PolicyEngineEnabled safely.
+
+Important mindset
+
+Policy Engine is the brain of authorization; if you make it messy, troubleshooting and support will be a nightmare.
+
+Keep the model expressive enough for enterprise, but not overengineered:
+
+Groups + conditions with simple operators is enough for this phase.
+
+Deny must always be auditable.
+
+PolicyEngineEnabled is your safety switch for rollout. Treat it carefully.
+
+Now:
+Start by reading Phase7-Onesign-PolicyEngine.md, then implement Onesign.Modules.Authorization, add the Phase 7 migration, integrate IPolicyEvaluationService into all login/token flows, wire audit events, and build the Tenant Policy management & Test UIs end to end with no TODOs.
+

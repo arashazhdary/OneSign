@@ -1,0 +1,439 @@
+You are an expert .NET 10, EF Core, and React/Next.js engineer, working as an implementation assistant for the onesign SSO SaaS platform.
+
+Context
+I already have a Phase 1 implementation in progress for onesign, based on the spec:
+
+- Phase1-Onesign-CoreSSO.md
+
+Now I have a Phase 2 specification for Organization hierarchy, delegated admin, and org-aware filtering in this file:
+
+- Phase2-Onesign-OrgHierarchy.md
+
+Your job is to read both documents, fully understand the current architecture and constraints, and then implement Phase 2 exactly as defined in Phase2-Onesign-OrgHierarchy.md, building on top of the Phase 1 architecture without breaking it.
+
+High level goal of Phase 2
+Phase 2 introduces:
+
+- Per-tenant OrgUnit tree (organization hierarchy)
+- Linking Users to OrgUnits (one primary, optional secondary)
+- Linking ApplicationClients to OrgUnits
+- Delegated Admin scopes:
+  - Global Tenant Admin
+  - Delegated Admin limited to a subtree of the OrgUnit tree
+- Org-aware filtering in Admin Portal:
+  - Filter users by OrgUnit
+  - Filter apps by OrgUnit
+- A new Organization module in the backend, and corresponding UI pages in the Admin Portal
+
+Important constraints
+
+1) Phase boundaries
+- Phase 2 is only about:
+  - OrgUnit tree
+  - UserOrgUnit and ApplicationOrgUnit
+  - DelegatedAdmin scopes
+  - Org-aware filtering and visibility in Admin Portal
+- Do NOT implement:
+  - MFA per OrgUnit
+  - ABAC / policy engine
+  - Risk based access
+  - SCIM, SAML, HR sync
+  - Per tenant database
+  These are explicitly out of Phase 2 scope.
+
+2) Architecture
+- Backend is a modular monolith from Phase 1 and must remain that way.
+- You must introduce a new module: Onesign.Modules.Organization, with clear Domain, Application, Infrastructure layers.
+- Multi tenancy is already in place in Phase 1; everything you add must be tenant scoped and enforce TenantId.
+- All new code must respect and integrate with Phase 1:
+  - Tenant
+  - GlobalUser / TenantUser
+  - ApplicationClient
+  - Audit
+  - Multi language and localization
+
+3) Multi language
+- Phase 1 defined that the system is multi language from backend to frontend (English and Persian minimum).
+- Phase 2 must follow the same rule:
+  - Backend: errors and messages must be localizable or represented as codes that the frontend can localize.
+  - Frontend: all new UI text must go through the existing i18n setup, not hardcoded strings.
+
+4) No TODOs or partial implementations
+- Do NOT leave any class or method with TODO, NotImplementedException, or empty bodies if they belong to Phase 2.
+- If you create a new public API, command, query, service, controller or component for Phase 2, implement it fully.
+- If something is not needed in Phase 2, do not create a stub for it.
+
+5) Backwards compatibility
+- Phase 2 must not break existing Phase 1 flows:
+  - Login, OIDC, token issuance
+  - Tenant admin and global admin flows
+  - Existing user and app management workflows
+- Where needed, implement safe migrations to introduce OrgUnit without changing current behavior:
+  - All existing tenant users and applications can initially be attached to a root OrgUnit per tenant.
+
+Step 1: Read and understand Phase1 and Phase2 specs
+1. Open and read:
+   - Phase1-Onesign-CoreSSO.md
+   - Phase2-Onesign-OrgHierarchy.md
+2. Build a mental model of:
+   - Existing modules: Tenants, Identity, Applications, Audit
+   - New module: Organization
+   - Data model additions in Phase 2 (OrgUnit, UserOrgUnit, ApplicationOrgUnit, DelegatedAdminScope)
+   - API endpoints and UI requirements for Phase 2
+3. Extract a checklist of all Phase 2 deliverables from Phase2-Onesign-OrgHierarchy.md and use it as your guiding list.
+
+Step 2: Backend – add Onesign.Modules.Organization
+
+Create a new backend module:
+
+- src/Onesign.Modules.Organization
+
+With structure (matching the spec in Phase2-Onesign-OrgHierarchy.md):
+
+- Domain
+  - Entities
+    - OrgUnit
+    - UserOrgUnit
+    - ApplicationOrgUnit
+    - DelegatedAdminScope
+  - Enums
+    - OrgUnitStatus
+    - AdminScopeType (e.g. OrgOnly, OrgAndDescendants)
+  - Services
+    - IOrgTreeService
+    - IOrgAuthorizationService
+  - Repositories
+    - IOrgUnitRepository
+    - IUserOrgUnitRepository
+    - IApplicationOrgUnitRepository
+    - IDelegatedAdminRepository
+
+- Application
+  - DTOs
+    - OrgUnitDto
+    - OrgUnitTreeNodeDto
+    - CreateOrgUnitRequest
+    - UpdateOrgUnitRequest
+    - MoveOrgUnitRequest
+    - AssignUserOrgUnitsRequest
+    - AssignApplicationOrgUnitsRequest
+    - DelegatedAdminDto
+    - CreateDelegatedAdminRequest
+  - Commands
+    - CreateOrgUnitCommand
+    - UpdateOrgUnitCommand
+    - MoveOrgUnitCommand
+    - DeleteOrgUnitCommand
+    - AssignUserOrgUnitsCommand
+    - AssignApplicationOrgUnitsCommand
+    - CreateDelegatedAdminCommand
+    - RemoveDelegatedAdminCommand
+  - Queries
+    - GetOrgUnitTreeQuery
+    - GetOrgUnitDetailsQuery
+    - GetUserOrgUnitsQuery
+    - GetApplicationOrgUnitsQuery
+    - GetDelegatedAdminsQuery
+
+- Infrastructure
+  - EfCore/Entities
+    - OrgUnitEntity
+    - UserOrgUnitEntity
+    - ApplicationOrgUnitEntity
+    - DelegatedAdminScopeEntity
+  - EfCore/Configurations
+    - OrgUnitEntityTypeConfiguration
+    - UserOrgUnitEntityTypeConfiguration
+    - ApplicationOrgUnitEntityTypeConfiguration
+    - DelegatedAdminScopeEntityTypeConfiguration
+  - EfCore/Repositories
+    - OrgUnitRepository
+    - UserOrgUnitRepository
+    - ApplicationOrgUnitRepository
+    - DelegatedAdminRepository
+
+Everything in this module must be fully implemented, no stubs.
+
+Step 3: Database model and migrations
+
+Extend the OnesignDbContext to include the new entities:
+
+- DbSet<OrgUnitEntity> OrgUnits
+- DbSet<UserOrgUnitEntity> UserOrgUnits
+- DbSet<ApplicationOrgUnitEntity> ApplicationOrgUnits
+- DbSet<DelegatedAdminScopeEntity> DelegatedAdminScopes
+
+Entity design must follow the spec in Phase2-Onesign-OrgHierarchy.md:
+
+OrgUnit:
+- Id (PK)
+- TenantId
+- ParentId (nullable)
+- Name
+- Code (optional, reserved for future HR integration)
+- Path (for example "001/005/023")
+- Level (0 for root)
+- SortOrder
+- Status (Active / Inactive)
+
+UserOrgUnit:
+- TenantUserId
+- OrgUnitId
+- IsPrimary
+
+ApplicationOrgUnit:
+- ApplicationClientId
+- OrgUnitId
+
+DelegatedAdminScope:
+- Id
+- TenantUserId
+- OrgUnitId
+- ScopeType (OrgOnly or OrgAndDescendants)
+
+Constraints and indexes:
+- OrgUnit: index on (TenantId, Path)
+- Unique constraint on (TenantId, Code) if Code is used
+- Foreign keys as described in the spec.
+
+Then:
+
+1. Create migrations for these new tables.
+2. Implement a migration to backfill existing data:
+   - For each tenant, create a root OrgUnit (e.g. Name = tenant name, Level = 0, Path = "000").
+   - Attach all existing TenantUser records to the root OrgUnit as UserOrgUnit with IsPrimary = true.
+   - Attach all existing ApplicationClient records to the root OrgUnit as ApplicationOrgUnit.
+
+Make sure the migration is idempotent and safe for an existing Phase 1 database.
+
+Step 4: Domain services – Org tree and authorization
+
+Implement:
+
+IOrgTreeService with methods such as:
+
+- CreateChild(tenantId, parentId, name, sortOrder)
+- UpdateOrgUnit(orgUnitId, name, sortOrder)
+- MoveOrgUnit(orgUnitId, newParentId)
+- DeleteOrgUnit(orgUnitId) with checks that it has no child OrgUnits, no UserOrgUnit and no ApplicationOrgUnit
+- GetTreeForTenant(tenantId) returning a tree structure ready for DTO mapping
+
+IOrgAuthorizationService responsible for deciding Org based permissions:
+
+- CanManageUser(currentTenantUserId, targetTenantUserId)
+- CanManageApplication(currentTenantUserId, applicationClientId)
+- CanViewOrgUnit(currentTenantUserId, orgUnitId)
+- GetEffectiveScope(currentTenantUserId) returning a structure that represents which OrgUnits and descendants are within scope for a given admin
+
+Use DelegatedAdminScope and TenantUser roles from Phase 1 to decide:
+
+- Global Tenant Admin: full tree access
+- Delegated Admin: limited to its OrgUnit and possibly descendants based on ScopeType
+
+All logic must be centralized in this service, not scattered across controllers.
+
+Step 5: Application layer – commands and queries
+
+Implement all commands and queries listed in Phase2-Onesign-OrgHierarchy.md:
+
+OrgUnit management:
+- CreateOrgUnitCommand
+- UpdateOrgUnitCommand
+- MoveOrgUnitCommand
+- DeleteOrgUnitCommand
+- GetOrgUnitTreeQuery
+- GetOrgUnitDetailsQuery
+
+Assignments:
+- AssignUserOrgUnitsCommand
+- GetUserOrgUnitsQuery
+- AssignApplicationOrgUnitsCommand
+- GetApplicationOrgUnitsQuery
+
+Delegated admins:
+- CreateDelegatedAdminCommand
+- RemoveDelegatedAdminCommand
+- GetDelegatedAdminsQuery
+
+Use DTOs defined in the spec and preserve multi language by returning codes or using backend localization as per Phase 1.
+
+All commands must:
+- Use ITenantContext to scope by TenantId
+- Use IOrgAuthorizationService and existing role information to enforce permissions
+- Emit AuditEvents for critical changes (create/update/delete OrgUnit, assigning/removing UserOrgUnit, ApplicationOrgUnit, and DelegatedAdminScope)
+
+Step 6: API endpoints
+
+In Onesign.Api, either create new controllers or extend existing ones according to Phase 2 spec.
+
+OrgUnitsController (Tenant scoped), base route: /api/tenant/org-units
+
+- GET /api/tenant/org-units/tree
+  - Returns OrgUnitTreeNodeDto[]
+
+- POST /api/tenant/org-units
+  - Accepts CreateOrgUnitRequest
+  - Creates a child OrgUnit under a parent
+
+- PUT /api/tenant/org-units/{orgUnitId}
+  - Accepts UpdateOrgUnitRequest
+
+- POST /api/tenant/org-units/{orgUnitId}/move
+  - Accepts MoveOrgUnitRequest
+
+- DELETE /api/tenant/org-units/{orgUnitId}
+  - Deletes the OrgUnit if allowed
+
+UserOrgUnit endpoints:
+
+- GET /api/tenant/users/{tenantUserId}/org-units
+  - Returns current OrgUnit assignments for that user
+
+- PUT /api/tenant/users/{tenantUserId}/org-units
+  - Accepts AssignUserOrgUnitsRequest
+
+ApplicationOrgUnit endpoints:
+
+- GET /api/tenant/applications/{applicationId}/org-units
+  - Returns OrgUnit assignments for the application
+
+- PUT /api/tenant/applications/{applicationId}/org-units
+  - Accepts AssignApplicationOrgUnitsRequest
+
+DelegatedAdmin endpoints:
+
+Base: /api/tenant/delegated-admins
+
+- GET /api/tenant/delegated-admins
+  - Returns DelegatedAdminDto[]
+
+- POST /api/tenant/delegated-admins
+  - Accepts CreateDelegatedAdminRequest
+
+- DELETE /api/tenant/delegated-admins/{id}
+  - Removes a delegated admin scope
+
+Filtering parameters for existing endpoints (update them, not create new ones):
+
+- GET /api/tenant/users
+  - Add optional query param orgUnitId
+  - Filter results based on:
+    - Requested orgUnitId and descendants
+    - And the scope of the current admin (global vs delegated)
+
+- GET /api/tenant/applications
+  - Add optional query param orgUnitId
+  - Filter based on ApplicationOrgUnit assignments and admin scope.
+
+All endpoints must integrate multi language (error texts or codes) and must not use TODO or NotImplementedException.
+
+Step 7: Admin Portal – UI changes
+
+In the Admin Portal (onesign-admin-portal):
+
+1) Org tree page:
+
+- Implement page /tenant/org-units
+  - Fetch tree from GET /api/tenant/org-units/tree
+  - Render a tree view:
+    - Expand/collapse nodes
+    - Add, edit, move, delete using context menu or buttons
+  - Use localized labels (en/fa) through the existing i18n mechanism.
+  - For delete, show a localized error if OrgUnit is not empty.
+
+2) User org assignment:
+
+- On the Users page:
+  - Add a filter to choose an OrgUnit (tree selector or dropdown backed by the tree API).
+  - Pass orgUnitId to GET /api/tenant/users.
+  - For each user, add a button "Org Units" or equivalent label:
+    - Opens a modal showing:
+      - Primary OrgUnit (radio)
+      - Secondary OrgUnits (multi select)
+    - Uses:
+      - GET /api/tenant/users/{id}/org-units
+      - PUT /api/tenant/users/{id}/org-units
+
+3) Application org assignment:
+
+- On the Applications page:
+  - Add the same OrgUnit filter and pass orgUnitId to GET /api/tenant/applications.
+  - For each app, add a button "Org Visibility" or similar:
+    - Opens a modal that allows selecting OrgUnits for that app.
+    - Uses:
+      - GET /api/tenant/applications/{id}/org-units
+      - PUT /api/tenant/applications/{id}/org-units
+
+4) Delegated Admins page:
+
+- Implement page /tenant/delegated-admins:
+  - Table showing:
+    - User (email, displayName)
+    - OrgUnit name
+    - ScopeType
+  - Button to add delegated admin:
+    - Select from admin users (backend should provide a source for eligible TenantUsers)
+    - Select OrgUnit
+    - Select ScopeType (OrgOnly or OrgAndDescendants)
+    - POST /api/tenant/delegated-admins
+  - Ability to remove delegated admin:
+    - DELETE /api/tenant/delegated-admins/{id}
+
+5) UI behavior for Delegated Admins:
+
+- On login to Admin Portal, retrieve user roles and delegated scopes from backend.
+- If the current user is a delegated admin:
+  - OrgUnit tree should be limited or visually constrained to their scope.
+  - User and Application lists should, by default, be filtered to that scope.
+  - They must not be able to manage OrgUnits outside of their scope.
+
+All UI labels and messages must be localized, reusing the same i18n setup you already have for Phase 1.
+
+Step 8: Audit integration
+
+For each critical operation added in Phase 2:
+
+- Creating / updating / deleting OrgUnit
+- Assigning / removing UserOrgUnits
+- Assigning / removing ApplicationOrgUnits
+- Creating / deleting DelegatedAdminScope
+
+Call the Audit module from Phase 1 to append appropriate AuditEvents, with:
+
+- Event type
+- TenantId
+- Actor
+- Target (OrgUnit, User, App, DelegatedAdmin)
+- Timestamp and basic details
+
+Step 9: Tests and validation
+
+- Add unit tests for:
+  - OrgUnit creation, move, delete (Path and Level behavior, safe deletes)
+  - User and Application assignment logic
+  - IOrgAuthorizationService decisions for:
+    - Global admin
+    - Delegated admin with OrgOnly and OrgAndDescendants
+- Add integration tests or at least manual test scripts for:
+  - Filtering users by OrgUnit
+  - Filtering applications by OrgUnit
+  - Delegated admin restricted views and actions
+
+Step 10: Clean up and verify
+
+- Ensure backend builds and migrations apply correctly.
+- Ensure Admin Portal builds and the new pages work without TS or runtime errors.
+- Verify:
+  - Multi language still works across new pages (en/fa).
+  - No TODOs or NotImplementedException in Phase 2 code.
+  - Existing Phase 1 flows remain intact.
+
+Important mindset
+
+- Treat Phase2-Onesign-OrgHierarchy.md as the single source of truth for Phase 2 behavior.
+- Do not over-engineer a generic policy engine in this phase. Keep the focus on OrgUnit hierarchy, assignments and delegated admin scopes.
+- Enforce tenant safety and access control through central services, not scattered if statements.
+- Preserve and extend multi language support and modular monolith structure.
+
+Now:
+Start by reading Phase2-Onesign-OrgHierarchy.md, summarize the exact tasks you will implement, create the Onesign.Modules.Organization module and EF migrations, then implement the OrgUnit APIs, Org authorization service, and finally extend the Admin Portal UI with Org tree, filters, delegated admin page, and org-aware views.

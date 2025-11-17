@@ -1,0 +1,722 @@
+You are an expert .NET 10, EF Core, and React/Next.js engineer, working as an implementation assistant for the onesign SSO SaaS platform.
+
+Context
+The platform already has:
+
+- Phase 1: core multi-tenant SSO, OIDC, admin flows
+  - Phase1-Onesign-CoreSSO.md
+
+- Phase 2: Organization hierarchy, OrgUnits, user/app assignments, delegated admins
+  - Phase2-Onesign-OrgHierarchy.md
+
+- Phase 3: Advanced security, MFA, trusted devices, risk events, Security Center
+  - Phase3-Onesign-AdvancedSecurity.md
+
+- Phase 4: Federation and provisioning – SAML, OIDC federation, attribute mapping, SCIM provider
+  - Phase4-Onesign-FederationProvisioning.md
+
+- Phase 5: Billing – plans, plan features, tenant subscriptions, usage, quota enforcement, billing UIs
+  - Phase5-Onesign-BillingPlans.md
+
+Now I have Phase 6 spec focusing on Observability, Audit Center and Compliance:
+
+- Phase6-Onesign-ObservabilityCompliance.md
+
+Your job:
+- Read all these documents.
+- Understand the existing modular architecture and cross-cutting requirements (multi-tenant, multi-language, audit, security).
+- Implement Phase 6 exactly as defined in Phase6-Onesign-ObservabilityCompliance.md:
+  - Onesign.Modules.Observability module
+  - Unified AuditEvent model and search
+  - Tenant Activity / Audit Center
+  - Global Observability views
+  - Alert rules, channels and notifications
+  - External log streaming (webhook/syslog-gateway style)
+  - Support tools (saved filters, session management hooks if needed)
+- Do NOT break previous phases.
+
+High level goals of Phase 6
+Observability and compliance:
+
+- Serious, queryable Audit Log per tenant and globally.
+- Security & login analytics and overviews.
+- Simple but real alerting (threshold-based) on events and metrics.
+- External log streaming per tenant.
+- Tools for investigation and incident handling.
+
+Important constraints
+
+1) Phase boundaries
+You must stay within Phase 6 scope:
+
+- Implement:
+  - Observability module with AuditEvent storage and query.
+  - Tenant and global audit search.
+  - Simple alert rules (threshold + time window) and channels (email + webhook).
+  - Log streaming subscriptions.
+  - UI pages for tenant and global observability.
+
+- Do NOT implement:
+  - Complex rule engines beyond basic threshold/window.
+  - Native integrations for specific SIEM vendors (Splunk/Datadog/etc.).
+  - Full BI/reporting platform.
+
+2) Architecture
+- Keep the backend as a modular monolith.
+- Add a new module: Onesign.Modules.Observability.
+- Integrate with existing:
+  - Identity, Organization, Security, Federation, Billing.
+- All data must remain tenant-scoped with strict TenantId constraints.
+- Global views must still respect authorization.
+
+3) Multi language
+- Multi-language (at least English and Persian) is already a requirement.
+- All new user-facing messages and labels must be localizable or use message codes that front-end maps to localized strings.
+- Do not hardcode texts in controllers or React components.
+
+4) No TODO and no partial implementations
+Critical rule:
+
+- No TODO comments.
+- No NotImplementedException.
+- No empty methods.
+- Any API, service, entity, controller, endpoint or page added in this phase must be fully implemented.
+- If something is out of Phase 6 scope, do not create a stub for it.
+
+5) Backwards compatibility
+- Existing audit logic (if present) must be migrated or integrated cleanly into the new Observability module.
+- Existing phases (auth, security, federation, billing) must keep working.
+- Observability must be additive: if a tenant doesn’t use alerts or streaming, core functionality still works.
+
+Step 1: Read and understand the specs
+
+1) Open and read:
+
+- Phase1-Onesign-CoreSSO.md
+- Phase2-Onesign-OrgHierarchy.md
+- Phase3-Onesign-AdvancedSecurity.md
+- Phase4-Onesign-FederationProvisioning.md
+- Phase5-Onesign-BillingPlans.md
+- Phase6-Onesign-ObservabilityCompliance.md
+
+2) Build a checklist from Phase 6:
+
+- Observability module structure.
+- Unified AuditEvent model.
+- Tenant and global audit search APIs and UIs.
+- AlertRule, AlertChannel, AlertNotification.
+- LogStreamSubscription.
+- Tenant Activity Center and Global Operations Console.
+- Integration points (IAuditWriter usage across modules).
+
+3) Treat Phase6-Onesign-ObservabilityCompliance.md as the single source of truth for Phase 6.
+
+Step 2: Backend module – Onesign.Modules.Observability
+
+Create a new module:
+
+- src/Onesign.Modules.Observability
+
+Structure it as:
+
+- Domain
+  - Entities
+    - AuditEvent
+    - AlertRule
+    - AlertChannel
+    - AlertNotification
+    - LogStreamSubscription
+    - SavedFilter
+  - Enums
+    - AuditCategory      // Auth, Security, UserManagement, Billing, Federation, Scim, etc.
+    - AuditSeverity      // Info, Warning, Error, Critical
+    - AlertRuleType      // Threshold (for now)
+    - AlertChannelType   // Email, Webhook
+    - LogStreamType      // Webhook, SyslogHttpGateway
+  - Services
+    - IAuditWriter
+    - IAuditQueryService
+    - IAlertEvaluationService
+    - ILogStreamingService
+  - Repositories
+    - IAuditEventRepository
+    - IAlertRuleRepository
+    - IAlertChannelRepository
+    - IAlertNotificationRepository
+    - ILogStreamSubscriptionRepository
+    - ISavedFilterRepository
+
+- Application
+  - DTOs
+    - AuditEventDto
+    - AuditSearchFilterDto
+    - AuditSearchResultDto
+    - AlertRuleDto
+    - CreateOrUpdateAlertRuleRequest
+    - AlertChannelDto
+    - CreateOrUpdateAlertChannelRequest
+    - AlertNotificationDto
+    - LogStreamSubscriptionDto
+    - CreateOrUpdateLogStreamSubscriptionRequest
+    - SavedFilterDto
+    - CreateOrUpdateSavedFilterRequest
+  - Commands
+    - WriteAuditEventCommand
+    - CreateOrUpdateAlertRuleCommand
+    - EnableAlertRuleCommand
+    - DisableAlertRuleCommand
+    - CreateOrUpdateAlertChannelCommand
+    - CreateOrUpdateLogStreamSubscriptionCommand
+    - CreateOrUpdateSavedFilterCommand
+    - MarkAlertNotificationAsReadCommand
+    - EvaluateAlertsForTenantCommand
+    - PushAuditEventsToLogStreamCommand
+  - Queries
+    - SearchAuditEventsQuery
+    - GetAuditEventDetailsQuery
+    - GetAlertRulesQuery
+    - GetAlertChannelsQuery
+    - GetAlertNotificationsQuery
+    - GetLogStreamSubscriptionsQuery
+    - GetSavedFiltersQuery
+
+- Infrastructure
+  - EfCore/Entities
+    - AuditEventEntity
+    - AlertRuleEntity
+    - AlertChannelEntity
+    - AlertNotificationEntity
+    - LogStreamSubscriptionEntity
+    - SavedFilterEntity
+  - EfCore/Configurations
+    - AuditEventEntityTypeConfiguration
+    - AlertRuleEntityTypeConfiguration
+    - AlertChannelEntityTypeConfiguration
+    - AlertNotificationEntityTypeConfiguration
+    - LogStreamSubscriptionEntityTypeConfiguration
+    - SavedFilterEntityTypeConfiguration
+  - EfCore/Repositories
+    - AuditEventRepository
+    - AlertRuleRepository
+    - AlertChannelRepository
+    - AlertNotificationRepository
+    - LogStreamSubscriptionRepository
+    - SavedFilterRepository
+  - Services
+    - AuditWriter
+    - AuditQueryService
+    - AlertEvaluationService
+    - LogStreamingService
+
+Implement all of this end to end.
+
+Step 3: Database model and migrations
+
+Extend OnesignDbContext:
+
+- Add DbSet for:
+  - AuditEvents
+  - AlertRules
+  - AlertChannels
+  - AlertNotifications
+  - LogStreamSubscriptions
+  - SavedFilters
+
+AuditEvents table:
+
+- Implement the model from Phase 6:
+
+  - Id
+  - TenantId (nullable for global events)
+  - CorrelationId
+  - Category (enum)
+  - Severity (enum)
+  - ActorId
+  - ActorDisplayName
+  - ActorType (User, Service, System)
+  - Action (e.g. "Auth.LoginSuccess", "Security.PolicyUpdated")
+  - TargetType (User/Tenant/Application/…)
+  - TargetId
+  - IpAddress
+  - UserAgent
+  - Country
+  - OccurredAt
+  - DataJson (compact JSON payload)
+
+Indexes:
+
+- TenantId, OccurredAt DESC
+- TenantId, Category, OccurredAt
+- ActorId, OccurredAt
+- CorrelationId
+
+Other entities:
+
+- AlertRuleEntity
+  - TenantId
+  - Name
+  - AlertRuleType
+  - MetricKey (e.g. "Auth.LoginFailed", "Security.RiskEvent.High")
+  - Threshold
+  - Window (time span)
+  - Enabled
+
+- AlertChannelEntity
+  - TenantId
+  - AlertChannelType (Email, Webhook)
+  - Target (email or URL)
+  - AuthHeader / token if necessary
+
+- AlertNotificationEntity
+  - TenantId
+  - AlertRuleId
+  - CreatedAt
+  - Severity
+  - Message / Summary
+  - IsRead
+
+- LogStreamSubscriptionEntity
+  - TenantId
+  - LogStreamType
+  - TargetUrl
+  - AuthHeader
+  - Filter JSON (category/severity filters)
+
+- SavedFilterEntity
+  - TenantId
+  - Name
+  - FilterJson (serialized AuditSearchFilter)
+
+Create a Phase 6 migration:
+
+- Create all Observability-related tables.
+- If any previous Audit tables exist, either:
+  - Migrate to AuditEvents, or
+  - Keep them intact but switch all new auditing to AuditEvents going forward.
+
+Step 4: Domain services – audit, alerts, log streaming
+
+Implement:
+
+IAuditWriter
+
+- Responsible for writing audit events from all modules.
+- Provide helpers to build events using the current context:
+
+  - TenantId
+  - Current user
+  - IP, UserAgent
+  - CorrelationId
+
+- Methods like:
+
+  - `Task WriteAsync(AuditEvent auditEvent);`
+  - Optional convenience helpers: `WriteUserActionAsync`, `WriteSystemActionAsync`, etc.
+
+AuditWriter implementation:
+
+- Maps domain AuditEvent into AuditEventEntity.
+- Uses AuditEventRepository to persist.
+- Should be lightweight and non-blocking where possible.
+
+IAuditQueryService
+
+- Search API:
+
+  - `Task<AuditSearchResultDto> SearchAsync(AuditSearchFilterDto filter, TenantScope scope…)`
+  - Filter fields:
+    - TenantId (for global search)
+    - Date range
+    - Category
+    - Severity
+    - ActorId / Actor email
+    - Action
+    - IpAddress / Country
+
+- `Task<AuditEventDto> GetByIdAsync(Guid id);`
+
+IAlertEvaluationService
+
+- Logic for evaluating alert rules per tenant based on:
+
+  - AuditEvents
+  - Possibly RiskEvents / UsageCounters if needed.
+
+- Methods like:
+
+  - `Task EvaluateForTenantAsync(Guid tenantId, DateTime since);`
+
+- Implement threshold-based alerts:
+
+  - Example:
+
+    - MetricKey: "Auth.LoginFailed"
+    - Threshold: 20
+    - Window: 10 minutes
+
+  - Evaluate by querying recent AuditEvents and counting matching events.
+
+- On trigger:
+
+  - Create AlertNotificationEntity.
+  - Dispatch to channels via AlertChannel configuration (email/webhook).
+
+ILogStreamingService
+
+- Responsible for pushing batches of AuditEvents to configured LogStreamSubscriptions.
+- Methods:
+
+  - `Task PushBatchAsync(LogStreamSubscription sub, IReadOnlyCollection<AuditEvent> events);`
+
+- Behavior:
+
+  - For each subscription:
+    - Filter AuditEvents by category/severity.
+    - Push in batches to TargetUrl as JSON.
+    - Handle retries and simple backoff behavior on failure.
+
+All services must be implemented fully. No stubs.
+
+Step 5: Integration – use IAuditWriter across modules
+
+Review existing modules and integrate IAuditWriter where appropriate:
+
+- Auth & Identity:
+
+  - Login success/fail.
+  - Password change/reset.
+  - Account lockout.
+  - Session creation/termination (if sessions are tracked).
+
+- Security (Phase 3):
+
+  - SecurityPolicy changes.
+  - OrgUnit MFA rules changes.
+  - MFA enrollment/disable.
+  - MFA verification success/fail.
+  - Risk events (can be logged as separate AuditEvents referencing RiskEvent IDs).
+
+- Federation (Phase 4):
+
+  - Creation/update/delete of SamlProvider and OidcFederationProvider.
+  - Bindings between providers and applications.
+  - Federation login success/fail.
+  - SCIM create/update/delete user/group operations.
+
+- Billing (Phase 5):
+
+  - Plan create/update/delete.
+  - Assigning or changing TenantSubscription.
+  - Changing subscription Status (Trial, Active, Suspended, etc).
+
+Every critical operation must log:
+
+- TenantId
+- ActorId and display name
+- Category, Action, TargetType, TargetId
+- Severity
+- IP / UserAgent where applicable
+- Minimal DataJson payload (no secrets, no raw tokens).
+
+Step 6: Application layer – commands and queries
+
+Implement commands:
+
+- WriteAuditEventCommand
+  - Used internally by AuditWriter if you follow CQRS in Observability module.
+
+- Alert commands:
+  - CreateOrUpdateAlertRuleCommand
+  - EnableAlertRuleCommand
+  - DisableAlertRuleCommand
+  - CreateOrUpdateAlertChannelCommand
+  - MarkAlertNotificationAsReadCommand
+  - EvaluateAlertsForTenantCommand
+
+- Log streaming commands:
+  - CreateOrUpdateLogStreamSubscriptionCommand
+  - PushAuditEventsToLogStreamCommand
+
+- Saved filters:
+  - CreateOrUpdateSavedFilterCommand
+
+Implement queries:
+
+- SearchAuditEventsQuery
+- GetAuditEventDetailsQuery
+- GetAlertRulesQuery
+- GetAlertChannelsQuery
+- GetAlertNotificationsQuery
+- GetLogStreamSubscriptionsQuery
+- GetSavedFiltersQuery
+
+These must:
+
+- Be tenant-aware.
+- Enforce authorization (tenant admin vs global admin).
+- Use paging for search results.
+
+Step 7: API endpoints – Tenant Observability
+
+In Onesign.Api, define tenant-scoped Observability endpoints.
+
+Base: `/api/tenant/observability`
+
+Audit:
+
+- POST `/api/tenant/observability/audit/search`
+  - Body: AuditSearchFilterDto (tenant scoped)
+  - Returns: AuditSearchResultDto with paging.
+
+- GET `/api/tenant/observability/audit/{id}`
+  - Returns: AuditEventDto (must belong to current tenant).
+
+- GET `/api/tenant/observability/audit/saved-filters`
+- POST `/api/tenant/observability/audit/saved-filters`
+- PUT `/api/tenant/observability/audit/saved-filters/{id}`
+- DELETE `/api/tenant/observability/audit/saved-filters/{id}`
+
+Alerts:
+
+- GET `/api/tenant/observability/alerts/rules`
+- POST `/api/tenant/observability/alerts/rules`
+- PUT `/api/tenant/observability/alerts/rules/{id}`
+- DELETE `/api/tenant/observability/alerts/rules/{id}`
+
+- GET `/api/tenant/observability/alerts/channels`
+- POST `/api/tenant/observability/alerts/channels`
+- PUT `/api/tenant/observability/alerts/channels/{id}`
+- DELETE `/api/tenant/observability/alerts/channels/{id}`
+
+- GET `/api/tenant/observability/alerts/notifications`
+- POST `/api/tenant/observability/alerts/notifications/{id}/mark-read`
+
+Log Streams:
+
+- GET `/api/tenant/observability/log-streams`
+- POST `/api/tenant/observability/log-streams`
+- PUT `/api/tenant/observability/log-streams/{id}`
+- DELETE `/api/tenant/observability/log-streams/{id}`
+
+All tenant endpoints must:
+
+- Use ITenantContext.
+- Enforce that the caller is a Tenant Admin.
+- Return localized error codes/messages.
+
+Step 8: API endpoints – Global Observability
+
+Base: `/api/global/observability`
+
+Global audit:
+
+- POST `/api/global/observability/audit/search`
+  - Allows filtering by TenantId plus all other fields.
+- GET `/api/global/observability/audit/{id}`
+
+Overview:
+
+- GET `/api/global/observability/overview`
+  - Returns aggregated metrics for dashboards:
+    - Login count per tenant over recent days.
+    - Failure rates per tenant.
+    - High RiskEvent counts (from Security module).
+    - SCIM operations per tenant (from Federation / SCIM).
+
+Only Global/SaaS Owner roles can access these endpoints.
+
+Step 9: Scheduled jobs – alerts and log streaming
+
+Implement scheduled/background jobs:
+
+Alert evaluation job:
+
+- Periodic job (e.g. every 1–5 minutes):
+  - For each tenant with enabled AlertRules:
+    - Execute EvaluateAlertsForTenantCommand(tenantId, sinceLastCheck).
+
+Log streaming job:
+
+- Periodic job:
+  - Fetch recent AuditEvents that have not been streamed yet.
+  - Group them per LogStreamSubscription.
+  - Execute PushAuditEventsToLogStreamCommand for each subscription.
+
+Use a robust but simple mechanism to avoid double-sending:
+
+- For example:
+  - Track last streamed timestamp per subscription.
+  - Or mark events once streamed for a given subscription.
+
+Step 10: Admin Portal – Tenant Observability UI
+
+In the Admin Portal (tenant scope):
+
+1) Activity / Audit Log page: `/tenant/observability/audit`
+
+- Table:
+  - Time
+  - Category
+  - Severity
+  - Actor
+  - Action
+  - Target
+  - IP / Country
+
+- Filters:
+  - Date range
+  - Category
+  - Severity
+  - Actor (search by name/email)
+  - Action
+  - IP
+
+- Features:
+  - Pagination
+  - “Save filter” → create SavedFilter.
+  - “Apply saved filter”.
+
+- Uses:
+  - POST `/api/tenant/observability/audit/search`
+  - Saved filter endpoints.
+
+2) Audit event details modal:
+
+- On row click, open modal with full details:
+  - All audit fields.
+  - Pretty-printed DataJson.
+
+- Uses:
+  - GET `/api/tenant/observability/audit/{id}`
+
+3) Tenant Alerts management:
+
+- `/tenant/observability/alerts/rules`
+  - List existing AlertRules.
+  - Create/edit form:
+    - Name
+    - MetricKey (predefined options like "Auth.LoginFailed", "Security.RiskEvent.High")
+    - Threshold
+    - Window (e.g. 5 minutes, 1 hour)
+    - Enabled toggle
+
+- `/tenant/observability/alerts/channels`
+  - List AlertChannels.
+  - Create/edit form:
+    - Type (Email/Webhook)
+    - Target (email or URL)
+    - Auth token/header where needed.
+
+- `/tenant/observability/alerts`
+  - List AlertNotifications:
+    - Time
+    - RuleName
+    - Severity
+    - Short description
+  - Ability to:
+    - Mark as read.
+    - Click to jump to filtered Audit search (e.g. open `/tenant/observability/audit` with prepopulated filters).
+
+All these pages must use the existing i18n infrastructure.
+
+4) Tenant Log Streams UI:
+
+- `/tenant/observability/log-streams`
+  - List LogStreamSubscriptions.
+  - Create/edit:
+    - Type (Webhook/SyslogHttpGateway)
+    - TargetUrl
+    - AuthHeader
+    - Basic filter configuration (Category/Severity).
+
+Step 11: Admin Portal – Global Operations Console
+
+Global audit:
+
+- `/global/observability/audit`
+  - Similar UI to tenant audit, but with Tenant filter.
+  - For each row, also show TenantName.
+  - Ability to click into tenant-level pages if needed.
+
+Global overview:
+
+- `/global/observability/overview`
+  - Charts such as:
+    - Logins per tenant (bar chart) over recent days.
+    - Login failure rate per tenant.
+    - Count of high RiskEvents per tenant.
+    - SCIM operations per tenant.
+
+- Uses:
+  - GET `/api/global/observability/overview`
+  - Optionally other existing metrics endpoints from previous phases.
+
+All global views must be restricted to Global/SaaS Owner users.
+
+Step 12: Cross-cutting – localization, performance, security
+
+Localization:
+
+- All labels, error messages and UI texts for Observability must be localizable.
+- Use message keys in APIs rather than raw English texts.
+
+Performance:
+
+- Ensure SearchAuditEvents queries are efficient:
+
+  - Use correct indexes.
+  - Avoid full table scans.
+  - Always paginate.
+
+- Log streaming and alert evaluation must be efficient and not overload the system.
+
+Security & privacy:
+
+- DataJson must not contain secrets, tokens, or credentials.
+- Log streaming must not leak secrets.
+- Tenant admins must never see data of other tenants.
+- Global admins see cross-tenant logs but must be properly authorized.
+
+Step 13: Testing
+
+Add unit and integration tests:
+
+- IAuditWriter:
+  - Properly creates and saves events for different categories/actions.
+
+- IAuditQueryService:
+  - Filtering by tenant, category, severity, actor, date range.
+
+- IAlertEvaluationService:
+  - Threshold rules trigger correctly.
+  - No duplicate notifications in single evaluation window.
+
+- ILogStreamingService:
+  - Batching and filtering logic.
+
+- API tests:
+  - Tenant vs global access control.
+  - Audit search returns only tenant-specific events for tenant endpoints.
+
+Step 14: Final verification
+
+- Backend builds successfully with Onesign.Modules.Observability integrated.
+- Phase 6 migration applies on top of Phase 1–5 schemas.
+- All previous features (Auth, Security, Federation, Billing) run without regressions.
+- New auditing is active for all critical operations.
+- Tenant Activity and Global Observability pages are functional and localized.
+- Alert rules can be created, triggered and notified.
+- Log streaming pushes audit batches correctly to configured endpoints.
+- There are no TODO comments or NotImplementedException in Observability-related code.
+
+Important mindset
+
+- Observability without consumers (UI, alerts, streaming) is useless. This phase must deliver both storage and consumption.
+- Keep alerting logic simple but correct: threshold + time window is enough.
+- Keep security and tenant isolation strict – logs must never become a side channel to leak data across tenants.
+- Implement exactly what Phase6-Onesign-ObservabilityCompliance.md specifies, with production-grade quality.
+
+Now:
+Start by reading Phase6-Onesign-ObservabilityCompliance.md, then create the Onesign.Modules.Observability module, add migrations, wire IAuditWriter into all critical operations, implement audit search, alerts, log streaming, and all Admin Portal observability screens end to end with no TODOs.
+
+

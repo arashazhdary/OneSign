@@ -1,0 +1,539 @@
+You are an expert .NET 10, EF Core, and React/Next.js engineer, working as an implementation assistant for the onesign SSO SaaS platform.
+
+Context
+I already have:
+
+- Phase 1 spec and implementation for core multi tenant SSO, OIDC and admin flows:
+  - Phase1-Onesign-CoreSSO.md
+
+- Phase 2 spec for Organization hierarchy, OrgUnits, user and application assignments, delegated admins:
+  - Phase2-Onesign-OrgHierarchy.md
+
+- Phase 3 spec for advanced security, MFA, trusted devices and risk:
+  - Phase3-Onesign-AdvancedSecurity.md
+
+Now I have a Phase 4 spec for enterprise federation and provisioning:
+
+- Phase4-Onesign-FederationProvisioning.md
+
+Your job is to read all four documents, understand the existing architecture and flows, and then implement Phase 4 exactly as defined in Phase4-Onesign-FederationProvisioning.md, without breaking previous phases.
+
+High level goals of Phase 4
+Phase 4 introduces:
+
+- Federation module for:
+  - SAML 2.0 IdP integration per tenant
+  - OIDC based federation with external IdPs (Azure AD, Google Workspace, Okta, etc.)
+  - Attribute mapping between external attributes and internal user, roles, org units
+  - Just In Time (JIT) provisioning of users from external IdPs
+
+- SCIM 2.0 provider for:
+  - User provisioning and deprovisioning
+  - Group provisioning mapped to roles or OrgUnits
+  - Per tenant SCIM token
+
+Important constraints
+
+1) Phase boundaries
+You must stay within Phase 4 scope:
+
+- Implement SAML IdP support, OIDC federation, attribute mapping, JIT provisioning, and SCIM 2.0 provider as described in Phase4-Onesign-FederationProvisioning.md.
+- Do NOT implement:
+  - SCIM client functionality
+  - Complex workflow based provisioning
+  - Generic, highly dynamic rule engine
+  - Auto discovery for many IdPs
+These belong to later phases.
+
+2) Architecture
+- Backend remains a modular monolith as established in earlier phases.
+- You will add a new module: Onesign.Modules.Federation.
+- Everything remains tenant scoped and must respect TenantId.
+- Existing modules and flows from Phase 1, 2 and 3 must continue to work.
+
+3) Multi language
+- Multi language support (at least English and Persian) applies here as well.
+- New user facing messages in controllers or UI must be localizable or use message codes that the frontend maps to localized text.
+- Do not hardcode user facing strings directly in controllers or React components.
+
+4) No TODO and no partial implementations
+Critical rule:
+
+- Do not leave any TODO, NotImplementedException or empty methods/classes for Phase 4.
+- If you create a public API, service, entity, controller, endpoint or UI page in scope of Phase 4, it must be fully implemented.
+- If something is out of Phase 4 scope, do not scaffold a stub for it.
+
+5) Backwards compatibility
+- Federation and SCIM must be additive.
+- Tenants that do not configure federation or SCIM must continue to behave exactly as before.
+- All migrations must be safe and non destructive.
+
+Step 1: Read and understand the specs
+
+1) Open and read these files carefully:
+
+- Phase1-Onesign-CoreSSO.md
+- Phase2-Onesign-OrgHierarchy.md
+- Phase3-Onesign-AdvancedSecurity.md
+- Phase4-Onesign-FederationProvisioning.md
+
+2) Build a checklist of Phase 4 requirements:
+
+- SAML provider model, bindings, endpoints
+- OIDC federation provider model and flows
+- Attribute mapping model and service
+- JIT provisioning behavior
+- SCIM token, user and group endpoints and logs
+- Admin Portal configuration screens
+
+3) Use Phase4-Onesign-FederationProvisioning.md as the single source of truth for Phase 4 behavior.
+
+Step 2: Backend module – Onesign.Modules.Federation
+
+Create a new backend module:
+
+- src/Onesign.Modules.Federation
+
+Structure it as:
+
+- Domain
+  - Entities
+    - SamlProvider
+    - SamlProviderCertificate
+    - SamlApplicationBinding
+    - OidcFederationProvider
+    - AttributeMapping
+    - ScimToken
+    - ScimSyncLog
+  - Enums
+    - FederationType      (Saml, Oidc, Scim)
+    - NameIdFormat        (Email, Persistent, etc.)
+    - AttributeMappingSource  (SamlAttribute, SamlNameId, OidcClaim, ScimAttribute)
+  - Services
+    - ISamlService
+    - IFederationLoginService
+    - IAttributeMappingService
+    - IScimService
+  - Repositories
+    - ISamlProviderRepository
+    - IOidcFederationProviderRepository
+    - IAttributeMappingRepository
+    - IScimTokenRepository
+    - IScimSyncLogRepository
+
+- Application
+  - DTOs
+    - SamlProviderDto
+    - CreateOrUpdateSamlProviderRequest
+    - SamlApplicationBindingDto
+    - OidcFederationProviderDto
+    - CreateOrUpdateOidcFederationProviderRequest
+    - AttributeMappingDto
+    - UpdateAttributeMappingsRequest
+    - ScimTokenDto
+    - RegenerateScimTokenRequest
+    - ScimUserDto
+    - ScimGroupDto
+    - ScimPatchRequestDto
+  - Commands
+    - CreateOrUpdateSamlProviderCommand
+    - EnableSamlProviderCommand
+    - DisableSamlProviderCommand
+    - BindSamlProviderToApplicationCommand
+    - UnbindSamlProviderFromApplicationCommand
+    - CreateOrUpdateOidcFederationProviderCommand
+    - EnableOidcFederationProviderCommand
+    - DisableOidcFederationProviderCommand
+    - UpdateAttributeMappingsCommand
+    - GenerateOrRotateScimTokenCommand
+    - LogScimSyncEventCommand
+  - Queries
+    - GetSamlProvidersQuery
+    - GetSamlProviderDetailsQuery
+    - GetSamlBindingsQuery
+    - GetOidcFederationProvidersQuery
+    - GetOidcFederationProviderDetailsQuery
+    - GetAttributeMappingsQuery
+    - GetScimTokenQuery
+    - GetScimSyncLogsQuery
+
+- Infrastructure
+  - EfCore/Entities
+    - SamlProviderEntity
+    - SamlProviderCertificateEntity
+    - SamlApplicationBindingEntity
+    - OidcFederationProviderEntity
+    - AttributeMappingEntity
+    - ScimTokenEntity
+    - ScimSyncLogEntity
+  - EfCore/Configurations
+    - SamlProviderEntityTypeConfiguration
+    - SamlApplicationBindingEntityTypeConfiguration
+    - OidcFederationProviderEntityTypeConfiguration
+    - AttributeMappingEntityTypeConfiguration
+    - ScimTokenEntityTypeConfiguration
+    - ScimSyncLogEntityTypeConfiguration
+  - EfCore/Repositories
+    - SamlProviderRepository
+    - OidcFederationProviderRepository
+    - AttributeMappingRepository
+    - ScimTokenRepository
+    - ScimSyncLogRepository
+  - Services
+    - SamlService
+    - FederationLoginService
+    - AttributeMappingService
+    - ScimService
+
+Implement all of these completely.
+
+Step 3: Database model and migrations
+
+Extend OnesignDbContext with DbSet for:
+
+- SamlProviders
+- SamlProviderCertificates
+- SamlApplicationBindings
+- OidcFederationProviders
+- AttributeMappings
+- ScimTokens
+- ScimSyncLogs
+
+For EF configurations, follow the spec:
+
+- SamlProviderEntity
+  - Index on TenantId, Name
+- SamlApplicationBindingEntity
+  - Unique constraint on (TenantId, ApplicationClientId, SamlProviderId) if appropriate
+- OidcFederationProviderEntity
+  - Index on TenantId, Name
+- AttributeMappingEntity
+  - Index on TenantId, FederationType
+- ScimTokenEntity
+  - Unique on TenantId
+- ScimSyncLogEntity
+  - Index on TenantId, CreatedAt, ResourceType
+
+Create a Phase 4 migration that:
+
+- Creates all Federation related tables
+- Does not modify existing identity, organization or security tables
+
+No data migrations are required beyond structure creation, but ensure all constraints and indices are correctly defined.
+
+Step 4: Domain services – SAML, Federation login, attribute mapping, SCIM
+
+Implement:
+
+ISamlService
+
+- Responsibilities:
+  - Parse and validate SAML Responses
+  - Validate signatures and certificates
+  - Extract NameId and attributes
+  - Generate SAML AuthnRequests for SP initiated flows
+
+IFederationLoginService
+
+- Responsibilities:
+  - Handle SAML based login:
+    - Locate tenant and SamlProvider
+    - Use SamlApplicationBinding to find target ApplicationClient and tenant
+    - Extract attributes via ISamlService
+    - Apply attribute mappings via IAttributeMappingService
+    - Perform JIT provisioning of GlobalUser and TenantUser if necessary
+    - Pass the resulting tenant user context into the existing login/token issuance pipeline
+  - Handle OIDC based login:
+    - Call external OIDC provider using authority, clientId and clientSecret
+    - After successful external auth, get claims
+    - Map claims via IAttributeMappingService
+    - Perform JIT provisioning if enabled
+    - Pass user context to the main login pipeline
+
+IAttributeMappingService
+
+- Responsibilities:
+  - For a given FederationType and tenant, load AttributeMapping definitions
+  - Accept a dictionary of source attributes or claims and produce a structured result:
+    - UserEmail
+    - UserDisplayName
+    - Roles (list)
+    - OrgUnitCodes or identifiers
+  - Apply simple TransformExpression functions described in the spec such as:
+    - toLower()
+    - split(';')[0]
+
+IScimService
+
+- Responsibilities:
+  - Implement SCIM core operations:
+    - Create, update, delete users and groups via the existing Identity and Organization modules
+  - Map SCIM Users and Groups to:
+    - GlobalUser and TenantUser
+    - Roles and OrgUnits according to mappings
+  - Produce SCIM compliant JSON responses and handle standard SCIM errors
+
+All services must integrate with the existing Identity, Organization and Security modules, and must be fully implemented.
+
+Step 5: Application layer – commands and queries
+
+Implement the commands and queries in the Federation Application layer:
+
+SAML:
+
+- GetSamlProvidersQuery
+- GetSamlProviderDetailsQuery
+- CreateOrUpdateSamlProviderCommand
+- EnableSamlProviderCommand
+- DisableSamlProviderCommand
+- BindSamlProviderToApplicationCommand
+- UnbindSamlProviderFromApplicationCommand
+- GetSamlBindingsQuery
+
+OIDC Federation:
+
+- GetOidcFederationProvidersQuery
+- GetOidcFederationProviderDetailsQuery
+- CreateOrUpdateOidcFederationProviderCommand
+- EnableOidcFederationProviderCommand
+- DisableOidcFederationProviderCommand
+
+Attribute mapping:
+
+- GetAttributeMappingsQuery
+- UpdateAttributeMappingsCommand
+
+SCIM token and logs:
+
+- GetScimTokenQuery
+- GenerateOrRotateScimTokenCommand
+- LogScimSyncEventCommand
+- GetScimSyncLogsQuery
+
+All of these must:
+
+- Be tenant aware using ITenantContext
+- Use repositories from the Federation module
+- Emit AuditEvents for sensitive operations (provider creation, updates, SCIM token rotation, etc.)
+
+Step 6: API endpoints – Federation management
+
+In Onesign.Api, add tenant facing Federation endpoints as defined in the spec.
+
+Base: `/api/tenant/federation`
+
+SAML:
+
+- GET `/api/tenant/federation/saml/providers`
+- GET `/api/tenant/federation/saml/providers/{id}`
+- POST `/api/tenant/federation/saml/providers`
+- PUT `/api/tenant/federation/saml/providers/{id}`
+- DELETE `/api/tenant/federation/saml/providers/{id}`
+
+Bindings:
+
+- GET `/api/tenant/federation/saml/bindings`
+- POST `/api/tenant/federation/saml/bindings`
+- DELETE `/api/tenant/federation/saml/bindings/{id}`
+
+OIDC:
+
+- GET `/api/tenant/federation/oidc/providers`
+- GET `/api/tenant/federation/oidc/providers/{id}`
+- POST `/api/tenant/federation/oidc/providers`
+- PUT `/api/tenant/federation/oidc/providers/{id}`
+- DELETE `/api/tenant/federation/oidc/providers/{id}`
+
+Attribute mappings:
+
+- GET `/api/tenant/federation/mappings`
+- PUT `/api/tenant/federation/mappings`
+
+SCIM token:
+
+- GET `/api/tenant/federation/scim/token`
+- POST `/api/tenant/federation/scim/token/rotate`
+
+All these endpoints must:
+
+- Use DTOs defined in the Federation Application layer
+- Enforce tenant scoping and admin authorization
+- Integrate with the localization strategy for validation and error messages
+
+Step 7: API endpoints – Federation login and SCIM
+
+Federation login endpoints:
+
+SAML:
+
+- POST `/saml/{tenantSlug}/acs`
+  - Receives SAML Response from external IdP
+  - Uses IFederationLoginService to handle login, including JIT provisioning
+  - Finishes by issuing the same type of tokens as the main login pipeline, or redirecting to the application as required
+
+- GET `/saml/{tenantSlug}/metadata`
+  - Returns SAML metadata for onesign for that tenant, if required by the spec
+  - Based on the tenant configuration and bindings
+
+OIDC Federation:
+
+- GET `/federation/oidc/{providerId}/signin`
+  - Initiates OIDC login to the external IdP
+
+- GET `/federation/oidc/{providerId}/callback`
+  - Handles callback from external OIDC IdP
+  - Uses IFederationLoginService to map attributes, JIT provision and complete login via the existing pipeline
+
+SCIM endpoints:
+
+Base: `/scim/v2`
+
+Users:
+
+- GET `/scim/v2/Users`
+- POST `/scim/v2/Users`
+- GET `/scim/v2/Users/{id}`
+- PUT `/scim/v2/Users/{id}`
+- PATCH `/scim/v2/Users/{id}`
+- DELETE `/scim/v2/Users/{id}`
+
+Groups:
+
+- GET `/scim/v2/Groups`
+- POST `/scim/v2/Groups`
+- GET `/scim/v2/Groups/{id}`
+- PATCH `/scim/v2/Groups/{id}`
+- DELETE `/scim/v2/Groups/{id}`
+
+SCIM endpoints must:
+
+- Authenticate using a per tenant Bearer token from ScimToken
+- Resolve the tenant using the token
+- Use the Identity and Organization modules to manage users and groups
+- Use IScimService for protocol level details
+- Log operations via ScimSyncLog and LogScimSyncEventCommand
+- Return SCIM compliant JSON including error responses where needed
+
+Step 8: Admin Portal – Federation configuration UI
+
+In the Admin Portal:
+
+Add a new main section for Federation settings.
+
+Route: `/tenant/federation`
+
+Tabs:
+
+1) SAML tab
+
+- SAML Providers view:
+  - List of providers:
+    - Name
+    - EntityId
+    - Enabled flag
+  - Create and edit forms:
+    - Name, EntityId, SSO URL, SLO URL, NameIdFormat, Certificates
+  - Enable or disable actions
+
+- SAML Bindings view:
+  - List of bindings:
+    - Application, Provider, ACS URL, IdpInitiatedAllowed
+  - Form to create new binding:
+    - Select ApplicationClient
+    - Select SamlProvider
+    - Configure ACS URL, Audience and IdpInitiatedAllowed
+
+2) OIDC tab
+
+- OIDC Providers view:
+  - List providers:
+    - Name, Authority, Enabled, JustInTimeProvisioningEnabled
+  - Create and edit forms:
+    - Authority, ClientId, ClientSecret, Scopes, JIT flag
+
+3) SCIM tab
+
+- SCIM Token view:
+  - Show whether a SCIM token exists
+  - Show CreatedAt and ExpiresAt if available
+  - Provide button to Generate or Rotate token
+    - Call `/api/tenant/federation/scim/token/rotate`
+    - Show localized warning about impact
+
+4) Attribute Mapping tab
+
+- Attribute Mapping editor:
+  - Allow selecting FederationType (Saml, Oidc, Scim)
+  - Show table of mappings:
+    - SourceType
+    - SourceKey
+    - TargetField
+    - TransformExpression
+  - Allow:
+    - Adding new rows
+    - Editing existing entries
+    - Deleting mappings
+  - TargetField options should be constrained to a known set:
+    - User.Email
+    - User.DisplayName
+    - Role
+    - OrgUnitCode
+
+All Admin Portal Federation UI must:
+
+- Use the existing i18n infrastructure
+- Handle errors and validation messages via localized or mappable messages
+- Respect tenant admin permissions
+
+Step 9: Cross cutting – audit, logging, tests
+
+Audit integration:
+
+For these operations, create AuditEvents via the existing Audit module:
+
+- Create, update and delete SamlProvider
+- Bind and unbind SAML providers to applications
+- Create, update and delete OidcFederationProvider
+- Update AttributeMappings
+- Generate or rotate SCIM token
+- SCIM create/update/delete operations for users and groups
+
+Logging:
+
+- Log federation login failures with minimal, non sensitive data
+- Do not log full SAML assertions or access tokens
+- Log SCIM errors with enough context while avoiding sensitive leaks
+
+Tests:
+
+- Add unit tests for:
+  - SamlService parsing and validation behavior
+  - FederationLoginService JIT provisioning for SAML and OIDC
+  - AttributeMappingService mapping and simple transforms
+  - ScimService create/update/delete user and group
+
+- Add integration tests or manual test scripts for:
+  - Basic SAML login flow
+  - Basic OIDC federation login flow
+  - SCIM user create and delete
+  - Attribute mapping scenarios for email and roles
+
+Step 10: Final verification
+
+- Ensure backend builds and all migrations apply successfully on top of Phase 1, 2 and 3.
+- Ensure Admin Portal builds and Federation screens function end to end.
+- Verify that tenants without federation or SCIM configured still work exactly as before.
+- Verify that multi language is still intact for new UI and errors.
+- Confirm that there are no TODO comments or NotImplementedException in any Phase 4 related code.
+
+Important mindset
+
+- Treat Phase4-Onesign-FederationProvisioning.md as the guide for Phase 4.
+- Federation and SCIM must behave like serious enterprise features, not demos.
+- Keep attribute mapping simple but useful, not a full rule engine.
+- Keep tenant isolation, security and correctness as the top constraints at all times.
+
+Now:
+Start by reading Phase4-Onesign-FederationProvisioning.md, summarizing the federation and SCIM features to implement, create the Onesign.Modules.Federation module and migrations, then implement SAML, OIDC federation login paths, attribute mappings, SCIM provider endpoints and Admin Portal Federation UI end to end with no TODOs.
+
+

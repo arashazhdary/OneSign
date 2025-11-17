@@ -1,0 +1,858 @@
+You are an expert .NET 10, EF Core, and React/Next.js engineer, working as an implementation assistant for the onesign SSO SaaS platform.
+
+Context
+The platform already has:
+
+- Phase 1: Core multi-tenant SSO and OIDC login
+  - Phase1-Onesign-CoreSSO.md
+
+- Phase 2: Organization hierarchy, OrgUnits, delegated admins
+  - Phase2-Onesign-OrgHierarchy.md
+
+- Phase 3: Advanced security, MFA, risk-based decisions, Security Center
+  - Phase3-Onesign-AdvancedSecurity.md
+
+- Phase 4: Federation and provisioning - SAML, OIDC federation, SCIM provider
+  - Phase4-Onesign-FederationProvisioning.md
+
+- Phase 5: Billing - plans, tenant subscriptions, quotas, billing UIs
+  - Phase5-Onesign-BillingPlans.md
+
+- Phase 6: Observability - audit center, alerts, log streaming, global and tenant analytics
+  - Phase6-Onesign-ObservabilityCompliance.md
+
+- Phase 7: Authorization Policy Engine - advanced RBAC and ABAC-lite
+  - Phase7-Onesign-PolicyEngine.md
+
+- Phase 8: DevPortal and Developer Experience
+  - Phase8-Onesign-DeveloperExperience.md
+
+- Phase 9: Account Center & Self Service for end users
+  - Phase9-Onesign-AccountCenterSelfService.md
+
+Now there is Phase 10 spec focusing on Identity Governance and Access Reviews:
+
+- Phase10-Onesign-IdentityGovernance.md
+
+Your job:
+- Read all these documents.
+- Understand the existing modules: OrgHierarchy, Users/Roles, PolicyEngine, Observability, Admin Portal.
+- Implement Phase 10 exactly as defined in Phase10-Onesign-IdentityGovernance.md:
+  - Create `Onesign.Modules.Governance` backend module.
+  - Implement `/api/tenant/governance/*` API surface for tenants.
+  - Add Governance UI (Access Reviews + SoD + Dashboard) inside Tenant Admin Portal.
+- Do NOT break previous phases.
+
+Global constraints
+
+1) Multi language
+- The platform is multilingual (at least English and Persian).
+- All new user facing labels/messages must be localizable:
+  - Use existing message code and localization patterns in backend.
+  - Use existing i18n system in Admin Portal React app.
+- Do not hardcode final human readable strings directly inside controllers or JSX.
+
+2) No TODO and no partial implementations
+- Do not leave TODO comments.
+- Do not throw NotImplementedException.
+- Do not create empty public methods, empty controllers or empty React pages.
+- If something is out of Phase 10 scope, do not scaffold it at all.
+
+3) Modular monolith and boundaries
+- Keep modular monolith structure.
+- Governance is its own module, not dumped into PolicyEngine or Admin modules.
+- Respect layering: Domain → Application → Infrastructure → API → Frontend.
+
+4) Governance is not cosmetic
+- Access reviews MUST actually drive revocation of roles/assignments through existing User/Role/Policy modules.
+- SoD rules MUST actually detect real conflicts based on role assignments.
+- Nothing is “UI-only”.
+
+--------------------------------------------------
+Step 1: Read the specs and build a checklist
+--------------------------------------------------
+
+1) Read:
+- Phase1-Onesign-CoreSSO.md
+- Phase2-Onesign-OrgHierarchy.md
+- Phase3-Onesign-AdvancedSecurity.md
+- Phase4-Onesign-FederationProvisioning.md
+- Phase5-Onesign-BillingPlans.md
+- Phase6-Onesign-ObservabilityCompliance.md
+- Phase7-Onesign-PolicyEngine.md
+- Phase8-Onesign-DeveloperExperience.md
+- Phase9-Onesign-AccountCenterSelfService.md
+- Phase10-Onesign-IdentityGovernance.md
+
+2) From Phase 10, build an internal checklist (mentally / in notes):
+
+- Backend module `Onesign.Modules.Governance`.
+- Entities for:
+  - AccessReviewCampaign, AccessReviewScope, AccessReviewItem, AccessReviewReviewer.
+  - SoDRule, SoDViolation.
+  - GovernanceExportJob.
+- Services for:
+  - AccessReviewService & AccessReviewExecutionService.
+  - SoDService.
+  - GovernanceExportService.
+- APIs under `/api/tenant/governance/*`:
+  - Access Reviews: campaigns + items.
+  - SoD: rules + violations + run-check.
+  - Exports and Governance dashboard.
+- Frontend:
+  - Governance section in Tenant Admin Portal:
+    - Governance Dashboard.
+    - Access Reviews (list, create/edit campaign, reviewer “My Reviews”).
+    - SoD Rules and Violations.
+- Integration:
+  - Uses OrgHierarchy (Phase 2) for OrgUnit/manager mapping.
+  - Uses User/Role and Policy modules for assignments and revocations.
+  - Uses Observability/Audit (Phase 6) for governance event logging.
+
+Treat Phase10-Onesign-IdentityGovernance.md as the blueprint for this phase.
+
+--------------------------------------------------
+Step 2: Backend module – Onesign.Modules.Governance
+--------------------------------------------------
+
+Create a new module:
+
+- `src/Onesign.Modules.Governance`
+
+Structure:
+
+Domain
+- Entities
+  - AccessReviewCampaign
+  - AccessReviewScope
+  - AccessReviewItem
+  - AccessReviewReviewer
+  - SoDRule
+  - SoDViolation
+  - GovernanceExportJob
+- Enums
+  - AccessReviewType         // ByApplication, ByOrgUnit, ByRole
+  - AccessReviewStatus       // Draft, Scheduled, Running, Completed, Cancelled
+  - AccessReviewItemStatus   // Pending, Approved, Revoked, Escalated
+  - ReviewerType             // Manager, AppOwner, CustomUser
+  - SoDSeverity              // Low, Medium, High
+- Services
+  - IAccessReviewService
+  - IAccessReviewExecutionService
+  - ISoDService
+  - IGovernanceExportService
+- Repositories
+  - IAccessReviewCampaignRepository
+  - IAccessReviewItemRepository
+  - IAccessReviewScopeRepository
+  - IAccessReviewReviewerRepository
+  - ISoDRuleRepository
+  - ISoDViolationRepository
+  - IGovernanceExportJobRepository
+
+Application
+- DTOs
+  - AccessReviewCampaignDto
+  - CreateAccessReviewCampaignRequest
+  - UpdateAccessReviewCampaignRequest
+  - AccessReviewScopeDto
+  - AccessReviewItemDto
+  - ReviewerDto
+  - SoDRuleDto
+  - SoDViolationDto
+  - GovernanceExportDto
+  - GovernanceDashboardDto
+- Commands
+  - CreateAccessReviewCampaignCommand
+  - UpdateAccessReviewCampaignCommand
+  - ScheduleAccessReviewCampaignCommand
+  - CancelAccessReviewCampaignCommand
+  - RunAccessReviewNowCommand
+  - ApproveAccessReviewItemCommand
+  - RevokeAccessReviewItemCommand
+  - EscalateAccessReviewItemCommand
+  - CreateSoDRuleCommand
+  - UpdateSoDRuleCommand
+  - DeleteSoDRuleCommand
+  - RunSoDCheckCommand
+  - ResolveSoDViolationCommand
+  - GenerateGovernanceExportCommand
+- Queries
+  - GetAccessReviewCampaignsQuery
+  - GetAccessReviewCampaignDetailsQuery
+  - GetAccessReviewItemsForReviewerQuery
+  - GetAccessReviewItemsForCampaignQuery
+  - GetSoDRulesQuery
+  - GetSoDViolationsQuery
+  - GetGovernanceExportsQuery
+  - GetGovernanceDashboardQuery
+
+Infrastructure
+- EF Core Entities
+  - AccessReviewCampaignEntity
+  - AccessReviewScopeEntity
+  - AccessReviewItemEntity
+  - AccessReviewReviewerEntity
+  - SoDRuleEntity
+  - SoDViolationEntity
+  - GovernanceExportJobEntity
+- EF Core Configurations
+  - AccessReviewCampaignEntityTypeConfiguration
+  - AccessReviewScopeEntityTypeConfiguration
+  - AccessReviewItemEntityTypeConfiguration
+  - AccessReviewReviewerEntityTypeConfiguration
+  - SoDRuleEntityTypeConfiguration
+  - SoDViolationEntityTypeConfiguration
+  - GovernanceExportJobEntityTypeConfiguration
+- EF Core Repositories
+  - AccessReviewCampaignRepository
+  - AccessReviewItemRepository
+  - AccessReviewScopeRepository
+  - AccessReviewReviewerRepository
+  - SoDRuleRepository
+  - SoDViolationRepository
+  - GovernanceExportJobRepository
+
+Implement all these components fully, no stubs.
+
+--------------------------------------------------
+Step 3: Data model and EF – Access Review
+--------------------------------------------------
+
+AccessReviewCampaign
+
+Fields:
+- Id
+- TenantId
+- Name
+- Description
+- AccessReviewType (ByApplication, ByOrgUnit, ByRole)
+- StartAt
+- DueAt
+- AccessReviewStatus (Draft, Scheduled, Running, Completed, Cancelled)
+- IsRecurring (bool)
+- RecurrenceCronExpression (string, nullable)
+- CreatedAt, UpdatedAt
+
+AccessReviewScope
+
+Fields:
+- Id
+- CampaignId
+- ApplicationClientId (for ByApplication)
+- OrgUnitId (Guid?, for ByOrgUnit)
+- RoleName (string, for ByRole)
+
+AccessReviewItem
+
+Fields:
+- Id
+- TenantId
+- CampaignId
+
+- UserId
+- UserDisplayName
+
+- ApplicationClientId
+- ApplicationName
+
+- RoleName (nullable)
+- OrgUnitId (nullable)
+
+- AccessReviewItemStatus (Pending, Approved, Revoked, Escalated)
+- CreatedAt
+- ReviewedAt (nullable)
+
+- ReviewerUserId
+- ReviewerDisplayName
+- DecisionReason
+
+AccessReviewReviewer (if needed separately to support multiple reviewers per item/campaign)
+- Id
+- CampaignId or ItemId
+- ReviewerUserId
+- ReviewerDisplayName
+- ReviewerType (Manager, AppOwner, CustomUser)
+
+EF / DbContext
+
+- Add DbSet for:
+  - AccessReviewCampaigns
+  - AccessReviewScopes
+  - AccessReviewItems
+  - AccessReviewReviewers
+
+Indexes:
+- AccessReviewCampaign:
+  - Index on (TenantId, Status)
+- AccessReviewItem:
+  - Index on (TenantId, CampaignId, ReviewerUserId, Status)
+
+--------------------------------------------------
+Step 4: Data model and EF – SoD and Exports
+--------------------------------------------------
+
+SoDRule
+
+Fields:
+- Id
+- TenantId
+- Name
+- Description
+- SoDSeverity (Low, Medium, High)
+- ForbiddenRoleCombination (string) 
+  - e.g. a serialized representation of role set like "Finance.Requester;Finance.Approver"
+- CreatedAt
+- UpdatedAt
+
+SoDViolation
+
+Fields:
+- Id
+- TenantId
+- SoDRuleId
+- UserId
+- UserDisplayName
+- DetectedRoles (string or JSON, listing roles that violate rule)
+- DetectedAt
+- IsResolved (bool)
+- ResolvedAt (nullable)
+- ResolutionNote (string)
+
+GovernanceExportJob
+
+Fields:
+- Id
+- TenantId
+- CampaignId
+- FileName
+- StoragePath or BlobReference
+- CreatedAt
+- CompletedAt (nullable)
+- Status (Pending, Completed, Failed)
+- ErrorMessage (nullable)
+
+EF / DbContext
+
+- Add DbSet for:
+  - SoDRules
+  - SoDViolations
+  - GovernanceExportJobs
+
+Indexes:
+- SoDRule:
+  - Index on (TenantId, Name)
+- SoDViolation:
+  - Index on (TenantId, SoDRuleId, UserId, IsResolved)
+
+Create a Phase 10 migration that creates all Governance-related tables and indices, without breaking previous schema.
+
+--------------------------------------------------
+Step 5: Domain services – Access Reviews
+--------------------------------------------------
+
+Implement IAccessReviewService
+
+Responsibilities:
+- Create/update/cancel campaigns.
+- Retrieve campaigns and campaign details.
+
+Methods example:
+- CreateCampaignAsync(tenantId, CreateAccessReviewCampaignRequest)
+- UpdateCampaignAsync(tenantId, campaignId, UpdateAccessReviewCampaignRequest)
+- ScheduleCampaignAsync(tenantId, campaignId)
+- CancelCampaignAsync(tenantId, campaignId)
+- GetCampaignsAsync(tenantId, filter/paging)
+- GetCampaignDetailsAsync(tenantId, campaignId)
+
+Implement IAccessReviewExecutionService
+
+Responsibilities:
+- Execute campaign (generate AccessReviewItems).
+- Manage status transitions: Draft → Scheduled → Running → Completed.
+
+Methods example:
+- RunCampaignNowAsync(tenantId, campaignId)
+  - Validate campaign is in Draft or Scheduled.
+  - Resolve scope:
+    - For Type=ByApplication:
+      - For each ApplicationClient in scope:
+        - Get all users with access to that app (via Role/Policy assignments).
+    - For Type=ByOrgUnit:
+      - For each OrgUnit in scope:
+        - Get users in that OrgUnit (via OrgHierarchy module).
+        - For each user, get apps/roles they have.
+    - For Type=ByRole:
+      - For each role in scope:
+        - Get all users with that role.
+  - For each (user, app[, role]) combination:
+    - Create AccessReviewItem with Pending status and resolved reviewer.
+  - Set campaign.Status = Running or Completed depending on presence of items.
+
+- Internal logic to determine reviewer:
+  - ByOrgUnit:
+    - Use OrgHierarchy (Phase 2) to find OrgUnit.Manager as reviewer.
+  - ByApplication:
+    - Use Application metadata to find AppOwner as reviewer.
+  - ByRole:
+    - Use role owner or fallback SecurityOfficer role.
+
+Implement decision methods:
+
+- ApproveItemAsync(itemId, reviewerUserId, reason)
+  - Validate that reviewerUserId is allowed to review this item.
+  - Set item.Status = Approved, ReviewedAt = now, DecisionReason = reason.
+  - Write audit event "Governance.AccessReview.Approved".
+
+- RevokeItemAsync(itemId, reviewerUserId, reason)
+  - Validate reviewer.
+  - Set item.Status = Revoked, ReviewedAt = now, DecisionReason = reason.
+  - Call User/Role/Policy modules to remove user’s assignment to that app/role.
+  - Write audit event "Governance.AccessReview.Revoked".
+
+- EscalateItemAsync(itemId, reviewerUserId, reason)
+  - Set item.Status = Escalated, ReviewedAt = now, DecisionReason = reason.
+  - (In future phases, use Notification/Workflow – here just store status + audit.)
+
+--------------------------------------------------
+Step 6: Domain services – SoD & Governance Export
+--------------------------------------------------
+
+Implement ISoDService
+
+Responsibilities:
+- Manage SoD rules.
+- Run SoD checks and create/update violations.
+- Resolve violations.
+
+Methods example:
+- CreateRuleAsync(tenantId, CreateSoDRuleCommand)
+- UpdateRuleAsync(tenantId, ruleId, UpdateSoDRuleCommand)
+- DeleteRuleAsync(tenantId, ruleId)
+- RunSoDCheckAsync(tenantId)
+  - For each SoDRule:
+    - Parse ForbiddenRoleCombination into a set of role names.
+    - Retrieve all users and their roles from User/Role module.
+    - For each user:
+      - If user has all roles in combination:
+        - Create SoDViolation or update existing unresolved violation.
+- ResolveViolationAsync(tenantId, violationId, resolutionNote)
+  - Mark IsResolved = true, ResolvedAt = now, ResolutionNote set.
+
+Audit:
+- On violation creation:
+  - "Governance.SoD.ViolationCreated"
+- On violation resolution:
+  - "Governance.SoD.ViolationResolved"
+
+Implement IGovernanceExportService
+
+Responsibilities:
+- Generate campaign exports as CSV or similar.
+- Track export jobs.
+
+Methods:
+- GenerateExportAsync(tenantId, campaignId)
+  - Load campaign + items.
+  - Build CSV with at least:
+    - User
+    - App
+    - Role
+    - Reviewer
+    - Status
+    - DecisionReason
+    - DecisionTime
+  - Save file to configured storage.
+  - Create GovernanceExportJobEntity with status Completed and path.
+- GetExportsAsync(tenantId)
+- GetExportDownloadAsync(tenantId, exportId)
+  - Return stream or file handle.
+
+--------------------------------------------------
+Step 7: Governance APIs under `/api/tenant/governance/*`
+--------------------------------------------------
+
+Base path: `/api/tenant/governance`
+
+All these endpoints are tenant-scoped and require appropriate tenant roles:
+- ComplianceOfficer
+- SecurityOfficer
+- TenantAdmin (where applicable)
+- For reviewer actions, normal manager/app-owner users can call "my-items" endpoints.
+
+Access Review Campaign API
+
+- GET `/api/tenant/governance/access-reviews`
+  - Returns paged list of AccessReviewCampaignDto for tenant.
+
+- GET `/api/tenant/governance/access-reviews/{id}`
+  - Returns AccessReviewCampaignDto + scope + stats.
+
+- POST `/api/tenant/governance/access-reviews`
+  - Body: CreateAccessReviewCampaignRequest.
+  - Creates a new campaign in Draft.
+
+- PUT `/api/tenant/governance/access-reviews/{id}`
+  - Body: UpdateAccessReviewCampaignRequest.
+  - Only allowed in Draft or Scheduled states.
+
+- POST `/api/tenant/governance/access-reviews/{id}/schedule`
+  - Moves campaign to Scheduled.
+
+- POST `/api/tenant/governance/access-reviews/{id}/run-now`
+  - Triggers IAccessReviewExecutionService.RunCampaignNowAsync.
+  - Moves to Running/Completed depending on item generation.
+
+- POST `/api/tenant/governance/access-reviews/{id}/cancel`
+  - Allowed only for Draft or Scheduled.
+  - Sets Status = Cancelled.
+
+Review Items API
+
+- GET `/api/tenant/governance/access-reviews/my-items`
+  - Returns AccessReviewItemDto list assigned to current user as reviewer.
+  - Supports paging and filtering by status.
+
+- GET `/api/tenant/governance/access-reviews/{campaignId}/items`
+  - For ComplianceOfficer role: list all items in a campaign.
+
+- POST `/api/tenant/governance/access-reviews/items/{id}/approve`
+  - Body can include reason.
+  - Calls ApproveItemAsync.
+
+- POST `/api/tenant/governance/access-reviews/items/{id}/revoke`
+  - Calls RevokeItemAsync (which must trigger actual permission removal).
+
+- POST `/api/tenant/governance/access-reviews/items/{id}/escalate`
+  - Calls EscalateItemAsync.
+
+SoD Rules and Violations API
+
+- GET `/api/tenant/governance/sod/rules`
+  - Returns list of SoDRuleDto.
+
+- POST `/api/tenant/governance/sod/rules`
+  - CreateSoDRuleCommand.
+
+- PUT `/api/tenant/governance/sod/rules/{id}`
+  - UpdateSoDRuleCommand.
+
+- DELETE `/api/tenant/governance/sod/rules/{id}`
+
+- POST `/api/tenant/governance/sod/run-check`
+  - Triggers RunSoDCheckAsync for current tenant.
+
+- GET `/api/tenant/governance/sod/violations`
+  - Returns SoDViolationDto list with paging and filters (IsResolved, Severity, RuleId).
+
+- POST `/api/tenant/governance/sod/violations/{id}/resolve`
+  - Body with ResolutionNote.
+  - Calls ResolveViolationAsync.
+
+Export & Dashboard API
+
+- POST `/api/tenant/governance/access-reviews/{id}/export`
+  - Triggers GenerateExportAsync.
+  - Returns GovernanceExportDto with export id.
+
+- GET `/api/tenant/governance/exports`
+  - List GovernanceExportDto for tenant.
+
+- GET `/api/tenant/governance/exports/{id}/download`
+  - Returns file download.
+
+- GET `/api/tenant/governance/dashboard`
+  - Returns GovernanceDashboardDto with:
+    - Count of campaigns by status.
+    - Percentage of items reviewed vs pending per recent campaigns.
+    - Number of open SoDViolations.
+    - Basic summary metrics.
+
+--------------------------------------------------
+Step 8: Integration with other modules
+--------------------------------------------------
+
+OrgHierarchy (Phase 2)
+
+- Use OrgUnit structure and Manager field to:
+  - Determine reviewer for ByOrgUnit campaigns.
+  - Enrich AccessReviewItemDto with OrgUnit names.
+
+User/Roles & PolicyEngine (Phases 1 and 7)
+
+- For item generation:
+  - Query which users have access to which apps/roles via:
+    - Role assignments.
+    - PolicyEngine role/permission resolution (if central).
+- For revocation:
+  - When an item is revoked:
+    - Remove the relevant role or assignment from that user for that application, using existing services from User/Role module.
+
+Observability & Audit (Phase 6)
+
+- Use IAuditWriter for:
+  - Campaign creation, scheduling, running, completion.
+  - Item decisions:
+    - Approved, Revoked, Escalated.
+  - SoD:
+    - Rule created/updated/deleted.
+    - Violation created/resolved.
+  - Export generation.
+
+Billing (Phase 5)
+
+- If there is a feature flag / plan feature system:
+  - Governance module should check if tenant’s plan includes Governance/IGA.
+  - If not, block access with a clear error code (for which the frontend can show proper upgrade messaging).
+
+--------------------------------------------------
+Step 9: Tenant Admin Portal – Governance UI
+--------------------------------------------------
+
+You must extend the Tenant Admin Portal React app.
+
+Navigation
+
+- Under tenant admin side nav, add a "Governance" section with:
+  - Dashboard
+  - Access Reviews
+  - SoD Rules & Violations
+  - My Reviews (for reviewers)
+
+All UI must be multi-language via existing i18n solution.
+
+Pages
+
+1) Governance Dashboard – `/tenant/governance/dashboard`
+
+- Uses `GET /api/tenant/governance/dashboard`.
+- Shows:
+  - Cards:
+    - Active campaigns count.
+    - Overdue campaigns count.
+    - % reviewed vs pending in recent campaigns.
+    - Number of open SoD violations.
+  - Basic chart (bar or pie) for Approved vs Revoked decisions in last N campaigns.
+
+2) Access Review Campaign List – `/tenant/governance/access-reviews`
+
+- Table listing AccessReviewCampaignDto:
+  - Name
+  - Type
+  - Status
+  - StartAt
+  - DueAt
+  - Progress (% items reviewed).
+- Actions:
+  - Create new campaign → open editor.
+  - Edit (when Draft/Scheduled).
+  - Schedule/Run now (buttons).
+  - View details.
+
+3) Access Review Campaign Editor
+
+- Form fields:
+  - Name
+  - Description
+  - Type: ByApplication / ByOrgUnit / ByRole
+  - StartAt, DueAt
+  - Recurrence (if IsRecurring):
+    - For now, simple: every X months, or store Cron in plain string.
+  - Scope:
+    - App selector (multi-select from Applications module).
+    - OrgUnit tree selector (multi-select from OrgHierarchy).
+    - Role selector (multi-select from Roles).
+- Uses:
+  - POST / PUT campaign APIs.
+
+4) Access Review Campaign Details – `/tenant/governance/access-reviews/{id}`
+
+- Show:
+  - Campaign summary.
+  - Stats:
+    - Total items
+    - Pending
+    - Approved
+    - Revoked
+    - Escalated
+  - Action:
+    - Run now (if allowed).
+    - Export (calls export API).
+- Also show a paged list of items in this campaign (read-only) for ComplianceOfficer.
+
+5) My Reviews – `/tenant/governance/my-reviews`
+
+- For current reviewer user:
+  - Uses `GET /api/tenant/governance/access-reviews/my-items`.
+- Table:
+  - User (DisplayName + OrgUnit).
+  - ApplicationName.
+  - RoleName (if any).
+  - CampaignName.
+  - Status.
+  - DueAt.
+- Row actions:
+  - Approve.
+  - Revoke.
+  - Escalate.
+- Optional:
+  - Bulk Approve/Revoke for selected items, if business rules allow.
+
+6) Review Item Detail (drawer or page)
+
+- Shows:
+  - User details:
+    - DisplayName
+    - OrgUnit (via OrgHierarchy).
+  - Application details:
+    - Name, Description.
+  - Roles/permissions the user has in that context.
+  - Recent activity (optional summary via Observability).
+- Buttons:
+  - Approve / Revoke / Escalate.
+  - Reason field (text area) for decision.
+
+7) SoD Rules Page – `/tenant/governance/sod/rules`
+
+- Table of SoDRuleDto:
+  - Name
+  - Severity
+  - ForbiddenRoleCombination (short summary).
+- Actions:
+  - Create rule.
+  - Edit rule.
+  - Delete rule.
+
+- Form:
+  - Name
+  - Description
+  - Severity
+  - Roles selector (multi-select from roles list).
+    - On save, build ForbiddenRoleCombination appropriately.
+
+8) SoD Violations Page – `/tenant/governance/sod/violations`
+
+- Table of SoDViolationDto:
+  - UserDisplayName.
+  - RuleName.
+  - DetectedRoles.
+  - Severity (from rule).
+  - DetectedAt.
+  - IsResolved.
+- Filters:
+  - Severity.
+  - IsResolved.
+- Actions:
+  - Resolve violation:
+    - Opens modal for ResolutionNote.
+    - Calls `POST /api/tenant/governance/sod/violations/{id}/resolve`.
+
+9) Exports list (optional section)
+
+- In Access Reviews area, add a tab or list for exports:
+  - Uses `/api/tenant/governance/exports` and `/download`.
+  - Allows ComplianceOfficer to download previous exports.
+
+--------------------------------------------------
+Step 10: Cross cutting – localization, security, performance
+--------------------------------------------------
+
+Localization
+
+- All new UI labels, table headers, button texts and messages must go through i18n system.
+- Backend error responses must use consistent error codes so frontend can map them to localized messages.
+
+Security & Permissions
+
+- All `/api/tenant/governance/*` endpoints must:
+  - Use tenant context (TenantId from token).
+  - Restrict access based on roles:
+    - Governance/Compliance-oriented endpoints → ComplianceOfficer/SecurityOfficer/TenantAdmin.
+    - "my-items" endpoints → any user who is assigned as reviewer for at least one item.
+- No tenant can see governance data of another tenant.
+
+Performance
+
+- AccessReviewItem and SoDViolation tables can grow large:
+  - All list endpoints MUST implement paging.
+  - Use the indexes described above.
+- SoD checks:
+  - Implement in batch manner:
+    - Minimize N+1 queries when scanning users and roles.
+  - Consider running via background job infrastructure if available (but implement the logic callable from a command).
+
+Audit / Observability
+
+- Use IAuditWriter to log:
+  - Campaign lifecycle.
+  - Item decisions.
+  - SoD rule changes.
+  - SoD violations.
+  - Exports.
+- Make sure these events show up in Observability views built in Phase 6.
+
+--------------------------------------------------
+Step 11: Tests and final verification
+--------------------------------------------------
+
+Write and/or extend tests for:
+
+- AccessReviewService:
+  - Create/update/schedule/cancel campaigns with correct state transitions.
+
+- AccessReviewExecutionService:
+  - Generates correct AccessReviewItem sets for:
+    - ByApplication.
+    - ByOrgUnit.
+    - ByRole.
+  - Assigns correct reviewers based on OrgUnit manager or app owner.
+  - Handles empty scopes gracefully.
+
+- Decision methods:
+  - Approve: item status and audit.
+  - Revoke: item status, role/permission actually removed, audit.
+  - Escalate: item status and audit.
+
+- SoDService:
+  - Creating rules.
+  - Running SoD checks creates violations correctly.
+  - Resolving violations marks them resolved and logs audit.
+
+- GovernanceExportService:
+  - Export file has correct columns and values.
+  - GovernanceExportJob persisted with correct status.
+
+- APIs:
+  - All governance endpoints enforce tenant boundaries and permissions.
+  - `/my-items` returns only items assigned to the current user.
+  - Revoke calls actually remove assignments from User/Role store.
+
+- Frontend:
+  - Governance navigation appears only for users with proper roles.
+  - Core interactions work:
+    - Create campaign.
+    - Run campaign.
+    - Reviewer sees items and performs decisions.
+    - SoD rules creation and violation display.
+
+Final verification
+
+- Solution builds with `Onesign.Modules.Governance` integrated.
+- Phase 10 migration applies cleanly after phases 1–9.
+- In Tenant Admin Portal:
+  - Governance Dashboard shows real data.
+  - Access Reviews:
+    - Campaign creation → run → reviewer decisions → export.
+  - SoD:
+    - Rules defined → SoD check run → violations visible → resolution.
+- No TODO comments, no NotImplementedException, no empty public methods.
+- All user-facing UI strings are localizable.
+
+Important mindset
+
+- Phase 10 turns onesign from “just an IdP” into a light Governance platform.
+- Access Reviews must be truly actionable: decisions must affect real access, not just be stored as opinions.
+- SoD must be simple but real: if a user violates a rule, it must be clearly visible and auditable.
+- When in doubt, default to secure and auditable behavior.
+Now:
+Read Phase10-Onesign-IdentityGovernance.md, then implement `Onesign.Modules.Governance`, add Phase 10 migration, expose `/api/tenant/governance/*` APIs and build the Governance UI in Admin Portal (Access Reviews, My Reviews, SoD, Dashboard) fully, with no TODOs or partial implementations.

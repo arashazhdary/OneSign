@@ -1,0 +1,638 @@
+You are an expert .NET 10, EF Core, and React/Next.js engineer, acting as the implementation assistant for the onesign SSO / IAM / IGA platform.
+
+Context
+The platform already includes:
+- Multi tenant SSO and OIDC/OAuth2
+- Org hierarchy and OrgUnits
+- Security Center (logins, MFA, anomalies)
+- Federation and SCIM outbound
+- Billing and plans
+- Observability with centralized audit and metrics
+- Authorization and PolicyEngine (RBAC + ABAC lite)
+- DevPortal, Account Center, Governance, NotificationCenter
+- Access Requests and approvals
+- Identity Lifecycle Automation (Joiner / Mover / Leaver, Phase 15)
+- Privileged Access and JIT (Phase 16)
+- Identity Analytics and Risk Scoring (Phase 17, Onesign.Modules.IdentityInsights)
+
+Now you must implement Phase 18, which focuses on:
+1) Adaptive Security
+   - Risk based MFA and session policies
+   - Risk aware login decisions
+   - Recommendations and playbooks built on top of IdentityInsights
+
+2) Security Copilot
+   - Natural language summaries for Security Officers
+   - Structured, executable suggested actions
+   - One click execution that calls real modules, not stubs
+
+Specification document:
+- Phase18-Onesign-AIAdaptiveSecurityAndCopilot.md
+
+Your job
+- Read Phase18-Onesign-AIAdaptiveSecurityAndCopilot.md carefully.
+- Implement Phase 18 exactly as defined there by:
+  - Creating Adaptive Security models and services
+  - Integrating risk based decisions into login and session pipelines
+  - Implementing a Recommendations engine
+  - Implementing the Security Copilot backend (AI adapter + suggested actions)
+  - Implementing Admin Portal UI for Adaptive settings, Recommendations and Copilot
+- Do NOT break previous phases.
+- Do NOT leave any TODO or NotImplementedException.
+- Do NOT create placeholder controllers, services or React components that do nothing.
+
+Global constraints
+
+1) Multi language
+- The platform is multilingual, English and Persian.
+- All new UI strings must use the existing i18n infrastructure.
+- Do not hardcode human facing text directly in React components or backend responses.
+- Use i18n keys and follow existing patterns.
+
+2) No TODO and no partial work
+- No TODO comments.
+- No NotImplementedException.
+- No fake in memory implementations.
+- If a feature is in Phase 18 spec, implement it end to end.
+- If something is out of scope, do not scaffold it.
+
+3) Modular monolith boundaries
+- Adaptive Security belongs in a dedicated security side module, for example:
+  - `Onesign.Modules.SecurityAdaptive` or under the existing Security / Authorization modules in a clear namespace.
+- Security Copilot belongs in a dedicated module:
+  - `Onesign.Modules.SecurityCopilot`
+- Integrations with IdentityInsights, Governance, Authorization, Lifecycle, NotificationCenter must use their public services or APIs.
+
+4) AI is helper, not the source of truth
+- The AI / LLM layer only summarizes and suggests.
+- All enforcement and state changes must go through deterministic modules and services.
+- Suggested actions must map to real code paths that use PolicyEngine, Authorization, Lifecycle, Governance etc.
+
+--------------------------------------------------
+Step 1: Read the Phase 18 spec and build an internal checklist
+--------------------------------------------------
+
+Read:
+- Phase18-Onesign-AIAdaptiveSecurityAndCopilot.md
+
+Extract the checklist items and keep them visible while coding.
+
+Core elements from the spec:
+
+Adaptive Security
+- RiskBasedAuthPolicy per tenant:
+  - TenantId
+  - Enabled
+  - MinRiskScoreForMfa
+  - MinRiskScoreForStepUp
+- RiskBasedSessionPolicy per tenant:
+  - TenantId
+  - DefaultSessionLifetimeMinutes
+  - HighRiskMaxSessionLifetimeMinutes
+  - HighRiskIdleTimeoutMinutes
+- AdaptiveAuthEvaluator:
+  - Inputs: UserContext, UserRiskScore, RiskBasedAuthPolicy, relevant Insights
+  - Outputs: AdaptiveAuthDecision
+    - RequireMfa
+    - RequireStepUp
+    - BlockLogin
+    - ReasonCodes (machine readable)
+- AdaptiveSessionConfigurator:
+  - Inputs: UserRiskScore, RiskBasedSessionPolicy
+  - Outputs: AdaptiveSessionConfig
+    - SessionLifetime
+    - IdleTimeout
+
+Recommendations
+- Recommendation entity:
+  - Id
+  - TenantId
+  - Type (MfaCoverage, ZombieCleanup, ExcessivePrivileges, etc)
+  - Scope (User, OrgUnit, Tenant)
+  - ScopeData (json)
+  - EstimatedImpact (counts)
+  - Status (Open, Applied, Dismissed)
+  - CreatedAt, UpdatedAt
+- RecommendationGenerator:
+  - Uses IdentityInsights:
+    - MFAEnrollmentRate
+    - HighRiskUsers
+    - ZombieAccount insights
+    - ExcessivePrivileges insights
+- Recommendation APIs:
+  - List
+  - Dismiss
+  - Approve (which can feed SuggestedActions or playbooks)
+
+Security Copilot
+- AiAdvisorClient abstraction:
+  - IAiAdvisorClient.AskAsync(SecurityCopilotPrompt)
+- Copilot query endpoint:
+  - `POST /api/tenant/security-copilot/query`
+- SecurityCopilotPrompt:
+  - natural language query
+  - tenant context
+  - data context (selected and aggregated analytics, not raw DB)
+- SecurityCopilotResponse:
+  - SummaryText
+  - KeyRisks
+  - SuggestedActions (structured)
+- SuggestedAction model:
+  - Id
+  - TenantId
+  - Origin (Copilot, RecommendationEngine, etc)
+  - ActionType (EnforceMfaForUsers, DisableUsers, DowngradeRoles, StartAccessReviewCampaign, etc)
+  - ScopeData (json)
+  - PreviewImpact
+  - Status (Pending, Executed, Cancelled)
+  - CreatedAt, ExecutedAt
+- SuggestedAction execution endpoint:
+  - `POST /api/tenant/security-copilot/actions/{id}/execute`
+
+UI
+- Adaptive settings page:
+  - Risk based MFA config
+  - Risk based session config
+- Recommendations page:
+  - List recommendations with type, scope, impact, status, actions
+- Copilot panel:
+  - text query input
+  - response summary, risks and suggested actions
+  - one click execute buttons
+
+Integration
+- Integrate AdaptiveAuthEvaluator into login / authentication pipeline.
+- Integrate AdaptiveSessionConfigurator into session and token issuance.
+- Ensure all critical decisions are audited and observable.
+
+--------------------------------------------------
+Step 2: Implement Adaptive Security models and services
+--------------------------------------------------
+
+Create or extend a security module, for example:
+- `Onesign.Modules.SecurityAdaptive`
+
+Inside it implement:
+
+1) RiskBasedAuthPolicy model and storage
+
+- Entity:
+  - RiskBasedAuthPolicy:
+    - TenantId
+    - Enabled
+    - MinRiskScoreForMfa
+    - MinRiskScoreForStepUp
+- EF mapping:
+  - Table with TenantId as key or part of the key.
+- Service:
+  - `IRiskBasedAuthPolicyService`
+    - `Task<RiskBasedAuthPolicy?> GetForTenantAsync(Guid tenantId)`
+    - `Task<RiskBasedAuthPolicy> UpsertAsync(RiskBasedAuthPolicy policy)`
+
+2) RiskBasedSessionPolicy model and storage
+
+- Entity:
+  - RiskBasedSessionPolicy:
+    - TenantId
+    - DefaultSessionLifetimeMinutes
+    - HighRiskMaxSessionLifetimeMinutes
+    - HighRiskIdleTimeoutMinutes
+- EF mapping and migration.
+- Service:
+  - `IRiskBasedSessionPolicyService`
+    - `Task<RiskBasedSessionPolicy?> GetForTenantAsync(Guid tenantId)`
+    - `Task<RiskBasedSessionPolicy> UpsertAsync(RiskBasedSessionPolicy policy)`
+
+3) AdaptiveAuthEvaluator
+
+- Interface:
+  - `IAdaptiveAuthEvaluator`
+    - `Task<AdaptiveAuthDecision> EvaluateAsync(AdaptiveAuthContext context)`
+- AdaptiveAuthContext:
+  - TenantId
+  - UserId
+  - UserRiskScore (from IdentityInsights)
+  - Relevant Insights for user (e.g. Compromised, UnderInvestigation etc if present)
+  - RiskBasedAuthPolicy
+- AdaptiveAuthDecision:
+  - RequireMfa (bool)
+  - RequireStepUp (bool)
+  - BlockLogin (bool)
+  - ReasonCodes (list of strings or enum keys, example:
+    - "RISK_SCORE_HIGH"
+    - "COMPROMISED_ACCOUNT"
+    - "MFA_REQUIRED_BY_POLICY"
+    - "CRITICAL_RISK_BLOCK"
+  )
+
+Implementation rules:
+- If there is an explicit insight indicating account compromised or similar:
+  - BlockLogin = true, with reason code.
+- Else, if RiskScore >= MinRiskScoreForStepUp:
+  - RequireStepUp = true, RequireMfa = true.
+- Else, if RiskScore >= MinRiskScoreForMfa:
+  - RequireMfa = true.
+- Else:
+  - no extra MFA requirements.
+
+4) AdaptiveSessionConfigurator
+
+- Interface:
+  - `IAdaptiveSessionConfigurator`
+    - `AdaptiveSessionConfig GetConfig(UserRiskScore riskScore, RiskBasedSessionPolicy policy)`
+- AdaptiveSessionConfig:
+  - SessionLifetimeMinutes
+  - IdleTimeoutMinutes
+
+Implementation rules:
+- If riskScore.Score >= a high risk threshold (configurable):
+  - SessionLifetimeMinutes = min(policy.DefaultSessionLifetimeMinutes, policy.HighRiskMaxSessionLifetimeMinutes)
+  - IdleTimeoutMinutes = policy.HighRiskIdleTimeoutMinutes
+- Otherwise:
+  - SessionLifetimeMinutes = policy.DefaultSessionLifetimeMinutes
+  - IdleTimeoutMinutes = default or global defaults.
+
+Add logging and audit for adaptive decisions where appropriate.
+
+--------------------------------------------------
+Step 3: Integrate AdaptiveAuth into login pipeline
+--------------------------------------------------
+
+Modify the authentication / OIDC login pipeline:
+
+- After verifying user credentials and before finalizing login:
+  - Load:
+    - UserRiskScore (from IdentityInsights module)
+    - RiskBasedAuthPolicy (from SecurityAdaptive)
+    - Relevant Insights for the user if needed.
+  - Build AdaptiveAuthContext and call:
+    - `IAdaptiveAuthEvaluator.EvaluateAsync(context)`
+
+Behavior:
+- If decision.BlockLogin:
+  - Reject login with a clear error code (for client side handling).
+  - Write audit event:
+    - "AdaptiveSecurity.LoginBlockedByRisk" with:
+      - TenantId, UserId, Score, ReasonCodes.
+- If decision.RequireMfa or RequireStepUp:
+  - Trigger the MFA or step up path in the login flow:
+    - For example, mark in session state that MFA step is mandatory.
+  - Write audit event:
+    - "AdaptiveSecurity.RiskBasedMfaEnforced" with context.
+
+This integration must be fully functional and not stubbed.
+
+--------------------------------------------------
+Step 4: Integrate AdaptiveSessionConfigurator into session issuance
+--------------------------------------------------
+
+In the part of the system that issues sessions and tokens:
+
+- After successful login and MFA:
+  - Load:
+    - UserRiskScore
+    - RiskBasedSessionPolicy
+  - Call:
+    - `IAdaptiveSessionConfigurator.GetConfig(riskScore, policy)`
+- Use the returned SessionLifetimeMinutes and IdleTimeoutMinutes to configure:
+  - cookie expiration
+  - token expiry times (access and refresh token)
+  - idle timeout for session store.
+
+Write an audit event when session is hardened for risk:
+- "AdaptiveSecurity.SessionHardened" with:
+  - TenantId
+  - UserId
+  - RiskScore
+  - New lifetime and idle timeout.
+
+--------------------------------------------------
+Step 5: Implement Recommendation engine
+--------------------------------------------------
+
+Create Recommendation entity and repository in a relevant module, for example:
+- `Onesign.Modules.SecurityAdaptive` or `Onesign.Modules.IdentityInsights` if you prefer analytics centric.
+
+Entity Recommendation:
+- Id
+- TenantId
+- Type (string or enum, examples:
+  - "MfaCoverage"
+  - "ZombieCleanup"
+  - "ExcessivePrivileges"
+- ScopeType (Tenant, OrgUnit, User)
+- ScopeData (json with list of user ids, orgunit ids etc)
+- EstimatedImpactUsers (int)
+- EstimatedImpactApps (int or optional)
+- Status (Open, Applied, Dismissed)
+- CreatedAt
+- UpdatedAt
+
+RecommendationGenerator service:
+- `IRecommendationGenerator`
+  - `Task GenerateOrUpdateAsync(Guid tenantId)`
+
+Rules:
+- MfaCoverageRecommendation:
+  - Use TenantAnalyticsSummary and UserRiskScores from IdentityInsights:
+    - If MFAEnrollmentRate is below a threshold:
+      - Propose enabling or enforcing MFA for a segment:
+        - for example HighRiskUsers with MFA disabled or a specific OrgUnit.
+- ZombieCleanupRecommendation:
+  - Use ZombieAccount insights (Phase 17):
+    - For open ZombieAccount insights, group users and propose batch disable or access revocation.
+- ExcessivePrivilegesRecommendation:
+  - Use ExcessivePrivileges insights:
+    - Suggest campaigns or bulk operations to reduce specific high impact roles.
+
+APIs:
+- `GET /api/tenant/security/recommendations`
+  - Filters: type, status.
+- `POST /api/tenant/security/recommendations/{id}/dismiss`
+- `POST /api/tenant/security/recommendations/{id}/approve`
+
+Approval:
+- Can optionally create one or more SuggestedAction entries that can be executed later.
+
+All APIs must enforce Authorization (SecurityOfficer / TenantAdmin only).
+
+--------------------------------------------------
+Step 6: Implement Security Copilot backend
+--------------------------------------------------
+
+Create a module:
+- `Onesign.Modules.SecurityCopilot`
+
+1) AiAdvisorClient abstraction
+
+Define:
+- `IAiAdvisorClient`
+  - `Task<SecurityCopilotResponse> AskAsync(SecurityCopilotPrompt prompt)`
+
+SecurityCopilotPrompt:
+- NaturalLanguageQuery
+- TenantContext:
+  - TenantId
+  - Locale
+  - Optional time window
+- DataContext:
+  - summarized data from:
+    - IdentityInsights (risk scores, insights)
+    - PrivilegedAccess (JIT grants, privileged sessions)
+    - Governance (open findings, campaigns)
+    - Recommendations (existing open recommendations)
+
+SecurityCopilotResponse:
+- SummaryText
+- KeyRisks (list of items with title and description)
+- SuggestedActions (list of structured SuggestedActionDraft):
+  - ActionType
+  - ScopeData (user ids, orgunits etc)
+  - TextDescription
+  - EstimatedImpact
+
+You do not implement the actual LLM integration here if the platform already has a shared AI client. Instead, wire to the existing one if there is. If not, implement a proper adapter that is ready to be hooked to an AI provider, but do not leave it empty. Use at least a deterministic stub that builds simple recommendations from existing data for now, with a clear extension point.
+
+2) SecurityCopilotController
+
+Implement API:
+- `POST /api/tenant/security-copilot/query`
+
+Steps:
+- Validate that caller is SecurityOfficer or TenantAdmin.
+- Parse the request:
+  - Natural language query string.
+- Build TenantContext (TenantId, locale).
+- Build DataContext:
+  - Query existing services:
+    - IdentityInsights for top high risk users and insights.
+    - PrivilegedAccess for privileged sessions and JIT grants.
+    - Governance for open findings.
+    - Recommendations for open recommended actions.
+- Call `IAiAdvisorClient.AskAsync(prompt)`.
+- Map SecurityCopilotResponse to DTO for the client:
+  - summary, key risks, suggested action drafts.
+
+3) SuggestedAction entity and execution
+
+Create SuggestedAction entity:
+
+- Id
+- TenantId
+- Origin (Copilot, RecommendationEngine)
+- ActionType
+- ScopeData (json structure, for example:
+  - userIds: [...]
+  - orgUnitIds: [...]
+  - roleIds: [...]
+- PreviewImpact (int counts)
+- Status (Pending, Executed, Cancelled)
+- CreatedAt
+- ExecutedAt
+
+When AiAdvisorClient returns SuggestedActionDrafts, persist them as SuggestedAction records with Status = Pending.
+
+API for execution:
+
+- `POST /api/tenant/security-copilot/actions/{id}/execute`
+
+Behavior:
+- Load SuggestedAction.
+- Verify:
+  - TenantId matches caller.
+  - Caller is SecurityOfficer or TenantAdmin.
+- Map ActionType to real operations:
+  - Example:
+    - EnforceMfaForUsers:
+      - call Security module to enforce MFA or remove exemptions for given users.
+    - DisableUsers:
+      - call Lifecycle / User module to disable accounts.
+    - DowngradeRoles:
+      - call Authorization module to remove roles.
+    - StartAccessReviewCampaign:
+      - call Governance module to create a campaign for selected users.
+- After success:
+  - Mark SuggestedAction.Status = Executed.
+  - Set ExecutedAt.
+  - Write audit:
+    - "SecurityCopilot.ActionExecuted" with full context.
+
+Do not leave SuggestedAction with a no op execution path.
+
+--------------------------------------------------
+Step 7: Admin Portal UI for Adaptive settings and Recommendations
+--------------------------------------------------
+
+In the React / Next.js Admin Portal:
+
+1) Adaptive settings page
+
+Route:
+- `/tenant/security/adaptive-settings`
+
+Data:
+- `GET /api/tenant/security/adaptive/auth-policy`
+- `GET /api/tenant/security/adaptive/session-policy`
+- `PUT` or `POST` endpoints to update.
+
+UI:
+- Section: Risk based MFA
+  - Toggle: Enabled
+  - Numeric inputs or sliders:
+    - MinRiskScoreForMfa
+    - MinRiskScoreForStepUp
+- Section: Risk based Session
+  - DefaultSessionLifetimeMinutes
+  - HighRiskMaxSessionLifetimeMinutes
+  - HighRiskIdleTimeoutMinutes
+
+Use:
+- existing layout and design system.
+- i18n keys for labels and help texts.
+- clear warning text explaining these settings affect all logins.
+
+2) Recommendations page
+
+Route:
+- `/tenant/security/recommendations`
+
+Data:
+- `GET /api/tenant/security/recommendations`
+
+UI:
+- Table:
+  - Type (mapped via i18n label and icon)
+  - ScopeDescription (from ScopeData)
+  - EstimatedImpactUsers
+  - Status (Open / Applied / Dismissed)
+  - CreatedAt
+- Actions:
+  - View details (modal with more info).
+  - Approve (calls approve API, which may create SuggestedActions).
+  - Dismiss.
+
+All actions must call real APIs, not mock.
+
+--------------------------------------------------
+Step 8: Security Copilot UI
+--------------------------------------------------
+
+Create a Copilot panel.
+
+Route:
+- either a dedicated page:
+  - `/tenant/security/copilot`
+- or a panel inside `/tenant/security/insights`.
+
+UI components:
+
+1) Query input
+- Textarea or large input for natural language query.
+- Button "Ask Copilot".
+
+2) Response display
+- Area showing:
+  - SummaryText
+  - KeyRisks list:
+    - each with title and short description.
+  - SuggestedActions list:
+    - for each action:
+      - short description
+      - estimated impact (number of users, roles, apps)
+      - button "Apply" which calls the execute API.
+
+3) Suggested action details
+- When clicking on a SuggestedAction:
+  - open a modal:
+    - show scope (user names, OrgUnit names or at least ids).
+    - show detailed description of what will happen.
+    - confirm button ("Apply") and cancel.
+
+Make sure:
+- All text uses i18n.
+- Loading and error states are handled properly.
+
+--------------------------------------------------
+Step 9: Observability and audit
+--------------------------------------------------
+
+Add audit events according to the spec:
+
+- When risk based MFA is enforced:
+  - "AdaptiveSecurity.RiskBasedMfaEnforced"
+- When session is hardened:
+  - "AdaptiveSecurity.SessionHardened"
+- When login is blocked by risk:
+  - "AdaptiveSecurity.LoginBlockedByRisk"
+- When Security Copilot is called:
+  - "SecurityCopilot.QueryExecuted"
+- When Copilot or Recommendation engine creates SuggestedActions:
+  - "SecurityCopilot.ActionSuggested"
+- When a SuggestedAction is executed:
+  - "SecurityCopilot.ActionExecuted"
+- When Recommendations are generated or dismissed:
+  - "SecurityRecommendations.Generated"
+  - "SecurityRecommendations.Dismissed"
+
+Ensure these are integrated with the existing Observability and audit pipeline.
+
+--------------------------------------------------
+Step 10: Security and permissions
+--------------------------------------------------
+
+Enforce:
+
+- Only SecurityOfficer and TenantAdmin roles can:
+  - change Adaptive settings
+  - view tenant wide recommendations
+  - query Security Copilot
+  - execute SuggestedActions
+
+Validate:
+- Tenant isolation is respected in all APIs.
+- SuggestedActions and Recommendations cannot cross tenants.
+
+--------------------------------------------------
+Step 11: Tests and verification
+--------------------------------------------------
+
+Backend tests
+
+- RiskBasedAuthEvaluator:
+  - different combinations of risk score, policy and insights produce expected decisions.
+- AdaptiveSessionConfigurator:
+  - high risk versus low risk produce correct lifetimes.
+- RecommendationGenerator:
+  - given IdentityInsights data, correct Recommendation types are created.
+- SecurityCopilot:
+  - controller builds correct DataContext.
+  - SuggestedAction execution actually calls correct services.
+- Login pipeline:
+  - high risk user is forced to MFA or blocked according to policy.
+
+Frontend tests (manual or automated)
+
+- Adaptive settings page:
+  - can read and update policies.
+- Recommendations page:
+  - shows correct recommendations and status updates.
+- Security Copilot:
+  - sends query, receives responses, shows suggested actions.
+  - execute buttons trigger execute API and reflect success.
+
+Final verification
+
+- The solution builds with all Phase 18 changes.
+- All migrations apply cleanly.
+- In a realistic test scenario:
+  - High risk user triggers risk based MFA.
+  - Session lifetimes shrink for risky users.
+  - Recommendations appear for MFA and Zombie cleanup.
+  - Security Copilot can summarize risk and propose actions.
+  - Actions can be executed and are fully auditable.
+
+Important mindset
+Phase 18 must turn your risk analytics into real, easy to execute security hardening. If after this phase Security Officers still have to manually export CSV and guess what to do, the implementation is wrong.
+
+Now:
+Read Phase18-Onesign-AIAdaptiveSecurityAndCopilot.md, then implement Adaptive Security services, Recommendation engine, Security Copilot backend and Admin Portal UI exactly as described above, with no TODO, no NotImplementedException and no placeholder code.

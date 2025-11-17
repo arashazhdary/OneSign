@@ -1,0 +1,668 @@
+You are an expert .NET 10, EF Core, and React/Next.js engineer, acting as the implementation assistant for the onesign SSO / IAM / IGA platform.
+
+Context
+The platform already includes:
+
+- Multi-tenant SSO and OIDC/OAuth2
+- Org hierarchy and OrgUnits
+- Advanced Security Center (logins, MFA, anomalies)
+- Federation and SCIM outbound
+- Billing & plans
+- Observability / centralized audit & metrics
+- Authorization & PolicyEngine (RBAC + ABAC-lite)
+- DevPortal, Account Center, Governance, NotificationCenter
+- Access Requests & approvals
+- Platform Hardening, Privileged Access & JIT (Phase 16)
+- Identity Lifecycle Automation (Joiner / Mover / Leaver, Phase 15)
+
+Now we have Phase 17, focused on **Identity Analytics & Risk Scoring**:
+
+- File: `Phase17-Onesign-IdentityAnalyticsAndRiskScoring.md`
+
+Your job
+- Read `Phase17-Onesign-IdentityAnalyticsAndRiskScoring.md` carefully.
+- Implement Phase 17 exactly as defined there by:
+
+  - Adding a new module: `Onesign.Modules.IdentityInsights`
+  - Building analytics snapshots for users and tenants
+  - Implementing rule-based risk scoring for users and tenants
+  - Generating actionable Insights (HighRiskUser, ZombieAccount, ExcessivePrivileges, TenantHighRisk, …)
+  - Exposing clean APIs for Security Center & Governance
+  - Adding UI pages for:
+    - Security Center – Insights & Risk Overview
+    - User Detail – Risk & Insights tab
+
+- Do NOT break previous phases.
+- Do NOT leave any TODO or NotImplementedException.
+- Do NOT create placeholder controllers, services, or React components.
+
+Global constraints
+
+1) Multi-language
+- The platform is multilingual (English + Persian).
+- All new UI labels, titles, and messages must use the existing i18n system (keys, not hardcoded text).
+- Backend error texts that are user-facing:
+  - Prefer message codes / keys; otherwise minimal technical English.
+
+2) No TODO / no partial implementations
+- No TODO comments.
+- No NotImplementedException.
+- No fake data “for now”.
+- If something is out of scope for Phase 17, don’t scaffold it.
+
+3) Modular monolith boundaries
+- New analytics logic goes into `Onesign.Modules.IdentityInsights`:
+  - Domain / Application / Infrastructure / Api folders as usual.
+- Do NOT reach into other modules’ private DB tables directly:
+  - Use their public services or APIs where already defined.
+  - If you really need a small extension, add a minimal, real, production-ready method to the relevant module.
+
+4) Risk must be explainable
+- RiskScore must always be explainable with clear factors (breakdown).
+- No “magic number” risk; everything must map back to concrete signals.
+
+--------------------------------------------------
+Step 1: Read spec and extract a checklist
+--------------------------------------------------
+
+1) Read `Phase17-Onesign-IdentityAnalyticsAndRiskScoring.md`.
+
+2) Build an internal checklist:
+
+Core data models (in IdentityInsights):
+
+- `UserAnalyticsSnapshot`:
+  - TenantId
+  - UserId
+  - LastLoginAt
+  - SuccessfulLoginCount (within a time window)
+  - FailedLoginCount (window)
+  - MFAEnabled (bool)
+  - PrivilegedRolesCount
+  - AppsCount
+  - ActiveJitGrantsCount
+  - LastAccessReviewResult (Approved / Revoked / Missing)
+  - LastLifecycleEventType (Joiner / Mover / Leaver)
+  - LastLifecycleEventAt
+
+- `TenantAnalyticsSummary`:
+  - TenantId
+  - UsersCount
+  - PrivilegedUsersCount
+  - MFAEnrollmentRate
+  - FailedLoginRate
+  - HighRiskUsersCount
+  - BreakGlassUsageCount (time window)
+  - OpenGovernanceFindingsCount
+
+- `Insight`:
+  - Id
+  - TenantId
+  - Type (HighRiskUser, ZombieAccount, ExcessivePrivileges, TenantHighRisk, …)
+  - ScopeType (User / Tenant / App)
+  - ScopeId
+  - Severity (Info / Low / Medium / High / Critical)
+  - TitleKey / MessageKey (for i18n)
+  - Data (json for extra context)
+  - Status (Open / Resolved / Dismissed)
+  - CreatedAt
+  - ResolvedAt (nullable)
+
+Risk-related models:
+
+- UserRiskScore:
+  - Score (0–100)
+  - Breakdown: list of factors { key, descriptionKey, weightImpact }
+
+- TenantRiskScore:
+  - Score (0–100)
+  - Breakdown: similar structure
+
+APIs:
+
+- `/api/tenant/insights`:
+  - list and filter Insights
+- `/api/tenant/insights/{id}`:
+  - detail
+- `/api/tenant/insights/{id}/resolve`
+- `/api/tenant/insights/{id}/dismiss`
+- `/api/tenant/insights/users/{userId}/risk-profile`:
+  - full risk profile & insights for a user
+- `/api/tenant/insights/tenant-risk`:
+  - current tenant risk snapshot
+- `/api/tenant/insights/high-risk-users`:
+  - paged list of high-risk users
+
+UI:
+
+- Security Center page `/tenant/security/insights`
+  - Summary cards
+  - Chart for HighRiskUsers over time
+  - Insights table
+  - Top N HighRiskUsers widget
+
+- User detail tab “Risk & Insights”
+  - RiskScore indicator
+  - Breakdown factors list
+  - User-specific Insights table
+
+--------------------------------------------------
+Step 2: Create module Onesign.Modules.IdentityInsights
+--------------------------------------------------
+
+Create a new module:
+
+- `src/Onesign.Modules.IdentityInsights`
+  - `/Domain`
+  - `/Application`
+  - `/Infrastructure`
+  - `/Api`
+
+Domain layer
+
+Entities:
+
+- `UserAnalyticsSnapshot`
+- `TenantAnalyticsSummary`
+- `Insight`
+- Optional: `UserRiskScoreRecord` / storing risk score + breakdown if not embedded in snapshot.
+
+Enums:
+
+- `InsightType` (HighRiskUser, ZombieAccount, ExcessivePrivileges, TenantHighRisk, …)
+- `InsightSeverity` (Info, Low, Medium, High, Critical)
+- `InsightStatus` (Open, Resolved, Dismissed)
+- `AccessReviewResult` (Approved, Revoked, Missing)
+- `LifecycleEventType` (Joiner, Mover, Leaver, None)
+
+Domain services interfaces:
+
+- `IUserAnalyticsSnapshotBuilder`
+- `ITenantAnalyticsSummaryBuilder`
+- `IUserRiskScoringService`
+- `ITenantRiskScoringService`
+- `IInsightGenerationService`
+
+Repositories:
+
+- `IUserAnalyticsSnapshotRepository`
+- `ITenantAnalyticsSummaryRepository`
+- `IInsightRepository`
+
+Application layer
+
+DTOs:
+
+- `UserAnalyticsSnapshotDto`
+- `TenantAnalyticsSummaryDto`
+- `InsightDto`
+- `UserRiskProfileDto`:
+  - RiskScore
+  - Breakdown (factors)
+  - RelatedInsights
+- `TenantRiskDto`
+- `HighRiskUserDto`:
+  - UserId
+  - DisplayName
+  - RiskScore
+  - MainFactors
+
+Queries:
+
+- `GetInsightsQuery` (with filters)
+- `GetInsightDetailsQuery`
+- `GetUserRiskProfileQuery`
+- `GetTenantRiskQuery`
+- `GetHighRiskUsersQuery`
+
+Commands:
+
+- `ResolveInsightCommand`
+- `DismissInsightCommand`
+
+Infrastructure layer
+
+- EF Core mappings and configurations for all entities.
+- Scoped services for snapshot builders, scoring engine, and insight generation.
+
+Add a Phase 17 migration that creates all necessary tables and indexes.
+
+--------------------------------------------------
+Step 3: Build analytics snapshots (User & Tenant)
+--------------------------------------------------
+
+UserAnalyticsSnapshot builder
+
+Implement `IUserAnalyticsSnapshotBuilder` to periodically compute snapshots for each active user:
+
+Input sources:
+
+- Login/audit logs (existing Observability/Audit module):
+  - last successful login time
+  - count of successes / failures in a configurable time window (e.g. last 7 days)
+- Security module:
+  - MFA enrollment state for the user (MFAEnabled)
+- Authorization / Roles:
+  - current user roles
+  - count of privileged roles (Role.IsPrivileged = true)
+- Applications:
+  - apps user has access to (from Authorization / Policy assignments)
+- Privileged Access & JIT (Phase 16):
+  - number of active JIT grants for user
+- Lifecycle (Phase 15):
+  - last LifecycleEventType & LastLifecycleEventAt for user
+- Governance (Phase 10):
+  - last access review result for user (Approved / Revoked / Missing)
+
+Behavior:
+
+- Run as a background job on a reasonable schedule (e.g. every 15 minutes or hourly).
+- For each tenant and user:
+  - compute and upsert UserAnalyticsSnapshot.
+  - avoid full recomputation when no relevant changes (if you can reasonably detect).
+
+TenantAnalyticsSummary builder
+
+Implement `ITenantAnalyticsSummaryBuilder`:
+
+Input:
+
+- Aggregations from UserAnalyticsSnapshot:
+  - UsersCount
+  - PrivilegedUsersCount
+  - MFAEnrollmentRate
+  - HighRiskUsersCount (once scoring is integrated)
+- Audit / Observability:
+  - FailedLoginRate for the tenant
+- Privileged Access (Phase 16):
+  - BreakGlassUsageCount in last N days
+- Governance:
+  - OpenGovernanceFindingsCount for the tenant
+
+Behavior:
+
+- Periodic job (e.g. hourly):
+  - for each tenant, compute TenantAnalyticsSummary and upsert.
+
+--------------------------------------------------
+Step 4: Implement Risk Scoring Engine
+--------------------------------------------------
+
+User Risk Score
+
+Implement `IUserRiskScoringService`:
+
+- Method:
+  - `Task<UserRiskScore> CalculateAsync(UserAnalyticsSnapshot snapshot, UserRiskContext context)`
+- `UserRiskScore`:
+  - `int Score` (0–100)
+  - `IReadOnlyList<RiskFactor>` Breakdown:
+    - RiskFactor:
+      - `Key` (e.g. "mfa_disabled", "privileged_roles", "failed_login_spike", "sod_violation", "zombie_access")
+      - `DescriptionKey` (for i18n)
+      - `WeightImpact` (positive number contributing to total)
+
+Rule examples (implement them as concrete rules, not TODO):
+
+- If MFAEnabled == false → +20
+- If PrivilegedRolesCount > 0 → +25
+- If FailedLoginCount in last 24h > threshold → +15
+- If ActiveJitGrantsCount > 0 → +10
+- If lastGovernanceReviewResult == Revoked or missing for long time → +10
+- If lastLoginAt is older than N days, but user still has access packages / roles → +10 (Zombie-ish)
+- If there exists open SoD findings for this user (from Governance) → +15
+
+Implement all rules in code, use configuration for thresholds & weights:
+
+- Put default weights in config (e.g. appsettings) so they are adjustable.
+
+Tenant Risk Score
+
+Implement `ITenantRiskScoringService`:
+
+- Method:
+  - `Task<TenantRiskScore> CalculateAsync(TenantAnalyticsSummary summary)`
+- Factors:
+  - Low MFAEnrollmentRate → higher risk
+  - High number of HighRiskUsers (relative to UsersCount) → higher risk
+  - Frequent BreakGlassUsage → higher risk
+  - High number of OpenGovernanceFindings → higher risk
+
+Score 0–100 with breakdown same pattern as user.
+
+Scheduled risk calculation
+
+- Background job:
+  - For each UserAnalyticsSnapshot:
+    - calculate UserRiskScore and attach to snapshot (fields Score + BreakdownJson).
+  - For each TenantAnalyticsSummary:
+    - calculate TenantRiskScore and persist.
+
+--------------------------------------------------
+Step 5: Insight generation engine
+--------------------------------------------------
+
+Implement `IInsightGenerationService`:
+
+- Uses snapshots and risk scores to create/update/resolve `Insight` entities.
+
+Insight types to implement now:
+
+1) HighRiskUser
+
+- Condition:
+  - UserRiskScore > configurable threshold (e.g. 70).
+- Behavior:
+  - If no existing open HighRiskUser Insight for this user:
+    - create new Insight:
+      - Type = HighRiskUser
+      - ScopeType = User
+      - ScopeId = UserId
+      - Severity based on score:
+        - e.g. 70–80 → High, >80 → Critical.
+      - Data: include risk factors for context.
+  - If an existing open Insight exists and score drops below lower threshold:
+    - mark Insight as Resolved.
+
+2) ZombieAccount
+
+- Condition:
+  - LastLoginAt older than N days (e.g. 90 days),
+  - but user still has roles/apps.
+- Behavior:
+  - Create Insight Type = ZombieAccount:
+    - ScopeType = User
+    - Severity:
+      - higher if user has privileged role(s).
+  - Resolve when user logs in or access is revoked.
+
+3) ExcessivePrivileges
+
+- Condition:
+  - User roles/apps count >> median peers in same OrgUnit / JobRole.
+  - Or roles/apps count passes a hard threshold.
+- Behavior:
+  - Create Insight Type = ExcessivePrivileges:
+    - ScopeType = User
+    - Data: list of high-impact roles/apps.
+  - Resolve when roles are scaled down.
+
+Optional:
+- TenantHighRisk:
+  - from TenantRiskScore.
+
+Insight lifecycle
+
+- New insights created when conditions first detected.
+- Regular re-evaluation:
+  - If condition no longer holds, mark insights as Resolved.
+- Status transitions:
+  - Open → Resolved / Dismissed (by admin).
+
+Implement repository and APIs:
+
+- `GET /api/tenant/insights`
+  - filters: type, severity, status, date range, search.
+- `GET /api/tenant/insights/{id}`
+- `POST /api/tenant/insights/{id}/resolve`
+- `POST /api/tenant/insights/{id}/dismiss`
+
+Authorization: restricted to TenantAdmin / SecurityOfficer.
+
+--------------------------------------------------
+Step 6: User & Tenant risk APIs
+--------------------------------------------------
+
+User Risk Profile API
+
+Implement:
+
+- `GET /api/tenant/insights/users/{userId}/risk-profile`
+
+Returns:
+
+- `UserRiskProfileDto`:
+  - UserId
+  - RiskScore
+  - Breakdown (factors list)
+  - Related Insights (subset: open or recent)
+  - Selected fields from UserAnalyticsSnapshot (LastLoginAt, MFAEnabled, PrivilegedRolesCount, etc.)
+
+Tenant Risk API
+
+Implement:
+
+- `GET /api/tenant/insights/tenant-risk`
+
+Returns:
+
+- `TenantRiskDto`:
+  - TenantRiskScore
+  - Breakdown
+  - HighRiskUsersCount
+  - UsersCount
+  - MFAEnrollmentRate
+  - BreakGlassUsageCount
+  - OpenGovernanceFindingsCount
+
+High Risk Users API
+
+Implement:
+
+- `GET /api/tenant/insights/high-risk-users?minScore=70&page=1&pageSize=20`
+
+Returns:
+
+- List of `HighRiskUserDto`:
+  - UserId
+  - DisplayName
+  - RiskScore
+  - Key factors (subset of breakdown)
+- Sorted by descending RiskScore.
+
+--------------------------------------------------
+Step 7: Security Center – Insights & Risk UI
+--------------------------------------------------
+
+Extend Admin Portal (React/Next.js) with a new page:
+
+Route:
+
+- `/tenant/security/insights`
+
+Data sources:
+
+- `/api/tenant/insights/tenant-risk`
+- `/api/tenant/insights/high-risk-users`
+- `/api/tenant/insights` (paged)
+- Optional: metrics endpoint or aggregated data for chart.
+
+UI layout:
+
+1) Summary cards
+
+- Card 1:
+  - “Tenant Risk Score”: show risk score with color and badge.
+- Card 2:
+  - “High Risk Users”: count (from TenantRisk / or HighRiskUsers list).
+- Card 3:
+  - “Open Insights”: total count of open Insights.
+
+2) High Risk Users widget
+
+- Panel showing top N high risk users:
+  - Name
+  - RiskScore
+  - small tag for “Privileged” if has privileged roles.
+  - Click → navigate to User Detail → Risk & Insights tab.
+
+3) Insights table
+
+- Table bound to `/api/tenant/insights`:
+
+  Columns:
+  - Type (mapped via i18n key + icon)
+  - Severity (badge with color)
+  - Scope (User/Tenant/App name)
+  - CreatedAt
+  - Status
+  - Actions:
+    - View details
+    - Resolve
+    - Dismiss
+
+4) Optional chart
+
+- Simple chart showing number of HighRiskUsers per day (last 30 days):
+  - Use existing chart components if available.
+  - Data from a simple aggregated endpoint or approximated from snapshots.
+
+Ensure:
+
+- All texts go through i18n.
+- Error and loading states are handled gracefully.
+
+--------------------------------------------------
+Step 8: User Detail – Risk & Insights tab
+--------------------------------------------------
+
+Extend existing User Detail page:
+
+- Add tab: “Risk & Insights”.
+
+On load:
+
+- Call:
+  - `/api/tenant/insights/users/{userId}/risk-profile`
+
+Show:
+
+1) Risk score indicator
+
+- A gauge / progress bar / badge showing RiskScore.
+- Color-coded (e.g. green / yellow / orange / red).
+
+2) Breakdown list
+
+- List of risk factors with their impact:
+  - e.g.:
+    - “MFA disabled” (+20)
+    - “Has privileged roles” (+25)
+    - “Failed login spike (last 24h)” (+15)
+    - “Zombie account – no login in 120 days” (+10)
+
+3) User insights table
+
+- Table of Insights for this user:
+  - Type
+  - Severity
+  - CreatedAt
+  - Status
+- Buttons:
+  - View Insight
+  - Resolve or Dismiss (if current user has permissions).
+
+--------------------------------------------------
+Step 9: Governance integration
+--------------------------------------------------
+
+Minimal integration:
+
+- Add the ability for Governance (Phase 10) to seed campaigns using HighRiskUsers:
+
+Backend:
+
+- Provide method/service to retrieve HighRiskUsers for a tenant.
+- Governance module can call it or use `/api/tenant/insights/high-risk-users`.
+
+If Governance UI already supports campaign templates:
+
+- Add template:
+  - “Privileged & High-Risk Users Review”.
+- When chosen:
+  - pre-fill campaign target list from high-risk users and/or users with privileged roles.
+
+--------------------------------------------------
+Step 10: Observability, audit, security
+--------------------------------------------------
+
+Audit events:
+
+- Log these with rich context:
+  - "Insights.UserRiskCalculated"
+  - "Insights.TenantRiskCalculated"
+  - "Insights.Created"
+  - "Insights.Resolved"
+  - "Insights.Dismissed"
+
+Metrics:
+
+- Expose via Observability:
+  - HighRiskUsersCount per tenant
+  - Insight counts by type & severity
+  - RiskScore distribution (bucketed, e.g. 0–20, 21–40, …)
+
+Security:
+
+- Only SecurityOfficer / TenantAdmin:
+  - can view tenant-wide insights
+  - can resolve/dismiss insights
+- Normal users:
+  - can only see risk info for themselves if product design allows:
+    - if you expose it, ensure separate API with proper checks.
+
+--------------------------------------------------
+Step 11: Tests and final verification
+--------------------------------------------------
+
+Backend tests
+
+- Snapshot builders:
+  - correctly compute counts and flags from inputs.
+- Risk scoring:
+  - known snapshots → expected risk scores and breakdown.
+- Insight generation:
+  - HighRiskUser insight appears when score crosses threshold.
+  - ZombieAccount insight appears when LastLoginAt is too old with active access.
+  - ExcessivePrivileges insight appears when user is outlier.
+  - Insights are resolved when conditions disappear.
+
+APIs:
+
+- `/api/tenant/insights*`:
+  - filtering, paging, resolving, dismissing.
+- User risk profile:
+  - returns consistent data with snapshots and insights.
+- Tenant risk:
+  - reflects aggregated stats.
+
+Frontend tests (manual or automated)
+
+- Security Center – Insights page:
+  - loads summary and insights.
+  - actions (resolve/dismiss) work.
+- User Detail – Risk & Insights:
+  - risk score and factors show correctly.
+  - user-specific insights listed.
+
+Final verification
+
+- Solution builds cleanly with `Onesign.Modules.IdentityInsights` integrated.
+- Phase 17 migrations run on top of existing schema.
+- For a realistic dataset:
+  - you can open Security Center → Insights and immediately see:
+    - high risk users
+    - why they are high risk
+    - what to do next (e.g. review / revoke / campaign).
+- No TODO, no NotImplemented, no stub data.
+
+Important mindset
+
+- Phase 17 must answer real security questions:
+  - “Who are my most risky users right now and why?”
+  - “Which accounts are zombie but still have access?”
+  - “Which tenants are risky?”
+- If after this phase, you still need to manually run SQL to guess who is dangerous, the implementation is wrong.
+
+Now:
+Read `Phase17-Onesign-IdentityAnalyticsAndRiskScoring.md`, then implement `Onesign.Modules.IdentityInsights`, snapshot builders, risk engines, insight generation, APIs and UI pages exactly as specified, with no TODOs and no partial implementations.

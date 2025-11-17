@@ -1,0 +1,721 @@
+You are an expert .NET 10, EF Core, and React/Next.js engineer, working as an implementation assistant for the onesign SSO SaaS platform.
+
+Context
+The platform already has:
+
+- Phase 1: core multi-tenant SSO and OIDC login
+  - Phase1-Onesign-CoreSSO.md
+
+- Phase 2: Organization hierarchy, OrgUnits, delegated admins
+  - Phase2-Onesign-OrgHierarchy.md
+
+- Phase 3: Advanced security, MFA, risk based decisions, Security Center
+  - Phase3-Onesign-AdvancedSecurity.md
+
+- Phase 4: Federation and provisioning - SAML, OIDC federation, SCIM provider
+  - Phase4-Onesign-FederationProvisioning.md
+
+- Phase 5: Billing - plans, tenant subscriptions, quotas, billing UIs
+  - Phase5-Onesign-BillingPlans.md
+
+- Phase 6: Observability - audit center, alerts, log streaming, global and tenant analytics
+  - Phase6-Onesign-ObservabilityCompliance.md
+
+- Phase 7: Authorization Policy Engine - advanced RBAC and ABAC-lite
+  - Phase7-Onesign-PolicyEngine.md
+
+Now there is Phase 8 spec focusing on Developer Experience and Integration:
+
+- Phase8-Onesign-DeveloperExperience.md
+
+Your job:
+- Read all these documents.
+- Understand the existing architecture, modules, multi-tenant model and security requirements.
+- Implement Phase 8 exactly as defined in Phase8-Onesign-DeveloperExperience.md:
+  - Create Onesign.Modules.DevPortal backend module.
+  - Implement DevPortal endpoints for developer profile, apps, service accounts, API keys, webhooks and tools.
+  - Implement API key based authentication for backend-to-backend calls.
+  - Build a Developer Portal UI (React) with dashboard, apps, keys, webhooks and token debugger.
+- Do not break previous phases.
+
+Global constraints
+
+1) Multi language
+- The platform is multilingual (at least English and Persian).
+- All new user facing texts must be localizable:
+  - Use message codes in API responses.
+  - Use existing i18n infrastructure in frontend (no hardcoded texts).
+
+2) No TODO and no partial implementations
+- Do not leave TODO comments.
+- Do not throw NotImplementedException.
+- Do not create empty public methods or controller actions.
+- If something is out of Phase 8 scope, do not scaffold it.
+
+3) Modular monolith and strict boundaries
+- Keep a modular monolith solution structure.
+- DevPortal is its own module, not a bag of random controllers.
+- Respect layering: Domain - Application - Infrastructure - API - Frontend.
+
+4) Security first
+- Developer Portal is powerful - it can create clients, keys and service accounts.
+- All DevPortal endpoints must enforce:
+  - authenticated user
+  - developer role and tenant access
+- API keys must never be stored in plain form in the database.
+
+Step 1: Read the specs
+
+1) Read these documents:
+
+- Phase1-Onesign-CoreSSO.md
+- Phase2-Onesign-OrgHierarchy.md
+- Phase3-Onesign-AdvancedSecurity.md
+- Phase4-Onesign-FederationProvisioning.md
+- Phase5-Onesign-BillingPlans.md
+- Phase6-Onesign-ObservabilityCompliance.md
+- Phase7-Onesign-PolicyEngine.md
+- Phase8-Onesign-DeveloperExperience.md
+
+2) From Phase 8, build a checklist:
+
+- Backend module Onesign.Modules.DevPortal.
+- DeveloperAccount and DeveloperTenantAccess model.
+- IntegrationApplication model as a dev wrapper on top of ApplicationClient.
+- ServiceAccount and ApiKey model.
+- WebhookEndpoint model (configuration only in this phase).
+- DevPortal API endpoints.
+- ApiKey authentication handler or middleware.
+- Dev Portal UI - dashboard, apps, keys, webhooks, token debugger.
+- SDK projects structure and sample apps layout.
+
+Use Phase8-Onesign-DeveloperExperience.md as the blueprint for this phase.
+
+Step 2: Backend module - Onesign.Modules.DevPortal
+
+Create a new module:
+
+- src/Onesign.Modules.DevPortal
+
+Structure it as:
+
+Domain
+- Entities
+  - DeveloperAccount
+  - DeveloperTenantAccess
+  - IntegrationApplication
+  - ServiceAccount
+  - ApiKey
+  - WebhookEndpoint
+- Enums
+  - ApiKeyStatus - Active, Revoked
+  - WebhookStatus - Active, Disabled
+- Services
+  - IDeveloperOnboardingService
+  - IIntegrationApplicationService
+  - IApiKeyService
+  - IWebhookEndpointService
+- Repositories
+  - IDeveloperAccountRepository
+  - IDeveloperTenantAccessRepository
+  - IIntegrationApplicationRepository
+  - IServiceAccountRepository
+  - IApiKeyRepository
+  - IWebhookEndpointRepository
+
+Application
+- DTOs
+  - DeveloperProfileDto
+  - DeveloperTenantAccessDto
+  - IntegrationApplicationDto
+  - CreateIntegrationApplicationRequest
+  - UpdateIntegrationApplicationRequest
+  - ServiceAccountDto
+  - CreateServiceAccountRequest
+  - ApiKeyDto
+  - CreateApiKeyRequest
+  - WebhookEndpointDto
+  - CreateWebhookEndpointRequest
+  - UpdateWebhookEndpointRequest
+  - TokenDebugRequestDto
+  - TokenDebugResultDto
+- Commands
+  - CreateDeveloperAccountCommand
+  - GrantDeveloperTenantAccessCommand
+  - RevokeDeveloperTenantAccessCommand
+  - CreateIntegrationApplicationCommand
+  - UpdateIntegrationApplicationCommand
+  - DeleteIntegrationApplicationCommand
+  - RotateClientSecretCommand
+  - CreateServiceAccountCommand
+  - UpdateServiceAccountCommand
+  - DeleteServiceAccountCommand
+  - CreateApiKeyCommand
+  - RevokeApiKeyCommand
+  - CreateWebhookEndpointCommand
+  - UpdateWebhookEndpointCommand
+  - DeleteWebhookEndpointCommand
+  - DebugTokenCommand
+- Queries
+  - GetDeveloperProfileQuery
+  - GetDeveloperTenantAccessListQuery
+  - GetIntegrationApplicationsQuery
+  - GetIntegrationApplicationDetailsQuery
+  - GetServiceAccountsQuery
+  - GetApiKeysQuery
+  - GetWebhookEndpointsQuery
+
+Infrastructure
+- EfCore Entities
+  - DeveloperAccountEntity
+  - DeveloperTenantAccessEntity
+  - IntegrationApplicationEntity
+  - ServiceAccountEntity
+  - ApiKeyEntity
+  - WebhookEndpointEntity
+- EfCore Configurations
+  - DeveloperAccountEntityTypeConfiguration
+  - DeveloperTenantAccessEntityTypeConfiguration
+  - IntegrationApplicationEntityTypeConfiguration
+  - ServiceAccountEntityTypeConfiguration
+  - ApiKeyEntityTypeConfiguration
+  - WebhookEndpointEntityTypeConfiguration
+- EfCore Repositories
+  - DeveloperAccountRepository
+  - DeveloperTenantAccessRepository
+  - IntegrationApplicationRepository
+  - ServiceAccountRepository
+  - ApiKeyRepository
+  - WebhookEndpointRepository
+
+Implement all these pieces fully.
+
+Step 3: Data model and EF
+
+Design entities aligning with Phase 8 spec.
+
+DeveloperAccount
+- Id
+- UserId (link to global user or identity user)
+- DisplayName
+- Email
+- CreatedAt
+
+DeveloperTenantAccess
+- Id
+- DeveloperAccountId
+- TenantId
+- CanManageApplications (bool)
+- CanManageApiKeys (bool)
+- CanViewLogs (bool)
+
+IntegrationApplication
+- Id
+- TenantId
+- ApplicationClientId (link to existing ApplicationClient entity id or clientId)
+- Name
+- Description
+- Environment (string or enum, for example Sandbox or Production)
+- CreatedAt
+- UpdatedAt
+
+ServiceAccount
+- Id
+- TenantId
+- Name
+- Description
+- IsActive
+- CreatedAt
+
+ApiKey
+- Id
+- TenantId
+- ServiceAccountId
+- KeyHash (hash of generated key, never store plain)
+- CreatedAt
+- ExpiresAt (nullable)
+- ApiKeyStatus (Active or Revoked)
+
+WebhookEndpoint
+- Id
+- TenantId
+- Url
+- WebhookStatus (Active or Disabled)
+- Secret or AuthHeader if needed
+- CreatedAt
+- Description optional
+
+DbContext changes
+- Add DbSet for
+  - DeveloperAccounts
+  - DeveloperTenantAccess
+  - IntegrationApplications
+  - ServiceAccounts
+  - ApiKeys
+  - WebhookEndpoints
+
+Indexes
+- DeveloperAccount
+  - Unique index on Email or on UserId (depending on identity model)
+- DeveloperTenantAccess
+  - Unique index on (DeveloperAccountId, TenantId)
+- IntegrationApplication
+  - Index on (TenantId, ApplicationClientId)
+- ServiceAccount
+  - Index on (TenantId, Name)
+- ApiKey
+  - Index on (TenantId, ServiceAccountId, Status)
+  - Index on KeyHash
+- WebhookEndpoint
+  - Index on (TenantId, Url)
+
+Create a Phase 8 migration that creates all these tables with proper foreign keys and indexes. Do not drop or modify previous tables in a destructive way.
+
+Step 4: Domain services
+
+Implement IDeveloperOnboardingService
+
+- Responsible for:
+  - Creating a DeveloperAccount for a given user if not exist.
+  - Managing DeveloperTenantAccess per tenant.
+
+Methods example:
+- EnsureDeveloperAccountForUserAsync(userId, email, displayName)
+- GrantAccessAsync(developerId, tenantId, permissions)
+- RevokeAccessAsync(developerId, tenantId)
+- GetDeveloperTenantsAsync(userId)
+
+Implement IIntegrationApplicationService
+
+- Responsible for integration facing app management:
+  - Creating IntegrationApplication and underlying ApplicationClient.
+  - Updating IntegrationApplication and syncing ApplicationClient configuration.
+  - Rotating client secret.
+
+Methods example:
+- CreateApplicationAsync(tenantId, CreateIntegrationApplicationRequest)
+- UpdateApplicationAsync(appId, UpdateIntegrationApplicationRequest)
+- DeleteApplicationAsync(appId) - optional if allowed
+- RotateSecretAsync(appId) - returns new clientSecret once
+- GetForTenantAsync(tenantId)
+- GetDetailsAsync(appId)
+
+When creating an app:
+- Also create ApplicationClient in the Applications module with:
+  - clientId
+  - clientSecret
+  - redirectUris
+  - allowedGrantTypes (Authorization Code + PKCE at least)
+  - default scopes
+
+Implement IApiKeyService
+
+- Responsible for:
+  - Generating secure API keys.
+  - Hashing and storing them.
+  - Validating keys for authentication.
+
+Methods example:
+- CreateApiKeyAsync(tenantId, serviceAccountId, CreateApiKeyRequest)
+  - Generate a cryptographically strong random key string.
+  - Hash it (for example using HMAC or a strong hash).
+  - Store hash in ApiKeyEntity.
+  - Return the plain key once.
+- RevokeApiKeyAsync(apiKeyId)
+- ValidateApiKeyAsync(plainKey)
+  - Return tenantId and serviceAccountId when valid, or null if invalid or revoked.
+
+Implement IWebhookEndpointService
+
+- CRUD for WebhookEndpoint
+- In this phase, focus on data model and configuration.
+- Actual event delivery can be a later phase, but configuration must be fully functional.
+
+Implement Token Debug service
+
+- A service used by DebugTokenCommand:
+  - Accept a JWT token.
+  - Decode header and payload.
+  - Validate signature using current signing keys from the Identity/Auth module.
+  - Validate issuer, audience and expiry.
+  - Extract claims like:
+    - tenantId
+    - clientId
+    - scopes
+  - Return TokenDebugResultDto with:
+    - IsValidSignature
+    - IsExpired
+    - HeaderJson
+    - PayloadJson
+    - TenantId
+    - ClientId
+    - Scopes
+
+Step 5: DevPortal API endpoints
+
+All DevPortal endpoints must be under:
+
+- `/api/devportal/...`
+
+They must:
+- Resolve current authenticated user.
+- Resolve DeveloperAccount from that user.
+- Check DeveloperTenantAccess for operations that require tenant context.
+- Enforce permissions:
+  - manage apps
+  - manage api keys
+  - view logs
+
+Developer profile and tenant access
+
+Endpoints:
+- GET `/api/devportal/profile`
+  - Returns DeveloperProfileDto.
+- GET `/api/devportal/tenants-access`
+  - Returns list of DeveloperTenantAccessDto.
+
+Integration Applications
+
+Endpoints:
+- GET `/api/devportal/apps`
+  - Query applications for the selected tenant in context.
+- GET `/api/devportal/apps/{id}`
+  - Get application details including underlying client info.
+- POST `/api/devportal/apps`
+  - CreateIntegrationApplicationRequest
+  - Creates IntegrationApplication and ApplicationClient.
+- PUT `/api/devportal/apps/{id}`
+  - UpdateIntegrationApplicationRequest
+- DELETE `/api/devportal/apps/{id}`
+  - Optional - if allowed by business rules.
+- POST `/api/devportal/apps/{id}/rotate-secret`
+  - Rotates client secret, returns the new secret once in the response.
+
+Logs for an app (integration with Observability module):
+
+- GET `/api/devportal/apps/{id}/logs?take=50`
+  - Returns recent AuditEventDto related to that clientId for the current tenant.
+  - Use Observability module query service filtering by:
+    - TenantId
+    - TargetType = Application
+    - TargetId or DataJson containing that clientId.
+
+Service accounts and API keys
+
+Service accounts endpoints:
+- GET `/api/devportal/service-accounts`
+- GET `/api/devportal/service-accounts/{id}`
+- POST `/api/devportal/service-accounts`
+  - CreateServiceAccountRequest:
+    - Name
+    - Description
+    - AllowedScopes
+- PUT `/api/devportal/service-accounts/{id}`
+- DELETE `/api/devportal/service-accounts/{id}`
+
+ApiKeys endpoints:
+- GET `/api/devportal/api-keys`
+  - List keys for current tenant, include:
+    - ServiceAccount name
+    - CreatedAt
+    - ExpiresAt
+    - Status
+- POST `/api/devportal/service-accounts/{id}/api-keys`
+  - CreateApiKeyRequest with optional expiration.
+  - Returns ApiKeyDto + PlainKey once.
+- POST `/api/devportal/api-keys/{id}/revoke`
+  - Sets Status = Revoked.
+
+Webhook endpoints
+
+- GET `/api/devportal/webhooks`
+- GET `/api/devportal/webhooks/{id}`
+- POST `/api/devportal/webhooks`
+  - CreateWebhookEndpointRequest
+- PUT `/api/devportal/webhooks/{id}`
+  - UpdateWebhookEndpointRequest
+- DELETE `/api/devportal/webhooks/{id}`
+
+Tools - Token debugger
+
+- POST `/api/devportal/tools/token-debug`
+  - Body: TokenDebugRequestDto with raw token.
+  - Returns TokenDebugResultDto as described above.
+
+Step 6: API key authentication
+
+Implement API key based authentication for backend-to-backend integration.
+
+- Add an authentication handler or middleware that:
+  - Reads API key from a header such as `X-Onesign-ApiKey`.
+  - Validates the key via IApiKeyService.ValidateApiKeyAsync.
+  - If valid:
+    - Sets a principal representing the service account.
+    - Includes tenantId and serviceAccountId in claims or context.
+  - If invalid:
+    - Rejects with 401 Unauthorized.
+
+Use this authentication scheme only for appropriate external API endpoints, not for internal admin or DevPortal endpoints.
+
+Log all API key usage via IAuditWriter:
+- Category = Integration
+- Action = "ApiKey.Request"
+- Include:
+  - TenantId
+  - ServiceAccountId
+  - Path
+  - Result status (success or failure)
+
+Step 7: Integration with Tenant Admin for developer access
+
+Tenant admins must be able to grant developer access to users.
+
+If there is already a Tenant Users management API and UI:
+- Extend backend:
+  - A command to grant developer permissions for a user on a given tenant, mapping to DeveloperAccount and DeveloperTenantAccess.
+- Ensure DevPortal endpoints check those permissions.
+
+If not yet implemented:
+- At minimum in this phase:
+  - Provide backend commands and APIs so that Tenant Admin can:
+    - Call an endpoint like `POST /api/tenant/developers` to grant dev access.
+    - This can be reflected in DeveloperTenantAccess.
+
+Step 8: Observability and audit integration
+
+Use IAuditWriter (from Observability module) to log DevPortal actions:
+
+- When a dev does:
+  - CreateIntegrationApplication
+  - UpdateIntegrationApplication
+  - Rotate client secret
+  - CreateServiceAccount
+  - CreateApiKey
+  - RevokeApiKey
+  - CreateWebhookEndpoint
+  - UpdateWebhookEndpoint
+  - DeleteWebhookEndpoint
+
+Log as AuditEvents with:
+- Category: Integration or DeveloperExperience
+- Action: "DevPortal.App.Created", "DevPortal.ApiKey.Created", etc.
+- TenantId
+- ActorId and DisplayName
+- TargetType and TargetId
+- DataJson with non sensitive details.
+
+Token debug usage:
+- Optionally log as AuditEvent with lower severity, but without storing full token.
+
+Step 9: SDK projects and samples structure
+
+In the solution, create folders for SDK and samples:
+
+- sdk
+  - dotnet
+    - Onesign.Sdk
+  - js
+    - onesign-sdk
+
+- samples
+  - dotnet-webapp-onesign
+  - react-spa-onesign
+
+For this phase, you must:
+
+- Set up basic project structure with:
+
+  - Onesign.Sdk (dotnet):
+    - Abstractions for:
+      - configuration (Authority, ClientId, Secret, Scopes)
+      - token client (request token, refresh token)
+      - user info client
+    - Implementation using HttpClient.
+
+  - js onesign-sdk:
+    - Minimal code for:
+      - loginRedirect (construct authorize URL)
+      - handleRedirectCallback (read code and state, call token endpoint via backend or direct if appropriate)
+      - getAccessToken and getIdToken from storage
+      - logout (clear tokens and redirect to logout endpoint)
+
+- Sample apps:
+  - At least create projects and skeleton folders with a README that explains integration steps referencing DevPortal.
+  - Focus on structure now, implementation can be extended later.
+
+Step 10: Developer Portal frontend (React)
+
+The Admin Portal already exists. You must add a DevPortal section with separate layout and navigation.
+
+Routing:
+- Base route: `/devportal`
+
+Global behavior:
+- On load:
+  - Call `/api/devportal/profile` to get developer profile.
+  - Call `/api/devportal/tenants-access` to list tenant access.
+  - Provide a tenant selector for dev if they have multiple tenants.
+
+Pages:
+
+1) Dashboard - `/devportal/dashboard`
+- Show:
+  - Selected tenant.
+  - Counts:
+    - number of IntegrationApplications
+    - number of ServiceAccounts
+    - number of active ApiKeys
+  - Quickstart cards:
+    - ".NET backend quickstart"
+    - "React SPA quickstart"
+    - "API Key integration"
+  - Each card linking to docs or samples locations.
+
+2) Applications page - `/devportal/apps`
+- Table of IntegrationApplications:
+  - Name
+  - clientId
+  - Environment (Sandbox or Production)
+  - UpdatedAt
+- Actions:
+  - Create new app
+  - Edit
+  - Delete (if allowed)
+- Details view `/devportal/apps/{id}`:
+  - Overview:
+    - Name, Description, Environment
+    - clientId
+    - redirectUris
+    - allowed grant types
+  - Credentials:
+    - Show clientId always.
+    - Show clientSecret only when newly created or rotated, in a secure modal that warns that it will not be shown again.
+  - Logs tab:
+    - Calls `/api/devportal/apps/{id}/logs` and renders last N log entries.
+
+3) Service accounts and API keys - `/devportal/service-accounts` and `/devportal/api-keys`
+
+Service accounts:
+- List of ServiceAccountDto.
+- Create and edit modals:
+  - Name
+  - Description
+  - AllowedScopes field (multi select or comma separated).
+- Delete option (if no critical dependencies).
+
+API keys:
+- List:
+  - ServiceAccountName
+  - CreatedAt
+  - ExpiresAt
+  - Status badge (Active or Revoked)
+- Create key:
+  - From service account details or from keys page:
+    - call `POST /api/devportal/service-accounts/{id}/api-keys`
+    - show PlainKey in a modal with copy button and clear warning that it will never be shown again.
+- Revoke key:
+  - Button or menu option calling `/api/devportal/api-keys/{id}/revoke`.
+
+4) Webhooks page - `/devportal/webhooks`
+- List WebhookEndpointDto:
+  - Url
+  - Status
+  - CreatedAt
+- Create and edit forms:
+  - Url
+  - Status (Active or Disabled)
+  - Optional secret or auth header.
+- Delete endpoint.
+
+5) Tools - Token Debugger - `/devportal/tools/token-debugger`
+- Textarea for JWT token input.
+- Button "Decode and verify".
+- On submit:
+  - Call `POST /api/devportal/tools/token-debug`.
+- Show:
+  - Header JSON pretty printed.
+  - Payload JSON pretty printed.
+  - Validation results:
+    - Signature valid or invalid
+    - IsExpired flag
+    - Issuer, Audience
+    - TenantId, ClientId, Scopes extracted.
+
+All frontend texts must use the existing i18n system and must not be hardcoded in a single language.
+
+Step 11: Cross cutting - localization, security, performance
+
+Localization:
+- All error messages and labels in DevPortal must have message codes and be translatable.
+- Important security warnings (about secrets and API keys) must be clearly worded and localizable.
+
+Security:
+- DevPortal APIs must:
+  - Use normal user authentication for devs (no API key).
+  - Check DeveloperTenantAccess for the tenant in context.
+- API key authentication must be restricted to intended endpoints only.
+- Secrets:
+  - clientSecret and API keys are only returned once on creation or rotation.
+  - Never log secrets or keys in audit logs or standard logs.
+
+Performance:
+- Use paging for lists:
+  - apps
+  - api keys
+  - logs
+- Avoid N+1 queries:
+  - include necessary data in repository methods and DTOs.
+
+Step 12: Testing and verification
+
+Tests:
+- IDeveloperOnboardingService:
+  - Creating a developer account from user.
+  - Granting and revoking tenant access.
+
+- IIntegrationApplicationService:
+  - Creates IntegrationApplication and ApplicationClient.
+  - Updates both.
+  - Rotates secret and ensures old secret is invalidated.
+
+- IApiKeyService:
+  - Generates key.
+  - Stores hash only.
+  - Validates correct keys and rejects invalid or revoked keys.
+
+- Token debug:
+  - Accepts valid tokens and returns correct parsed data.
+  - Flags invalid signature and expired tokens.
+
+- DevPortal API:
+  - Enforces proper permission checks.
+  - Returns data scoped to the developer and tenant.
+
+- API key auth handler:
+  - Accepts valid keys and sets correct context.
+  - Rejects invalid and revoked keys.
+
+Final verification:
+- Solution builds with Onesign.Modules.DevPortal integrated.
+- Phase 8 migration applies cleanly on top of Phase 1 to 7.
+- DevPortal routes and pages work end to end:
+  - Developer can:
+    - see profile and tenants,
+    - create app,
+    - create service account,
+    - create API key,
+    - see logs,
+    - use token debugger.
+- No TODO and no NotImplementedException in DevPortal related code.
+- All new texts are localized through i18n.
+
+Important mindset
+
+- Developer Experience is not decoration. If DevPortal is confusing or half implemented, real teams will drop the product.
+- Keep flows focused: create tenant, give developer access, create app, configure redirect, run sample, see logs, debug token.
+- Treat API keys and secrets as high risk items and handle them with production grade care.
+
+Now:
+Start by reading Phase8-Onesign-DeveloperExperience.md, then create Onesign.Modules.DevPortal, add Phase 8 migration, implement DevPortal APIs, wire ApiKey authentication, and build the Developer Portal UI including Token Debugger and app and key lists, all fully implemented with no TODOs.
+
+

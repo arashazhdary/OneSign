@@ -1,0 +1,563 @@
+You are an expert .NET 10, EF Core, and React/Next.js engineer, working as an implementation assistant for the onesign SSO / IAM / IGA platform.
+
+Context
+The platform already includes:
+- Core multi-tenant SSO and OIDC/OAuth2
+- Org hierarchy and OrgUnits
+- Security Center (login/MFA/risk monitoring)
+- Federation and SCIM outbound
+- Billing & plans
+- Observability / audit / metrics
+- Authorization & PolicyEngine (RBAC + ABAC-lite)
+- DevPortal, Account Center, Governance, NotificationCenter
+- Access Requests & approval workflows
+- Platform Hardening (TenantStatus, rate limiting, DB topology)
+- Identity Lifecycle (Joiner / Mover / Leaver)
+
+Now there is Phase 16, focusing on:
+- Privileged roles and apps
+- Just-In-Time (JIT) privileged access
+- BreakGlass accounts
+- Privileged session visibility
+- Integration with Security Center and Governance
+
+Specification:
+- Phase16-Onesign-PrivilegedAccessAndJIT.md
+
+Your job
+- Read Phase16-Onesign-PrivilegedAccessAndJIT.md carefully.
+- Implement Phase 16 exactly as defined there, by:
+  - Introducing privileged flags on roles and apps.
+  - Implementing a JITGrant model plus background expiry worker.
+  - Extending AccessRequests to support privileged role JIT requests.
+  - Implementing BreakGlass account model and login flow with hard audit.
+  - Implementing privileged session listing & revoke APIs.
+  - Extending Security Center UI with Privileged Access view and wiring it end-to-end.
+- Do NOT break previous phases.
+- Do NOT leave a single TODO or NotImplementedException.
+- Do NOT create empty controllers, services, or React components “for later”.
+
+Global constraints
+
+1) Multi language
+- The platform is multilingual (English + Persian).
+- All new UI labels, titles, and messages must use the existing i18n infrastructure (keys, not raw text).
+- Backend error details that are end-user visible should be:
+  - either message-key based
+  - or minimal technical English (no mixed hardcoded Persian).
+
+2) No TODO / no partial implementation
+- No TODO comments.
+- No NotImplementedException.
+- No “placeholder” APIs returning 501 or fake data.
+- If something is not in scope for Phase 16, do not scaffold it.
+
+3) Modular monolith and boundaries
+- Privileged access behavior belongs logically in or next to the Authorization / Security modules:
+  - e.g. `Onesign.Modules.Authorization.PrivilegedAccess` or similar sub-namespace.
+- Don’t bypass other modules’ public services:
+  - Use existing Authorization / PolicyEngine services to assign/revoke roles.
+  - Use existing session/token management to revoke sessions.
+- Governance/AccessRequests integration MUST go via their public contracts.
+
+4) Security first
+- Any bug here is a security hole.
+- BreakGlass, JIT grants, and privileged sessions MUST be auditable and revocable.
+- Do not add “debug backdoors”.
+
+--------------------------------------------------
+Step 1: Read spec and build internal checklist
+--------------------------------------------------
+
+Read:
+- Phase16-Onesign-PrivilegedAccessAndJIT.md
+
+Extract the implementation checklist:
+
+Model & DB:
+- Extend Role:
+  - IsPrivileged (bool)
+  - RiskLevel (enum / tinyint: e.g. Normal, High, Critical)
+- Extend ApplicationClient:
+  - IsPrivilegedApp (bool)
+  - RiskLevel (enum / tinyint)
+- New entity: JITGrant
+  - Id
+  - TenantId
+  - UserId
+  - RoleId
+  - GrantedAt
+  - ExpiresAt
+  - ApprovedByUserId
+  - RequestId (link to AccessRequestItem)
+  - Status (Active, Expired, Revoked)
+- New entity: BreakGlassAccount
+  - Id
+  - Username
+  - IsEnabled
+  - AllowedTenants (or join table)
+  - AllowedRoles (or join table)
+  - LastUsedAt
+
+AccessRequests & JIT:
+- Extend AccessRequests (Phase 12):
+  - AccessRequestItem TargetType = PrivilegedRole
+  - DurationRequestedMinutes
+- Service to create JITGrant when a PrivilegedRole request is approved.
+- Background worker to expire JITGrant entries and revoke roles.
+
+BreakGlass:
+- Secure BreakGlass authentication flow:
+  - special login path (e.g. `/auth/breakglass`)
+  - uses BreakGlassAccount credentials / secrets
+  - on success:
+    - issues high-privileged access according to AllowedTenants/AllowedRoles
+    - logs hard audit events
+    - sends notifications to SecurityOfficer(s)
+
+Privileged sessions:
+- Ability to list active sessions for users who currently have privileged roles.
+- Endpoint to revoke a privileged session.
+- Integration into Security Center view.
+
+UI:
+- Mark roles and apps as privileged in Admin Portal.
+- Add Privileged Access view in Security Center:
+  - counts, metrics, active JIT grants, active privileged sessions, BreakGlass logins.
+- Integrate JIT context into AccessRequests UI (if needed).
+- Privileged badges in role/app lists.
+
+Governance:
+- Ensure Governance (Phase 10) can filter on privileged roles:
+  - dedicated privileged access review campaigns.
+
+--------------------------------------------------
+Step 2: Extend Role and Application models for privileged flags
+--------------------------------------------------
+
+1) Extend Role model (Authorization module)
+
+- Add properties:
+  - `bool IsPrivileged { get; private set; }`
+  - `RiskLevel RiskLevel { get; private set; }` (or similar enum)
+
+- Create/extend enum RiskLevel:
+  - e.g. Normal = 0, High = 1, Critical = 2
+- Add:
+  - methods to mark/unmark a role as privileged, validate invariants if needed.
+
+- Update EF configuration:
+  - add columns IsPrivileged and RiskLevel to Roles table.
+- Add migration for Phase 16.
+
+2) Extend ApplicationClient model
+
+- Add:
+  - `bool IsPrivilegedApp { get; private set; }`
+  - `RiskLevel RiskLevel { get; private set; }` (reuse the enum if appropriate).
+- Update EF configuration and migration.
+
+3) APIs to manage privileged flags
+
+- Extend existing role management APIs or add dedicated endpoints:
+  - `PUT /api/tenant/authorization/roles/{id}/privileged`
+    - body: IsPrivileged, RiskLevel
+  - Or integrate into existing role update endpoint.
+
+- Extend application management APIs:
+  - `PUT /api/tenant/applications/{id}/privileged`
+    - body: IsPrivilegedApp, RiskLevel
+
+- Enforce:
+  - Only TenantAdmin/SecurityOfficer can change privileged flags.
+  - Audit every change:
+    - "PrivilegedAccess.RoleFlagChanged"
+    - "PrivilegedAccess.AppFlagChanged"
+
+--------------------------------------------------
+Step 3: JITGrant entity and integration with AccessRequests
+--------------------------------------------------
+
+1) Create JITGrant entity
+
+- In an appropriate module (e.g. Authorization.PrivilegedAccess):
+
+  - Properties:
+    - Id (Guid)
+    - TenantId (Guid)
+    - UserId (Guid)
+    - RoleId (Guid)
+    - GrantedAt (DateTimeOffset)
+    - ExpiresAt (DateTimeOffset)
+    - ApprovedByUserId (Guid)
+    - RequestId (Guid) (AccessRequestItem Id)
+    - Status (Active, Expired, Revoked)
+
+- Add EF mapping:
+  - Table: e.g. PrivilegedJITGrants
+  - Indices:
+    - TenantId + UserId + Status
+    - TenantId + ExpiresAt
+
+2) Extend AccessRequests domain (Phase 12)
+
+- Add TargetType = PrivilegedRole in AccessRequestItem enum.
+- Add field:
+  - DurationRequestedMinutes (int?).
+- Validation for privileged requests:
+  - DurationRequestedMinutes must be within allowed bounds for that role:
+    - e.g. per-role configuration or safe defaults:
+      - min 15 minutes, max 8 hours (you define realistic numbers using config).
+  - Justification MUST be non-empty.
+
+3) Service to create JIT grants on approval
+
+- Implement service, e.g. `IPrivilegedAccessService`:
+
+  - `Task<JitGrant> CreateJitGrantForApprovedRequestAsync(AccessRequestItem item, Guid approverUserId)`
+
+- Behavior:
+  - Validate that AccessRequestItem.TargetType == PrivilegedRole.
+  - Resolve role, ensure IsPrivileged = true.
+  - Compute ExpiresAt = now + DurationRequestedMinutes.
+  - Create JITGrant:
+    - Status = Active
+  - Call Authorization/Role service:
+    - assign the privileged role to the user in this tenant.
+  - Audit:
+    - "PrivilegedAccess.JITGranted" with:
+      - TenantId, UserId, RoleId, GrantedAt, ExpiresAt, RequestId, ApprovedByUserId.
+
+- Wire this service into AccessRequests approval flow:
+  - When an AccessRequestItem of type PrivilegedRole transitions to Approved:
+    - call CreateJitGrantForApprovedRequestAsync.
+
+--------------------------------------------------
+Step 4: JIT expiry worker
+--------------------------------------------------
+
+Implement a background worker/hosted service:
+
+- Periodic task, e.g. every minute or configurable.
+- Queries JITGrant table for:
+  - Status = Active
+  - ExpiresAt <= now.
+
+For each expired JITGrant:
+
+- Use PrivilegedAccessService:
+  - `ExpireJitGrantAsync(jitGrantId)` which must:
+    - Call Authorization/Role service to remove the privileged role from the user.
+    - Set JITGrant.Status = Expired.
+    - Set ExpiresAt (already set), update LastUpdated/ProcessedAt if you track it.
+    - Audit:
+      - "PrivilegedAccess.JITExpired" with full context.
+
+- Ensure:
+  - Idempotency: expiring an already Expired/Revoked JITGrant does nothing.
+  - Errors are logged and captured via Observability.
+
+Add metrics:
+- Number of active JIT grants.
+- Number of expired JIT grants processed.
+- Any failures when expiring.
+
+--------------------------------------------------
+Step 5: BreakGlass account model and login flow
+--------------------------------------------------
+
+1) BreakGlassAccount entity
+
+- Entity with:
+  - Id (Guid)
+  - Username (string, unique)
+  - IsEnabled (bool)
+  - AllowedTenants (could be:
+    - a join table BreakGlassAllowedTenant: BreakGlassAccountId, TenantId
+    - or a JSON list if your shared pattern uses it)
+  - AllowedRoles (similar: join table to RoleId)
+  - LastUsedAt (DateTimeOffset?)
+
+- EF configuration and migration.
+
+2) BreakGlass management APIs
+
+- In Security or Global admin API:
+
+  - `GET /api/security/breakglass-accounts`
+  - `POST /api/security/breakglass-accounts`
+  - `PUT /api/security/breakglass-accounts/{id}`
+  - `DELETE /api/security/breakglass-accounts/{id}` (soft disable)
+
+- Only GlobalAdmin/SecurityOfficer can manage these.
+
+3) BreakGlass authentication flow
+
+- Implement a special login path, e.g. `/auth/breakglass`.
+- Authentication for BreakGlass MUST NOT piggyback on normal user DB lightly:
+  - Use dedicated credentials (e.g. hashed password in secure store) or configured secrets.
+  - At minimum, use strong hashing and NIST compliant password policies.
+
+Behavior on login:
+
+- Validate:
+  - Account exists, IsEnabled = true.
+- Evaluate:
+  - Identify target Tenant (may be explicitly chosen, or limited by AllowedTenants).
+- For allowed tenant:
+  - Issue a session and tokens with high privileges according to AllowedRoles:
+    - Use Authorization/Role assignment in a time-bound or session-bound manner.
+- Force strong MFA if integrated with any factor provider (if available).
+- Log audit event:
+  - "PrivilegedAccess.BreakGlassLogin":
+    - BreakGlassAccountId, Username
+    - TenantId
+    - IP address, UserAgent
+    - Justification text and Incident/Ticket id (if required).
+- Trigger Notification:
+  - Use NotificationCenter:
+    - send immediate alerts to SecurityOfficer / GlobalAdmin group.
+
+4) BreakGlass usage policy
+
+- On login request, require:
+  - Justification text
+  - Optional: external Incident ticket id
+- This is captured in audit logs.
+
+--------------------------------------------------
+Step 6: Privileged sessions API and revoke endpoint
+--------------------------------------------------
+
+1) Privileged session identification
+
+- Use existing session model from Auth/Security center:
+  - Determine whether a session is privileged if:
+    - The associated user currently has at least one Role where IsPrivileged = true.
+
+- Implement a service:
+  - `Task<IReadOnlyList<PrivilegedSessionDto>> GetActivePrivilegedSessionsAsync(Guid tenantId)`
+
+- PrivilegedSessionDto:
+  - SessionId
+  - UserId
+  - UserDisplayName
+  - PrivilegedRoles (list of role names/ids)
+  - StartedAt
+  - LastActivityAt
+  - ClientAppIds / App names involved (if available)
+
+2) API for listing privileged sessions
+
+- Endpoint:
+  - `GET /api/tenant/security/privileged-sessions`
+- Returns:
+  - List of PrivilegedSessionDto for the tenant.
+- Access:
+  - Restricted to TenantAdmin/SecurityOfficer.
+
+3) API for revoking privileged sessions
+
+- Endpoint:
+  - `POST /api/tenant/security/privileged-sessions/{sessionId}/revoke`
+- Behavior:
+  - Use existing session/token infrastructure to:
+    - invalidate the session
+    - revoke tokens (access/refresh)
+  - Audit:
+    - "PrivilegedAccess.SessionRevokedByAdmin":
+      - TenantId, SessionId, UserId, ActorId.
+
+--------------------------------------------------
+Step 7: Security Center – Privileged Access view (UI)
+--------------------------------------------------
+
+Extend the Admin Portal’s Security Center section:
+
+Route:
+- `/tenant/security/privileged`
+
+Components:
+
+1) Summary cards
+- Card: number of users with permanent privileged roles:
+  - “Users with permanent privileged roles” (localized).
+- Card: active JIT grants:
+  - “Active JIT privileged grants”.
+- Card: BreakGlass logins (last 30 days):
+  - “BreakGlass logins (last 30 days)”.
+
+2) Active privileged sessions table
+
+- Table bound to:
+  - `GET /api/tenant/security/privileged-sessions`
+- Columns:
+  - User display name
+  - Privileged roles (badges)
+  - Session start time
+  - Last activity
+  - Apps (short list)
+  - Action:
+    - “Revoke session” button → calls revoke API.
+
+3) JIT grants overview (optional but useful)
+
+- Table or list:
+  - user
+  - role
+  - expiresAt
+  - status
+- Backed by a small endpoint if needed (e.g. `/api/tenant/security/privileged-jit-grants`).
+
+Design guidelines:
+
+- Use existing component library and design language of Admin Portal.
+- No inline hardcoded texts; use i18n keys.
+- Ensure responsive layout.
+
+--------------------------------------------------
+Step 8: Admin Portal – privileged flags on Roles and Applications
+--------------------------------------------------
+
+1) Role management
+
+- In roles list:
+  - Add a “Privileged” badge or icon for roles where IsPrivileged = true.
+  - Add filter/sort to view only privileged roles.
+
+- In role edit/create form:
+  - Add toggle:
+    - “Is privileged role”
+  - Add RiskLevel selection:
+    - Normal / High / Critical (localized labels).
+
+- Call the updated role API to persist changes.
+
+2) Application management
+
+- In applications list:
+  - Add “Privileged app” badge for IsPrivilegedApp = true.
+- In application details / edit form:
+  - Add toggle:
+    - “Is privileged application”
+  - RiskLevel selection.
+
+--------------------------------------------------
+Step 9: Governance integration (Privileged Access Review)
+--------------------------------------------------
+
+- Extend Governance/Access Review configuration (Phase 10):
+
+  - Allow campaigns that target:
+    - only users with at least one privileged role.
+
+- Implementation:
+  - Filter set of user-role pairs by Role.IsPrivileged = true.
+  - Provide a campaign template:
+    - “Privileged Access Review”.
+
+- When a privileged role is revoked via review:
+  - Use Authorization services to remove the role.
+  - Audit:
+    - "PrivilegedAccess.RevokedByReview":
+      - TenantId, UserId, RoleId, CampaignId, ReviewerId.
+
+No need to implement a whole new UI from scratch:
+- Reuse existing Governance screens with an extra filter/flag.
+
+--------------------------------------------------
+Step 10: Observability, audit and security hardening
+--------------------------------------------------
+
+Audit
+
+- Ensure the following events are generated with rich details:
+  - "PrivilegedAccess.RoleFlagChanged"
+  - "PrivilegedAccess.AppFlagChanged"
+  - "PrivilegedAccess.JITGranted"
+  - "PrivilegedAccess.JITExpired"
+  - "PrivilegedAccess.SessionRevokedByAdmin"
+  - "PrivilegedAccess.BreakGlassLogin"
+  - "PrivilegedAccess.RevokedByReview"
+
+Metrics
+
+- Expose metrics through Observability module:
+  - Number of privileged roles per tenant.
+  - Active JIT grants.
+  - Number of BreakGlass logins (per day).
+  - Active privileged sessions.
+  - JIT expiry failures.
+
+Security
+
+- Only very high-privilege roles (SecurityOfficer/GlobalAdmin) can:
+  - mark roles/apps as privileged
+  - manage BreakGlass accounts
+  - access privileged sessions APIs
+  - access Security Center privileged view.
+
+- Consider strong MFA enforcement for:
+  - Approving JIT requests for privileged roles.
+  - Managing BreakGlass accounts.
+  - Performing BreakGlass logins.
+
+Rate limiting
+
+- Apply stricter rate limits to:
+  - BreakGlass login endpoint.
+  - Privileged sessions revoke endpoint (to avoid brute-force or abuse).
+
+--------------------------------------------------
+Step 11: Tests and verification
+--------------------------------------------------
+
+Backend tests
+
+- Role/Application privileged flags:
+  - creation and update sets IsPrivileged/IsPrivilegedApp and RiskLevel correctly.
+- JITGrant service:
+  - When an AccessRequest for a privileged role is approved:
+    - JITGrant is created.
+    - Role is assigned to user.
+  - Expiry worker:
+    - Expires JITGrant at correct time.
+    - Revokes role.
+- BreakGlass:
+  - Valid BreakGlass credentials produce a login and tokens.
+  - Non-enabled or not-allowed tenant is rejected.
+  - Audit events written, notifications sent.
+- Privileged sessions:
+  - Sessions for privileged users are listed.
+  - Revoke endpoint kills session and tokens.
+
+Frontend tests (manual or automated)
+
+- Roles and applications show “privileged” badges.
+- Security Center privileged view loads correctly and binds to APIs.
+- Revoke button actually revokes a privileged session.
+- Governance privileged campaign filter works.
+
+Final verification
+
+- Solution builds with Phase 16 fully integrated.
+- DB migrations run cleanly.
+- Full scenario:
+  - Mark a role as privileged.
+  - Submit JIT request for that role.
+  - Approve → role assigned temporarily.
+  - JIT expiry removes the role automatically.
+  - Privileged session appears in Security Center and can be revoked.
+  - BreakGlass account can be used to log in in a controlled way with full audit.
+
+Important mindset
+
+- Phase 16 is about making privileged access:
+  - temporary,
+  - justifiable,
+  - auditable,
+  - and revocable on demand.
+- Anything less is a security liability, not a feature.
+
+Now:
+Read Phase16-Onesign-PrivilegedAccessAndJIT.md, then implement privileged role/app flags, JITGrant + expiry worker, BreakGlass flow, privileged sessions APIs and the Security Center privileged view with no TODOs and no partial implementations.

@@ -1,0 +1,628 @@
+You are an expert .NET 10, EF Core, and React/Next.js engineer, acting as the implementation assistant for the onesign SSO / IAM / IGA platform.
+
+Context
+The platform already includes:
+
+- Multi tenant SSO and OIDC/OAuth2
+- Org hierarchy and OrgUnits
+- Security Center (logins, MFA, anomalies)
+- Federation and SCIM outbound
+- Billing and plans
+- Observability with centralized audit and metrics
+- Authorization and PolicyEngine (RBAC + ABAC lite)
+- DevPortal, Account Center, Governance, NotificationCenter
+- Access Requests and approvals
+- Identity Lifecycle Automation
+- Privileged Access and JIT
+- Identity Analytics and Risk Scoring
+- Adaptive Security and Security Copilot
+
+Now you must implement Phase 19, which focuses on turning onesign into an extensible identity platform via:
+
+- Webhook event platform
+- Login hooks
+- Token transformation rules
+- Admin Portal and DevPortal support for these capabilities
+
+Specification document:
+- Phase19-Onesign-ExtensibilityAndHooksPlatform.md
+
+Your job
+- Read Phase19-Onesign-ExtensibilityAndHooksPlatform.md carefully.
+- Implement Phase 19 exactly as defined there by:
+  - Adding an Extensibility module for Webhooks and Hooks
+  - Wiring main identity and auth events into the Webhook pipeline
+  - Implementing pre and post login hooks
+  - Implementing deterministic token transformation rules
+  - Implementing Admin Portal UI for webhooks, login hooks and token rules
+  - Updating DevPortal to document events and signatures
+- Do NOT break previous phases.
+- Do NOT leave any TODO or NotImplementedException.
+- Do NOT create placeholder controllers, services or React components.
+
+Global constraints
+
+1) Multi language
+- The platform is multilingual (English and Persian).
+- All new UI strings must use the existing i18n infrastructure.
+- Backend responses that are user facing must use message keys or minimal English, no hardcoded mixed text.
+
+2) No TODO and no partial implementations
+- No TODO comments.
+- No NotImplementedException.
+- No fake in memory implementations.
+- Anything in Phase 19 spec must be implemented end to end or not created at all.
+
+3) Modular monolith boundaries
+- Extensibility concerns go into a dedicated module, for example:
+  - `Onesign.Modules.Extensibility`
+- Webhook and hook logic must not violate tenant isolation.
+- Integration with Identity, Auth, Lifecycle and Governance goes through their public services and domain events.
+
+4) Safety first
+- Inline hooks must have strict timeouts and clear fail open vs fail closed behavior.
+- Token rules must be deterministic and rule based, no arbitrary script execution.
+
+--------------------------------------------------
+Step 1: Read the Phase 19 spec and build an internal checklist
+--------------------------------------------------
+
+Read:
+- Phase19-Onesign-ExtensibilityAndHooksPlatform.md
+
+Extract and keep visible the main items:
+
+Webhook platform:
+- WebhookSubscription entity and APIs:
+  - Per tenant configuration for:
+    - endpoint URL
+    - secret
+    - enabled flag
+    - subscribed event types
+    - simple retry policy
+- Event types:
+  - identity.user.created
+  - identity.user.updated
+  - identity.user.deleted
+  - auth.login.succeeded
+  - auth.login.failed
+  - auth.token.issued
+  - auth.token.revoked
+  - access.request.approved
+  - access.request.denied
+  - lifecycle.event.executed
+- Dispatcher:
+  - async HTTP POST with HMAC signature
+  - retry with backoff
+  - minimal delivery status logging
+
+Login hooks:
+- LoginHook entity and APIs:
+  - Id, TenantId, Name
+  - Stage: pre-login or post-login
+  - Type: http-callback
+  - EndpointUrl, Secret, TimeoutSeconds, Enabled
+  - FailBehavior: fail-open or fail-closed
+- Executor integrated into auth pipeline:
+  - pre-login:
+    - can allow or deny login and add claims or flags
+  - post-login:
+    - fire and forget side effects
+
+Token transformation:
+- TokenTransformationRule entity and APIs:
+  - Id, TenantId, Name
+  - TargetAppId (client id)
+  - Enabled
+  - Order
+  - RuleDefinition (JSON or DSL)
+- Engine:
+  - deterministic claim transformation
+  - applied in token issuance pipeline before signing
+
+Admin Portal:
+- Pages for:
+  - Webhooks
+  - LoginHooks
+  - TokenTransformationRules
+
+DevPortal:
+- Documentation for:
+  - event types and payloads
+  - webhook security and signature verification
+  - sample code snippets
+
+--------------------------------------------------
+Step 2: Create Extensibility module and data model
+--------------------------------------------------
+
+Create module:
+- `Onesign.Modules.Extensibility`
+  - Domain
+  - Application
+  - Infrastructure
+  - Api
+
+Entities and mappings:
+
+1) WebhookSubscription
+
+- Properties:
+  - Id (Guid)
+  - TenantId (Guid)
+  - Name (string)
+  - EndpointUrl (string)
+  - Secret (string, stored securely)
+  - Enabled (bool)
+  - SubscribedEventTypes (collection or json)
+  - RetryPolicy settings (for now basic: maxAttempts, backoffSeconds)
+  - LastDeliveryAttemptAt (optional)
+  - LastDeliveryStatus (enum: None, Success, Failed)
+
+- EF mapping:
+  - Table name like `Extensibility_WebhookSubscriptions`
+  - Index on TenantId, Enabled
+
+2) LoginHook
+
+- Properties:
+  - Id
+  - TenantId
+  - Name
+  - Stage (enum: PreLogin, PostLogin)
+  - Type (for now: HttpCallback)
+  - EndpointUrl
+  - Secret
+  - TimeoutSeconds
+  - Enabled
+  - FailBehavior (enum: FailOpen, FailClosed)
+
+- EF mapping:
+  - Table `Extensibility_LoginHooks`
+  - Index on TenantId, Stage, Enabled
+
+3) TokenTransformationRule
+
+- Properties:
+  - Id
+  - TenantId
+  - Name
+  - TargetAppId (client id)
+  - Enabled
+  - Order (int)
+  - RuleDefinition (string json)
+  - CreatedAt, UpdatedAt
+
+- EF mapping:
+  - Table `Extensibility_TokenTransformationRules`
+  - Index on TenantId, TargetAppId, Enabled, Order
+
+Add Phase 19 migration to create all three tables and indices.
+
+--------------------------------------------------
+Step 3: Event to Webhook pipeline
+--------------------------------------------------
+
+Define an internal event mapping service:
+
+- Interface:
+  - `IExtensibilityEventMapper`
+    - `ExtensibilityEvent? Map(object domainEvent)`
+
+ExtensibilityEvent:
+- EventType (string)
+- TenantId
+- PayloadJson (string)
+- OccurredAt
+
+Implement mapping for at least these domain events:
+
+- User created, updated, deleted
+- Login succeeded or failed
+- Token issued or revoked
+- AccessRequest approved or denied
+- Lifecycle event executed
+
+Make sure each mapping:
+
+- Produces a stable EventType name:
+  - "identity.user.created"
+  - "auth.login.succeeded"
+  - etc.
+- Builds a payload with:
+  - ids
+  - relevant metadata
+  - no sensitive secrets or credentials
+
+Queueing:
+
+- Introduce an internal queue or outbox table for Webhook deliveries if you already have one.
+- For each ExtensibilityEvent:
+  - Create Webhook delivery records for all subscriptions of that tenant which are enabled and subscribed to that EventType.
+
+Webhook dispatcher:
+
+- Service:
+  - `IWebhookDispatcher` running as a background worker.
+
+Behavior:
+
+- For each pending delivery:
+  - Build HTTP POST request:
+    - URL = WebhookSubscription.EndpointUrl
+    - Body = PayloadJson
+    - Headers:
+      - X-Onesign-EventType = EventType
+      - X-Onesign-Timestamp = unix timestamp
+      - X-Onesign-Signature = HMAC-SHA256(secret, timestamp + body) or similar
+  - Handle responses:
+    - If HTTP 2xx:
+      - mark as success
+    - If 4xx or 5xx or timeout:
+      - schedule retry according to retry policy
+      - after max attempts, mark as failed
+
+Observability:
+
+- Log and audit:
+  - "Extensibility.WebhookDeliverySucceeded"
+  - "Extensibility.WebhookDeliveryFailed"
+- Add basic metrics per tenant if your metrics module is ready.
+
+--------------------------------------------------
+Step 4: Login hooks execution
+--------------------------------------------------
+
+Define execution service:
+
+- `ILoginHooksExecutor`
+  - `Task<LoginHookResult> ExecutePreLoginAsync(LoginHookContext context)`
+  - `Task ExecutePostLoginAsync(LoginHookContext context)`
+
+LoginHookContext should contain:
+
+- TenantId
+- UserId
+- ClientId
+- RiskScore (from IdentityInsights if available)
+- Auth context (IP, userAgent, geo info if you already capture them)
+
+LoginHookResult:
+
+- Allow (bool)
+- AdditionalClaims (dictionary or claim collection)
+- ExtraFlags (for future use, for example requireExtraMfa etc)
+
+Pre login integration:
+
+- In auth pipeline, after successful credential validation and before final login decision:
+  - Load all enabled LoginHooks for this tenant with Stage = PreLogin.
+  - For each hook:
+    - Call HTTP endpoint with context JSON body.
+    - Enforce timeout = TimeoutSeconds.
+    - Verify HMAC if you support incoming signatures.
+    - Interpret response:
+      - basic contract:
+        - `allow` boolean
+        - `additionalClaims` optional
+        - `flags` optional
+    - Combine results:
+      - If any hook returns allow = false:
+        - depending on FailBehavior:
+          - if that hook is configured fail closed or this explicit deny, block login.
+  - If blocked:
+    - Stop login and emit audit event "Extensibility.LoginHookBlockedLogin".
+  - If allowed:
+    - merge AdditionalClaims into the claims for token issuance.
+
+Post login integration:
+
+- After successful login and token issuance:
+  - queue execution for Stage = PostLogin hooks.
+  - Fire and forget:
+    - do not block response to user.
+  - Use same context but include token id or correlation id if needed.
+
+Fail behavior rules:
+
+- For PreLogin:
+  - Apply FailBehavior per hook as configured:
+    - FailOpen:
+      - ignore hook failure (log and continue).
+    - FailClosed:
+      - treat error like allow = false or error.
+- For PostLogin:
+  - Always fail open, errors must just be logged.
+
+--------------------------------------------------
+Step 5: Token transformation rules and engine
+--------------------------------------------------
+
+TokenTransformationRule storage:
+
+- Already defined entity with RuleDefinition as JSON.
+
+RuleDefinition:
+
+- Use a simple JSON based DSL, for example:
+
+  {
+    "rules": [
+      {
+        "when": { "hasRole": "TenantAdmin" },
+        "addClaims": { "is_admin": true }
+      },
+      {
+        "mapRolesToClaim": "groups"
+      },
+      {
+        "copyOrgUnitPathToClaim": "org_path"
+      }
+    ]
+  }
+
+You do not need a super complex DSL. Implement a minimal but real rule set:
+
+- Conditions:
+  - hasRole
+- Actions:
+  - addClaims (simple key value)
+  - mapRolesToClaim (map role names to an array claim)
+  - setClaimFromOrgUnitPath
+
+Engine:
+
+- Implement `ITokenTransformationEngine`:
+
+  - `ClaimsPrincipal ApplyRules(ClaimsPrincipal principal, Guid tenantId, string clientId)`
+
+Steps:
+
+- Load all TokenTransformationRule records for tenant and client where Enabled = true, ordered by Order.
+- For each rule:
+  - Parse RuleDefinition once and cache if possible.
+  - Apply rule on current claims.
+- Return transformed ClaimsPrincipal.
+
+Validation:
+
+- When saving a rule via API:
+  - Parse RuleDefinition.
+  - If invalid, reject save with validation error.
+- At runtime:
+  - If a rule still fails parsing:
+    - log error.
+    - For now skip that rule and do not abort the whole issuance, unless config says otherwise.
+
+Integration:
+
+- In token issuance pipeline:
+  - After building the default claims and before signing and issuing tokens:
+    - call `ITokenTransformationEngine.ApplyRules`.
+    - use returned claims for the token.
+
+Audit:
+
+- Optionally log aggregated event:
+  - "Extensibility.TokenTransformationApplied" with rule count, not every claim change.
+
+--------------------------------------------------
+Step 6: Webhook, LoginHook and TokenRule APIs
+--------------------------------------------------
+
+Implement tenant scoped APIs under something like:
+
+- `/api/tenant/extensibility/webhooks`
+- `/api/tenant/extensibility/login-hooks`
+- `/api/tenant/extensibility/token-rules`
+
+Webhooks API:
+
+- GET: list subscriptions for current tenant.
+- POST: create a new subscription.
+- PUT: update an existing subscription.
+- DELETE: delete or disable subscription.
+
+LoginHooks API:
+
+- GET: list login hooks for tenant.
+- POST: create.
+- PUT: update.
+- DELETE: delete or disable.
+
+TokenRules API:
+
+- GET: list rules.
+- POST: create.
+- PUT: update.
+- DELETE: delete.
+
+Authorization:
+
+- Restrict all these endpoints to TenantAdmin and SecurityOfficer roles.
+
+Validation:
+
+- Check URL format.
+- Check timeout bounds.
+- Validate RuleDefinition JSON.
+
+--------------------------------------------------
+Step 7: Admin Portal UI
+--------------------------------------------------
+
+In the React or Next.js Admin Portal:
+
+1) Webhooks management page
+
+Route:
+- `/tenant/extensibility/webhooks`
+
+Features:
+
+- Table listing:
+  - Name
+  - EndpointUrl (partially masked)
+  - Enabled (toggle)
+  - SubscribedEventTypes (badges)
+  - LastDeliveryStatus
+- Buttons:
+  - Create
+  - Edit
+  - Delete or Disable
+- Create or edit modal:
+  - name
+  - endpoint URL
+  - secret
+  - select multiple event types from a predefined list
+  - enabled toggle
+- Show sample payloads for key event types in a side panel or modal (read only JSON).
+
+2) Login Hooks management page
+
+Route:
+- `/tenant/extensibility/login-hooks`
+
+Features:
+
+- Table:
+  - Name
+  - Stage (pre-login or post-login)
+  - EndpointUrl (masked)
+  - TimeoutSeconds
+  - FailBehavior
+  - Enabled
+- Create or edit modal:
+  - Stage selector
+  - URL
+  - secret
+  - timeout
+  - fail behavior (radio: fail open or fail closed)
+  - enabled toggle
+
+3) Token rules management page
+
+Route:
+- `/tenant/extensibility/token-rules`
+
+Features:
+
+- Table:
+  - Name
+  - TargetApp (display app name)
+  - Order
+  - Enabled
+- Create or edit modal:
+  - target application (drop down of existing client apps)
+  - order
+  - enabled
+  - RuleDefinition editor:
+    - at least a textarea with client side JSON validation
+- Optionally:
+  - simple "Preview" area:
+    - user enters a sample set of roles or claims
+    - engine is called via API to show resulting claims.
+
+All UI labels must use existing i18n pattern and be localizable.
+
+--------------------------------------------------
+Step 8: DevPortal documentation
+--------------------------------------------------
+
+In the DevPortal module:
+
+- Add section or page:
+  - `/devportal/extensibility` or similar.
+
+Content:
+
+- Describe available EventTypes:
+  - identity.user.created
+  - auth.login.succeeded
+  - auth.token.issued
+  - etc.
+- Show example Webhook payloads for main types.
+- Explain security model:
+  - HMAC signature header format.
+  - How to verify signature with the secret.
+- Provide small code snippets for verifying signature:
+  - example in C Sharp.
+  - example in Node.js.
+
+These can be static markdown rendered in DevPortal or powered by an API.
+
+--------------------------------------------------
+Step 9: Observability, audit and security
+--------------------------------------------------
+
+Audit events:
+
+- When Webhook subscription is created, updated or deleted:
+  - "Extensibility.WebhookCreated"
+  - "Extensibility.WebhookUpdated"
+  - "Extensibility.WebhookDeleted"
+- When Webhook delivery succeeds or fails:
+  - "Extensibility.WebhookDeliverySucceeded"
+  - "Extensibility.WebhookDeliveryFailed"
+- When a LoginHook blocks a login:
+  - "Extensibility.LoginHookBlockedLogin"
+- When token transformation rules are applied:
+  - "Extensibility.TokenTransformationApplied" (aggregated, not per claim).
+
+Security:
+
+- Ensure tenant isolation:
+  - A tenant must not be able to see or manipulate other tenants Webhooks or hooks.
+- Rate limit:
+  - Webhook dispatch volumes if needed.
+- Guardrails:
+  - Pre-login hooks timeouts and fail behavior default to safe values.
+  - Token rules that fail validation must not be saved.
+
+--------------------------------------------------
+Step 10: Tests and verification
+--------------------------------------------------
+
+Backend tests:
+
+- WebhookSubscription CRUD:
+  - proper storage and retrieval by tenant.
+- Webhook dispatcher:
+  - sends correct body, headers and signature.
+  - retries on failures.
+- LoginHooksExecutor:
+  - merges allow and claims correctly.
+  - respects timeout and fail behavior.
+- TokenTransformationEngine:
+  - given simple rules and input claims, produces expected outputs.
+- Integration:
+  - login with pre-login hook that denies:
+    - gets blocked.
+  - token issuance with rules:
+    - tokens contain expected extra claims.
+
+Frontend tests (manual or automated):
+
+- Webhooks page:
+  - can create, edit, disable.
+- Login hooks page:
+  - can configure pre and post login hooks.
+- Token rules page:
+  - RuleDefinition validation works.
+  - list updates correctly.
+
+Final verification:
+
+- The solution builds with Phase 19 integrated.
+- Migrations apply cleanly.
+- In a realistic tenant:
+  - user created event triggers Webhook.
+  - login triggers login hooks.
+  - token for an app gets transformed according to rules.
+- All implementations are real, with no TODO and no dummy code.
+
+Important mindset
+Phase 19 is about making onesign truly extensible but safe. You must implement a real Webhook and hook platform, not just stubs. If after this phase tenants still need core code changes for every simple integration, the implementation is wrong.
+
+Now:
+Read Phase19-Onesign-ExtensibilityAndHooksPlatform.md, then implement the Extensibility module, Webhook pipeline, login hooks, token transformation rules and Admin Portal and DevPortal changes exactly as described above, with no TODO and no placeholder code.

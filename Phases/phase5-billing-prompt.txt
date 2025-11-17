@@ -1,0 +1,684 @@
+You are an expert .NET 10, EF Core, and React/Next.js engineer, working as an implementation assistant for the onesign SSO SaaS platform.
+
+Context
+I already have:
+
+- Phase 1: core multi-tenant SSO, OIDC, admin flows
+  - Phase1-Onesign-CoreSSO.md
+
+- Phase 2: Organization hierarchy, OrgUnits, user/app assignments, delegated admins
+  - Phase2-Onesign-OrgHierarchy.md
+
+- Phase 3: Advanced security, MFA, trusted devices, risk
+  - Phase3-Onesign-AdvancedSecurity.md
+
+- Phase 4: Federation and provisioning – SAML, OIDC federation, attribute mapping, SCIM
+  - Phase4-Onesign-FederationProvisioning.md
+
+Now I have Phase 5 spec focusing on billing, plans, quotas and usage:
+
+- Phase5-Onesign-BillingPlans.md
+
+Your job is to read all these documents, understand the existing architecture and flows, and then implement Phase 5 exactly as defined in Phase5-Onesign-BillingPlans.md, without breaking previous phases.
+
+High level goals of Phase 5
+Phase 5 introduces:
+
+- A Billing module with:
+  - Global Plans (Free, Pro, Enterprise, Custom)
+  - PlanFeatures (limits and feature flags)
+  - TenantSubscription per tenant
+  - Usage tracking (per tenant, per month, per metric)
+  - Quota enforcement (hard and soft limits)
+
+- Admin experiences:
+  - Global Billing Admin views (plans and tenant billing status)
+  - Tenant Billing self-service view (plan, usage, near-limit warnings, upgrade request)
+
+Important constraints
+
+1) Phase boundaries
+You must stay within Phase 5 scope:
+
+- Implement only features defined in Phase5-Onesign-BillingPlans.md:
+  - Plans and features
+  - Tenant subscriptions and statuses
+  - Usage metrics and snapshots
+  - Quota enforcement
+  - Billing UIs
+- Do NOT implement:
+  - Actual payment provider integration (Stripe, Braintree, etc.)
+  - PDF invoicing and tax logic
+  - Accounting / revenue recognition
+These belong to a future payment integration phase.
+
+2) Architecture
+- Backend remains a modular monolith.
+- Add a new module: Onesign.Modules.Billing.
+- Do not break existing modules (Tenants, Identity, Organization, Security, Federation).
+- Enforce tenant isolation strictly.
+
+3) Multi language
+- Multi-language applies here as well (at least English and Persian).
+- All new user-facing messages must be localizable or use message codes that map to translations in the frontend.
+- Do not hardcode UI strings in controllers or React components.
+
+4) No TODO and no partial implementations
+Critical rule:
+
+- Do not leave any TODO comments, NotImplementedException, or empty methods for Phase 5.
+- Any public API, service, entity, controller, endpoint or page created for Phase 5 must be fully implemented.
+- If something is out of Phase 5 scope, do not scaffold a stub.
+
+5) Backwards compatibility
+- Tenants must continue to work even if billing is not fully configured.
+- Default plans/subscriptions must be set in a safe way for existing tenants (e.g. map them to a Free plan).
+- All migrations must be safe and non-destructive.
+
+Step 1: Read and understand the specs
+1) Open and read:
+
+- Phase1-Onesign-CoreSSO.md
+- Phase2-Onesign-OrgHierarchy.md
+- Phase3-Onesign-AdvancedSecurity.md
+- Phase4-Onesign-FederationProvisioning.md
+- Phase5-Onesign-BillingPlans.md
+
+2) Build a checklist of Phase 5 items:
+
+- Billing module structure and entities
+- Global Plans and PlanFeatures
+- TenantSubscription and statuses
+- Usage metrics (counters) and snapshots
+- Quota enforcement logic and integration hooks
+- Global Billing Admin UI
+- Tenant Billing UI
+
+3) Use Phase5-Onesign-BillingPlans.md as the source of truth for behavior in this phase.
+
+Step 2: Backend module – Onesign.Modules.Billing
+
+Create a new backend module:
+
+- src/Onesign.Modules.Billing
+
+Structure it as:
+
+- Domain
+  - Entities
+    - Plan
+    - PlanFeature
+    - TenantSubscription
+    - TenantUsageSnapshot
+    - UsageCounter
+  - Enums
+    - SubscriptionStatus    (Trial, Active, PastDue, Suspended, Canceled)
+    - PlanType              (Free, Pro, Enterprise, Custom)
+    - UsageMetricType       (Users, ActiveUsers, Applications, Logins, IdpConnections, ScimCalls, etc.)
+    - LimitType             (Hard, Soft)
+  - Services
+    - IPlanService
+    - ISubscriptionService
+    - IUsageService
+    - IQuotaEnforcementService
+  - Repositories
+    - IPlanRepository
+    - ISubscriptionRepository
+    - IUsageRepository
+
+- Application
+  - DTOs
+    - PlanDto
+    - PlanFeatureDto
+    - CreateOrUpdatePlanRequest
+    - TenantSubscriptionDto
+    - UpdateTenantSubscriptionRequest
+    - TenantUsageSummaryDto
+    - TenantUsageDetailsDto
+    - TenantQuotaStatusDto
+  - Commands
+    - CreateOrUpdatePlanCommand
+    - ActivatePlanCommand
+    - DeactivatePlanCommand
+    - AssignSubscriptionToTenantCommand
+    - ChangeTenantPlanCommand
+    - MarkSubscriptionStatusCommand
+    - RecordUsageEventCommand
+    - RecalculateTenantUsageCommand
+  - Queries
+    - GetPlansQuery
+    - GetPlanDetailsQuery
+    - GetTenantSubscriptionQuery
+    - GetTenantUsageSummaryQuery
+    - GetTenantUsageDetailsQuery
+    - GetOverQuotaTenantsQuery
+
+- Infrastructure
+  - EfCore/Entities
+    - PlanEntity
+    - PlanFeatureEntity
+    - TenantSubscriptionEntity
+    - TenantUsageSnapshotEntity
+    - UsageCounterEntity
+  - EfCore/Configurations
+    - PlanEntityTypeConfiguration
+    - PlanFeatureEntityTypeConfiguration
+    - TenantSubscriptionEntityTypeConfiguration
+    - TenantUsageSnapshotEntityTypeConfiguration
+    - UsageCounterEntityTypeConfiguration
+  - EfCore/Repositories
+    - PlanRepository
+    - SubscriptionRepository
+    - UsageRepository
+
+Implement all of these classes and interfaces completely.
+
+Step 3: Database model and migrations
+
+Extend OnesignDbContext:
+
+- Add DbSet for:
+  - Plans
+  - PlanFeatures
+  - TenantSubscriptions
+  - TenantUsageSnapshots
+  - UsageCounters
+
+Apply EF configurations:
+
+- PlanEntity
+  - Unique index on Code
+- PlanFeatureEntity
+  - Index on PlanId
+- TenantSubscriptionEntity
+  - Unique index on TenantId (one active subscription per tenant at a time)
+- TenantUsageSnapshotEntity
+  - Index on TenantId, CapturedAt
+- UsageCounterEntity
+  - Unique index on (TenantId, MetricType, PeriodYear, PeriodMonth)
+
+Create a Phase 5 migration:
+
+- Add all billing tables.
+- Optionally seed initial Plans:
+  - Free, Pro, Enterprise with reasonable PlanFeatures as described in Phase5 spec.
+- For existing tenants:
+  - Attach them to a default plan (e.g. Free) via TenantSubscription with a safe default Status (e.g. Active or Trial).
+
+Ensure migration is safe and idempotent.
+
+Step 4: Domain services – plan, subscription, usage, quota
+
+Implement:
+
+IPlanService
+
+- GetPlanForTenantAsync(tenantId)
+- CRUD-like operations backing plan commands and queries.
+
+ISubscriptionService
+
+- AssignSubscriptionToTenantAsync(tenantId, planId, initialStatus, trialEnd, periodEnd)
+- ChangeTenantPlanAsync(tenantId, newPlanId)
+- MarkStatusAsync(tenantId, newStatus)
+
+IUsageService
+
+- RecordUsageEventAsync(tenantId, metricType)
+  - Increment appropriate UsageCounter (monthly counters).
+- RecalculateSnapshotForTenantAsync(tenantId)
+  - Read:
+    - UserCount from Identity module
+    - ActiveUsersLast30Days from login/audit data or usage counters
+    - ApplicationCount from Applications module
+    - IdpConnectionCount from Federation module
+    - LoginsThisMonth, ScimCallsThisMonth from UsageCounter
+  - Store in TenantUsageSnapshot
+
+IQuotaEnforcementService
+
+Implement methods such as:
+
+```csharp
+Task CheckCanCreateUserAsync(Guid tenantId);
+Task CheckCanCreateApplicationAsync(Guid tenantId);
+Task CheckCanCreateIdpAsync(Guid tenantId);
+Task CheckFeatureEnabledAsync(Guid tenantId, string featureKey);
+
+
+Behavior:
+
+Load current tenant Plan via IPlanService and TenantSubscription.
+
+Evaluate PlanFeatures for relevant keys (MaxUsers, MaxApps, MaxIdps, OrgHierarchyEnabled, AdvancedSecurityEnabled, FederationEnabled, ScimEnabled, etc.).
+
+Compare current usage (from UsageSnapshot or direct counts) against limits.
+
+If Hard limit is exceeded:
+
+Throw a business exception with a clear code (not a raw message).
+
+If Soft limit is exceeded:
+
+Set warning flags but do not block execution (for this phase, main behavior is detection).
+
+All services must be fully implemented and must not rely on TODOs.
+
+Step 5: Application layer – commands and queries
+
+Implement commands:
+
+CreateOrUpdatePlanCommand
+
+Create or update PlanEntity and PlanFeatureEntities.
+
+ActivatePlanCommand / DeactivatePlanCommand
+
+Toggle Plan.IsActive.
+
+AssignSubscriptionToTenantCommand
+
+Create TenantSubscription for a tenant.
+
+ChangeTenantPlanCommand
+
+Update PlanId and relevant dates in TenantSubscription.
+
+MarkSubscriptionStatusCommand
+
+Change SubscriptionStatus (Trial, Active, Suspended, etc.)
+
+RecordUsageEventCommand
+
+Wrapper around IUsageService.RecordUsageEventAsync, used from other modules.
+
+RecalculateTenantUsageCommand
+
+Wrapper around IUsageService.RecalculateSnapshotForTenantAsync.
+
+Implement queries:
+
+GetPlansQuery and GetPlanDetailsQuery
+
+For Global billing admin to view/edit plans.
+
+GetTenantSubscriptionQuery
+
+For Global admin and maybe Tenant admin (in scoped version) to see current subscription.
+
+GetTenantUsageSummaryQuery and GetTenantUsageDetailsQuery
+
+To drive billing summary views.
+
+GetOverQuotaTenantsQuery
+
+For Global billing dashboard to see tenants near or over limits.
+
+These commands and queries must:
+
+Enforce authorization:
+
+Global billing endpoints only for SaaS Owner/Global Admin roles.
+
+Tenant-level endpoints for Tenant Admins only.
+
+Use localization codes for errors.
+
+Step 6: Integration hooks – Identity, Applications, Federation, Login
+
+Integrate IQuotaEnforcementService and IUsageService into existing modules.
+
+Identity:
+
+Before creating a new TenantUser:
+
+Call IQuotaEnforcementService.CheckCanCreateUserAsync(tenantId).
+
+After successful login (or via existing login pipeline):
+
+Call IUsageService.RecordUsageEventAsync(tenantId, UsageMetricType.Logins).
+
+Applications module:
+
+Before creating a new ApplicationClient:
+
+Call IQuotaEnforcementService.CheckCanCreateApplicationAsync(tenantId).
+
+Federation module:
+
+Before creating a new IdP/federation provider (SAML or OIDC):
+
+Call IQuotaEnforcementService.CheckCanCreateIdpAsync(tenantId).
+
+SCIM (optional in this phase):
+
+For each SCIM call:
+
+Call RecordUsageEventAsync(tenantId, UsageMetricType.ScimCalls).
+
+Make sure these hooks are centralized and use IQuotaEnforcementService consistently instead of scattering limit checks across the code.
+
+Step 7: API endpoints – Global Billing Admin
+
+In Onesign.Api, add global billing endpoints for SaaS owner:
+
+Base: /api/global/billing
+
+Plans:
+
+GET /api/global/billing/plans
+
+Returns list of PlanDto.
+
+GET /api/global/billing/plans/{id}
+
+Returns PlanDto including PlanFeatureDto list.
+
+POST /api/global/billing/plans
+
+Accepts CreateOrUpdatePlanRequest.
+
+PUT /api/global/billing/plans/{id}
+
+Accepts CreateOrUpdatePlanRequest for updates.
+
+DELETE /api/global/billing/plans/{id}
+
+Only allowed if the plan is not used in any TenantSubscription.
+
+Tenant subscription (global):
+
+GET /api/global/billing/tenants/{tenantId}/subscription
+
+Returns TenantSubscriptionDto and associated PlanDto.
+
+POST /api/global/billing/tenants/{tenantId}/subscription
+
+Assign or update subscription for a tenant (plan, trial, dates).
+
+POST /api/global/billing/tenants/{tenantId}/status
+
+Change subscription status (MarkSubscriptionStatusCommand).
+
+Tenant billing overview (global):
+
+GET /api/global/billing/tenants
+
+Returns a list with:
+
+TenantName
+
+PlanName
+
+Status
+
+UserCount / MaxUsers
+
+LoginsThisMonth (and limits if applicable)
+
+Flags indicating OverLimit / NearLimit
+
+Uses GetOverQuotaTenantsQuery and related usage queries.
+
+All global endpoints:
+
+Must be restricted to Global/SaaS Owner roles.
+
+Must return localized error codes/messages.
+
+Step 8: API endpoints – Tenant Billing
+
+In Onesign.Api, add tenant billing endpoints:
+
+Base: /api/tenant/billing
+
+GET /api/tenant/billing/summary
+
+Returns:
+
+Current Plan info (PlanName, PlanType, IsTrial, TrialEndsAt, CurrentPeriodEndsAt)
+
+TenantUsageSummaryDto
+
+TenantQuotaStatusDto (per metric: current, max, percentage, nearLimit flags)
+
+GET /api/tenant/billing/quota-status
+
+Returns TenantQuotaStatusDto separately if needed.
+
+POST /api/tenant/billing/upgrade-requests
+
+Accepts a simple request:
+
+TargetPlanCode or TargetPlanId
+
+Optional comment
+
+Records an upgrade request entity or triggers a notification to SaaS owner (for this phase, at least store the request in DB).
+
+No actual payment processing in this phase.
+
+These endpoints must:
+
+Be accessible to Tenant Admins.
+
+Use multi-language for validation and error feedback.
+
+Step 9: Scheduled usage snapshots
+
+Implement a scheduled process (e.g. background HostedService or command scheduled by external scheduler):
+
+For each tenant:
+
+Call RecalculateTenantUsageCommand → IUsageService.RecalculateSnapshotForTenantAsync.
+
+Frequency:
+
+Daily is sufficient for Phase 5.
+
+Ensure:
+
+Queries for snapshot generation are efficient.
+
+Indexes on TenantId and CreatedAt are used.
+
+Step 10: Admin Portal – Global Billing UI
+
+In the Admin Portal project:
+
+Plans page – /global/billing/plans
+
+Table:
+
+Name, Code, Type, IsActive.
+
+Create/edit modal or page:
+
+Name, Code, PlanType (Free, Pro, Enterprise, Custom)
+
+IsActive toggle
+
+List of PlanFeatures:
+
+Feature key (dropdown with controlled keys):
+
+MaxUsers
+
+MaxApplications
+
+MaxIdps
+
+OrgHierarchyEnabled
+
+AdvancedSecurityEnabled
+
+FederationEnabled
+
+ScimEnabled
+
+Value (string, validated depending on key)
+
+LimitType for limits (Hard/Soft) where applicable.
+
+Use:
+
+GET/POST/PUT/DELETE /api/global/billing/plans
+
+All labels and messages must be localized via i18n.
+
+Tenants billing overview – /global/billing/tenants
+
+Table:
+
+TenantName
+
+PlanName
+
+Status
+
+UserCount / MaxUsers
+
+LoginsThisMonth and limit if applicable
+
+Badges/indicators:
+
+OverLimit
+
+NearLimit
+
+Ability to:
+
+Click a tenant to view and edit subscription:
+
+Change Plan
+
+Change Status (Trial, Active, Suspended, etc.)
+
+Use:
+
+GET /api/global/billing/tenants
+
+GET/POST /api/global/billing/tenants/{tenantId}/subscription
+
+POST /api/global/billing/tenants/{tenantId}/status
+
+Step 11: Admin Portal – Tenant Billing UI
+
+In the tenant-scoped section of Admin Portal:
+
+Route: /tenant/billing
+
+Display:
+
+Plan info:
+
+PlanName
+
+PlanType
+
+TrialEndsAt
+
+CurrentPeriodEndsAt
+
+Status
+
+Usage cards:
+
+Users: UserCount / MaxUsers
+
+Applications: ApplicationCount / MaxApplications
+
+IdPs: IdpConnectionCount / MaxIdps
+
+LoginsThisMonth / limit if any
+
+SCIM calls if relevant
+
+Near-limit warnings:
+
+If usage >= a threshold (e.g. 80% of limit), show prominent warning banners.
+
+Upgrade request:
+
+A button "Request Upgrade":
+
+Opens a modal where tenant can choose TargetPlan (Pro, Enterprise, etc.) and optional comment.
+
+Calls POST /api/tenant/billing/upgrade-requests.
+
+All UI texts here must use the existing i18n mechanism and be fully localized.
+
+Step 12: Cross-cutting – audit, logging, tests
+
+Audit:
+
+Create AuditEvents for:
+
+Creating/updating/deleting a Plan.
+
+Assigning or changing TenantSubscription.
+
+Changing SubscriptionStatus (Suspended, Canceled, etc.).
+
+Handling upgrade requests (if you persist them).
+
+Logging:
+
+Log quota violations and over-limit attempts with clear, non-sensitive data.
+
+Do not log raw tokens or sensitive billing configuration.
+
+Tests:
+
+Add unit tests for IQuotaEnforcementService:
+
+Under-limit tenant → operation allowed.
+
+Over Hard limit → operation blocked.
+
+Over Soft limit → operation allowed but flagged (if implemented).
+
+Add unit tests for IUsageService:
+
+Recording usage events increments counters correctly.
+
+Snapshot calculation uses correct counts from Identity, Applications, Federation and counters.
+
+Add at least basic tests or manual scripts for:
+
+Global Billing Admin flows (plans and subscriptions).
+
+Tenant Billing view and near-limit warnings.
+
+Step 13: Final verification
+
+Backend builds successfully and Phase 5 migration applies on top of Phase 1–4.
+
+Global and Tenant Billing pages in Admin Portal build and run without TypeScript or runtime errors.
+
+Tenants without explicit billing configuration still function using default plan/subscription.
+
+Quota enforcement:
+
+Does not block behavior for small tenants on default Free plan unless they hit defined limits.
+
+Correctly blocks creation operations when Hard limits are exceeded.
+
+Multi language:
+
+All new endpoints and UI show localized texts via existing i18n routes.
+
+No TODO comments or NotImplementedException in any Billing-related code.
+
+Important mindset
+
+Treat Phase5-Onesign-BillingPlans.md as the blueprint for this phase.
+
+Billing is about making the platform commercially usable, not about fancy tech – focus on clarity and robustness over cleverness.
+
+Centralize quota logic in IQuotaEnforcementService to avoid scattered checks.
+
+Keep usage tracking and snapshots simple but accurate enough to drive plans, quotas and future billing integration.
+
+Now:
+Start by reading Phase5-Onesign-BillingPlans.md, summarize the exact Billing features, create the Onesign.Modules.Billing module and migrations, then implement plans, subscriptions, usage tracking, quota enforcement, global billing admin endpoints and tenant billing UI end to end with no TODOs

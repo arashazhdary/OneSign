@@ -1,0 +1,755 @@
+You are an expert .NET 10, EF Core, and React/Next.js engineer, working as an implementation assistant for the onesign SSO SaaS platform.
+
+Context
+The platform already has:
+
+- Phase 1: Core multi-tenant SSO and OIDC login
+  - Phase1-Onesign-CoreSSO.md
+
+- Phase 2: Organization hierarchy, OrgUnits, delegated admins
+  - Phase2-Onesign-OrgHierarchy.md
+
+- Phase 3: Advanced security, MFA, risk-based decisions, Security Center
+  - Phase3-Onesign-AdvancedSecurity.md
+
+- Phase 4: Federation and provisioning - SAML, OIDC federation, SCIM provider
+  - Phase4-Onesign-FederationProvisioning.md
+
+- Phase 5: Billing - plans, tenant subscriptions, quotas, billing UIs
+  - Phase5-Onesign-BillingPlans.md
+
+- Phase 6: Observability - audit center, alerts, log streaming, global and tenant analytics
+  - Phase6-Onesign-ObservabilityCompliance.md
+
+- Phase 7: Authorization Policy Engine - advanced RBAC and ABAC-lite
+  - Phase7-Onesign-PolicyEngine.md
+
+- Phase 8: DevPortal and Developer Experience
+  - Phase8-Onesign-DeveloperExperience.md
+
+- Phase 9: Account Center & Self Service for end users
+  - Phase9-Onesign-AccountCenterSelfService.md
+
+- Phase 10: Identity Governance & Access Reviews (IGA-lite)
+  - Phase10-Onesign-IdentityGovernance.md
+
+Now there is Phase 11 spec focusing on Notification Center & Communication platform:
+
+- Phase11-Onesign-NotificationCenter.md
+
+Your job:
+- Read all these documents, especially Phase11-Onesign-NotificationCenter.md.
+- Implement Phase 11 exactly as defined there:
+  - Create `Onesign.Modules.NotificationCenter` backend module.
+  - Implement an outbox-based notification pipeline with routing, templates, and channel senders.
+  - Expose `/api/tenant/notification/*` tenant APIs for configuration and logs.
+  - Extend the Tenant Admin Portal to provide Notification Settings / Templates / Event Routing / Logs UI.
+- Do NOT break previous phases.
+- All new user-facing UI must be fully integrated with the existing multi-language system (English + Persian at least).
+
+Global constraints
+
+1) Multi language
+- The platform is multilingual (at least English and Persian).
+- All new user facing labels/messages must be localizable:
+  - Backend must use error/message codes, not hardcoded human messages.
+  - Frontend must use the existing i18n mechanism.
+- Do NOT hardcode final English/Persian strings inside controllers or JSX.
+
+2) No TODO and no partial implementations
+- Do NOT leave TODO comments.
+- Do NOT throw NotImplementedException.
+- Do NOT create public APIs, controllers, services, React pages or components that are empty or stubbed.
+- If something is out of scope for Phase 11, do NOT scaffold it at all.
+
+3) Modular monolith structure
+- Keep modules separate:
+  - NotificationCenter is its own module, not mixed inside Security, Governance or DevPortal.
+- Respect layering:
+  - Domain → Application → Infrastructure → API → Frontend.
+- NotificationCenter must be reused by other modules via clean interfaces (router/service), not via direct SMTP/SMS calls.
+
+4) Notification is not cosmetic
+- All security/governance/account events wired to NotificationCenter must result in real, auditable notifications:
+  - Security events (login, password change, MFA change, new trusted device).
+  - Governance events (access review assignments, SoD violations).
+  - Selected DevPortal and Billing events.
+- Nothing should be “UI-only”.
+
+--------------------------------------------------
+Step 1: Read specs and build a checklist
+--------------------------------------------------
+
+1) Read:
+- Phase1-Onesign-CoreSSO.md
+- Phase2-Onesign-OrgHierarchy.md
+- Phase3-Onesign-AdvancedSecurity.md
+- Phase4-Onesign-FederationProvisioning.md
+- Phase5-Onesign-BillingPlans.md
+- Phase6-Onesign-ObservabilityCompliance.md
+- Phase7-Onesign-PolicyEngine.md
+- Phase8-Onesign-DeveloperExperience.md
+- Phase9-Onesign-AccountCenterSelfService.md
+- Phase10-Onesign-IdentityGovernance.md
+- Phase11-Onesign-NotificationCenter.md
+
+2) Build internal checklist from Phase 11:
+
+- New module: `Onesign.Modules.NotificationCenter`.
+- Core domain:
+  - NotificationTemplate, NotificationChannelConfig, NotificationEventSubscription.
+  - NotificationOutboxItem, NotificationDeliveryLog.
+- Services:
+  - Template management.
+  - Router (EventType → channels based on tenant policy + user preference).
+  - Outbox management.
+  - Sender + channel senders (Email/Sms/InApp/Webhook).
+- Tenant APIs:
+  - `/api/tenant/notification/templates`
+  - `/api/tenant/notification/channels`
+  - `/api/tenant/notification/events`
+  - `/api/tenant/notification/logs`
+- Admin Portal UI:
+  - Notification Templates management.
+  - Channel configuration.
+  - Event routing.
+  - Notification logs.
+- Integration with:
+  - Security (Phase 3).
+  - Account Center (Phase 9).
+  - Governance (Phase 10).
+  - DevPortal (Phase 8).
+  - Billing (Phase 5).
+  - Observability (Phase 6) for logging/audit of notifications.
+
+Treat Phase11-Onesign-NotificationCenter.md as the blueprint for this phase.
+
+--------------------------------------------------
+Step 2: Backend module – Onesign.Modules.NotificationCenter
+--------------------------------------------------
+
+Create a new module:
+
+- `src/Onesign.Modules.NotificationCenter`
+
+Structure:
+
+Domain
+- Entities
+  - NotificationTemplate
+  - NotificationChannelConfig
+  - NotificationEventSubscription
+  - NotificationOutboxItem
+  - NotificationDeliveryLog
+- Enums
+  - NotificationChannel      // Email, Sms, InApp, Webhook
+  - NotificationStatus       // Pending, Sending, Sent, Failed, Cancelled
+  - NotificationPriority     // Low, Normal, High, Critical
+- ValueObjects
+  - TemplateLocalization     // per-language subject/body
+  - RecipientInfo            // Id, display, email, phone, language
+- Services
+  - INotificationTemplateService
+  - INotificationRouter
+  - INotificationOutboxService
+  - INotificationSenderService
+  - IChannelEmailSender
+  - IChannelSmsSender
+  - IChannelInAppSender
+  - IChannelWebhookSender
+- Repositories
+  - INotificationTemplateRepository
+  - INotificationChannelConfigRepository
+  - INotificationEventSubscriptionRepository
+  - INotificationOutboxRepository
+  - INotificationDeliveryLogRepository
+
+Application
+- DTOs
+  - NotificationTemplateDto
+  - CreateNotificationTemplateRequest
+  - UpdateNotificationTemplateRequest
+  - NotificationChannelConfigDto
+  - UpdateNotificationChannelConfigRequest
+  - NotificationEventSubscriptionDto
+  - UpdateNotificationEventSubscriptionRequest
+  - NotificationDeliveryLogDto
+- Commands
+  - CreateNotificationTemplateCommand
+  - UpdateNotificationTemplateCommand
+  - DeleteNotificationTemplateCommand
+  - UpdateNotificationChannelConfigCommand
+  - UpdateNotificationEventSubscriptionCommand
+  - EnqueueNotificationCommand
+  - RetryNotificationCommand
+  - CancelNotificationCommand
+- Queries
+  - GetNotificationTemplatesQuery
+  - GetNotificationTemplateDetailsQuery
+  - GetNotificationChannelConfigQuery
+  - GetNotificationEventSubscriptionsQuery
+  - GetNotificationDeliveryLogsQuery
+
+Infrastructure
+- EF Core Entities
+  - NotificationTemplateEntity
+  - NotificationChannelConfigEntity
+  - NotificationEventSubscriptionEntity
+  - NotificationOutboxItemEntity
+  - NotificationDeliveryLogEntity
+- EF Core Configurations
+  - NotificationTemplateEntityTypeConfiguration
+  - NotificationChannelConfigEntityTypeConfiguration
+  - NotificationEventSubscriptionEntityTypeConfiguration
+  - NotificationOutboxItemEntityTypeConfiguration
+  - NotificationDeliveryLogEntityTypeConfiguration
+- EF Core Repositories
+  - NotificationTemplateRepository
+  - NotificationChannelConfigRepository
+  - NotificationEventSubscriptionRepository
+  - NotificationOutboxRepository
+  - NotificationDeliveryLogRepository
+
+Implement all components fully. No stubs.
+
+--------------------------------------------------
+Step 3: Data model & EF – Templates, Config, Outbox
+--------------------------------------------------
+
+NotificationTemplate
+
+Fields:
+- Id
+- TenantId            // Guid.Empty for global default templates
+- EventType           // e.g. "Security.NewLogin", "Account.PasswordChanged"
+- IsEnabled
+- Localizations collection:
+  - Language ("en", "fa", …)
+  - Subject
+  - BodyHtml
+  - BodyText (optional)
+- CreatedAt
+- UpdatedAt
+
+Constraints:
+- Unique index: (TenantId, EventType).
+
+NotificationChannelConfig
+
+Fields:
+- Id
+- TenantId
+- EmailEnabled
+- EmailFromAddress
+- EmailFromName
+- SmsEnabled
+- SmsSenderId
+- InAppEnabled
+- WebhookEnabled
+- UpdatedAt
+
+NotificationEventSubscription
+
+Fields:
+- Id
+- TenantId
+- EventType
+- DefaultChannels       // serialized flags or list of NotificationChannel
+- OverrideUserPreference (bool)
+- UpdatedAt
+
+Constraints:
+- Unique index: (TenantId, EventType).
+
+NotificationOutboxItem
+
+Fields:
+- Id
+- TenantId
+- EventType
+- Channel              // Email, Sms, InApp, Webhook
+- RecipientAddress     // email/phone/userId/webhook URL depending on channel
+- RecipientDisplayName
+- Language
+- PayloadJson          // rendered payload (subject/body/structured)
+- Status               // Pending, Sending, Sent, Failed, Cancelled
+- Priority             // Low/Normal/High/Critical
+- RetryCount
+- CreatedAt
+- SentAt (nullable)
+- FailedAt (nullable)
+
+Indexes:
+- (TenantId, Status, Priority, CreatedAt).
+
+NotificationDeliveryLog
+
+Fields:
+- Id
+- OutboxItemId
+- TenantId
+- Channel
+- Status
+- ProviderResponseCode
+- ProviderResponseMessage
+- Timestamp
+
+Indexes:
+- (TenantId, Channel, Status, Timestamp).
+
+Add DbSet for all these entities in the main DbContext or dedicated module DbContext (consistent with your modular monolith pattern).
+
+Create a Phase 11 migration that creates these tables and indexes without breaking previous schema.
+
+--------------------------------------------------
+Step 4: Core services – Template, Router, Outbox, Sender
+--------------------------------------------------
+
+Implement INotificationTemplateService
+
+- Methods:
+  - GetTemplatesAsync(tenantId)
+  - GetTemplateAsync(tenantId, templateId)
+  - CreateTemplateAsync(tenantId, CreateNotificationTemplateRequest)
+  - UpdateTemplateAsync(tenantId, templateId, UpdateNotificationTemplateRequest)
+  - DeleteTemplateAsync(tenantId, templateId)
+
+Behavior:
+- When resolving template for a given (tenantId, eventType, language):
+  - If there is a tenant-specific template → use it.
+  - Otherwise fall back to global template (TenantId = Guid.Empty).
+  - If language-specific localization does not exist:
+    - Fall back to default language (e.g., "en").
+
+Implement INotificationRouter
+
+Define a context type, e.g.:
+
+- `NotificationEventContext`:
+  - TenantId
+  - EventType
+  - Recipients: list of RecipientInfo (userId, displayName, email, phone, preferredLanguage).
+  - Payload: strongly-typed object or generic dictionary with event data:
+    - ip, location, device, app, etc depending on event.
+
+Method:
+
+- `Task RouteAsync(NotificationEventContext context)`
+
+Behavior:
+
+1) For each recipient:
+   - Load NotificationEventSubscription for (tenant, eventType).
+   - Load user NotificationPreference (from Phase 9) if exists.
+   - Combine:
+     - Tenant default channels (DefaultChannels).
+     - User preference.
+     - If OverrideUserPreference is true:
+       - enforce tenant channels (ignore user preference).
+     - Else:
+       - intersection or combination according to Phase 11 spec:
+         - at minimum: do not send on channels user has disabled.
+
+2) For each (recipient, channel) combination to be sent:
+   - Resolve language:
+     - Use recipient.PreferredLanguage if set.
+     - Else tenant default or global default.
+   - Resolve template based on (tenant, eventType, language):
+     - Use INotificationTemplateService described above.
+   - Render payload:
+     - Replace placeholders in Subject/Body with context.Payload and recipient data.
+   - Create NotificationOutboxItem with:
+     - Status = Pending.
+     - Priority:
+       - Critical for security events (new login, suspicious login, MFA changes).
+       - High for governance SoD violations, access review assignment.
+       - Normal for most other events.
+
+3) Persist all outbox items using INotificationOutboxService.
+
+Implement INotificationOutboxService
+
+- Methods:
+  - EnqueueAsync(NotificationOutboxItem item)
+  - GetPendingBatchAsync(int batchSize, NotificationPriority minPriority)
+  - UpdateStatusAsync(itemId, newStatus, retryCount, timestamps, providerResponseCode/message)
+
+Implement INotificationSenderService and channel senders
+
+INotificationSenderService:
+
+- `Task ProcessPendingAsync(int batchSize)`:
+  - Load pending items ordered by:
+    - Priority (Critical → Low).
+    - CreatedAt.
+  - For each item:
+    - Set Status = Sending.
+    - Call appropriate channel sender:
+      - IChannelEmailSender.SendAsync(outboxItem)
+      - IChannelSmsSender.SendAsync(outboxItem)
+      - IChannelInAppSender.SendAsync(outboxItem)
+      - IChannelWebhookSender.SendAsync(outboxItem)
+    - On success:
+      - Set Status = Sent, SentAt = now.
+      - Create NotificationDeliveryLog entry with success status.
+    - On failure:
+      - Increment RetryCount.
+      - If retries < max (e.g. 5), set Status = Pending (for retry).
+      - Else:
+        - Status = Failed, FailedAt = now.
+      - Create NotificationDeliveryLog entry with failure status and error.
+
+Channel senders:
+
+- Email:
+  - Use existing or new SMTP abstraction.
+  - Take FromName / FromAddress from:
+    - Tenant NotificationChannelConfig if set.
+    - Otherwise global default.
+- Sms:
+  - Implement using an interface; the underlying provider can be stubbed but must be functional logically.
+- InApp:
+  - For now, at minimum:
+    - Represent in-app notifications via:
+      - NotificationDeliveryLog plus endpoint(s) to list them for a user.
+    - Do NOT leave this unimplemented or empty.
+- Webhook:
+  - Send HTTP request to the target URL.
+  - Include HMAC signature header using a secret linked to tenant or event (as appropriate).
+  - Log status and body.
+
+Make sender idempotent:
+- If a given OutboxItem is accidentally processed twice, avoid double-sending where possible (e.g. by checking Status or using delivery log / idempotency key per provider).
+
+--------------------------------------------------
+Step 5: Tenant Notification APIs – `/api/tenant/notification/*`
+--------------------------------------------------
+
+Base path: `/api/tenant/notification`
+
+All endpoints:
+
+- Are tenant scoped (TenantId from token).
+- Require appropriate tenant admin roles (e.g., TenantAdmin, SecurityOfficer, ComplianceOfficer where relevant).
+
+Template API
+
+- `GET /api/tenant/notification/templates`
+  - Returns list of NotificationTemplateDto (tenant-specific plus indicator if overriding global).
+
+- `GET /api/tenant/notification/templates/{id}`
+  - Returns NotificationTemplateDto including localizations.
+
+- `POST /api/tenant/notification/templates`
+  - Body: CreateNotificationTemplateRequest:
+    - EventType
+    - IsEnabled
+    - Localizations (language, subject, html, text).
+
+- `PUT /api/tenant/notification/templates/{id}`
+  - Body: UpdateNotificationTemplateRequest.
+
+- `DELETE /api/tenant/notification/templates/{id}`
+  - Deletes tenant override. Global default remains.
+
+ChannelConfig API
+
+- `GET /api/tenant/notification/channels`
+  - Returns NotificationChannelConfigDto for current tenant.
+  - If none yet, returns default from global config.
+
+- `PUT /api/tenant/notification/channels`
+  - Body: UpdateNotificationChannelConfigRequest:
+    - EmailEnabled, EmailFromName, EmailFromAddress
+    - SmsEnabled, SmsSenderId
+    - InAppEnabled
+    - WebhookEnabled
+
+Event Subscription API
+
+- `GET /api/tenant/notification/events`
+  - Returns list of NotificationEventSubscriptionDto for known event types, including:
+    - EventType
+    - Description (code or key).
+    - DefaultChannels.
+    - OverrideUserPreference.
+
+- `PUT /api/tenant/notification/events/{eventType}`
+  - Body: UpdateNotificationEventSubscriptionRequest:
+    - DefaultChannels
+    - OverrideUserPreference
+
+Logs API
+
+- `GET /api/tenant/notification/logs`
+  - Query parameters:
+    - eventType (optional)
+    - channel (optional)
+    - status (optional)
+    - recipient (optional, substring search)
+    - from / to (optional date range)
+    - paging parameters
+  - Returns paged NotificationDeliveryLogDto with:
+    - EventType
+    - Channel
+    - Status
+    - RecipientMasked (email/phone partially masked)
+    - Timestamp
+    - ProviderResponseCode (short).
+
+All responses must use your standard API envelope and error conventions.
+
+--------------------------------------------------
+Step 6: Integration with existing modules
+--------------------------------------------------
+
+Security (Phase 3) and AccountCenter (Phase 9)
+
+Hook the following events into NotificationRouter:
+
+- EventType "Security.NewLogin"
+  - When a user logs in successfully, especially from a new device/location.
+- "Security.NewDeviceTrusted"
+  - When a device is marked trusted.
+- "Security.PasswordChanged"
+  - On password change via AccountCenter or admin.
+- "Security.MfaChanged"
+  - When MFA methods are added/removed/updated.
+- "Account.RecoveryOptions.Updated"
+- "Account.NotificationPreferences.Updated" (optional info notification).
+
+For each of these, create a NotificationEventContext with:
+- TenantId, EventType.
+- Recipient list: the user who owns the account.
+- Payload: at least location, IP, device, timestamp, and relevant details.
+
+AccountCenter NotificationPreferences (Phase 9):
+
+- INotificationRouter must fetch user’s notification preferences for relevant events and merge them with tenant subscription rules.
+
+Governance (Phase 10)
+
+Hook the following events:
+
+- "Governance.AccessReview.Assigned"
+  - When a reviewer gets new items assigned (after campaign run).
+  - Recipient: reviewer user.
+- "Governance.AccessReview.DueSoon"
+  - Optional: reminder when campaign due date is near and items remain pending.
+- "Governance.SoD.ViolationCreated"
+  - Recipient: SecurityOfficer / ComplianceOfficer.
+- "Governance.SoD.ViolationResolved"
+  - Recipient: same or relevant group.
+
+DevPortal (Phase 8)
+
+At least integrate:
+
+- "DevPortal.Webhook.Failed"
+  - When a webhook fails N times consecutively.
+  - Recipient: app owner / developer contact.
+- Optionally:
+  - "DevPortal.ApiKey.Created" or "DevPortal.ApiKey.Rotated".
+
+Billing (Phase 5)
+
+At least integrate:
+
+- "Billing.Subscription.QuotaNearLimit"
+- "Billing.Subscription.PlanWillExpireSoon"
+
+Observability (Phase 6)
+
+- For all notifications enqueued/sent/failed:
+  - Use IAuditWriter to log:
+    - "Notification.Enqueued"
+    - "Notification.Sent"
+    - "Notification.Failed"
+- Make sure these events are visible in Observability dashboards.
+
+--------------------------------------------------
+Step 7: Tenant Admin Portal – Notification UI
+--------------------------------------------------
+
+Extend the existing Tenant Admin Portal React app.
+
+Navigation
+
+- Under Settings (or similar section), add:
+  - "Notification Templates"
+  - "Notification Channels"
+  - "Notification Events"
+  - "Notification Logs"
+
+All pages must be fully localized (use i18n keys).
+
+1) Notification Templates Page – `/tenant/settings/notification/templates`
+
+- Use `GET /api/tenant/notification/templates`.
+- Show table:
+  - EventType
+  - HasTenantOverride (yes/no)
+  - IsEnabled
+- Actions:
+  - Create new template (for an EventType the tenant wants to override).
+  - Edit existing template.
+  - Delete tenant template (revert to global default).
+
+Template Editor:
+
+- Form:
+  - EventType (dropdown from known event types if new template).
+  - IsEnabled.
+  - Localizations: one tab per language (at least "en" and "fa"):
+    - Subject
+    - BodyHtml (rich/markup editor or textarea).
+    - BodyText (optional).
+- Provide basic preview section (render using sample payload placeholders).
+- Use `POST` / `PUT` template APIs.
+
+2) Notification Channels Page – `/tenant/settings/notification/channels`
+
+- Use `GET /api/tenant/notification/channels` and `PUT` for updates.
+- Form fields:
+  - EmailEnabled (toggle).
+  - EmailFromName.
+  - EmailFromAddress.
+  - SmsEnabled (toggle).
+  - SmsSenderId.
+  - InAppEnabled.
+  - WebhookEnabled.
+- If Billing plan does not include SMS or Webhook:
+  - UI should show them disabled and show an upgrade hint based on plan metadata if possible.
+
+3) Notification Events Page – `/tenant/settings/notification/events`
+
+- Use `GET /api/tenant/notification/events`.
+- Table:
+  - EventType (and a localized description).
+  - DefaultChannels (checkboxes: Email, SMS, InApp).
+  - OverrideUserPreference (toggle).
+- On change:
+  - Call `PUT /api/tenant/notification/events/{eventType}` with updated configuration.
+
+4) Notification Logs Page – `/tenant/settings/notification/logs`
+
+- Use `GET /api/tenant/notification/logs` with filtering.
+- Filters:
+  - EventType.
+  - Channel.
+  - Status (Sent, Failed).
+  - Recipient (input).
+  - Date range.
+- Table columns:
+  - Timestamp.
+  - EventType.
+  - Channel.
+  - RecipientMasked.
+  - Status.
+  - ProviderResponseCode.
+- Row details (drawer/modal):
+  - Full provider response message.
+  - Maybe small excerpt of payload (if safe).
+- Ensure sensitive data is not fully exposed:
+  - Mask email/phone in the table and details as defined in Phase 11.
+
+--------------------------------------------------
+Step 8: Cross-cutting – localization, privacy, performance
+--------------------------------------------------
+
+Localization
+
+- All new Admin Portal texts must be defined via i18n keys.
+- EventType and Event descriptions should be localizable (do not hardcode “Security.NewLogin” descriptions directly).
+
+Privacy
+
+- In logs:
+  - Mask recipient emails:
+    - e.g., `user***@domain.com`.
+  - Mask phone numbers:
+    - e.g., `+98******1234`.
+- No secret keys, provider tokens, or full raw payloads should be visible in UI logs.
+
+Performance & Reliability
+
+- Outbox queries:
+  - Use paging, indexes and limit batch size in ProcessPendingAsync.
+- Retry strategy:
+  - Distinguish between transient and permanent errors if possible:
+    - 5xx or timeouts → retry.
+    - 4xx like invalid address → mark as Failed without further retries.
+- Make sure background processing does not deadlock or block main request threads.
+
+Developer Experience
+
+- INotificationRouter:
+  - Provide a simple, well-documented interface for other modules to use.
+  - All modules should call the router with a `NotificationEventContext` instead of constructing outbox records themselves.
+- Keep NotificationCenter independent from specific SMTP/SMS providers:
+  - Use abstractions so provider-specific code can be swapped.
+
+--------------------------------------------------
+Step 9: Tests and final verification
+--------------------------------------------------
+
+Backend tests
+
+- TemplateService:
+  - Creation/update/delete works.
+  - Tenant-specific override and global fallback work correctly.
+- Router:
+  - Correctly combines tenant event subscription + user notification preferences.
+  - Correct selection of channels based on OverrideUserPreference flag.
+  - Correct language resolution and template selection.
+  - Correct outbox items created for multiple recipients and channels.
+- OutboxService + Sender:
+  - Pending items are processed in priority/time order.
+  - Successful sends go to Sent with log.
+  - Failed sends retry up to configured limit then mark Failed.
+- Channel senders:
+  - At least basic happy-path logic for Email/Sms/InApp/Webhook is implemented and covered.
+- Integration:
+  - Security events call the router.
+  - AccountCenter events call the router.
+  - Governance events call the router.
+  - Billing/DevPortal events call the router for at least 1–2 key scenarios.
+
+API tests
+
+- `/api/tenant/notification/templates`:
+  - Enforces tenant boundaries and roles.
+- `/api/tenant/notification/channels`:
+  - Updates and returns per-tenant config.
+- `/api/tenant/notification/events`:
+  - Reads and updates event subscription settings.
+- `/api/tenant/notification/logs`:
+  - Correct filtering and masking.
+
+Frontend tests (manual or automated)
+
+- Notification Templates:
+  - List, create, edit, delete flows work.
+  - Localization tabs behave correctly.
+- Channels & Events:
+  - Tenant can configure channels and per EventType routing.
+- Logs:
+  - Filtering, pagination, and detail view work.
+
+Final verification
+
+- Solution builds with `Onesign.Modules.NotificationCenter` integrated.
+- Phase 11 migration applies cleanly on top of phases 1–10.
+- No direct SMTP/SMS calls remain in other modules; they must go through NotificationRouter / NotificationCenter.
+- When you:
+  - Login, change password/MFA, update recovery, create governance access review, generate SoD violation, trigger a failing DevPortal webhook, or hit billing limit:
+    - Corresponding events produce outbox entries and sent notifications according to tenant/user settings.
+- No TODO comments, no NotImplementedException, no empty public methods or empty pages.
+- All new UI is fully localized-ready.
+
+Important mindset
+
+- Phase 11 is the transactional communication backbone of onesign.
+- After this phase, you should NEVER see “we will send notification later” as a lie in the codebase; everything must be wired to real, auditable notifications via NotificationCenter.
+Now:
+Read Phase11-Onesign-NotificationCenter.md, then implement `Onesign.Modules.NotificationCenter`, the outbox/router/sender pipeline, `/api/tenant/notification/*` endpoints and full Notification settings/logs UI in the Admin Portal with no TODOs or partial implementations.

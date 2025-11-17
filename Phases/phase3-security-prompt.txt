@@ -1,0 +1,546 @@
+You are an expert .NET 10, EF Core, and React/Next.js engineer, working as an implementation assistant for the onesign SSO SaaS platform.
+
+Context
+I already have:
+
+- A Phase 1 spec and implementation for the core multi tenant SSO, OIDC and admin flows:
+  - Phase1-Onesign-CoreSSO.md
+
+- A Phase 2 spec for Organization hierarchy, user and application assignments, and delegated admin:
+  - Phase2-Onesign-OrgHierarchy.md
+
+Now I have a Phase 3 spec focused on advanced security and MFA:
+
+- Phase3-Onesign-AdvancedSecurity.md
+
+Your job is to read all three documents, understand the current architecture and constraints, then implement Phase 3 exactly as defined in Phase3-Onesign-AdvancedSecurity.md, building on top of Phase 1 and 2 without breaking them.
+
+High level goals of Phase 3
+Phase 3 introduces:
+
+- Tenant level security policy
+- MFA engine for TOTP and Email OTP (SMS optional, provider based)
+- MFA enrollment and login integration
+- Device fingerprint and trusted devices
+- Basic risk events and risk level evaluation that influence login
+- Security Center and risk reporting in the Admin Portal
+
+Important constraints
+
+1) Phase boundaries
+Do not go outside the scope of Phase 3. You must:
+
+- Implement only what is defined in Phase3-Onesign-AdvancedSecurity.md
+- Not implement:
+  - Full generic policy engine or ABAC
+  - SCIM, SAML, LDAP, full SIEM integrations
+  - Complex ML based user behavior analytics
+  - Per tenant databases
+These belong to later phases.
+
+2) Architecture and existing modules
+- Backend is a modular monolith as defined in Phase 1 and 2 and must stay that way.
+- Existing modules such as Tenants, Identity, Applications, Audit, Organization must continue to work as they are.
+- Phase 3 will add a new Security module and extend Auth and Account flows.
+- Everything must remain properly tenant scoped and use TenantId everywhere appropriate.
+
+3) Multi language
+- Multi language support (at least English and Persian) is already a cross cutting requirement from Phase 1.
+- All new user facing messages, especially security and MFA messages, must be localizable or use message codes that the frontend can localize.
+- No hardcoded user facing strings directly in controllers or React components. Use the existing localization mechanisms.
+
+4) No TODOs and no partial implementations
+Critical rule:
+
+- Do not leave any class or method with TODO comments, NotImplementedException, or empty bodies if they are part of Phase 3.
+- If a class, method, controller or page is created for Phase 3, implement it fully.
+- If something is out of Phase 3 scope, do not create a stub. Leave it for later.
+
+5) Backwards compatibility
+- Login, OIDC, tokens, tenant admin and base identity flows from Phase 1 and 2 must continue to work.
+- Tenants that do not enable MFA should experience the same login flow as Phase 1, while the security infrastructure is present and ready.
+- Migrations must be safe for existing data.
+
+Step 1: Read and understand the specs
+1) Open and read:
+   - Phase1-Onesign-CoreSSO.md
+   - Phase2-Onesign-OrgHierarchy.md
+   - Phase3-Onesign-AdvancedSecurity.md
+
+2) Build a mental checklist from Phase 3 spec:
+   - New Security module content
+   - SecurityPolicy and OrgUnit MFA rules
+   - MFA enrollment and methods
+   - MFA login flow integration
+   - Trusted devices and device fingerprints
+   - RiskEvent and RiskLevel logic
+   - Security Center and Risk Events pages in Admin Portal
+
+3) Respect that checklist for implementation and do not add features that are not specified.
+
+Step 2: Backend – create Onesign.Modules.Security
+
+Create a new module:
+
+- src/Onesign.Modules.Security
+
+With structure:
+
+- Domain
+  - Entities
+    - SecurityPolicy
+    - OrgUnitMfaRule
+    - UserMfaMethod
+    - MfaChallenge
+    - TrustedDevice
+    - RiskEvent
+  - Enums
+    - MfaMethodType        (Totp, EmailOtp, SmsOtp optional)
+    - MfaRequirementLevel  (None, AdminsOnly, AllUsers)
+    - RiskEventType        (NewDeviceLogin, GeoAnomaly, MultipleFailedLogins and others as per spec)
+    - RiskLevel            (Low, Medium, High)
+  - Services
+    - IMfaService
+    - IMfaChallengeService
+    - IDeviceFingerprintService
+    - IRiskEvaluationService
+    - ISecurityPolicyService
+  - Repositories
+    - ISecurityPolicyRepository
+    - IOrgUnitMfaRuleRepository
+    - IUserMfaMethodRepository
+    - IMfaChallengeRepository
+    - ITrustedDeviceRepository
+    - IRiskEventRepository
+
+- Application
+  - DTOs
+    - SecurityPolicyDto
+    - UpdateSecurityPolicyRequest
+    - OrgUnitMfaRuleDto
+    - UpdateOrgUnitMfaRulesRequest
+    - UserMfaMethodDto
+    - BeginTotpEnrollmentRequest
+    - BeginTotpEnrollmentResponse
+    - ConfirmTotpEnrollmentRequest
+    - DisableMfaMethodRequest
+    - MfaChallengeRequest
+    - MfaChallengeResponse
+    - VerifyMfaRequest
+    - TrustedDeviceDto
+    - RiskEventDto
+    - RiskEventFilterRequest
+  - Commands
+    - UpdateSecurityPolicyCommand
+    - UpdateOrgUnitMfaRulesCommand
+    - BeginTotpEnrollmentCommand
+    - ConfirmTotpEnrollmentCommand
+    - DisableMfaMethodCommand
+    - CreateMfaChallengeCommand
+    - VerifyMfaChallengeCommand
+    - MarkDeviceAsTrustedCommand
+    - RecordRiskEventCommand
+  - Queries
+    - GetSecurityPolicyQuery
+    - GetOrgUnitMfaRulesQuery
+    - GetUserMfaMethodsQuery
+    - GetTrustedDevicesQuery
+    - GetRiskEventsQuery
+
+- Infrastructure
+  - EfCore/Entities
+    - SecurityPolicyEntity
+    - OrgUnitMfaRuleEntity
+    - UserMfaMethodEntity
+    - MfaChallengeEntity
+    - TrustedDeviceEntity
+    - RiskEventEntity
+  - EfCore/Configurations
+    - SecurityPolicyEntityTypeConfiguration
+    - OrgUnitMfaRuleEntityTypeConfiguration
+    - UserMfaMethodEntityTypeConfiguration
+    - MfaChallengeEntityTypeConfiguration
+    - TrustedDeviceEntityTypeConfiguration
+    - RiskEventEntityTypeConfiguration
+  - EfCore/Repositories
+    - SecurityPolicyRepository
+    - OrgUnitMfaRuleRepository
+    - UserMfaMethodRepository
+    - MfaChallengeRepository
+    - TrustedDeviceRepository
+    - RiskEventRepository
+  - Services
+    - TotpProvider
+    - EmailOtpProvider
+    - BasicRiskEvaluationService
+    - DeviceFingerprintService
+
+Implement all of the above completely. No stubs.
+
+Step 3: Database model and migrations
+
+Extend OnesignDbContext with DbSet for:
+
+- SecurityPolicies
+- OrgUnitMfaRules
+- UserMfaMethods
+- MfaChallenges
+- TrustedDevices
+- RiskEvents
+
+Implement EF configurations as per spec:
+
+- SecurityPolicy
+  - One row per tenant (TenantId as PK or unique)
+- OrgUnitMfaRule
+  - Unique on (TenantId, OrgUnitId)
+- UserMfaMethod
+  - Index on TenantUserId, MethodType, IsPrimary
+- MfaChallenge
+  - Index on ExpiresAt for cleanup
+- TrustedDevice
+  - Unique on (TenantUserId, DeviceId)
+- RiskEvent
+  - Index on TenantId, CreatedAt, RiskLevel
+
+Create a migration for these structures, and:
+
+- Backfill SecurityPolicy for existing tenants with sensible defaults:
+  - MfaRequirementLevel = None
+  - AllowMfaRememberDevice = true (as default)
+  - RememberDeviceDays = 30
+  - MaxFailedLoginAttempts = 5
+  - EnableGeoAnomalyDetection = false
+  - BlockLevel = RiskLevel.High
+
+Make sure this migration is safe for existing databases and can run on top of Phase 1 and 2 schema.
+
+Step 4: Domain services – policies, MFA, device, risk
+
+Implement:
+
+ISecurityPolicyService
+
+- GetPolicyForTenantAsync(tenantId)
+- UpdatePolicyAsync(tenantId, newSettings)
+- GetEffectiveMfaRequirementAsync(tenantUser, orgUnitsOfUser, isAdmin, deviceTrusted, riskLevel)
+
+This service decides for a login:
+
+- Whether MFA is required
+- Whether login must be blocked based on RiskLevel and policy
+
+IMfaService
+
+- Generate TOTP shared secrets
+- Verify TOTP codes
+- Generate OTP for Email (and optionally SMS if configured)
+
+IMfaChallengeService
+
+- CreateMfaChallenge for a given TenantUser, MfaMethodType, device and ip
+- Validate and consume a challenge plus code
+- Enforce expiration and single use
+
+IDeviceFingerprintService
+
+- Resolve and manage TrustedDevice entities based on DeviceId
+- When login with MFA completes and rememberDevice is set and allowed by policy, mark or create TrustedDevice with an expiry
+
+IRiskEvaluationService
+
+- Evaluate login attempts using device, IP and country
+- Create RiskEvent entries for:
+  - NewDeviceLogin
+  - GeoAnomaly
+  - MultipleFailedLogins
+- Return a RiskLevel used by ISecurityPolicyService
+
+All services must be fully implemented. No TODO or NotImplementedException.
+
+Step 5: Application layer commands and queries
+
+Implement commands and queries described in Phase 3 spec:
+
+Security policy and OrgUnit rules:
+
+- GetSecurityPolicyQuery
+- UpdateSecurityPolicyCommand
+- GetOrgUnitMfaRulesQuery
+- UpdateOrgUnitMfaRulesCommand
+
+MFA enrollment:
+
+- GetUserMfaMethodsQuery
+- BeginTotpEnrollmentCommand
+- ConfirmTotpEnrollmentCommand
+- DisableMfaMethodCommand
+
+MFA login flow:
+
+- CreateMfaChallengeCommand
+  - Called after successful password check when MFA is required
+- VerifyMfaChallengeCommand
+  - Validates challenge and code
+  - On success, completes login and optionally marks device as trusted
+
+Devices and risk:
+
+- GetTrustedDevicesQuery
+- MarkDeviceAsTrustedCommand (can be used inside VerifyMfa logic)
+- DeleteTrustedDeviceCommand
+- RecordRiskEventCommand
+- GetRiskEventsQuery
+
+Respect:
+
+- Tenant scoping via ITenantContext
+- User scoping via ICurrentUserService
+- Authorization based on roles and delegated admin scope when relevant
+- Multi language strategy from previous phases
+
+Step 6: API endpoints – security policy, MFA, devices, risk
+
+Add new endpoints in Onesign.Api as per the Phase 3 spec.
+
+Tenant security policy and OrgUnit MFA rules:
+
+Base `/api/tenant/security`
+
+- GET `/api/tenant/security/policy`
+  - Returns SecurityPolicyDto
+
+- PUT `/api/tenant/security/policy`
+  - Accepts UpdateSecurityPolicyRequest
+  - Validates RememberDeviceDays, MaxFailedLoginAttempts and other fields
+  - Writes to Audit
+
+- GET `/api/tenant/security/org-units/mfa-rules`
+  - Returns list of OrgUnitMfaRuleDto
+
+- PUT `/api/tenant/security/org-units/mfa-rules`
+  - Accepts UpdateOrgUnitMfaRulesRequest
+
+Account MFA management:
+
+Base `/api/account/mfa`
+
+- GET `/api/account/mfa/methods`
+  - Returns list of UserMfaMethodDto for the current tenant user
+
+- POST `/api/account/mfa/totp/begin`
+  - Request: BeginTotpEnrollmentRequest
+  - Response: BeginTotpEnrollmentResponse with shared secret and otpauth url
+
+- POST `/api/account/mfa/totp/confirm`
+  - Request: ConfirmTotpEnrollmentRequest
+  - Verifies TOTP and sets IsVerified = true
+
+- POST `/api/account/mfa/methods/disable`
+  - Request: DisableMfaMethodRequest
+  - Enforces that at least one method remains if policy mandates MFA
+
+Auth MFA login:
+
+Update existing `POST /api/auth/login` to:
+
+- If password is wrong:
+  - behave exactly as before, including risk tracking for failed logins
+- If password is correct:
+  - Call ISecurityPolicyService and IRiskEvaluationService and DeviceFingerprintService to decide:
+    - whether MFA is required
+    - whether login must be blocked
+  - If login is blocked due to risk:
+    - return a localized or code based error
+  - If MFA is not required:
+    - complete login as Phase 1 and issue tokens
+  - If MFA is required:
+    - create an MfaChallenge
+    - return a response indicating:
+      - requiresMfa = true
+      - challengeId
+      - availableMethods
+
+Add:
+
+- POST `/api/auth/mfa/verify`
+  - Request: VerifyMfaRequest (challengeId, methodType, code, deviceId, rememberDeviceFlag)
+  - Uses IMfaChallengeService and IMfaService to validate code
+  - On success:
+    - completes login (issue tokens)
+    - if rememberDeviceFlag and allowed by policy, create or update TrustedDevice
+  - On failure:
+    - updates risk data and returns localized or code based error
+
+Account devices:
+
+Base `/api/account/devices`
+
+- GET `/api/account/devices`
+  - Returns list of TrustedDeviceDto for current tenant user
+
+- DELETE `/api/account/devices/{id}`
+  - Removes a trusted device
+
+Risk events:
+
+Base `/api/tenant/security/risk-events`
+
+- GET `/api/tenant/security/risk-events`
+  - Accepts RiskEventFilterRequest via query string
+  - Returns list of RiskEventDto with pagination if necessary
+
+All endpoints must:
+
+- Respect tenant context
+- Respect localization
+- Have proper error handling and use audit for sensitive changes
+
+Step 7: Login Portal changes – MFA flow
+
+In the Login Portal project:
+
+Update the login flow:
+
+1) After calling `/api/auth/login`:
+   - If response indicates `requiresMfa = false` with tokens → complete the login as before.
+   - If response indicates `requiresMfa = true` and returns a `challengeId` → redirect to a dedicated MFA page.
+
+2) Implement a new page, for example `/mfa`:
+
+- Reads the challenge context (challengeId and methods).
+- Allows user to:
+  - select a method if multiple
+  - enter the code
+  - choose "trust this device" if allowed by policy
+- Sends `VerifyMfaRequest` to `/api/auth/mfa/verify` with:
+  - challengeId
+  - methodType
+  - code
+  - deviceId (persistent, from cookie or local storage)
+  - rememberDeviceFlag
+
+- On success:
+  - complete login flow and store tokens
+- On error:
+  - show localized errors via existing i18n
+
+All UI strings for MFA must be localizable (English and Persian) through the existing i18n setup.
+
+Step 8: Admin Portal – Security Center and Risk views
+
+In the Admin Portal project:
+
+Security Center:
+
+1) Implement a new route `/tenant/security` which contains:
+
+- Security Policy tab:
+  - Form bound to:
+    - MfaRequirementLevel
+    - AllowMfaRememberDevice
+    - RememberDeviceDays
+    - RequireMfaForSensitiveApps
+    - MaxFailedLoginAttempts
+    - EnableGeoAnomalyDetection
+    - BlockLevel
+  - Uses:
+    - GET `/api/tenant/security/policy`
+    - PUT `/api/tenant/security/policy`
+
+- OrgUnit MFA Rules tab:
+  - Uses the existing OrgUnit tree from Phase 2
+  - For each OrgUnit node, display a checkbox or toggle for MfaRequired
+  - Uses:
+    - GET `/api/tenant/security/org-units/mfa-rules`
+    - PUT `/api/tenant/security/org-units/mfa-rules`
+
+- Summary widget:
+  - Shows at a glance:
+    - approximate percentage of users with MFA enabled
+    - number of trusted devices
+    - number of risk events in a recent period
+  - You may implement a small aggregated backend endpoint if needed or read from existing endpoints efficiently.
+
+2) Risk Events page:
+
+Implement a separate route `/tenant/security/risk-events` that:
+
+- Displays a table with:
+  - Time
+  - User
+  - EventType
+  - RiskLevel
+  - IP
+  - Country
+- Has filters:
+  - Date range
+  - RiskLevel
+  - EventType
+  - User (optional selection)
+- Uses:
+  - GET `/api/tenant/security/risk-events`
+
+All new UI must:
+
+- Use the existing i18n infrastructure for all text
+- Respect delegated admin scopes where relevant (risk events might be tenant wide and limited only to high privilege admins)
+
+Step 9: Audit integration
+
+For every critical security operation in Phase 3, you must record AuditEvents via the existing Audit module:
+
+- Updating SecurityPolicy
+- Updating OrgUnitMfaRules
+- Beginning and confirming TOTP enrollment
+- Disabling an MFA method
+- Verifying or failing an MFA challenge
+- Marking a device as trusted
+- Deleting a trusted device
+
+Ensure that audit entries contain:
+
+- TenantId
+- Actor
+- Operation type
+- Target entity id
+- Timestamp and minimal details
+
+Step 10: Testing and validation
+
+Add or extend tests to cover:
+
+- ISecurityPolicyService:
+  - Behavior for MfaRequirementLevel None, AdminsOnly and AllUsers
+  - Interaction with OrgUnitMfaRules
+  - Interaction with trusted devices
+  - Risk based overrides that force MFA or block login
+
+- IMfaService:
+  - TOTP generation and verification
+  - OTP generation and reasonable expiry
+
+- IDeviceFingerprintService:
+  - Trusted vs new device detection
+
+- Login flow:
+  - No MFA tenant: login behaves as in Phase 1
+  - Tenant requiring MFA: login triggers MFA challenge and completes only after verification
+  - Risk based block conditions working as intended
+
+Ensure:
+
+- Backend builds and all migrations apply
+- Login Portal and Admin Portal build and run without TypeScript or runtime errors
+- Multi language still works for all newly added texts
+- There is no TODO or NotImplementedException anywhere in Phase 3 code
+
+Important mindset
+
+- Treat Phase3-Onesign-AdvancedSecurity.md as the source of truth for Phase 3.
+- Keep security, tenant isolation and correctness as the top priorities even over convenience.
+- Do not over engineer or start building a generic policy engine. Implement exactly what is needed for a serious, RFP ready MFA and basic risk layer.
+- Always integrate with existing modules and flows from Phase 1 and 2 rather than duplicating logic.
+
+Now:
+Start by reading Phase3-Onesign-AdvancedSecurity.md, summarize the tasks you will implement, create the Onesign.Modules.Security module and migrations, then implement security policy, MFA enrollment, MFA login flow, trusted devices, risk events and the Admin Portal Security Center and Risk Events pages end to end with no TODOs.

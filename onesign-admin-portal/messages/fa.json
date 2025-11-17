@@ -1,0 +1,101 @@
+{
+  "common": {
+    "dashboard": "داشبورد",
+    "users": "کاربران",
+    "applications": "برنامه‌ها",
+    "audit": "لاگ",
+    "tenants": "مستاجرین",
+    "settings": "تنظیمات",
+    "logout": "خروج",
+    "loading": "در حال بارگذاری...",
+    "error": "خطا",
+    "success": "موفق",
+      "save": "ذخیره",
+      "cancel": "لغو",
+      "delete": "حذف",
+      "edit": "ویرایش",
+      "create": "ایجاد",
+      "search": "جستجو",
+      "close": "بستن"
+  },
+  "admin": {
+    "title": "پنل مدیریت",
+    "tenants": {
+      "title": "مستاجرین",
+      "createTenant": "ایجاد مستاجر",
+      "tenantName": "نام مستاجر",
+      "tenantSlug": "شناسه مستاجر",
+      "status": "وضعیت",
+      "active": "فعال",
+      "suspended": "معلق",
+      "inactive": "غیرفعال",
+      "tenantCreated": "مستاجر با موفقیت ایجاد شد",
+      "statusUpdated": "وضعیت مستاجر با موفقیت به‌روزرسانی شد"
+    }
+  },
+  "tenant": {
+    "dashboard": {
+      "title": "داشبورد",
+      "totalUsers": "کل کاربران",
+      "totalApplications": "کل برنامه‌ها",
+      "recentActivity": "فعالیت‌های اخیر"
+    },
+    "users": {
+      "title": "کاربران",
+      "inviteUser": "دعوت کاربر",
+      "email": "ایمیل",
+      "status": "وضعیت",
+      "invited": "دعوت شده",
+      "active": "فعال",
+      "suspended": "معلق",
+      "disabled": "غیرفعال",
+      "isAdmin": "مدیر",
+      "lastLogin": "آخرین ورود",
+      "actions": "عملیات",
+      "disable": "غیرفعال کردن",
+      "userInvited": "کاربر با موفقیت دعوت شد",
+      "userDisabled": "کاربر با موفقیت غیرفعال شد",
+      "confirmDisable": "آیا مطمئن هستید که می‌خواهید این کاربر را غیرفعال کنید؟"
+    },
+    "applications": {
+      "title": "برنامه‌ها",
+      "createApplication": "ایجاد برنامه",
+      "editApplication": "ویرایش برنامه",
+      "applicationName": "نام برنامه",
+      "clientId": "شناسه کلاینت",
+      "applicationType": "نوع برنامه",
+      "web": "وب",
+      "mobile": "موبایل",
+      "spa": "SPA",
+      "redirectUris": "آدرس‌های بازگشت",
+      "addRedirectUri": "افزودن آدرس بازگشت",
+      "manageRedirectUris": "مدیریت آدرس‌های بازگشت",
+      "redirectUriAdded": "آدرس بازگشت با موفقیت اضافه شد",
+      "redirectUriRemoved": "آدرس بازگشت با موفقیت حذف شد",
+      "confirmRemoveRedirectUri": "آیا مطمئن هستید که می‌خواهید این آدرس بازگشت را حذف کنید؟",
+      "noRedirectUris": "هیچ آدرس بازگشتی تنظیم نشده است",
+      "applicationCreated": "برنامه با موفقیت ایجاد شد",
+      "applicationUpdated": "برنامه با موفقیت به‌روزرسانی شد",
+      "applicationDeleted": "برنامه با موفقیت حذف شد",
+      "confirmDelete": "آیا مطمئن هستید که می‌خواهید این برنامه را حذف کنید؟"
+    },
+    "audit": {
+      "title": "لاگ سیستم",
+      "eventType": "نوع رویداد",
+      "actor": "عامل",
+      "description": "توضیحات",
+      "timestamp": "زمان",
+      "filter": "فیلتر",
+      "fromDate": "از تاریخ",
+      "toDate": "تا تاریخ"
+    },
+    "settings": {
+      "title": "تنظیمات",
+      "branding": "برندینگ",
+      "logoUrl": "آدرس لوگو",
+      "primaryColor": "رنگ اصلی",
+      "brandingUpdated": "برندینگ با موفقیت به‌روزرسانی شد"
+    }
+  }
+}
+

@@ -1,0 +1,679 @@
+You are an expert .NET 10, EF Core, and React/Next.js engineer, acting as the implementation assistant for the onesign SSO / IAM / IGA platform.
+
+Context
+The platform already includes:
+
+- Multi tenant SSO and OIDC/OAuth2
+- Tenant model and basic multi-tenant DB schema
+- Observability and audit logging
+- Admin Portal and Global Admin (platform owner) views
+- Identity, Federation, Lifecycle, Governance, Billing, etc.
+- IdentityInsights, AdaptiveSecurity, Extensibility, etc.
+
+Now you must implement Phase 20, which focuses on:
+
+- Multi Region model
+- Data Residency per tenant
+- Backup & Restore (Region-level and Tenant-level)
+- DR Health & Runbook visibility
+- Global Admin UI for Regions, Backups, and DR
+
+Specification document:
+- Phase20-Onesign-MultiRegion-DR-EnterpriseDeployment.md
+
+Your job
+- Read Phase20-Onesign-MultiRegion-DR-EnterpriseDeployment.md carefully.
+- Implement Phase 20 exactly as defined there by:
+  - Adding Region and Tenant↔Region binding
+  - Implementing TenantDataResidencyPolicy
+  - Implementing RegionBackupSet and TenantBackupSet, plus backup/restore services
+  - Implementing DR health aggregation and runbook metadata
+  - Implementing Global Admin & Tenant Admin UI for region/residency/backup
+- Do NOT break previous phases.
+- Do NOT leave any TODO or NotImplementedException.
+- Do NOT create placeholder controllers, services or React components.
+
+Global constraints
+
+1) Multi language
+- The platform is multilingual (English + Persian).
+- All new UI strings must use the existing i18n system.
+- Backend error messages that are user facing must use existing message patterns or minimal English, no ad-hoc text everywhere.
+
+2) No TODO and no partial implementations
+- No TODO comments.
+- No NotImplementedException.
+- No “stub” backup/restore logic that does nothing.
+- Anything you wire in the UI must have a real backend behind it.
+
+3) Modular monolith boundaries
+- Region and DR concerns belong in global/platform configuration modules, not in tenant-local modules.
+- Backup/restore logic must respect multi-tenant schema and tenant isolation.
+- All APIs that operate at “global” scope must be restricted to Global Admin / SRE roles.
+
+4) Safety & correctness
+- Backup sets must be real, traceable artifacts with metadata.
+- Restore must enforce TenantDataResidencyPolicy and not silently violate data residency.
+
+--------------------------------------------------
+Step 1: Read the Phase 20 spec and build an internal checklist
+--------------------------------------------------
+
+Read:
+- Phase20-Onesign-MultiRegion-DR-EnterpriseDeployment.md
+
+Extract and keep visible:
+
+Core concepts:
+
+- Region
+  - Id (e.g. "eu-west-1", "me-central-1")
+  - DisplayName
+  - IsActive
+  - EndpointBaseUrl
+  - DbClusterRef / StorageClusterRef (logical identifiers)
+
+- TenantRegionBinding
+  - Tenant.RegionId (primary)
+  - Tenant.SecondaryRegionId (optional, for future DR)
+  - TenantDataResidencyPolicy:
+    - TenantId
+    - DataRegionId
+    - BackupRegionId
+    - CrossRegionReplicationAllowed
+    - ComplianceTag
+
+- Backup & Restore
+  - RegionBackupSet
+    - Id
+    - RegionId
+    - CreatedAt
+    - StorageLocation
+    - Status (InProgress, Completed, Failed)
+  - TenantBackupSet
+    - Id
+    - TenantId
+    - RegionId
+    - CreatedAt
+    - Type (LogicalExport or FullTenantBackup)
+    - StorageLocation
+    - Status
+
+- DR & Health
+  - RegionHealthDto:
+    - RegionId
+    - Status (Healthy / Degraded / Down)
+    - LastSuccessfulBackupAt
+    - TenantsCount
+    - CriticalAlertsCount
+  - DRRunbookStep:
+    - Id
+    - RegionId (nullable for global)
+    - Order
+    - Name
+    - Description
+    - ScriptReference
+
+UI:
+
+- Global Admin:
+  - Regions management
+  - DR & Health dashboard
+  - Region backups list
+  - Tenant backups + restore page
+- Tenant Admin:
+  - Read-only Data Residency & Region info in Tenant settings
+
+--------------------------------------------------
+Step 2: Implement Region and TenantRegionBinding
+--------------------------------------------------
+
+1) Region entity
+
+Create a Region aggregate in an appropriate global config module, e.g.:
+
+- Namespace: `Onesign.Modules.Platform` (or similar global config module).
+- Entity: `Region`
+  - Id (string, unique, stable, e.g. "eu-west-1")
+  - DisplayName (string)
+  - IsActive (bool)
+  - EndpointBaseUrl (string)
+  - DbClusterRef (string) – logical reference to DB cluster/config
+  - StorageClusterRef (string) – logical reference to storage cluster
+
+EF mapping:
+
+- Table: `Global_Regions`
+- Primary key: Id
+- Indices: IsActive if needed.
+
+Create repository or DbSet + service:
+
+- `IRegionService`
+  - `Task<IReadOnlyList<Region>> GetAllAsync()`
+  - `Task<Region?> GetByIdAsync(string id)`
+  - `Task<Region> CreateAsync(Region region)`
+  - `Task<Region> UpdateAsync(Region region)`
+  - Deactivation instead of hard delete if you prefer.
+
+2) Tenant Region binding
+
+Update Tenant aggregate/model:
+
+- Add:
+  - `RegionId` (string, not null)
+  - `SecondaryRegionId` (string?, optional for future DR, but present in schema)
+
+Migration:
+
+- For existing tenants:
+  - Set RegionId to a default region (e.g. "primary" or configured default).
+- Enforce RegionId is required when creating new tenants.
+
+Make sure RegionId is used consistently for:
+
+- Resolving which DB cluster to use if you have per-region DB.
+- Routing/metadata for backup and restore jobs.
+
+--------------------------------------------------
+Step 3: Implement TenantDataResidencyPolicy
+--------------------------------------------------
+
+Create entity:
+
+- `TenantDataResidencyPolicy`
+  - TenantId (Guid, PK)
+  - DataRegionId (string)
+  - BackupRegionId (string)
+  - CrossRegionReplicationAllowed (bool)
+  - ComplianceTag (string, e.g. "GDPR", "LocalReg", etc.)
+
+EF mapping:
+
+- Table: `Global_TenantDataResidencyPolicies`
+- Primary key: TenantId.
+
+Service:
+
+- `ITenantDataResidencyService`
+  - `Task<TenantDataResidencyPolicy?> GetAsync(Guid tenantId)`
+  - `Task<TenantDataResidencyPolicy> UpsertAsync(TenantDataResidencyPolicy policy)`
+
+Usage:
+
+- Create default policy when a tenant is created:
+  - DataRegionId = Tenant.RegionId.
+  - BackupRegionId = same as DataRegionId unless configured otherwise.
+- Enforce in backup/restore logic:
+  - If CrossRegionReplicationAllowed == false:
+    - RegionBackupSet and TenantBackupSet for that tenant must only reside in allowed regions.
+
+APIs:
+
+- Global scope:
+  - `GET /api/global/tenants/{tenantId}/data-residency`
+  - `PUT /api/global/tenants/{tenantId}/data-residency`
+- Authorization:
+  - Only Global Admin / SRE roles.
+
+--------------------------------------------------
+Step 4: Implement RegionBackupSet and TenantBackupSet
+--------------------------------------------------
+
+Entities:
+
+1) RegionBackupSet
+
+- Id (Guid)
+- RegionId (string)
+- CreatedAt (DateTimeOffset)
+- StorageLocation (string – URI or path reference)
+- Status (enum: InProgress, Completed, Failed)
+
+EF mapping:
+
+- Table: `DR_RegionBackupSets`
+- Index on RegionId, CreatedAt.
+
+2) TenantBackupSet
+
+- Id (Guid)
+- TenantId (Guid)
+- RegionId (string)
+- CreatedAt (DateTimeOffset)
+- Type (string/enum: "LogicalExport", "FullTenantBackup")
+- StorageLocation (string)
+- Status (enum: InProgress, Completed, Failed)
+
+EF mapping:
+
+- Table: `DR_TenantBackupSets`
+- Index on TenantId, CreatedAt.
+
+Services:
+
+- `IRegionBackupService`
+  - `Task<RegionBackupSet> CreateRegionBackupAsync(string regionId)`
+  - `Task<IReadOnlyList<RegionBackupSet>> GetBackupsAsync(string regionId)`
+
+- `ITenantBackupService`
+  - `Task<TenantBackupSet> CreateBackupAsync(Guid tenantId, string type)`
+  - `Task<IReadOnlyList<TenantBackupSet>> GetBackupsAsync(Guid tenantId)`
+
+Backup implementation details:
+
+- Do NOT hand-wave:
+  - Define a backup provider abstraction for DB + storage backup.
+- For now:
+  - Integrate with whatever backup mechanism your infra uses via an interface:
+    - `IRegionBackupProvider` and `ITenantBackupProvider` that produce artifacts at a StorageLocation.
+  - Phase 20 code must:
+    - Create the BackupSet, mark InProgress.
+    - Call provider.
+    - On success: update StorageLocation + Status = Completed.
+    - On failure: Status = Failed.
+
+APIs:
+
+- Global for regions:
+  - `GET /api/global/regions/{regionId}/backups`
+  - `POST /api/global/regions/{regionId}/backups` (manual trigger)
+
+- Global for tenants:
+  - `GET /api/global/tenants/{tenantId}/backups`
+  - `POST /api/global/tenants/{tenantId}/backups`
+
+Authorization:
+
+- Only Global Admin / SRE role.
+
+--------------------------------------------------
+Step 5: Implement Tenant Restore
+--------------------------------------------------
+
+Service:
+
+- `ITenantRestoreService`
+  - `Task RestoreAsync(Guid tenantId, Guid backupSetId, string? targetRegionId = null)`
+
+Logic:
+
+- Load Tenant, BackupSet, TenantDataResidencyPolicy.
+- Determine targetRegionId:
+  - If targetRegionId is null → default to BackupSet.RegionId or Tenant.RegionId.
+- Enforce policy:
+  - If targetRegionId != policy.DataRegionId AND CrossRegionReplicationAllowed == false:
+    - throw a domain/business exception (no silent cross region moves).
+
+Restore process:
+
+1) Put tenant into maintenance mode:
+   - Use an existing maintenance flag or add one on Tenant:
+     - e.g. `IsInMaintenanceMode`.
+   - Prevent logins / token issuance for that tenant while restoring.
+
+2) Clear current tenant data in target region:
+   - For all multi-tenant tables containing TenantId:
+     - delete or logically clear rows for that tenant in the target DB.
+
+3) Use backup provider to restore:
+   - Use TenantBackupSet.StorageLocation to retrieve snapshot.
+   - Import into DB for that Region, only for that TenantId.
+
+4) Exit maintenance mode:
+   - Set `IsInMaintenanceMode = false`.
+
+Audit events:
+
+- "DR.TenantRestoreStarted"
+- "DR.TenantRestoreCompleted"
+- "DR.TenantRestoreFailed"
+
+API:
+
+- `POST /api/global/tenants/{tenantId}/restore`
+  - body: { backupSetId, targetRegionId? }
+
+Authorization:
+
+- Only Global Admin / SRE.
+
+--------------------------------------------------
+Step 6: Implement Region Health & DR Runbook
+--------------------------------------------------
+
+Region health aggregation:
+
+Service:
+
+- `IRegionHealthService`
+  - `Task<IReadOnlyList<RegionHealthDto>> GetRegionsHealthAsync()`
+
+RegionHealthDto:
+
+- RegionId
+- Status (Healthy / Degraded / Down)
+- LastSuccessfulBackupAt (from RegionBackupSet)
+- TenantsCount
+- CriticalAlertsCount (if you have an alerting integration; otherwise stub as 0 but keep property)
+
+Status derivation (for now rule-based):
+
+- Healthy:
+  - last backup < threshold (e.g. 24h)
+  - no recent critical errors
+- Degraded:
+  - last backup older than threshold OR some non-critical errors
+- Down:
+  - health checks failing or region marked down (you may integrate with health monitoring if present).
+
+API:
+
+- `GET /api/global/regions/health`
+  - returns list of RegionHealthDto.
+
+DR Runbook model:
+
+Entity:
+
+- `DRRunbookStep`
+  - Id (Guid)
+  - RegionId (string? – nullable for global steps)
+  - Order (int)
+  - Name (string)
+  - Description (string)
+  - ScriptReference (string, optional)
+
+EF mapping:
+
+- Table: `DR_RunbookSteps`
+- Index: RegionId, Order.
+
+Service:
+
+- `IDRRunbookService`
+  - `Task<IReadOnlyList<DRRunbookStep>> GetStepsForRegionAsync(string? regionId)`
+  - `Task<DRRunbookStep> CreateOrUpdateAsync(DRRunbookStep step)` (Global Admin only)
+
+Purpose:
+
+- This is metadata only; no execution engine is required at this phase.
+
+--------------------------------------------------
+Step 7: Backend APIs & Security
+--------------------------------------------------
+
+Global Admin APIs (sample routes, adjust to your routing conventions):
+
+Regions:
+
+- `GET /api/global/regions`
+- `POST /api/global/regions`
+- `PUT /api/global/regions/{id}`
+- Deletion may be implemented as deactivation:
+  - `DELETE /api/global/regions/{id}` → sets IsActive=false if no tenants bound.
+
+Region Health:
+
+- `GET /api/global/regions/health`
+
+Region backups:
+
+- `GET /api/global/regions/{regionId}/backups`
+- `POST /api/global/regions/{regionId}/backups`
+
+Tenant data residency:
+
+- `GET /api/global/tenants/{tenantId}/data-residency`
+- `PUT /api/global/tenants/{tenantId}/data-residency`
+
+Tenant backups:
+
+- `GET /api/global/tenants/{tenantId}/backups`
+- `POST /api/global/tenants/{tenantId}/backups`
+
+Tenant restore:
+
+- `POST /api/global/tenants/{tenantId}/restore`
+
+DR Runbook:
+
+- `GET /api/global/dr/runbook?regionId=...`
+- `POST /api/global/dr/runbook` (create/update, if needed)
+
+Tenant Admin API (read-only residency):
+
+- `GET /api/tenant/settings/data-residency`
+  - returns:
+    - RegionId, BackupRegionId, CrossRegionReplicationAllowed, ComplianceTag.
+
+Authorization:
+
+- All `/api/global/*` routes:
+  - require Global Admin / SRE role.
+- `/api/tenant/settings/data-residency`:
+  - accessible to Tenant Admin (read-only).
+
+--------------------------------------------------
+Step 8: Admin Portal – Global UI
+--------------------------------------------------
+
+In React/Next.js Admin Portal:
+
+1) Global Regions management
+
+Route:
+
+- `/global/regions`
+
+Page:
+
+- Table of Regions:
+  - Id
+  - DisplayName
+  - EndpointBaseUrl
+  - IsActive
+- Actions:
+  - Create new Region
+  - Edit region
+  - Deactivate (if allowed)
+- Modal:
+  - Id (read-only when editing)
+  - DisplayName
+  - EndpointBaseUrl
+  - IsActive
+- All labels via i18n.
+
+2) DR & Health Dashboard
+
+Route:
+
+- `/global/dr-health`
+
+Data source:
+
+- `GET /api/global/regions/health`
+
+UI:
+
+- Summary cards:
+  - Total regions
+  - Count Healthy / Degraded / Down
+- Table:
+  - RegionId
+  - Status (badge with color)
+  - LastSuccessfulBackupAt
+  - TenantsCount
+  - CriticalAlertsCount
+  - Link to Region backups page.
+
+3) Region Backups page
+
+Route:
+
+- `/global/regions/{regionId}/backups`
+
+Data source:
+
+- `GET /api/global/regions/{regionId}/backups`
+
+UI:
+
+- Table:
+  - CreatedAt
+  - Status
+  - StorageLocation (shortened)
+- Button:
+  - "Trigger backup" → calls POST backup endpoint.
+
+4) Tenant Backups & Restore page
+
+Route:
+
+- `/global/tenants/{tenantId}/backups`
+
+Data source:
+
+- `GET /api/global/tenants/{tenantId}/backups`
+
+UI:
+
+- Table:
+  - CreatedAt
+  - Type
+  - RegionId
+  - Status
+- Buttons:
+  - "Create backup"
+  - "Restore" (per backup row)
+    - Opens confirm modal:
+      - Shows backup metadata.
+      - Optional targetRegion selection if allowed by policy.
+      - Strong warning text before calling restore API.
+
+5) DR Runbook view
+
+Route:
+
+- `/global/dr/runbook` (optional filter by region)
+
+Data:
+
+- `GET /api/global/dr/runbook?regionId=...`
+
+UI:
+
+- List of steps:
+  - Order
+  - Region (or "Global")
+  - Name
+  - Description
+  - ScriptReference (as text/link)
+
+Initially can be read-only; edit might be implemented via simple forms for Global Admin.
+
+--------------------------------------------------
+Step 9: Tenant Admin – Data Residency UI
+--------------------------------------------------
+
+In tenant Admin Portal:
+
+Route:
+
+- `/tenant/settings/data-residency`
+
+Data source:
+
+- `GET /api/tenant/settings/data-residency`
+
+UI:
+
+- Simple read-only panel showing:
+  - Region (with display name)
+  - BackupRegion
+  - Flags:
+    - CrossRegionReplicationAllowed: Yes/No
+  - ComplianceTag (e.g. "GDPR", "LocalRegX").
+- Mark clearly as “managed by platform (Global Admin)”.
+
+All texts i18n-compatible.
+
+--------------------------------------------------
+Step 10: Observability & Audit
+--------------------------------------------------
+
+Add audit events for:
+
+- Region lifecycle:
+  - "Region.Created"
+  - "Region.Updated"
+  - "Region.Deactivated"
+
+- Data residency:
+  - "Tenant.DataResidency.Updated"
+
+- Backup:
+  - "Backup.RegionBackupStarted"
+  - "Backup.RegionBackupCompleted"
+  - "Backup.RegionBackupFailed"
+  - "Backup.TenantBackupStarted"
+  - "Backup.TenantBackupCompleted"
+  - "Backup.TenantBackupFailed"
+
+- Restore:
+  - "DR.TenantRestoreStarted"
+  - "DR.TenantRestoreCompleted"
+  - "DR.TenantRestoreFailed"
+
+Hook these into existing audit pipeline and ensure tenant/region IDs are included in metadata.
+
+--------------------------------------------------
+Step 11: Tests and verification
+--------------------------------------------------
+
+Backend tests:
+
+- RegionService:
+  - create/update/get works.
+- Tenant migration:
+  - existing tenants receive default RegionId.
+- TenantDataResidencyService:
+  - policy enforcement for backup/restore.
+- Backup services:
+  - RegionBackupSet and TenantBackupSet creation and state transitions (InProgress → Completed/Failed).
+- Restore:
+  - restore is blocked when targetRegion violates policy.
+  - restore sets maintenance mode correctly and exits.
+
+- RegionHealthService:
+  - derives correct Status based on backup timestamps.
+
+Frontend tests (manual or automated):
+
+- Global Regions page:
+  - can list and edit Regions.
+- DR & Health dashboard:
+  - shows expected metrics from API.
+- Region backups page:
+  - sees backups and can trigger new ones.
+- Tenant backups page:
+  - can create backup and trigger restore (with mock data in dev).
+- Tenant Data Residency page:
+  - shows correct info and is read-only.
+
+Final verification:
+
+- Solution builds with Phase 20 code and migrations.
+- For a test environment with 2 Regions and several tenants:
+  - You can:
+    - assign tenants to Regions,
+    - see Region health,
+    - create region and tenant backups,
+    - restore a tenant from a backup (within allowed regions),
+    - see all operations audited.
+
+Important mindset
+Phase 20 is about making onesign look like a serious SSO platform in front of banks and telcos. No decorative enums, no fake “Region” that does nothing. Region, Residency, Backup, Restore, Health and DR must be wired end-to-end.
+
+Now:
+Read Phase20-Onesign-MultiRegion-DR-EnterpriseDeployment.md, then implement all described Region, Residency, Backup/Restore and DR features, with real code, no TODO and no placeholders.

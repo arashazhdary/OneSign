@@ -1,0 +1,101 @@
+{
+  "common": {
+    "dashboard": "Dashboard",
+    "users": "Users",
+    "applications": "Applications",
+    "audit": "Audit",
+    "tenants": "Tenants",
+    "settings": "Settings",
+    "logout": "Logout",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "edit": "Edit",
+      "create": "Create",
+      "search": "Search",
+      "close": "Close"
+  },
+  "admin": {
+    "title": "Admin Portal",
+    "tenants": {
+      "title": "Tenants",
+      "createTenant": "Create Tenant",
+      "tenantName": "Tenant Name",
+      "tenantSlug": "Tenant Slug",
+      "status": "Status",
+      "active": "Active",
+      "suspended": "Suspended",
+      "inactive": "Inactive",
+      "tenantCreated": "Tenant created successfully",
+      "statusUpdated": "Tenant status updated successfully"
+    }
+  },
+  "tenant": {
+    "dashboard": {
+      "title": "Dashboard",
+      "totalUsers": "Total Users",
+      "totalApplications": "Total Applications",
+      "recentActivity": "Recent Activity"
+    },
+    "users": {
+      "title": "Users",
+      "inviteUser": "Invite User",
+      "email": "Email",
+      "status": "Status",
+      "invited": "Invited",
+      "active": "Active",
+      "suspended": "Suspended",
+      "disabled": "Disabled",
+      "isAdmin": "Admin",
+      "lastLogin": "Last Login",
+      "actions": "Actions",
+      "disable": "Disable",
+      "userInvited": "User invited successfully",
+      "userDisabled": "User disabled successfully",
+      "confirmDisable": "Are you sure you want to disable this user?"
+    },
+    "applications": {
+      "title": "Applications",
+      "createApplication": "Create Application",
+      "editApplication": "Edit Application",
+      "applicationName": "Application Name",
+      "clientId": "Client ID",
+      "applicationType": "Application Type",
+      "web": "Web",
+      "mobile": "Mobile",
+      "spa": "SPA",
+      "redirectUris": "Redirect URIs",
+      "addRedirectUri": "Add Redirect URI",
+      "manageRedirectUris": "Manage Redirect URIs",
+      "redirectUriAdded": "Redirect URI added successfully",
+      "redirectUriRemoved": "Redirect URI removed successfully",
+      "confirmRemoveRedirectUri": "Are you sure you want to remove this redirect URI?",
+      "noRedirectUris": "No redirect URIs configured",
+      "applicationCreated": "Application created successfully",
+      "applicationUpdated": "Application updated successfully",
+      "applicationDeleted": "Application deleted successfully",
+      "confirmDelete": "Are you sure you want to delete this application?"
+    },
+    "audit": {
+      "title": "Audit Log",
+      "eventType": "Event Type",
+      "actor": "Actor",
+      "description": "Description",
+      "timestamp": "Timestamp",
+      "filter": "Filter",
+      "fromDate": "From Date",
+      "toDate": "To Date"
+    },
+    "settings": {
+      "title": "Settings",
+      "branding": "Branding",
+      "logoUrl": "Logo URL",
+      "primaryColor": "Primary Color",
+      "brandingUpdated": "Branding updated successfully"
+    }
+  }
+}
+

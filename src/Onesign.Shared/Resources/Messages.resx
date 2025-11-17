@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="TENANT_SLUG_EXISTS" xml:space="preserve">
+    <value>Tenant with this slug already exists</value>
+  </data>
+  <data name="TENANT_NOT_FOUND" xml:space="preserve">
+    <value>Tenant not found</value>
+  </data>
+  <data name="USER_NOT_FOUND" xml:space="preserve">
+    <value>User not found</value>
+  </data>
+  <data name="USER_ALREADY_IN_TENANT" xml:space="preserve">
+    <value>User is already a member of this tenant</value>
+  </data>
+  <data name="USER_NOT_IN_TENANT" xml:space="preserve">
+    <value>User is not a member of this tenant</value>
+  </data>
+  <data name="INVALID_STATUS" xml:space="preserve">
+    <value>User is not in invited status</value>
+  </data>
+  <data name="APPLICATION_NOT_FOUND" xml:space="preserve">
+    <value>Application not found</value>
+  </data>
+  <data name="INVALID_URI" xml:space="preserve">
+    <value>Redirect URI must start with http:// or https://</value>
+  </data>
+  <data name="INVALID_CREDENTIALS" xml:space="preserve">
+    <value>Invalid email or password</value>
+  </data>
+  <data name="USER_DISABLED" xml:space="preserve">
+    <value>User account is disabled</value>
+  </data>
+  <data name="BUSINESS_ERROR" xml:space="preserve">
+    <value>A business error occurred</value>
+  </data>
+  <data name="INTERNAL_SERVER_ERROR" xml:space="preserve">
+    <value>An internal server error occurred. Please try again later.</value>
+  </data>
+  <data name="USER_INACTIVE" xml:space="preserve">
+    <value>User account is not active</value>
+  </data>
+  <data name="GOOGLE_NOT_CONFIGURED" xml:space="preserve">
+    <value>Google authentication is not configured</value>
+  </data>
+  <data name="INVALID_GOOGLE_TOKEN" xml:space="preserve">
+    <value>Invalid Google ID Token</value>
+  </data>
+  <data name="GOOGLE_EMAIL_MISSING" xml:space="preserve">
+    <value>Google ID Token does not contain email</value>
+  </data>
+  <data name="TOKEN_VALIDATION_ERROR" xml:space="preserve">
+    <value>Failed to validate token</value>
+  </data>
+  <data name="SECRET_NOT_FOUND" xml:space="preserve">
+    <value>Client secret not found</value>
+  </data>
+  <data name="TENANT_MISMATCH" xml:space="preserve">
+    <value>Resource does not belong to this tenant</value>
+  </data>
+  <data name="RATE_LIMIT_EXCEEDED" xml:space="preserve">
+    <value>Too many requests. Please try again later.</value>
+  </data>
+  <data name="UNKNOWN_ERROR" xml:space="preserve">
+    <value>An unknown error occurred</value>
+  </data>
+  <data name="INVALID_TOKEN" xml:space="preserve">
+    <value>Invalid or expired token</value>
+  </data>
+  <data name="TOKEN_ALREADY_USED" xml:space="preserve">
+    <value>This token has already been used</value>
+  </data>
+  <data name="TOKEN_EXPIRED" xml:space="preserve">
+    <value>Token has expired</value>
+  </data>
+  <data name="REDIRECT_URI_NOT_FOUND" xml:space="preserve">
+    <value>Redirect URI not found</value>
+  </data>
+  <data name="TENANT_CONFIG_NOT_FOUND" xml:space="preserve">
+    <value>Tenant configuration not found</value>
+  </data>
+</root>
+

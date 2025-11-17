@@ -1,0 +1,44 @@
+{
+  "common": {
+    "email": "Email",
+    "password": "Password",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "login": {
+    "title": "Sign In",
+    "emailPlaceholder": "Enter your email",
+    "passwordPlaceholder": "Enter your password",
+    "forgotPassword": "Forgot password?",
+    "signIn": "Sign In",
+    "signInWithGoogle": "Sign in with Google",
+    "invalidCredentials": "Invalid email or password"
+  },
+  "forgotPassword": {
+    "title": "Forgot Password",
+    "description": "Enter your email address and we'll send you a link to reset your password.",
+    "emailPlaceholder": "Enter your email",
+    "sendResetLink": "Send Reset Link",
+    "backToLogin": "Back to Login",
+    "resetLinkSent": "Password reset link has been sent to your email"
+  },
+  "resetPassword": {
+    "title": "Reset Password",
+    "description": "Enter your new password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "resetPassword": "Reset Password",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "passwordResetSuccess": "Password has been reset successfully"
+  },
+  "callback": {
+    "title": "Authentication",
+    "processing": "Processing authentication...",
+    "success": "Authentication successful",
+    "error": "Authentication failed"
+  }
+}
+

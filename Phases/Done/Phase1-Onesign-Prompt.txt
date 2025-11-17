@@ -1,0 +1,356 @@
+You are an expert .NET 10, EF Core, and React/Next.js engineer, working as an implementation assistant for the onesign SSO SaaS platform.
+
+Context
+I have a detailed Phase 1 specification document for onesign in a Markdown file named:
+
+Phase1-Onesign-CoreSSO.md
+
+Your first job is to fully read and understand that document and then implement Phase 1 exactly as specified, using a clean modular monolith architecture on .NET 10 and separate managed frontends for Login Portal and Admin Portal.
+
+High level goals of Phase 1
+According to the spec, Phase 1 must deliver a production grade Core SSO platform with:
+
+- Multi tenant support in a single shared database, TenantId on all relevant entities
+- Identity provider implementing OIDC Authorization Code plus PKCE
+- Email plus password login and one social login (Google)
+- Login Portal frontend for end users
+- Admin Portal frontend for Global Admin and Tenant Admin
+- User, Tenant, Application, Token and Audit basics
+- Minimal but clean SDKs for .NET backend and React frontend
+- Full multi language support end to end (at least English and Persian) from backend to frontend
+
+Very important constraints
+Read these carefully and respect them strictly.
+
+1) Phase scope
+- Do not implement any features that belong to later phases such as OrgUnit tree, delegated admin, ABAC, SCIM, SAML, per tenant database or advanced billing.
+- Only implement what is clearly within Phase 1 scope in Phase1-Onesign-CoreSSO.md, but design the architecture so later phases can be added cleanly.
+
+2) Architecture
+- You must strictly follow the naming, folder structure, endpoints and DTO definitions in the Phase1-Onesign-CoreSSO.md file.
+- The architecture must be a modular monolith, with modules like Tenants, Identity, Applications, Audit kept isolated at the Domain and Application layers.
+- Multi tenancy must be correctly handled from day one: TenantId must be enforced in queries and tokens must always carry a clear tenant_id claim.
+
+3) Multi language (critical requirement)
+This system must be multi language ready from day one, across backend and frontends:
+
+- Backend:
+  - Do not hardcode user facing messages directly into controllers or services.
+  - Introduce an internal localization mechanism (for example resource based or a simple IStringLocalizer abstraction) that can return messages in at least English and Persian.
+  - Error and validation messages must be represented in a way that can be localized, either by:
+    - returning message codes and letting the frontend map to localized text, or
+    - using a backend localization layer to produce localized messages based on a requested culture.
+  - All APIs that return user visible messages must consider a language or culture (for example from header, query string, or tenant preferences).
+
+- Frontend (Login Portal and Admin Portal):
+  - Integrate a proper i18n solution (for example a Next.js friendly i18n library) from the start.
+  - All static texts in the UI must be localized through the i18n mechanism, not hardcoded strings.
+  - The user must be able to see the UI in English and Persian at least.
+  - Implement a simple but real mechanism to pick the language (tenant preference, user preference, or a toggle) and wire it through to backend calls when needed.
+
+Do not treat multi language as "later". Design and implement it as a cross cutting concern in Phase 1.
+
+4) No TODOs, no partial implementations (critical requirement)
+- Do not leave any class or method with TODO, NotImplementedException, or empty bodies that are supposed to be implemented.
+- If you introduce a class or method that is part of the Phase 1 design, implement it fully.
+- If something is truly out of Phase 1 scope, do not create stub classes or methods for it. Just leave it for later phases and do not add dead code now.
+
+5) Code quality
+- Code must compile, be idiomatic, and be ready for real world use, not demo or toy quality.
+- Implement proper validation, basic error handling and simple logging where needed.
+- Security and multi tenant isolation take priority over shortcuts.
+
+Step 1: Read and understand the spec
+1. Open the file Phase1-Onesign-CoreSSO.md.
+2. Carefully read all sections:
+   - Phase scope and goals
+   - Architecture and module list
+   - Backend solution structure and folder layout
+   - DbContext and entity lists
+   - API endpoints and DTOs
+   - Epics, user stories and dev tasks
+3. Build an internal checklist of all Phase 1 deliverables. Respect that checklist and do not sneak in Phase 2 features.
+
+While reading, also:
+- Identify all places where multi language matters (user messages, error messages, UI labels, email templates).
+- Decide how you will propagate language or culture from frontend to backend.
+
+Step 2: Backend solution and project structure
+Using the spec as the source of truth, create the backend solution under src as follows:
+
+- src/Onesign.Api
+- src/Onesign.Shared
+- src/Onesign.Modules.Tenants
+- src/Onesign.Modules.Identity
+- src/Onesign.Modules.Applications
+- src/Onesign.Modules.Audit
+
+For each module, create the internal folders described in the spec:
+
+- Domain
+  - Entities
+  - ValueObjects
+  - Events
+  - Services
+  - Repositories
+- Application
+  - Commands
+  - Queries
+  - DTOs
+- Infrastructure
+  - EfCore/Entities
+  - EfCore/Configurations
+  - EfCore/Repositories
+
+Then:
+
+1. Configure a central OnesignDbContext exactly as described in the spec, with DbSet properties for:
+   - TenantEntity, TenantConfigEntity
+   - GlobalUserEntity, TenantUserEntity, PasswordResetTokenEntity, UserLoginSessionEntity, ExternalLoginEntity
+   - ApplicationClientEntity, ClientRedirectUriEntity, ClientSecretEntity
+   - AuditEventEntity
+
+2. Implement EF Core configurations for these entities according to good practices:
+   - Keys, indexes, foreign keys, required fields, max lengths, unique constraints (for example email uniqueness, clientId uniqueness, tenant plus slug uniqueness).
+
+3. Wire up DbContext in Onesign.Api Program.cs:
+   - Add DB provider (for now SQL Server is fine unless the spec says otherwise).
+   - Register DbContext with proper lifetime.
+
+4. Implement core abstractions in Onesign.Shared:
+   - Result, pagination models, error handling primitives.
+   - ITenantContext and TenantContext for resolving current tenant.
+   - ICurrentUserService for exposing current user and tenant.
+
+5. Implement a localization abstraction (for example ILocalizationService or IStringLocalizer wrapper) in Onesign.Shared:
+   - It must be usable from controllers and application layer.
+   - It must support at least English and Persian messages.
+   - For Phase 1 you can start with in memory or resource based storage, but it must be clean and extensible.
+
+No class created in this step is allowed to stay empty or throw NotImplementedException.
+
+Step 3: Domain modeling according to spec
+Implement domain entities and repositories that match the spec exactly:
+
+Tenants module:
+- Tenant, TenantConfig, optional TenantDomain
+- TenantStatus enum
+- ITenantRepository and ITenantConfigRepository
+
+Identity module:
+- GlobalUser, TenantUser, PasswordResetToken, UserLoginSession, ExternalLogin
+- TenantUserStatus enum
+- IGlobalUserRepository, ITenantUserRepository, IPasswordResetTokenRepository, IUserLoginSessionRepository, IExternalLoginRepository
+- Domain services such as IPasswordHasher and IAuthService
+
+Applications module:
+- ApplicationClient, ClientRedirectUri, ClientSecret
+- ApplicationType and GrantType enums
+- IApplicationClientRepository
+
+Audit module:
+- AuditEvent entity and AuditEventType enum
+- IAuditEventRepository
+
+Respect the relationships implied by the spec:
+- GlobalUser with many TenantUser
+- TenantUser belongs to Tenant
+- ApplicationClient belongs to Tenant
+- AuditEvent must capture Tenant and Actor information where applicable.
+
+Again: do not leave any entity, repository or domain service as a stub. If you define it, implement it.
+
+Step 4: Application layer use cases
+Implement the Application layer commands and queries exactly as listed in the spec, for example:
+
+Tenants:
+- CreateTenantCommand
+- UpdateTenantStatusCommand
+- GetTenantsQuery
+
+Identity:
+- InviteUserToTenantCommand
+- CompleteFirstLoginCommand
+- DisableTenantUserCommand
+- RequestPasswordResetCommand
+- ConfirmPasswordResetCommand
+- PasswordLoginCommand
+- GetTenantUsersQuery
+- GetUserDetailsQuery
+
+Applications:
+- CreateApplicationClientCommand
+- UpdateApplicationClientCommand
+- AddRedirectUriCommand
+- RemoveRedirectUriCommand
+- GetApplicationsForTenantQuery
+- GetApplicationDetailsQuery
+
+Audit:
+- AppendAuditEventCommand
+- GetAuditEventsQuery
+
+Use DTOs exactly as defined in the spec:
+- TenantDto, TenantSummaryDto, TenantSettingsDto, UpdateBrandingRequest
+- GlobalUserDto, TenantUserDto, InviteUserRequest, ResetPasswordRequest, ResetPasswordConfirmRequest, LoginRequest
+- ApplicationClientDto, CreateApplicationClientRequest, UpdateApplicationClientRequest, AddRedirectUriRequest
+- AuditEventDto, AuditFilterRequest
+
+Integrate localization:
+- Application layer should preferably return message codes or structured errors that the frontend can localize.
+- If you choose to localize in the backend, use the localization abstraction and accept some kind of culture input.
+
+Step 5: API controllers and endpoints
+In Onesign.Api create controllers that match the exact routes and HTTP verbs in the spec.
+
+Examples:
+
+Discovery and OIDC:
+- GET /.well-known/openid-configuration
+- GET /connect/authorize
+- POST /connect/token
+
+Admin tenant management:
+- GET /api/admin/tenants
+- POST /api/admin/tenants
+- PATCH /api/admin/tenants/{tenantId}/status
+
+Tenant settings and branding:
+- GET /api/tenant/settings
+- PUT /api/tenant/settings/branding
+
+Tenant user management:
+- GET /api/tenant/users
+- POST /api/tenant/users/invite
+- PATCH /api/tenant/users/{tenantUserId}/status
+
+Tenant application management:
+- GET /api/tenant/applications
+- POST /api/tenant/applications
+- PUT /api/tenant/applications/{id}
+- DELETE /api/tenant/applications/{id}
+
+Auth and password:
+- POST /api/auth/login
+- POST /api/auth/forgot-password
+- POST /api/auth/reset-password
+
+Audit:
+- GET /api/tenant/audit
+
+Each endpoint must:
+- Use the DTO types defined in the spec.
+- Delegate logic to the corresponding Application layer command or query.
+- Enforce tenant scoping based on the current tenant context.
+- Record audit events where required.
+- Integrate localization for error and info messages (for example by reading an Accept-Language header or a custom header and using the localization abstraction).
+
+Step 6: OIDC flows and security
+Implement a correct OIDC Authorization Code plus PKCE flow as described:
+
+- Discovery endpoint returns valid OpenID config based on issuer and tenant routing.
+- /connect/authorize validates:
+  - client_id, redirect_uri, response_type, scope, state, code_challenge, code_challenge_method
+  - tenant and application client
+- If the user is not authenticated, redirect to Login Portal.
+- After login success, create an authorization code, persist it and redirect back with code and state.
+- /connect/token validates code and code_verifier, client and redirect_uri, and then issues:
+  - access_token
+  - id_token
+- Tokens must be JWTs, sign them with a signing key and include at least:
+  - sub, tenant_id, client_id
+  - basic user info (subject, email) where appropriate.
+
+Keep the implementation extensible for future features such as MFA, but do not implement those features now.
+No security related method is allowed to be left as a TODO or stub.
+
+Step 7: Login Portal implementation
+In the onesign-login-portal project:
+
+1. Initialize a Next.js app.
+2. Integrate an i18n solution suitable for Next.js so the UI supports at least English and Persian.
+3. Implement tenant detection logic:
+   - Read hostname and call a backend endpoint if necessary to resolve tenant info.
+   - Cache tenant info in a React context.
+4. Implement pages:
+   - /login with:
+     - tenant branding (logo and primary color from TenantSettings)
+     - email and password form that calls /api/auth/login
+     - localized labels and messages (en and fa).
+   - /forgot-password and /reset-password that call the backend endpoints defined in the spec, with localized texts.
+   - /callback that handles the OIDC redirect from /connect/authorize:
+     - read code and state
+     - either display success and pass control to the client app or call the backend if needed.
+
+Add a button for "Login with Google" that redirects the user to the appropriate backend endpoint to start Google OAuth.
+
+Make sure:
+- No component contains hardcoded user facing text without going through the i18n mechanism.
+- There are no TODO placeholders or empty components that are supposed to be implemented.
+
+Step 8: Admin Portal implementation
+In the onesign-admin-portal project:
+
+1. Initialize a Next.js app with basic authentication for Global Admin and Tenant Admin views.
+2. Integrate the same or compatible i18n solution as Login Portal. UI must be fully localizable between English and Persian.
+3. Implement Global Admin pages:
+   - List tenants using GET /api/admin/tenants
+   - Create tenant using POST /api/admin/tenants
+   - Change tenant status using PATCH /api/admin/tenants/{tenantId}/status
+4. Implement Tenant Admin pages:
+   - Dashboard pulling the simple stats defined in the spec
+   - Users page:
+     - list users via GET /api/tenant/users
+     - invite user
+     - enable or disable user
+   - Applications page:
+     - list applications
+     - create and update clients
+     - manage redirect URIs
+   - Audit page:
+     - list audit events from GET /api/tenant/audit
+
+Use a simple but clean component library or your own small set of UI components. Do not leave placeholder pages or unfinished components. Every page mentioned in the spec must be fully functional in Phase 1.
+
+Step 9: SDKs
+Implement minimal but useful SDKs as described in the spec.
+
+.NET SDK (Onesign.Sdk.DotNet):
+- OnesignOptions class for configuration.
+- Methods:
+  - BuildAuthorizeUrl
+  - ExchangeCodeForTokenAsync
+- Optional middleware or helper for JWT validation according to the issuer and signing keys.
+- If any user visible error messages are surfaced from the SDK, design them so they can be localized by the calling application (for example via message codes or caller provided localizer).
+
+React SDK (@onesign/react-sdk):
+- useOnesignAuth hook that provides:
+  - login function that redirects to the authorize endpoint
+  - logout function
+  - handleCallback function to process code plus state on the client side
+- Internal storage of token information with a simple, secure strategy.
+- The SDK itself should not hardcode user facing UI strings. It should either expose hooks/events that the host app can localize, or use the host i18n setup.
+
+Do not leave any SDK API partially implemented. If you define a method, implement it fully.
+
+Step 10: Quality, testing and cleanup
+- Ensure the backend builds and passes basic unit tests for:
+  - Tenant creation and status change
+  - User invite and activation
+  - Application client creation and redirect uri validation
+  - Authorization Code plus PKCE flow happy path and basic error cases
+- Ensure both frontends build and run without TypeScript or runtime errors.
+- Verify that:
+  - both Login Portal and Admin Portal support at least English and Persian UI.
+  - there is a clear path for passing language or culture context to the backend when needed.
+- Remove any dead code or unused experiments.
+- There must be no TODO comments or NotImplementedException anywhere in the codebase for Phase 1 scope.
+
+Important mindset
+- Always treat Phase1-Onesign-CoreSSO.md as the single source of truth.
+- If something is not clear in the spec, prefer the simplest solution that keeps the architecture extendable but do not invent Phase 2 features.
+- Keep multi tenant, multi language, security and correctness as top priorities.
+- The output must be production ready, not a demo.
+
+Now:
+Start by reading Phase1-Onesign-CoreSSO.md, summarize the tasks you will perform, design the multi language and multi tenant strategy clearly, and then implement the backend solution skeleton, DbContext and tenant plus identity domain and infrastructure first, before moving on to the API endpoints, frontends and SDKs.

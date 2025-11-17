@@ -1,0 +1,532 @@
+You are an expert .NET 10, Node.js, and React engineer, working as an implementation assistant for the onesign SSO SaaS platform.
+
+Context
+The platform already implements core SSO, OrgHierarchy, Security Center, Federation, Billing, Observability, Authorization, DevPortal, Account Center, Governance, Notification Center, Access Requests and Platform Hardening in previous phases.
+
+Now there is Phase 14, focusing on official SDKs, developer tooling, and sandbox support:
+
+- Phase14-Onesign-SDKsAndIntegrationTooling.md
+
+Your job
+- Read all previous phase documents only as needed to understand conventions.
+- Read Phase14-Onesign-SDKsAndIntegrationTooling.md carefully.
+- Implement Phase 14 exactly as defined there:
+
+  1) Backend SDK for .NET  
+     - NuGet package `Onesign.Sdk.AspNetCore`  
+     - Minimal `AddOnesignAuthentication` and `UseOnesignAuthentication` extensions  
+     - Token validation and claims mapping based on onesign tokens  
+     - A working sample ASP.NET Core API
+
+  2) Backend SDK for Node.js  
+     - NPM package `@onesign/sdk-node`  
+     - Express middleware for bearer token validation  
+     - Helpers for OIDC discovery and JWKS with caching  
+     - A working sample Express API
+
+  3) React SPA SDK  
+     - NPM package `@onesign/sdk-react`  
+     - `OnesignAuthProvider`, `useOnesignAuth`, and `OnesignAuthCallback`  
+     - Login and logout helpers, user state, and redirect handling  
+     - A working sample React SPA
+
+  4) Sandbox flag and Dev CLI  
+     - `IsSandbox` flag in TenantConfig  
+     - CLI `onesign-cli` for login, listing and creating apps, and generating config snippets  
+     - Basic integration of sandbox flag into DevPortal or Admin UI where needed
+
+- Do NOT break previous phases.
+- Do NOT leave any TODO or NotImplementedException.
+- Do NOT create empty public methods, classes, controllers, or React components.
+- Every SDK and sample must be actually buildable and usable, not just stubs.
+
+Global constraints
+
+1) Multi language
+- The platform is multilingual at least English and Persian.
+- For SDKs, public messages and errors visible to end users or developers must be:
+  - Either driven by config or message keys
+  - Or kept minimal and technical in English by default
+- Do not hardcode user facing Persian texts in SDK code.
+
+2) No TODO and no partial implementations
+- No TODO comments.
+- No NotImplementedException.
+- No empty controller or API.
+- No React component that renders nothing or just "TODO".
+
+3) Developer experience first
+- The main success metric for this phase:
+  - A reasonably skilled developer should be able to:
+    - Install one SDK
+    - Copy the sample config
+    - Run the sample app
+    - Log in through onesign
+  - All in less than an afternoon.
+
+4) Respect existing architecture
+- Do not reimplement OIDC or token generation in SDKs.
+- Use the existing onesign authorization server and token formats.
+- SDKs sit on the consumer side, not on the onesign identity server side.
+
+--------------------------------------------------
+Step 1: Read spec and build a checklist
+--------------------------------------------------
+
+1) Read Phase 14 spec:
+
+- Phase14-Onesign-SDKsAndIntegrationTooling.md
+
+2) Extract checklist:
+
+For .NET SDK (Onesign.Sdk.AspNetCore)
+- Package `Onesign.Sdk.AspNetCore`
+- Extensions:
+  - `IServiceCollection.AddOnesignAuthentication(OnesignAuthOptions options)`
+  - `IApplicationBuilder.UseOnesignAuthentication()`
+- Reads config:
+  - Authority
+  - Audience or ApiResource
+  - Optional TenantId strategy if needed
+- Uses OIDC discovery and JWKS for token validation
+- Exposes helpers for claims:
+  - TenantId, user id, roles, org units
+- Has a sample ASP.NET Core API project with:
+  - Minimal Program
+  - A secure endpoint using `[Authorize]`
+
+For Node SDK (`@onesign/sdk-node`)
+- NPM package `@onesign/sdk-node`
+- Express middleware:
+  - `createOnesignAuthMiddleware(config)`
+- Config:
+  - authority
+  - audience
+- Uses helpers:
+  - `discoverOpenIdConfig(authority)`
+  - `getJwks(authority)`
+  - Both with caching and robust error handling
+- On success: attach decoded claims to `req.user` and `req.tenantId`
+- Sample Express API with a secure route
+
+For React SDK (`@onesign/sdk-react`)
+- NPM package `@onesign/sdk-react`
+- Components and hooks:
+  - `OnesignAuthProvider`
+  - `useOnesignAuth()`
+  - `OnesignAuthCallback`
+- Config:
+  - authority
+  - clientId
+  - redirectUri
+  - postLogoutRedirectUri
+- Handles:
+  - login redirect
+  - callback handling and token storage
+  - logout
+  - auth state: isAuthenticated, isLoading, user
+- A sample React SPA with:
+  - Login button
+  - Profile page showing claims
+
+Sandbox and CLI
+- TenantConfig gets `IsSandbox` flag with migration
+- Related UI shows sandbox tenants clearly tagged
+- CLI `onesign-cli` with commands:
+  - `onesign login`
+  - `onesign apps list`
+  - `onesign apps create`
+  - `onesign apps update-redirects`
+  - `onesign apps generate-config --format dotnet|node|react`
+- CLI uses existing DevPortal or tenant APIs for app management
+
+--------------------------------------------------
+Step 2: .NET SDK - Onesign.Sdk.AspNetCore
+--------------------------------------------------
+
+Create a new project:
+
+- `src/Onesign.Sdk.AspNetCore`
+
+Structure suggestion:
+
+- Authentication/
+  - `OnesignAuthOptions.cs`
+  - `OnesignJwtBearerConfigurator.cs`
+- Claims/
+  - `OnesignClaimsExtensions.cs`
+- Configuration/
+  - `OnesignAuthorityConfig.cs`
+- Extensions/
+  - `ServiceCollectionExtensions.cs`
+  - `ApplicationBuilderExtensions.cs`
+
+Implement `OnesignAuthOptions`
+
+- Properties:
+  - Authority (required)
+  - Audience or ApiResource (required)
+  - RequireHttpsMetadata (bool, default true)
+  - AdditionalClaimsMapping options if needed
+
+Implement `AddOnesignAuthentication`
+
+- Configures JWT bearer authentication with:
+  - Authority from config
+  - Audience
+  - Use OIDC discovery
+  - Validates issuer, audience, lifetime, signature
+- Adds any appropriate event handlers for:
+  - Multi tenant scenarios (if tenant is part of issuer or claims)
+- No custom hand rolled JWT parsing, use standard Microsoft JWT bearer handlers.
+
+Implement `UseOnesignAuthentication`
+
+- Calls `UseAuthentication()` and `UseAuthorization()` in the correct order.
+
+Implement claims extensions
+
+- `GetTenantId()`
+- `GetUserId()`
+- `GetRoles()`
+- `GetOrgUnits()`
+- These helpers must be consistent with previous phases token claim formats.
+
+Create sample `.NET` API project
+
+- `samples/dotnet-api` or similar location in the repo
+- Minimal Program.cs:
+  - Adds onesign authentication via `AddOnesignAuthentication`
+  - Uses `UseOnesignAuthentication`
+- A controller or minimal API endpoint:
+  - `GET /api/me`
+  - Requires `[Authorize]`
+  - Returns basic info from claims and tenant
+
+Add a README for the sample:
+- Steps to:
+  - Configure Authority and Audience
+  - Run the API
+  - Call it with a token issued by onesign
+
+--------------------------------------------------
+Step 3: Node SDK - @onesign/sdk-node
+--------------------------------------------------
+
+Create a Node package project:
+
+- `sdk-node/` or `src/sdk-node/`
+
+Package name:
+
+- `@onesign/sdk-node`
+
+Structure:
+
+- `src/authMiddleware.ts`
+- `src/discovery.ts`
+- `src/jwksCache.ts`
+- `src/index.ts`
+
+Implement OIDC discovery helper
+
+- `async function discoverOpenIdConfig(authority: string): Promise<OpenIdConfig>`
+  - Fetch `${authority}/.well-known/openid-configuration`
+  - Parse jwks_uri and other relevant fields
+  - Cache result in memory with TTL
+
+Implement JWKS cache helper
+
+- `async function getJwks(authority: string): Promise<Jwks>`
+  - Uses discovered jwks_uri
+  - Fetch JWKS
+  - Cache keys
+  - Provide a way to find the proper public key for a given token kid
+
+Implement auth middleware
+
+- `function createOnesignAuthMiddleware(config: { authority: string; audience: string; })`
+  - Returns an Express compatible middleware `(req, res, next)`
+  - Behavior:
+    - Read `Authorization` header
+    - Extract bearer token
+    - Validate token:
+      - Use JWKS for signature
+      - Check issuer (matches authority)
+      - Check audience
+      - Check exp and nbf
+    - On success:
+      - Attach decoded claims to `req.user`
+      - Extract and attach `req.tenantId` from claims if present
+      - Call `next()`
+    - On failure:
+      - Respond with 401 or 403 and a structured error
+
+Implement sample Express app
+
+- In `samples/node-api`:
+  - Express server with:
+    - `app.use(createOnesignAuthMiddleware(config))`
+    - `GET /api/secure` endpoint that returns `req.user` and `req.tenantId`
+- README with:
+  - How to install the package
+  - How to configure authority and audience
+  - How to run and test against onesign
+
+--------------------------------------------------
+Step 4: React SDK - @onesign/sdk-react
+--------------------------------------------------
+
+Create a React SDK project:
+
+- `sdk-react/` or `src/sdk-react/`
+
+Package name:
+
+- `@onesign/sdk-react`
+
+Structure:
+
+- `src/OnesignAuthProvider.tsx`
+- `src/useOnesignAuth.ts`
+- `src/OnesignAuthCallback.tsx`
+- `src/types.ts`
+- `src/index.ts`
+
+Implement `OnesignAuthProvider`
+
+- Props:
+  - authority
+  - clientId
+  - redirectUri
+  - postLogoutRedirectUri
+  - optional scopes
+- Maintains internal auth state:
+  - isAuthenticated
+  - isLoading
+  - user (basic claims)
+  - accessToken (if stored on client side by design)
+- Provides context with:
+  - `login()`
+  - `logout()`
+  - `user`, `isAuthenticated`, `isLoading`
+
+Implement `useOnesignAuth()`
+
+- Custom hook that returns the context:
+  - If used outside provider, throws a clear error
+
+Implement `OnesignAuthCallback`
+
+- React component intended to be used on callback route
+- On mount:
+  - Parses the URL for OIDC parameters (code, state)
+  - Calls the backend or identity server to exchange code for tokens (based on your chosen flow, for example:
+    - Through a backend endpoint that proxies to onesign)
+  - Stores auth result in context
+  - Redirects to a post login route
+
+Note
+- Follow your previously defined security model for SPA:
+  - If using authorization code with PKCE and backend as confidential client:
+    - Do not store refresh tokens in the browser
+  - Tokens in memory or short lived tokens in storage
+
+Create sample React app
+
+- `samples/react-spa`:
+  - Configurable via env vars:
+    - VITE_ONESIGN_AUTHORITY
+    - VITE_ONESIGN_CLIENT_ID
+    - VITE_ONESIGN_REDIRECT_URI
+  - Uses:
+    - `<OnesignAuthProvider>`
+    - `useOnesignAuth()`
+    - `OnesignAuthCallback`
+
+- Pages:
+  - Home:
+    - If not authenticated: show login button
+    - If authenticated: show link to profile
+  - Callback route `/auth/callback` using `OnesignAuthCallback`
+  - Profile page:
+    - Shows `user` claims
+
+- README:
+  - Step by step:
+    - Create client in onesign
+    - Configure redirect URI
+    - Run sample and test login
+
+--------------------------------------------------
+Step 5: Sandbox flag - TenantConfig.IsSandbox
+--------------------------------------------------
+
+Extend TenantConfig
+
+- Add `IsSandbox` boolean field
+- Add migration to update DB schema
+- Default for existing tenants:
+  - false
+
+Behavior
+
+- For now in Phase 14:
+  - `IsSandbox` is mostly a metadata flag
+  - It is visible in DevPortal or Admin Portal
+  - It can be used later to restrict real SMS or email notifications in sandbox environments
+
+UI integration
+
+- In Tenant Admin or DevPortal:
+  - Show a visual indicator like "[SANDBOX]" for sandbox tenants
+  - Do not change security logic based solely on IsSandbox in this phase
+
+--------------------------------------------------
+Step 6: CLI - onesign-cli
+--------------------------------------------------
+
+Create CLI project
+
+- Technology:
+  - You may use .NET global tool or Node based CLI. Choose one consistent with your stack.
+- Name:
+  - `onesign-cli`
+
+Configuration
+
+- CLI needs to:
+  - Store auth tokens locally (for tenant admin) in a config file or keyring
+  - Target sandbox or production endpoints
+
+Command: `onesign login`
+
+- Performs authentication as a tenant admin or developer:
+  - For example with device code flow or browser based login
+- Stores:
+  - Access token
+  - Tenant id
+  - API endpoint
+
+Command: `onesign apps list`
+
+- Calls DevPortal or tenant app management API:
+  - Lists application clients for current tenant
+- Output:
+  - id, name, type, redirectUris count
+
+Command: `onesign apps create`
+
+- Parameters:
+  - name
+  - type (confidential or public)
+  - redirectUri list
+- Creates a new ApplicationClient in onesign
+- Returns:
+  - clientId
+  - clientSecret (if confidential)
+- Prints config hints
+
+Command: `onesign apps update-redirects`
+
+- Updates redirect URIs for an existing app
+
+Command: `onesign apps generate-config`
+
+- Parameters:
+  - `--app <id>`
+  - `--format dotnet|node|react`
+- Behavior:
+  - Fetches app metadata and tenant authority
+  - Prints a ready to paste snippet:
+    - For dotnet:
+      - appsettings.json section
+    - For node:
+      - .env lines: ONESIGN_AUTHORITY, ONESIGN_AUDIENCE
+    - For react:
+      - env lines: VITE_ONESIGN_AUTHORITY, VITE_ONESIGN_CLIENT_ID, VITE_ONESIGN_REDIRECT_URI
+
+Implementation details
+
+- CLI uses HTTPS calls to onesign management APIs, consistent with DevPortal from previous phases:
+  - For example:
+    - `/api/tenant/devportal/apps/*` or similar endpoints
+
+- Do not fake CLI functionality:
+  - All commands must actually call real APIs or stably designed internal endpoints
+
+--------------------------------------------------
+Step 7: Docs and quickstarts
+--------------------------------------------------
+
+For each SDK and sample, include:
+
+- Local README in its folder
+- Clear sections:
+  - Install
+  - Configure
+  - Run
+  - Test with onesign
+
+Where appropriate, integrate summary links into DevPortal pages created in earlier phases.
+
+--------------------------------------------------
+Step 8: Cross cutting - tests and verification
+--------------------------------------------------
+
+Backend SDK tests
+
+- For `Onesign.Sdk.AspNetCore`:
+  - When configured with known valid tokens:
+    - Authentication succeeds
+    - Claims mapping returns correct tenant and user ids
+  - When token is invalid or expired:
+    - Requests are rejected as expected
+
+- For `@onesign/sdk-node`:
+  - Middleware rejects missing or invalid tokens
+  - Middleware accepts valid tokens and sets `req.user` and `req.tenantId`
+
+React SDK tests
+
+- `OnesignAuthProvider` and `useOnesignAuth`:
+  - Provide isAuthenticated false before login
+  - Expose login and logout functions
+- `OnesignAuthCallback`:
+  - When given a simulated redirect URI:
+    - Calls the token exchange path
+    - Updates context
+    - Redirects to configured route
+
+CLI tests (manual or automated)
+
+- `onesign login` stores tokens and tenant data
+- `onesign apps list` shows expected applications
+- `onesign apps create` successfully creates a new app and prints config
+- `onesign apps generate-config` outputs proper snippets
+
+Final verification
+
+- Solutions and packages build cleanly:
+  - `Onesign.Sdk.AspNetCore`
+  - `@onesign/sdk-node`
+  - `@onesign/sdk-react`
+  - `onesign-cli`
+  - samples
+- Samples can be configured to talk to a real onesign sandbox tenant and complete a login flow.
+- No TODO comments.
+- No NotImplementedException.
+- No stub controllers or components.
+- SDK APIs are simple, predictable, and documented.
+
+Important mindset
+
+- Phase 14 is about developer happiness and adoption, not about adding more IdP features.
+- From this point, whenever a new app wants to integrate with onesign:
+  - The recommended path must be:
+    - Use official SDK and quickstart
+  - Not:
+    - Copy paste some custom OIDC code from the core platform.
+
+Now:
+Read Phase14-Onesign-SDKsAndIntegrationTooling.md, then implement `Onesign.Sdk.AspNetCore`, `@onesign/sdk-node`, `@onesign/sdk-react`, the sandbox flag and `onesign-cli`, plus sample apps, with no TODOs or partial implementations.

@@ -1,0 +1,743 @@
+You are an expert .NET 10, EF Core, and React/Next.js engineer, working as an implementation assistant for the onesign SSO SaaS platform.
+
+Context
+The platform already implements:
+- Core multi-tenant SSO and OIDC/OAuth2
+- Organization hierarchy and OrgUnits
+- Advanced security and MFA
+- Federation and SCIM outbound
+- Billing and plans
+- Observability and audit center
+- Authorization / PolicyEngine (RBAC & ABAC-lite)
+- DevPortal and SDKs
+- Account Center and self service
+- Identity Governance (Access Reviews, SoD)
+- Notification Center
+- Access Requests and approval workflows
+- Platform hardening (TenantStatus, DB topology, rate limiting)
+- SDKs and developer tooling
+
+Now there is Phase 15, focusing on Identity Lifecycle Automation (Joiner / Mover / Leaver) and HR integration:
+
+- Phase15-Onesign-IdentityLifecycleAutomation.md
+
+Your job
+- Read Phase15-Onesign-IdentityLifecycleAutomation.md carefully.
+- Implement Phase 15 exactly as defined there, by creating a dedicated module:
+
+  - `Onesign.Modules.IdentityLifecycle`
+
+  and implementing:
+
+  - HR inbound connectors:
+    - CSV batch import
+    - minimal inbound SCIM Users
+  - Lifecycle engine:
+    - Joiner, Mover, Leaver detection and processing
+  - Lifecycle policies and access packages:
+    - mapping HR attributes → AccessPackages
+  - Integration with:
+    - User/OrgHierarchy
+    - Authorization/PolicyEngine
+    - Federation/SCIM outbound
+    - Governance/SoD
+    - NotificationCenter
+    - Observability/Audit
+  - UI pages in Admin Portal:
+    - AccessPackages management
+    - LifecyclePolicies management
+    - HR Import view
+    - Lifecycle processing status
+    - User Lifecycle timeline tab
+
+- Do NOT break previous phases.
+- Do NOT leave a single TODO or NotImplementedException.
+- Do NOT create empty public methods, classes, controllers, or React components.
+- Every API and UI you touch must be actually wired, not dummy.
+
+Global constraints
+
+1) Multi language
+- The platform is multilingual (English + Persian).
+- All new UI texts must use the existing i18n mechanism (keys, not hardcoded human text).
+- Backend error messages that are user-facing must either:
+  - be driven by codes/message keys, or
+  - be minimal technical English.
+
+2) No TODO and no partial implementations
+- No TODO comments.
+- No NotImplementedException.
+- No “placeholder” controllers or React pages.
+- If something is out of scope for Phase 15, do not scaffold it.
+
+3) Modular monolith and module boundaries
+- All lifecycle logic lives in `Onesign.Modules.IdentityLifecycle`.
+- Integration with Users, OrgHierarchy, Authorization, Federation, Governance, Notification, Observability must go through their public services or API surfaces.
+- Do not reach into other modules’ private internals or DB tables directly beyond what is already part of their public contracts.
+
+4) Lifecycle is authoritative, not decorative
+- Joiner must actually create users and assign access.
+- Mover must actually adjust access (add/remove).
+- Leaver must actually disable/deprovision users and revoke sessions.
+- Events must be auditable end-to-end.
+
+--------------------------------------------------
+Step 1: Read the spec and build an internal checklist
+--------------------------------------------------
+
+1) Read:
+- Phase15-Onesign-IdentityLifecycleAutomation.md
+
+2) Extract checklist:
+
+Data model:
+- HRIdentityRecord:
+  - TenantId
+  - ExternalEmployeeId
+  - FirstName, LastName, Email
+  - OrgUnitCode
+  - JobRole
+  - ManagerExternalEmployeeId
+  - EmploymentStatus (Active, OnLeave, Terminated)
+  - StartDate, EndDate
+  - LastSyncedAt
+- LifecycleEvent:
+  - Id
+  - TenantId
+  - HRIdentityRecordId
+  - EventType (Joiner, Mover, Leaver)
+  - OldSnapshot (json)
+  - NewSnapshot (json)
+  - Status (Pending, Processed, Failed)
+  - ErrorMessage
+  - CreatedAt
+  - ProcessedAt
+- AccessPackage:
+  - Id
+  - TenantId
+  - Name
+  - Description
+  - IsEnabled
+  - Roles and Applications mapping tables
+- LifecyclePolicy:
+  - Id
+  - TenantId
+  - Name
+  - Conditions:
+    - OrgUnitCode (optional)
+    - JobRole (optional)
+    - Location (optional)
+    - EmploymentType (optional)
+  - AssignedAccessPackages: many-to-many
+
+HR connectors:
+- CSV import endpoint:
+  - `POST /api/tenant/lifecycle/hr/csv-import`
+- Inbound SCIM Users:
+  - `/scim/v2/Users` minimal support:
+    - create, update, deactivate
+
+Lifecycle engine:
+- LifecyclePolicyEvaluator:
+  - Evaluate policies for HRIdentityRecord → AccessPackages
+- LifecycleProcessor:
+  - Process LifecycleEvent:
+    - Joiner: create user, assign packages, provision
+    - Mover: diff packages and add/remove
+    - Leaver: disable, revoke tokens, deprovision
+- Background worker:
+  - Process Pending LifecycleEvents
+
+APIs:
+- AccessPackages CRUD:
+  - `/api/tenant/lifecycle/access-packages*`
+- LifecyclePolicies CRUD:
+  - `/api/tenant/lifecycle/policies*`
+- User lifecycle timeline:
+  - `/api/tenant/lifecycle/users/{userId}/events`
+- Processing status:
+  - `/api/tenant/lifecycle/processing-status`
+
+Front-end:
+- Admin Portal:
+  - AccessPackages list + editor
+  - LifecyclePolicies list + editor
+  - HR Import page
+  - Lifecycle processing status widget/page
+  - User Lifecycle tab in User details
+
+Integrations:
+- Users / GlobalUser + TenantUser
+- OrgHierarchy (OrgUnit mapping)
+- Authorization / PolicyEngine:
+  - assign/unassign roles from AccessPackages
+- Federation/SCIM outbound:
+  - provision/deprovision in target systems
+- Governance / SoD:
+  - SoD check on Mover changes (optional but hookable)
+- NotificationCenter:
+  - notify manager/security on Joiner/Mover/Leaver as per spec
+- Observability:
+  - audit events and metrics for lifecycle flows
+
+--------------------------------------------------
+Step 2: Create module Onesign.Modules.IdentityLifecycle
+--------------------------------------------------
+
+Create new module:
+
+- `src/Onesign.Modules.IdentityLifecycle`
+  - Domain
+  - Application
+  - Infrastructure
+  - Api
+
+Domain layer
+
+Entities:
+- `HRIdentityRecord`
+- `LifecycleEvent`
+- `AccessPackage`
+- `AccessPackageRole`
+- `AccessPackageApplication`
+- `LifecyclePolicy`
+- `LifecyclePolicyAccessPackage` (join entity when needed)
+
+Enums:
+- `EmploymentStatus` (Active, OnLeave, Terminated)
+- `LifecycleEventType` (Joiner, Mover, Leaver)
+- `LifecycleEventStatus` (Pending, Processed, Failed)
+
+Services (interfaces):
+- `IHRRecordService`
+  - Upsert HRIdentityRecord and detect deltas
+- `ILifecycleEventFactory`
+  - Generate Joiner/Mover/Leaver events based on HR changes
+- `ILifecyclePolicyEvaluator`
+  - Evaluate HRIdentityRecord → AccessPackages
+- `ILifecycleProcessor`
+  - Process LifecycleEvents (Joiner/Mover/Leaver)
+
+Repositories:
+- `IHRIdentityRecordRepository`
+- `ILifecycleEventRepository`
+- `IAccessPackageRepository`
+- `ILifecyclePolicyRepository`
+
+Application layer
+
+DTOs:
+- `HRIdentityRecordDto`
+- `LifecycleEventDto`
+- `AccessPackageDto`
+- `AccessPackageSummaryDto`
+- `LifecyclePolicyDto`
+- `LifecyclePolicySummaryDto`
+- `UserLifecycleEventDto`
+- `LifecycleProcessingStatusDto`
+
+Commands:
+- `ImportHrCsvCommand`
+- `UpsertHrRecordFromScimCommand`
+- `CreateAccessPackageCommand`
+- `UpdateAccessPackageCommand`
+- `DeleteAccessPackageCommand`
+- `CreateLifecyclePolicyCommand`
+- `UpdateLifecyclePolicyCommand`
+- `DeleteLifecyclePolicyCommand`
+- `ProcessLifecycleEventCommand` (for background worker)
+
+Queries:
+- `GetAccessPackagesQuery`
+- `GetAccessPackageDetailsQuery`
+- `GetLifecyclePoliciesQuery`
+- `GetLifecyclePolicyDetailsQuery`
+- `GetUserLifecycleEventsQuery`
+- `GetLifecycleProcessingStatusQuery`
+
+Infrastructure layer
+
+- EF entities and configurations for all domain types.
+- Repository implementations.
+- Background worker / hosted service to process LifecycleEvents.
+
+Ensure one migration for Phase 15 creates all required tables and indexes.
+
+--------------------------------------------------
+Step 3: HR CSV Import and SCIM inbound
+--------------------------------------------------
+
+CSV Import
+
+Implement endpoint:
+
+- `POST /api/tenant/lifecycle/hr/csv-import`
+
+Behavior:
+- Accepts CSV file with columns:
+  - EmployeeId (→ ExternalEmployeeId)
+  - FirstName
+  - LastName
+  - Email
+  - OrgUnitCode
+  - JobRole
+  - ManagerEmployeeId (→ ManagerExternalEmployeeId)
+  - EmploymentStatus
+  - StartDate
+  - EndDate
+- For each row:
+  - Upsert HRIdentityRecord for this TenantId + ExternalEmployeeId:
+    - Create new if not existing
+    - Update existing if changed
+    - Keep previous snapshot for comparison
+  - Detect event type:
+    - Joiner:
+      - New record with EmploymentStatus Active and now within StartDate
+      - Or previously non-active -> now Active
+    - Mover:
+      - Existing user with changed OrgUnitCode, JobRole, ManagerExternalEmployeeId, or critical attributes
+    - Leaver:
+      - EmploymentStatus becomes Terminated
+      - Or EndDate passes current date
+  - Create LifecycleEvent with:
+    - EventType (Joiner/Mover/Leaver)
+    - OldSnapshot, NewSnapshot
+    - Status = Pending
+
+- Return:
+  - Count of processed rows
+  - Count of Joiner/Mover/Leaver events created
+
+SCIM inbound (minimal)
+
+Implement SCIM `/scim/v2/Users` controller:
+
+- Supported operations:
+  - `POST /scim/v2/Users`
+    - Map SCIM User to HRIdentityRecord
+    - Create record and potentially JoinerEvent
+  - `PUT or PATCH /scim/v2/Users/{id}`
+    - Update HRIdentityRecord and detect Mover/Leaver
+  - `DELETE /scim/v2/Users/{id}` or `PATCH active=false`
+    - Mark HRIdentityRecord EmploymentStatus = Terminated and create LeaverEvent
+
+Mapping:
+- SCIM attributes:
+  - `id` → ExternalEmployeeId
+  - `userName` / `emails[0].value` → Email
+  - `name.givenName`, `name.familyName`
+  - `urn:ietf:params:scim:schemas:extension:enterprise:2.0:User.department` → OrgUnitCode
+  - `title` → JobRole
+  - `manager.value` → ManagerExternalEmployeeId
+  - `active` → EmploymentStatus
+
+Authentication:
+- SCIM endpoints MUST be protected:
+  - Use API key/mTLS or an auth method consistent with your platform.
+- Do not leave them open.
+
+--------------------------------------------------
+Step 4: Lifecycle policies and AccessPackages
+--------------------------------------------------
+
+AccessPackage
+
+- Implement domain entity `AccessPackage` with:
+  - TenantId
+  - Name
+  - Description
+  - IsEnabled
+- Children:
+  - AccessPackageRole:
+    - AccessPackageId
+    - RoleId or RoleName (depending on your existing Authorization model)
+  - AccessPackageApplication:
+    - AccessPackageId
+    - ApplicationClientId
+
+APIs:
+
+- `GET /api/tenant/lifecycle/access-packages`
+  - returns list of AccessPackageSummaryDto
+- `GET /api/tenant/lifecycle/access-packages/{id}`
+  - returns full AccessPackageDto
+- `POST /api/tenant/lifecycle/access-packages`
+  - create new access package
+- `PUT /api/tenant/lifecycle/access-packages/{id}`
+  - update contents and enabled flag
+- `DELETE /api/tenant/lifecycle/access-packages/{id}`
+  - soft delete (IsEnabled = false or IsDeleted flag)
+
+LifecyclePolicy
+
+- Entity `LifecyclePolicy`:
+  - TenantId
+  - Name
+  - Condition fields:
+    - OrgUnitCode (nullable)
+    - JobRole (nullable)
+    - Location (nullable)
+    - EmploymentType (nullable)
+  - Link to AccessPackages via join table.
+
+APIs:
+
+- `GET /api/tenant/lifecycle/policies`
+- `GET /api/tenant/lifecycle/policies/{id}`
+- `POST /api/tenant/lifecycle/policies`
+- `PUT /api/tenant/lifecycle/policies/{id}`
+- `DELETE /api/tenant/lifecycle/policies/{id}`
+
+LifecyclePolicyEvaluator
+
+- Implement `ILifecyclePolicyEvaluator` with method:
+  - `Task<IReadOnlyList<AccessPackage>> EvaluateAsync(HRIdentityRecord record)`
+- Matching rules:
+  - For each policy:
+    - For each non-null condition field:
+      - Require equality with HRIdentityRecord field
+  - Allow multiple policies to match and union their AccessPackages.
+
+--------------------------------------------------
+Step 5: LifecycleProcessor – Joiner / Mover / Leaver
+--------------------------------------------------
+
+Implement `ILifecycleProcessor`:
+
+- `Task ProcessEventAsync(LifecycleEvent @event)`
+
+Joiner processing
+
+- For a Joiner event:
+  - If no TenantUser linked to ExternalEmployeeId:
+    - Create or link GlobalUser (if your model uses it)
+    - Create TenantUser for this tenant with:
+      - Email, names from HRIdentityRecord
+      - OrgUnit mapping via OrgHierarchy:
+        - OrgUnitCode → OrgUnit
+  - Evaluate policies:
+    - `ILifecyclePolicyEvaluator.EvaluateAsync(hrRecord)`
+  - For each AccessPackage:
+    - Use Authorization/PolicyEngine to:
+      - Assign roles to the TenantUser
+    - Use Federation/SCIM outbound (existing module) to:
+      - Provision access to applications in AccessPackage
+  - Write audit events:
+    - "Lifecycle.JoinerProcessed"
+  - Use NotificationCenter:
+    - Notify manager and/or SecurityOfficer if configured (e.g. "Lifecycle.JoinerCompleted")
+
+Mover processing
+
+- For a Mover event:
+  - Load old and new HR snapshots.
+  - Evaluate policies for old and new:
+    - packagesOld, packagesNew
+  - Compute:
+    - toRemove = packagesOld \ packagesNew
+    - toAdd = packagesNew \ packagesOld
+  - For toRemove:
+    - Revoke roles via Authorization/PolicyEngine
+    - Trigger deprovision via Federation/SCIM for relevant apps
+  - For toAdd:
+    - Assign roles
+    - Provision apps via Federation/SCIM
+  - Audit:
+    - "Lifecycle.MoverProcessed"
+  - Optionally:
+    - Call Governance module (Phase 10) for SoD checks:
+      - If new access set violates SoD rules, log violation or mark for review.
+
+Leaver processing
+
+- For a Leaver event:
+  - Disable TenantUser (and possibly GlobalUser if no other tenant membership):
+    - Mark user as inactive/disabled in User module
+  - Revoke live sessions and tokens:
+    - Use existing session/token revocation mechanisms from Auth module.
+  - Remove role assignments via Authorization/PolicyEngine.
+  - Trigger outbound SCIM/Federation:
+    - Disable or delete user from apps.
+  - Audit:
+    - "Lifecycle.LeaverProcessed"
+  - Use NotificationCenter:
+    - Inform manager/security if configured.
+
+--------------------------------------------------
+Step 6: Background worker / queue for LifecycleEvents
+--------------------------------------------------
+
+Implement a background worker / hosted service:
+
+- Responsible for processing LifecycleEvents with Status = Pending.
+
+Design:
+
+- Poll periodically for a batch of Pending events:
+  - Order by CreatedAt
+  - Limit batch size for performance
+- For each event:
+  - Wrap ProcessEventAsync in try/catch
+  - On success:
+    - set Status = Processed
+    - set ProcessedAt = now
+  - On failure:
+    - set Status = Failed
+    - set ErrorMessage with truncated details
+    - log error via Observability module
+
+Make sure this worker is only registered once in the main API host environment and respects tenant isolation concerns.
+
+--------------------------------------------------
+Step 7: Monitoring APIs – User timeline & processing status
+--------------------------------------------------
+
+User Lifecycle timeline
+
+Implement:
+
+- `GET /api/tenant/lifecycle/users/{userId}/events`
+
+Behavior:
+- Map internal LifecycleEvents for this TenantUser into:
+  - UserLifecycleEventDto with:
+    - EventType (Joiner/Mover/Leaver)
+    - CreatedAt
+    - Summary fields:
+      - For Joiner: source (HR/SCIM), initial OrgUnit, JobRole
+      - For Mover: from → to (OrgUnit/JobRole)
+      - For Leaver: reason (EmploymentStatus/EndDate)
+- Respect authorization:
+  - Only TenantAdmin/Governance roles can see this data.
+
+Lifecycle processing status
+
+Implement:
+
+- `GET /api/tenant/lifecycle/processing-status`
+
+Behavior:
+- Returns:
+  - lastProcessedAt
+  - pendingCount (Pending events count)
+  - failedCount (Failed events within a recent time window, e.g. last 24 hours)
+- Could be global per tenant or partitioned by event type.
+
+--------------------------------------------------
+Step 8: Admin Portal UI – Lifecycle management
+--------------------------------------------------
+
+Extend Admin Portal with pages:
+
+1) AccessPackages management – `/tenant/lifecycle/access-packages`
+
+- Page shows:
+  - Table:
+    - Name
+    - Description
+    - Enabled
+    - Roles count
+    - Applications count
+- Actions:
+  - Create new package
+  - Edit package
+  - Disable/delete
+
+- Create/Edit form:
+  - Name, Description
+  - Enabled toggle
+  - Multi-select for:
+    - Roles (from Authorization module)
+    - Applications (from Applications module)
+  - Use existing design system and i18n.
+
+2) LifecyclePolicies management – `/tenant/lifecycle/policies`
+
+- Page shows:
+  - Table:
+    - Name
+    - Conditions summary (OrgUnit/JobRole/Location)
+    - Attached AccessPackages count
+- Actions:
+  - Create / Edit / Delete
+
+- Form:
+  - Name
+  - Conditions:
+    - OrgUnit selector (from OrgHierarchy)
+    - JobRole (string or dropdown)
+    - Location, EmploymentType if in scope
+  - Attach AccessPackages (multi-select)
+  - Localized labels and help texts.
+
+3) HR Import page – `/tenant/lifecycle/hr-import`
+
+- Functionality:
+  - Upload CSV file
+  - Button to submit to `/api/tenant/lifecycle/hr/csv-import`
+- Show:
+  - last imports list:
+    - timestamp
+    - rows processed
+    - Joiner/Mover/Leaver counts (if API provides)
+- Use safe progress/error feedback.
+
+4) Lifecycle processing status – e.g. `/tenant/lifecycle/status`
+
+- UI components:
+  - Cards:
+    - Pending events
+    - Failed events
+    - Last processed time
+  - Maybe chart of events per day (optional if metrics already exist)
+
+5) User Lifecycle tab
+
+- In existing User details view:
+  - Add "Lifecycle" tab.
+- Tab loads:
+  - `GET /api/tenant/lifecycle/users/{userId}/events`
+- Show timeline:
+  - Joiner at the beginning
+  - Mover events with OrgUnit/JobRole change descriptions
+  - Leaver at the end (if exists)
+- Provide a readable, localized summary for each event.
+
+--------------------------------------------------
+Step 9: Integration with other modules
+--------------------------------------------------
+
+Users / Identity
+
+- Use existing User module services to:
+  - Create GlobalUser/TenantUser
+  - Disable users
+  - Link HRIdentityRecord.ExternalEmployeeId to users.
+
+OrgHierarchy
+
+- Map OrgUnitCode from HRIdentityRecord to actual OrgUnit:
+  - Use existing OrgHierarchy services to resolve codes/ids.
+- Update TenantUser primary OrgUnit for Joiner/Mover.
+
+Authorization / PolicyEngine
+
+- All access assignment/removal must go through existing role/permission services:
+  - No direct DB writes to role tables.
+- For each AccessPackage:
+  - Assign or unassign its roles using PolicyEngine or RoleManagement APIs.
+
+Federation / SCIM outbound
+
+- For Joiner and Mover (add side):
+  - Trigger provisioning to apps in AccessPackage:
+    - via Federation/SCIM module.
+- For Mover (remove side) and Leaver:
+  - Trigger deprovision or disable actions.
+
+Governance / SoD (optional but important)
+
+- When Mover adds new access sets:
+  - Optionally call Governance/SoD service:
+    - to check for SoD violations.
+  - If violation:
+    - Log or mark this user for review.
+    - This might simply be an event emitted that Governance can consume.
+
+NotificationCenter
+
+- On Joiner:
+  - Optional notifications:
+    - To manager and/or SecurityOfficer.
+- On Mover:
+  - Optional notifications when critical roles are added or removed.
+- On Leaver:
+  - Notifications to manager/security confirming deprovision.
+
+Observability / Audit
+
+- Log audit events:
+  - "Lifecycle.JoinerDetected"
+  - "Lifecycle.JoinerProcessed"
+  - "Lifecycle.MoverDetected"
+  - "Lifecycle.MoverProcessed"
+  - "Lifecycle.LeaverDetected"
+  - "Lifecycle.LeaverProcessed"
+- Expose metrics:
+  - counts of events by type
+  - processing latency
+  - failures count
+
+--------------------------------------------------
+Step 10: Tests and final verification
+--------------------------------------------------
+
+Backend tests
+
+- HR CSV import:
+  - correct parsing
+  - correct detection of Joiner, Mover, Leaver
+- SCIM inbound:
+  - create/update/deactivate mapping to HRIdentityRecord and LifecycleEvents
+- LifecyclePolicyEvaluator:
+  - returns expected AccessPackages for different HR profiles
+- LifecycleProcessor:
+  - Joiner:
+    - creates user
+    - assigns roles and triggers provisioning
+  - Mover:
+    - computes add/remove sets correctly
+    - updates roles and provisioning accordingly
+  - Leaver:
+    - disables user
+    - revokes tokens/sessions
+    - removes role assignments
+    - triggers deprovision
+
+- Background worker:
+  - processes Pending events
+  - marks them Processed or Failed with correct timestamps
+
+APIs:
+
+- AccessPackages and LifecyclePolicies CRUD:
+  - all endpoints work with proper tenant scoping and auth.
+- User lifecycle timeline:
+  - returns correct ordered events for a user.
+- Processing status:
+  - reflects actual queue state.
+
+Frontend tests (manual or automated)
+
+- AccessPackages page:
+  - create/edit/delete package works.
+- LifecyclePolicies page:
+  - create/edit/delete policy works and conditions are displayed.
+- HR Import page:
+  - CSV upload, import result feedback.
+- Lifecycle status page:
+  - shows realistic stats when events exist.
+- User Lifecycle tab:
+  - Joiner/Mover/Leaver events visible and ordered.
+
+Final verification
+
+- Solution builds with `Onesign.Modules.IdentityLifecycle` integrated.
+- Phase 15 migrations apply cleanly on top of existing schema.
+- With a test HR CSV:
+  - New employee is created as a user
+  - Gets baseline roles and app access
+  - A change in OrgUnit/JobRole adjusts access
+  - A termination revokes access and disables account
+- All flows are auditable and observable.
+- No TODOs, no NotImplementedException, no empty public classes or components.
+
+Important mindset
+
+- Phase 15 turns onesign into a true identity lifecycle system.
+- HR is the source of truth, lifecycle engine is the brain, PolicyEngine and Federation are the muscles.
+- Every join/move/leave must result in predictable, auditable access changes.
+- When in doubt, choose correctness, security and auditability over shortcuts.
+
+Now:
+Read Phase15-Onesign-IdentityLifecycleAutomation.md, then implement `Onesign.Modules.IdentityLifecycle`, HR CSV and SCIM inbound connectors, lifecycle engine (Joiner/Mover/Leaver), the monitoring APIs and Admin Portal UIs, with no TODOs or partial implementations.

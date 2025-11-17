@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="TENANT_SLUG_EXISTS" xml:space="preserve">
+    <value>یک tenant با این slug قبلاً وجود دارد</value>
+  </data>
+  <data name="TENANT_NOT_FOUND" xml:space="preserve">
+    <value>Tenant یافت نشد</value>
+  </data>
+  <data name="USER_NOT_FOUND" xml:space="preserve">
+    <value>کاربر یافت نشد</value>
+  </data>
+  <data name="USER_ALREADY_IN_TENANT" xml:space="preserve">
+    <value>کاربر قبلاً عضو این tenant است</value>
+  </data>
+  <data name="USER_NOT_IN_TENANT" xml:space="preserve">
+    <value>کاربر عضو این tenant نیست</value>
+  </data>
+  <data name="INVALID_STATUS" xml:space="preserve">
+    <value>کاربر در وضعیت Invited نیست</value>
+  </data>
+  <data name="APPLICATION_NOT_FOUND" xml:space="preserve">
+    <value>Application یافت نشد</value>
+  </data>
+  <data name="INVALID_URI" xml:space="preserve">
+    <value>Redirect URI باید با http:// یا https:// شروع شود</value>
+  </data>
+  <data name="INVALID_CREDENTIALS" xml:space="preserve">
+    <value>ایمیل یا رمز عبور نامعتبر است</value>
+  </data>
+  <data name="USER_DISABLED" xml:space="preserve">
+    <value>حساب کاربری غیرفعال است</value>
+  </data>
+  <data name="BUSINESS_ERROR" xml:space="preserve">
+    <value>یک خطای تجاری رخ داده است</value>
+  </data>
+  <data name="INTERNAL_SERVER_ERROR" xml:space="preserve">
+    <value>یک خطای داخلی سرور رخ داده است. لطفاً دوباره تلاش کنید.</value>
+  </data>
+  <data name="USER_INACTIVE" xml:space="preserve">
+    <value>حساب کاربری فعال نیست</value>
+  </data>
+  <data name="GOOGLE_NOT_CONFIGURED" xml:space="preserve">
+    <value>احراز هویت Google پیکربندی نشده است</value>
+  </data>
+  <data name="INVALID_GOOGLE_TOKEN" xml:space="preserve">
+    <value>توکن Google نامعتبر است</value>
+  </data>
+  <data name="GOOGLE_EMAIL_MISSING" xml:space="preserve">
+    <value>توکن Google شامل ایمیل نیست</value>
+  </data>
+  <data name="TOKEN_VALIDATION_ERROR" xml:space="preserve">
+    <value>اعتبارسنجی توکن با خطا مواجه شد</value>
+  </data>
+  <data name="SECRET_NOT_FOUND" xml:space="preserve">
+    <value>Secret کلاینت یافت نشد</value>
+  </data>
+  <data name="TENANT_MISMATCH" xml:space="preserve">
+    <value>منبع متعلق به این tenant نیست</value>
+  </data>
+  <data name="RATE_LIMIT_EXCEEDED" xml:space="preserve">
+    <value>درخواست‌های بیش از حد. لطفاً بعداً دوباره تلاش کنید.</value>
+  </data>
+  <data name="UNKNOWN_ERROR" xml:space="preserve">
+    <value>یک خطای ناشناخته رخ داده است</value>
+  </data>
+  <data name="INVALID_TOKEN" xml:space="preserve">
+    <value>توکن نامعتبر یا منقضی شده است</value>
+  </data>
+  <data name="TOKEN_ALREADY_USED" xml:space="preserve">
+    <value>این توکن قبلاً استفاده شده است</value>
+  </data>
+  <data name="TOKEN_EXPIRED" xml:space="preserve">
+    <value>توکن منقضی شده است</value>
+  </data>
+  <data name="REDIRECT_URI_NOT_FOUND" xml:space="preserve">
+    <value>Redirect URI یافت نشد</value>
+  </data>
+  <data name="TENANT_CONFIG_NOT_FOUND" xml:space="preserve">
+    <value>پیکربندی Tenant یافت نشد</value>
+  </data>
+</root>
+

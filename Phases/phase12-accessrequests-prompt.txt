@@ -1,0 +1,805 @@
+You are an expert .NET 10, EF Core, and React/Next.js engineer, working as an implementation assistant for the onesign SSO SaaS platform.
+
+Context
+The platform already has:
+
+- Phase 1: Core multi tenant SSO and OIDC login
+  - Phase1-Onesign-CoreSSO.md
+
+- Phase 2: Organization hierarchy, OrgUnits, delegated admins
+  - Phase2-Onesign-OrgHierarchy.md
+
+- Phase 3: Advanced security, MFA, risk based decisions, Security Center
+  - Phase3-Onesign-AdvancedSecurity.md
+
+- Phase 4: Federation and provisioning - SAML, OIDC federation, SCIM provider
+  - Phase4-Onesign-FederationProvisioning.md
+
+- Phase 5: Billing - plans, tenant subscriptions, quotas, billing UIs
+  - Phase5-Onesign-BillingPlans.md
+
+- Phase 6: Observability - audit center, alerts, log streaming, global and tenant analytics
+  - Phase6-Onesign-ObservabilityCompliance.md
+
+- Phase 7: Authorization Policy Engine - advanced RBAC and ABAC lite
+  - Phase7-Onesign-PolicyEngine.md
+
+- Phase 8: DevPortal and Developer Experience
+  - Phase8-Onesign-DeveloperExperience.md
+
+- Phase 9: Account Center and self service for end users
+  - Phase9-Onesign-AccountCenterSelfService.md
+
+- Phase 10: Identity Governance and Access Reviews (IGA lite)
+  - Phase10-Onesign-IdentityGovernance.md
+
+- Phase 11: Notification Center and communication platform
+  - Phase11-Onesign-NotificationCenter.md
+
+Now there is Phase 12 spec focusing on Access Requests and Approval Workflows:
+
+- Phase12-Onesign-AccessRequestsWorkflow.md
+
+Your job:
+- Read all these documents, especially Phase12-Onesign-AccessRequestsWorkflow.md.
+- Implement Phase 12 exactly as defined there:
+  - Create `Onesign.Modules.AccessRequests` backend module.
+  - Implement `/api/account/access-requests/*` APIs for end user self service access requests.
+  - Implement `/api/tenant/access-requests/*` APIs for tenant flows, approvals and dashboards.
+  - Extend Account Center and Tenant Admin Portal UIs to support:
+    - Request Access (end user)
+    - Approvals worklist (approvers)
+    - Access Requests dashboard and flow management.
+- Do NOT break previous phases.
+- Do NOT leave a single TODO or NotImplementedException.
+- Do NOT create empty controllers, services, or React components.
+
+Global constraints
+
+1) Multi language
+- The platform is multilingual (at least English and Persian).
+- All new user facing labels and messages must be localizable:
+  - Backend: use structured error codes and message keys, not hardcoded human readable messages.
+  - Frontend: use the existing i18n mechanism and translation keys.
+- Do not hardcode final English or Persian texts directly in controllers or JSX.
+
+2) No TODO and no partial implementations
+- No TODO comments.
+- No NotImplementedException.
+- No empty public methods, classes, controllers, or React pages.
+- If something is out of Phase 12 scope, do not scaffold it.
+
+3) Modular monolith structure
+- Keep modules separate:
+  - AccessRequests is its own module, not mixed inside Governance or Notification or PolicyEngine.
+- Respect layering:
+  - Domain -> Application -> Infrastructure -> API -> Frontend.
+- AccessRequests must integrate with other modules only via their public services or APIs, not via hacking their internals.
+
+4) Access workflow is not cosmetic
+- Approvals must actually lead to real access grants:
+  - Through PolicyEngine and Role or permission assignment.
+  - Through Federation or SCIM where applicable.
+- Rejections must prevent access.
+- The entire lifecycle must be auditable.
+
+--------------------------------------------------
+Step 1: Read specs and build a checklist
+--------------------------------------------------
+
+1) Read:
+- Phase1-Onesign-CoreSSO.md
+- Phase2-Onesign-OrgHierarchy.md
+- Phase3-Onesign-AdvancedSecurity.md
+- Phase4-Onesign-FederationProvisioning.md
+- Phase5-Onesign-BillingPlans.md
+- Phase6-Onesign-ObservabilityCompliance.md
+- Phase7-Onesign-PolicyEngine.md
+- Phase8-Onesign-DeveloperExperience.md
+- Phase9-Onesign-AccountCenterSelfService.md
+- Phase10-Onesign-IdentityGovernance.md
+- Phase11-Onesign-NotificationCenter.md
+- Phase12-Onesign-AccessRequestsWorkflow.md
+
+2) From Phase 12 build an internal checklist:
+
+- New module: `Onesign.Modules.AccessRequests`.
+- Domain entities:
+  - AccessRequest, AccessRequestItem.
+  - AccessApprovalFlow, AccessApprovalStepDefinition.
+  - AccessApprovalInstance, AccessApprovalDecision.
+  - AccessRequestSlaConfig.
+- Services:
+  - AccessRequestService.
+  - AccessApprovalService.
+  - AccessRequestWorkflowEngine.
+  - AccessRequestProvisioningService.
+- Tenant APIs:
+  - `/api/account/access-requests/*` for end users (self service).
+  - `/api/tenant/access-requests/*` for flows, approvals, and dashboard.
+- Frontend:
+  - Account Center: Request Access page and My Access Requests page.
+  - Admin Portal:
+    - Approvals worklist for approvers.
+    - Flow management pages.
+    - Access Requests dashboard.
+- Integration:
+  - OrgHierarchy (Phase 2) - for managers and OrgUnits.
+  - PolicyEngine and UserRole (Phase 7) - for granting permissions.
+  - Federation and SCIM (Phase 4) - for external provisioning.
+  - Governance (Phase 10) - conceptual alignment with Access Reviews.
+  - NotificationCenter (Phase 11) - notifications for submissions and approvals.
+  - Observability (Phase 6) - full audit and logging.
+
+Treat Phase12-Onesign-AccessRequestsWorkflow.md as the definitive blueprint for this phase.
+
+--------------------------------------------------
+Step 2: Backend module - Onesign.Modules.AccessRequests
+--------------------------------------------------
+
+Create a new module:
+
+- `src/Onesign.Modules.AccessRequests`
+
+Structure:
+
+Domain
+- Entities
+  - AccessRequest
+  - AccessRequestItem
+  - AccessApprovalFlow
+  - AccessApprovalStepDefinition
+  - AccessApprovalInstance
+  - AccessApprovalDecision
+  - AccessRequestSlaConfig
+- Enums
+  - AccessRequestStatus       // Draft, Submitted, InProgress, Approved, Rejected, Cancelled, Failed
+  - AccessApprovalStatus      // Pending, Approved, Rejected, Skipped, Escalated
+  - AccessApprovalStepType    // Manager, AppOwner, SecurityOfficer, CustomRole
+  - AccessTargetType          // Application, Role
+- ValueObjects
+  - AccessTargetRef           // reference to ApplicationClientId or RoleName
+- Services
+  - IAccessRequestService
+  - IAccessApprovalService
+  - IAccessRequestWorkflowEngine
+  - IAccessRequestProvisioningService
+- Repositories
+  - IAccessRequestRepository
+  - IAccessApprovalFlowRepository
+  - IAccessApprovalInstanceRepository
+  - IAccessRequestSlaConfigRepository
+
+Application
+- DTOs
+  - AccessRequestDto
+  - CreateAccessRequestRequest
+  - AccessRequestItemDto
+  - AccessApprovalFlowDto
+  - CreateAccessApprovalFlowRequest
+  - UpdateAccessApprovalFlowRequest
+  - AccessApprovalInstanceDto
+  - ApprovalDecisionDto
+  - AccessRequestDashboardStatsDto
+  - AccessRequestCatalogItemDto
+- Commands
+  - CreateAccessRequestCommand
+  - SubmitAccessRequestCommand
+  - CancelAccessRequestCommand
+  - ApproveAccessRequestStepCommand
+  - RejectAccessRequestStepCommand
+  - EscalateAccessRequestStepCommand
+  - CreateAccessApprovalFlowCommand
+  - UpdateAccessApprovalFlowCommand
+- Queries
+  - GetMyAccessRequestsQuery
+  - GetAccessRequestDetailsQuery
+  - GetAccessRequestsForApproverQuery
+  - GetAccessApprovalFlowsQuery
+  - GetAccessApprovalFlowDetailsQuery
+  - GetAccessRequestDashboardStatsQuery
+  - GetAccessRequestCatalogQuery
+
+Infrastructure
+- EF Core Entities
+  - AccessRequestEntity
+  - AccessRequestItemEntity
+  - AccessApprovalFlowEntity
+  - AccessApprovalStepDefinitionEntity
+  - AccessApprovalInstanceEntity
+  - AccessApprovalDecisionEntity
+  - AccessRequestSlaConfigEntity
+- EF Core Configurations
+  - AccessRequestEntityTypeConfiguration
+  - AccessRequestItemEntityTypeConfiguration
+  - AccessApprovalFlowEntityTypeConfiguration
+  - AccessApprovalStepDefinitionEntityTypeConfiguration
+  - AccessApprovalInstanceEntityTypeConfiguration
+  - AccessApprovalDecisionEntityTypeConfiguration
+  - AccessRequestSlaConfigEntityTypeConfiguration
+- EF Core Repositories
+  - AccessRequestRepository
+  - AccessApprovalFlowRepository
+  - AccessApprovalInstanceRepository
+  - AccessRequestSlaConfigRepository
+
+Implement all components fully and correctly.
+
+--------------------------------------------------
+Step 3: Data model and EF - Requests, Flows, Instances
+--------------------------------------------------
+
+AccessRequest
+
+Fields:
+- Id
+- TenantId
+- RequestorUserId
+- RequestorDisplayName
+- Justification
+- Status (AccessRequestStatus)
+- CreatedAt
+- SubmittedAt nullable
+- CompletedAt nullable
+- Navigation: Items collection
+
+AccessRequestItem
+
+Fields:
+- Id
+- RequestId
+- AccessTargetType  (Application, Role)
+- ApplicationClientId (if TargetType = Application)
+- RoleName (if TargetType = Role)
+- ScopeDetails (optional extra info such as environment or data scope)
+- IsApproved
+- IsRejected
+
+AccessApprovalFlow
+
+Fields:
+- Id
+- TenantId
+- AccessTargetType (Application, Role)
+- ApplicationClientId (optional)
+- RoleName (optional)
+- IsEnabled
+- Steps collection
+- CreatedAt
+- UpdatedAt
+
+AccessApprovalStepDefinition
+
+Fields:
+- Id
+- FlowId
+- Order
+- AccessApprovalStepType  (Manager, AppOwner, SecurityOfficer, CustomRole)
+- CustomRoleName (for CustomRole type)
+- AllowDelegate (bool)
+- AutoApproveIfNoOwner (bool)
+
+AccessApprovalInstance
+
+Fields:
+- Id
+- TenantId
+- RequestId
+- RequestItemId
+- FlowId
+- CurrentStepOrder
+- Status (AccessApprovalStatus)  // Pending, Approved, Rejected
+- Decisions collection
+
+AccessApprovalDecision
+
+Fields:
+- Id
+- ApprovalInstanceId
+- StepOrder
+- ApproverUserId
+- ApproverDisplayName
+- Status (Approved, Rejected, Escalated)
+- Reason
+- DecidedAt
+
+AccessRequestSlaConfig
+
+Fields:
+- Id
+- TenantId
+- DefaultApprovalSlaHours (or similar)
+- CriticalApprovalSlaHours
+- UpdatedAt
+
+DbContext
+
+- Add DbSet for:
+  - AccessRequests
+  - AccessRequestItems
+  - AccessApprovalFlows
+  - AccessApprovalStepDefinitions
+  - AccessApprovalInstances
+  - AccessApprovalDecisions
+  - AccessRequestSlaConfigs
+
+Indexes:
+
+- AccessRequest:
+  - Index on (TenantId, RequestorUserId, Status, CreatedAt)
+- AccessApprovalInstance:
+  - Index on (TenantId, Status, CurrentStepOrder)
+- AccessApprovalDecision:
+  - Index on (TenantId, ApproverUserId, DecidedAt)
+- AccessApprovalFlow:
+  - Index on (TenantId, AccessTargetType, ApplicationClientId, RoleName, IsEnabled)
+
+Create a Phase 12 migration that creates these tables and indexes without breaking previous schema.
+
+--------------------------------------------------
+Step 4: Core services - AccessRequestService and ApprovalService
+--------------------------------------------------
+
+Implement IAccessRequestService
+
+Methods:
+
+- `Task<AccessRequestDto> CreateRequestAsync(Guid tenantId, string requestorUserId, CreateAccessRequestRequest request)`
+  - Creates a new AccessRequest with:
+    - Status = Submitted
+    - Items created for each requested Application or Role
+    - RequestorDisplayName resolved from user profile service
+  - For each item:
+    - Call WorkflowEngine.StartWorkflowAsync(requestId, itemId)
+  - Emit audit event "AccessRequest.Submitted"
+  - Emit Notification via NotificationCenter (Phase 11) for event type "AccessRequest.Submitted".
+
+- `Task<IReadOnlyList<AccessRequestDto>> GetMyRequestsAsync(Guid tenantId, string requestorUserId, ...)`
+  - Returns requests limited to that user.
+
+- `Task<AccessRequestDto> GetRequestDetailsAsync(Guid tenantId, Guid requestId, string currentUserId, bool isAdminOrOwner)`
+  - Enforce that:
+    - Requestor can see own requests.
+    - Tenant admins and governance roles can see tenant requests.
+
+- `Task CancelRequestAsync(Guid tenantId, Guid requestId, string requestorUserId)`
+  - Only if Status is Submitted or InProgress.
+  - Set Status = Cancelled and CompletedAt = now.
+  - Audit "AccessRequest.Cancelled".
+
+Implement IAccessApprovalService
+
+Methods:
+
+- `Task<IReadOnlyList<AccessApprovalInstanceDto>> GetApproverWorklistAsync(Guid tenantId, string approverUserId, ...)`
+  - Returns all approval instances where:
+    - Status = Pending
+    - Current step is assigned to this approver.
+
+- `Task ApproveAsync(Guid tenantId, Guid approvalInstanceId, string approverUserId, string reason)`
+- `Task RejectAsync(Guid tenantId, Guid approvalInstanceId, string approverUserId, string reason)`
+- `Task EscalateAsync(Guid tenantId, Guid approvalInstanceId, string approverUserId, string reason)`
+
+Behavior:
+
+- Validate that current approverUserId is allowed to act on this step.
+- Append an AccessApprovalDecision record.
+- Call WorkflowEngine.AdvanceOnApprovalAsync(approvalInstanceId, decision).
+
+--------------------------------------------------
+Step 5: Workflow Engine and Provisioning
+--------------------------------------------------
+
+Implement IAccessRequestWorkflowEngine
+
+Methods:
+
+- `Task StartWorkflowAsync(Guid tenantId, Guid requestId, Guid requestItemId)`
+  - Determine the appropriate AccessApprovalFlow:
+    - If there is a flow matching (TenantId, TargetType, ApplicationClientId or RoleName and IsEnabled) use it.
+    - If none found, use a default flow if defined, or treat as auto approved (based on Phase 12 spec).
+  - Create AccessApprovalInstance with:
+    - Status = Pending
+    - CurrentStepOrder = first step
+  - Identify the first approver(s) based on AccessApprovalStepType:
+    - Manager: use OrgHierarchy and manager of the requestor's OrgUnit.
+    - AppOwner: use Application module metadata.
+    - SecurityOfficer: use security role or group in tenant.
+    - CustomRole: use users in that role.
+  - Emit Notification via NotificationCenter:
+    - Event type such as "AccessRequest.StepPending" to assigned approver(s).
+
+- `Task AdvanceOnApprovalAsync(Guid tenantId, Guid approvalInstanceId, AccessApprovalDecision decision)`
+  - If decision.Status is Rejected:
+    - Mark AccessApprovalInstance.Status = Rejected.
+    - Mark the related AccessRequestItem as IsRejected = true.
+    - If all items in the parent AccessRequest are rejected:
+      - Set AccessRequest.Status = Rejected, CompletedAt = now.
+    - Emit audit "AccessRequest.StepRejected" and "AccessRequest.Rejected".
+    - Notify requestor via NotificationCenter with "AccessRequest.Rejected".
+  - If decision.Status is Approved:
+    - If there is a next step:
+      - Update CurrentStepOrder to next.
+      - Emit Notification to the next step's approver(s).
+    - If this was the last step:
+      - Mark AccessApprovalInstance.Status = Approved.
+      - Mark AccessRequestItem.IsApproved = true.
+      - Call IAccessRequestProvisioningService for this item.
+      - If all items in the parent AccessRequest are approved and provisioning succeeded:
+        - Set AccessRequest.Status = Approved, CompletedAt = now.
+      - Emit audit "AccessRequest.StepApproved" and "AccessRequest.Completed".
+      - Notify requestor via NotificationCenter with "AccessRequest.Approved".
+  - If decision.Status is Escalated:
+    - Apply escalation policy:
+      - For example, assign to SecurityOfficer or a higher role.
+    - Update ApprovalInstance appropriately and notify new approver.
+    - Audit "AccessRequest.StepEscalated".
+
+Implement IAccessRequestProvisioningService
+
+Method:
+
+- `Task ProvisionAsync(Guid tenantId, AccessRequest request, AccessRequestItem item)`
+
+Behavior:
+
+- If item.TargetType = Application:
+  - Use PolicyEngine and role module to assign appropriate role or permission that grants access to that application for the user.
+- If item.TargetType = Role:
+  - Directly assign that role to the user using Authorization or UserRole services.
+- If the assignment must be propagated to external systems:
+  - Emit an event or call Federation or SCIM module so target systems get updated.
+- On success:
+  - Audit "AccessRequest.ProvisioningSucceeded".
+- On failure:
+  - Mark AccessRequest.Status = Failed or mark item as failed with error information.
+  - Audit "AccessRequest.ProvisioningFailed".
+  - Notify TenantAdmin or SecurityOfficer via NotificationCenter.
+
+--------------------------------------------------
+Step 6: Backend APIs
+--------------------------------------------------
+
+Account side APIs (end user) under `/api/account/access-requests`
+
+All account APIs must be scoped to the current user as requestor.
+
+- `GET /api/account/access-requests/catalog`
+  - Returns a list of AccessRequestCatalogItemDto with:
+    - Resource type: Application or Role.
+    - ApplicationClientId and Name, Description.
+    - RoleName and Description, Sensitivity level.
+  - Only include items that are requestable and allowed for this user based on tenant configuration.
+
+- `GET /api/account/access-requests/my`
+  - Returns paged list of AccessRequestDto for the current user.
+
+- `GET /api/account/access-requests/{id}`
+  - Returns details of a specific AccessRequestDto, including its items and approval status.
+
+- `POST /api/account/access-requests`
+  - Body: CreateAccessRequestRequest:
+    - Items: list of targets (ApplicationClientId or RoleName).
+    - Justification (required).
+  - Calls IAccessRequestService.CreateRequestAsync.
+  - Returns created AccessRequestDto.
+
+- `POST /api/account/access-requests/{id}/cancel`
+  - Cancels the given request if status allows.
+  - Only the original requestor can cancel.
+  - Calls CancelRequestAsync.
+
+Tenant side APIs (flows, approvals, dashboard) under `/api/tenant/access-requests`
+
+Flows API
+
+- `GET /api/tenant/access-requests/flows`
+  - Returns list of AccessApprovalFlowDto for the tenant.
+
+- `GET /api/tenant/access-requests/flows/{id}`
+  - Returns full details including step definitions.
+
+- `POST /api/tenant/access-requests/flows`
+  - Body: CreateAccessApprovalFlowRequest:
+    - TargetType (Application or Role).
+    - ApplicationClientId or RoleName.
+    - Steps with StepType, CustomRoleName, AllowDelegate, AutoApproveIfNoOwner.
+  - Creates a new flow.
+
+- `PUT /api/tenant/access-requests/flows/{id}`
+  - Body: UpdateAccessApprovalFlowRequest.
+  - Allows updating steps and enabling or disabling flow.
+
+- `DELETE /api/tenant/access-requests/flows/{id}`
+  - Disables or removes flow based on your global design policy (soft delete recommended).
+
+Approvals API
+
+- `GET /api/tenant/access-requests/approvals/my`
+  - Returns worklist of AccessApprovalInstanceDto for the current user as approver.
+  - Filters only pending steps assigned to this user.
+
+- `POST /api/tenant/access-requests/approvals/{approvalInstanceId}/approve`
+  - Body: ApprovalDecisionDto with Reason.
+  - Calls IAccessApprovalService.ApproveAsync.
+
+- `POST /api/tenant/access-requests/approvals/{approvalInstanceId}/reject`
+  - Body: ApprovalDecisionDto with Reason.
+  - Calls IAccessApprovalService.RejectAsync.
+
+- `POST /api/tenant/access-requests/approvals/{approvalInstanceId}/escalate`
+  - Body: ApprovalDecisionDto with Reason.
+  - Calls IAccessApprovalService.EscalateAsync.
+
+Dashboard API
+
+- `GET /api/tenant/access-requests/dashboard`
+  - Returns AccessRequestDashboardStatsDto including:
+    - Total requests in the last N days.
+    - Pending requests.
+    - Approved requests.
+    - Rejected requests.
+    - Overdue approvals (based on SLA).
+    - Optional average approval time.
+
+All tenant APIs must be tenant scoped and enforce proper roles:
+- TenantAdmin, GovernanceOfficer, SecurityOfficer where needed.
+- Approver endpoints must ensure the current user is the assigned approver for that step.
+
+--------------------------------------------------
+Step 7: Integration with other modules
+--------------------------------------------------
+
+OrgHierarchy (Phase 2)
+
+- Use OrgUnit and Manager information:
+  - To implement Manager step type in approval flows.
+  - To show OrgUnit information in UI for the approver.
+
+PolicyEngine and Authorization (Phase 7)
+
+- For provisioning:
+  - Use existing services to assign roles and permissions.
+  - Keep logic centralized in PolicyEngine and Role modules.
+
+Federation and SCIM (Phase 4)
+
+- After access is granted:
+  - Optionally emit SCIM or federation events so downstream systems receive updated access state.
+
+Governance (Phase 10)
+
+- Ensure that resources granted via AccessRequests appear correctly in AccessReview campaigns and SoD checks.
+- This might mean:
+  - All grants must go through the same UserRole or PolicyEngine assignment path that Governance already uses.
+
+NotificationCenter (Phase 11)
+
+- Use NotificationRouter and NotificationCenter for:
+  - On submission:
+    - Notify requestor and possibly line manager or tenant admin.
+  - On step pending:
+    - Notify approver (event type "AccessRequest.StepPending").
+  - On approve or reject:
+    - Notify requestor and possibly other stakeholders (events like "AccessRequest.Approved" and "AccessRequest.Rejected").
+  - On provisioning failure:
+    - Notify TenantAdmin or SecurityOfficer (event "AccessRequest.ProvisioningFailed").
+
+Observability and Audit (Phase 6)
+
+- Use audit logger to record:
+  - "AccessRequest.Submitted"
+  - "AccessRequest.Cancelled"
+  - "AccessRequest.StepApproved"
+  - "AccessRequest.StepRejected"
+  - "AccessRequest.StepEscalated"
+  - "AccessRequest.ProvisioningStarted"
+  - "AccessRequest.ProvisioningSucceeded"
+  - "AccessRequest.ProvisioningFailed"
+- Ensure these events appear in existing Observability dashboards.
+
+--------------------------------------------------
+Step 8: Frontend - Account Center UI
+--------------------------------------------------
+
+Extend the Account Center React application.
+
+1) Request Access page - `/account/access-requests/request`
+
+- Use `GET /api/account/access-requests/catalog` to show:
+  - Applications and roles that are requestable.
+- UI:
+  - Filter by type (Application or Role).
+  - Filter or group by category.
+  - Selection of one or more resources.
+  - Justification text area (required).
+- On submit:
+  - Call `POST /api/account/access-requests`.
+  - Show success message.
+  - Redirect to "My Access Requests".
+
+2) My Access Requests page - `/account/access-requests/my`
+
+- Use `GET /api/account/access-requests/my`.
+- Table:
+  - CreatedAt
+  - Summary (number of items, main app or role names)
+  - Status (Submitted, InProgress, Approved, Rejected, Cancelled, Failed).
+- Clicking an item:
+  - Show details:
+    - List of items and per item status.
+    - Current approval step (for each item if available).
+    - Justification and timestamps.
+- If status allows:
+  - Cancel button:
+    - Calls `POST /api/account/access-requests/{id}/cancel`.
+
+All Account Center UI must use the existing design system and i18n keys.
+
+--------------------------------------------------
+Step 9: Frontend - Admin Portal UI
+--------------------------------------------------
+
+Extend Tenant Admin Portal React application.
+
+1) Approvals worklist - `/tenant/access-requests/approvals/my`
+
+- Use `GET /api/tenant/access-requests/approvals/my`.
+- Table:
+  - RequestorDisplayName.
+  - Target (App or Role).
+  - CreatedAt.
+  - Age or SLA indicator (optional).
+  - Status of current step.
+- Row details (drawer or separate page):
+  - Justification.
+  - Resource details (Application or Role description, sensitivity).
+  - Flow steps and their statuses so far.
+- Actions for each item:
+  - Approve.
+  - Reject.
+  - Escalate.
+- On actions:
+  - Call approve or reject or escalate APIs with Reason.
+  - Update UI accordingly.
+
+2) Flow management - List and editor
+
+Flow List - `/tenant/access-requests/flows`
+
+- Use `GET /api/tenant/access-requests/flows`.
+- Table:
+  - TargetType (Application or Role).
+  - ApplicationClientId or RoleName.
+  - IsEnabled.
+  - Step count.
+- Actions:
+  - Create, edit, disable or delete.
+
+Flow Editor - `/tenant/access-requests/flows/new` and `/tenant/access-requests/flows/{id}`
+
+- Form:
+  - TargetType:
+    - Application: select application from Applications module.
+    - Role: select role from Authorization module.
+  - Step list:
+    - Each step has:
+      - StepType: Manager, AppOwner, SecurityOfficer, CustomRole.
+      - CustomRoleName when needed.
+      - AllowDelegate flag.
+      - AutoApproveIfNoOwner flag.
+    - Ability to reorder steps.
+- On save:
+  - Use `POST` or `PUT` flow APIs.
+
+3) Access Requests dashboard - `/tenant/access-requests/dashboard`
+
+- Use `GET /api/tenant/access-requests/dashboard`.
+- Display:
+  - Cards:
+    - Requests in last N days.
+    - Pending approvals.
+    - Overdue approvals (based on SLA).
+    - Average approval time.
+  - Simple charts:
+    - Approved vs Rejected in last N days.
+    - Requests by application.
+
+All Admin Portal pages must be fully wired to backend APIs, use i18n, and follow the existing component library and UX guidelines.
+
+--------------------------------------------------
+Step 10: Cross cutting - localization, security, performance
+--------------------------------------------------
+
+Localization
+
+- All new UI texts must be localizable:
+  - Use translation keys for labels, messages, titles.
+- AccessRequest catalog descriptions and sensitivity labels should be localizable too.
+
+Security
+
+- Tenant isolation must be enforced on all APIs.
+- For approver APIs:
+  - Ensure only the correct approver can act on a given ApprovalInstance.
+- For account side APIs:
+  - Ensure users can only see and cancel their own access requests.
+
+Performance
+
+- All listing APIs must support paging and filtering:
+  - My requests.
+  - Approver worklist.
+  - Flow list.
+  - Dashboard queries.
+- Indexes must be used as defined earlier.
+
+Consistency and correctness
+
+- Every approved access request must correspond to:
+  - A concrete role or permission assignment.
+  - Consistent with PolicyEngine design from Phase 7.
+- Every provisioning failure path must be handled gracefully with:
+  - Status updates.
+  - Audit.
+  - Notification.
+
+--------------------------------------------------
+Step 11: Tests and final verification
+--------------------------------------------------
+
+Backend tests
+
+- AccessRequestService:
+  - CreateRequestAsync creates correct request and items and triggers workflow.
+  - GetMyRequestsAsync returns correct subset.
+  - CancelRequestAsync properly cancels only allowed states.
+
+- AccessApprovalService and WorkflowEngine:
+  - Flows for Application and Role are matched correctly.
+  - Manager, AppOwner, SecurityOfficer, CustomRole step types assign approvers correctly.
+  - Approve logic moves to next step or completes request item.
+  - Reject logic marks item and possibly request as rejected.
+  - Provisioning is called when final step is approved.
+  - Escalate logic reassigns appropriately.
+
+- ProvisioningService:
+  - Calls PolicyEngine or Role assignment services correctly.
+  - Handles success and failure correctly, including audit and notifications.
+
+- API tests:
+  - `/api/account/access-requests/*` enforce user scope.
+  - `/api/tenant/access-requests/*` enforce tenant roles and approver permissions.
+
+Frontend tests (manual or automated)
+
+- Account Center:
+  - Request Access flow works end to end.
+  - My Access Requests shows correct states and allows cancel when appropriate.
+
+- Admin Portal:
+  - Approvals worklist shows items for current approver.
+  - Approve, reject, escalate actions work and update UI.
+  - Flow creation and editing works and is persisted.
+  - Dashboard shows sensible metrics.
+
+Final verification
+
+- Solution builds with `Onesign.Modules.AccessRequests` integrated.
+- Phase 12 migration applies cleanly on top of phases 1 to 11.
+- After implementing Phase 12, you should be able to:
+  - Log in as a user, request access to an app or role through Account Center.
+  - Log in as approvers and step through approvals.
+  - See final approval trigger provisioning and real access grant.
+  - See the entire lifecycle reflected in audit logs and notifications.
+- There must be no TODOs, no NotImplementedException, and no empty public methods or empty pages in this phase.
+
+Important mindset
+
+- Phase 12 closes the loop between:
+  - Request -> Approval -> Provisioning -> Governance -> Review.
+- Access must never be granted without a clear, auditable chain of request and approval.
+- When in doubt, pick the more secure and more auditable design.
+
+Now:
+Read Phase12-Onesign-AccessRequestsWorkflow.md, then implement `Onesign.Modules.AccessRequests`, all `/api/account/access-requests/*` and `/api/tenant/access-requests/*` endpoints, and the Account Center and Admin Portal UIs for Access Requests, Approvals, and Dashboard with no TODOs or partial implementations.

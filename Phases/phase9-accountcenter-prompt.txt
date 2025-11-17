@@ -1,0 +1,691 @@
+You are an expert .NET 10, EF Core, and React/Next.js engineer, working as an implementation assistant for the onesign SSO SaaS platform.
+
+Context
+The platform already has:
+
+- Phase 1: core multi-tenant SSO and OIDC login
+  - Phase1-Onesign-CoreSSO.md
+
+- Phase 2: Organization hierarchy, OrgUnits, delegated admins
+  - Phase2-Onesign-OrgHierarchy.md
+
+- Phase 3: Advanced security, MFA, risk based decisions, Security Center
+  - Phase3-Onesign-AdvancedSecurity.md
+
+- Phase 4: Federation and provisioning - SAML, OIDC federation, SCIM provider
+  - Phase4-Onesign-FederationProvisioning.md
+
+- Phase 5: Billing - plans, tenant subscriptions, quotas, billing UIs
+  - Phase5-Onesign-BillingPlans.md
+
+- Phase 6: Observability - audit center, alerts, log streaming, global and tenant analytics
+  - Phase6-Onesign-ObservabilityCompliance.md
+
+- Phase 7: Authorization Policy Engine - advanced RBAC and ABAC-lite
+  - Phase7-Onesign-PolicyEngine.md
+
+- Phase 8: Developer Experience and DevPortal
+  - Phase8-Onesign-DeveloperExperience.md
+
+Now there is Phase 9 spec focusing on end user Account Center and self service:
+
+- Phase9-Onesign-AccountCenterSelfService.md
+
+Your job:
+- Read all these documents.
+- Understand the multi-tenant identity model, security, MFA, audit, policy and developer experience that already exist.
+- Implement Phase 9 exactly as defined in Phase9-Onesign-AccountCenterSelfService.md:
+  - Create Onesign.Modules.AccountCenter backend module.
+  - Add the full `/api/account/*` end user API surface.
+  - Build an Account Center React UI where end users can manage profile, security, devices, sessions, activity, apps and consents, and recovery and notifications.
+- Do not break previous phases.
+
+Global constraints
+
+1) Multi language
+- The platform is multilingual (at least English and Persian).
+- All new user facing labels and messages must be localizable:
+  - Use message codes in API responses.
+  - Use the existing i18n system in frontend.
+- Do not hardcode final human facing strings in controllers or React components.
+
+2) No TODO and no partial implementations
+- Do not leave any TODO comments.
+- Do not throw NotImplementedException.
+- Do not create public methods or controllers that are empty.
+- If some functionality is out of the scope of Phase 9, do not scaffold it at all.
+
+3) Modular monolith and clear boundaries
+- Keep the modular monolith structure.
+- Account Center is its own module, not a blob mixed into Auth or DevPortal.
+- Respect layering: Domain -> Application -> Infrastructure -> API -> Frontend.
+
+4) End user scope and security
+- The `/api/account/*` APIs are for the current logged in end user in the context of a tenant.
+- They must never allow a user to see or modify data of any other user.
+- Tenant admins will have their own admin APIs and UIs; Account Center API is strictly end user.
+
+Step 1: Read the specs
+
+1) Read:
+
+- Phase1-Onesign-CoreSSO.md
+- Phase2-Onesign-OrgHierarchy.md
+- Phase3-Onesign-AdvancedSecurity.md
+- Phase4-Onesign-FederationProvisioning.md
+- Phase5-Onesign-BillingPlans.md
+- Phase6-Onesign-ObservabilityCompliance.md
+- Phase7-Onesign-PolicyEngine.md
+- Phase8-Onesign-DeveloperExperience.md
+- Phase9-Onesign-AccountCenterSelfService.md
+
+2) From Phase 9, build a checklist:
+
+- New module Onesign.Modules.AccountCenter.
+- UserProfile per tenant user with language and timezone.
+- UserDevice and session overview for devices and sessions.
+- UserConsent per app and scopes.
+- Recovery options and notification preferences.
+- End user APIs under `/api/account/*`.
+- Account Center React UI and navigation.
+- Integration with MFA, Observability Audit, Session store, Consent and Token issuance.
+
+Treat Phase9-Onesign-AccountCenterSelfService.md as the blueprint for this phase.
+
+Step 2: Backend module - Onesign.Modules.AccountCenter
+
+Create a new module:
+
+- src/Onesign.Modules.AccountCenter
+
+Structure it as:
+
+Domain
+- Entities
+  - UserProfile
+  - UserDevice
+  - UserRecoveryOption
+  - UserNotificationPreference
+  - UserConsent
+- Enums
+  - DeviceType              // Browser, Mobile, Desktop
+  - RecoveryType            // Email, Sms
+  - NotificationChannel     // Email, Sms, InApp
+  - NotificationEventType   // NewLogin, NewDevice, PasswordChanged, MfaChanged
+- Services
+  - IAccountProfileService
+  - IAccountSecurityService
+  - ISessionOverviewService    (or integration with existing session service)
+  - IDeviceService
+  - IConsentService
+  - INotificationPreferenceService
+  - IRecoveryOptionService
+- Repositories
+  - IUserProfileRepository
+  - IUserDeviceRepository
+  - IUserRecoveryOptionRepository
+  - IUserNotificationPreferenceRepository
+  - IUserConsentRepository
+
+Application
+- DTOs
+  - AccountProfileDto
+  - UpdateAccountProfileRequest
+  - ChangePasswordRequest
+  - UserDeviceDto
+  - UserSessionDto
+  - UserActivityEntryDto
+  - MfaMethodDto
+  - UserConsentDto
+  - UserRecoveryOptionDto
+  - UpdateRecoveryOptionsRequest
+  - NotificationPreferenceDto
+  - UpdateNotificationPreferenceRequest
+- Commands
+  - UpdateAccountProfileCommand
+  - ChangePasswordCommand
+  - RegisterDeviceCommand
+  - RemoveDeviceCommand
+  - RemoveAllDevicesCommand
+  - TerminateSessionCommand
+  - TerminateAllSessionsCommand
+  - UpdateRecoveryOptionsCommand
+  - UpdateNotificationPreferencesCommand
+  - RevokeConsentCommand
+- Queries
+  - GetAccountProfileQuery
+  - GetUserDevicesQuery
+  - GetUserSessionsQuery
+  - GetUserActivityQuery
+  - GetUserMfaMethodsQuery
+  - GetUserConsentsQuery
+  - GetRecoveryOptionsQuery
+  - GetNotificationPreferencesQuery
+
+Infrastructure
+- EfCore Entities
+  - UserProfileEntity
+  - UserDeviceEntity
+  - UserRecoveryOptionEntity
+  - UserNotificationPreferenceEntity
+  - UserConsentEntity
+- EfCore Configurations
+  - UserProfileEntityTypeConfiguration
+  - UserDeviceEntityTypeConfiguration
+  - UserRecoveryOptionEntityTypeConfiguration
+  - UserNotificationPreferenceEntityTypeConfiguration
+  - UserConsentEntityTypeConfiguration
+- EfCore Repositories
+  - UserProfileRepository
+  - UserDeviceRepository
+  - UserRecoveryOptionRepository
+  - UserNotificationPreferenceRepository
+  - UserConsentRepository
+
+Implement all of the above fully.
+
+Step 3: Data model and EF configuration
+
+UserProfile
+- Fields:
+  - Id
+  - TenantId
+  - UserId (link to global or tenant user)
+  - DisplayName
+  - PreferredLanguage
+  - TimeZone
+  - AvatarUrl (optional)
+  - CreatedAt
+  - UpdatedAt
+- EF:
+  - Unique index on (TenantId, UserId)
+
+UserDevice
+- Fields:
+  - Id
+  - TenantId
+  - UserId
+  - DeviceId (internal identifier or fingerprint)
+  - DeviceType (Browser, Mobile, Desktop)
+  - UserAgent
+  - Os
+  - Browser
+  - IsTrusted
+  - FirstSeenAt
+  - LastSeenAt
+  - LastIpAddress
+  - LastCountry
+- EF:
+  - Index on (TenantId, UserId, DeviceId)
+
+UserRecoveryOption
+- Fields:
+  - Id
+  - TenantId
+  - UserId
+  - RecoveryType (Email or Sms)
+  - Value (email address or phone number)
+  - IsVerified
+  - CreatedAt
+  - VerifiedAt nullable
+
+UserNotificationPreference
+- Fields:
+  - Id
+  - TenantId
+  - UserId
+  - NotificationEventType
+  - EnabledChannels (for example stored as a small string or bit flags representing Email, Sms, InApp)
+- EF:
+  - Unique index on (TenantId, UserId, NotificationEventType)
+
+UserConsent
+- Fields:
+  - Id
+  - TenantId
+  - UserId
+  - ClientId
+  - ApplicationName
+  - GrantedScopes (string or JSON)
+  - GrantedAt
+  - LastUsedAt nullable
+
+Extend DbContext
+- Add DbSet for:
+  - UserProfiles
+  - UserDevices
+  - UserRecoveryOptions
+  - UserNotificationPreferences
+  - UserConsents
+
+Create a Phase 9 migration that:
+- Creates all AccountCenter related tables.
+- Adds indexes described above.
+- Does not break or drop previous tables.
+
+Step 4: Domain services and core logic
+
+Implement IAccountProfileService
+
+- Methods:
+  - GetProfileAsync(tenantId, userId)
+  - UpdateProfileAsync(tenantId, userId, UpdateAccountProfileRequest)
+- Behavior:
+  - When there is no profile yet, initialize it with defaults from the user identity then update.
+
+Implement IAccountSecurityService
+
+- Methods:
+  - ChangePasswordAsync(tenantId, userId, ChangePasswordRequest)
+    - Validate current password against existing identity store.
+    - Enforce tenant specific password policy (from security module).
+    - Update password.
+    - Write audit event "Account.PasswordChanged".
+  - GetMfaMethodsAsync(tenantId, userId)
+    - Call into existing MFA services from Phase 3 and map to MfaMethodDto.
+  - TOTP setup/confirm/remove and recovery codes:
+    - Use the existing MFA infrastructure where possible.
+    - These APIs in Account Center are wrappers for end user flows.
+
+Implement ISessionOverviewService
+
+- If you already have a session management service, extend it.
+- Methods:
+  - GetUserSessionsAsync(tenantId, userId)
+  - TerminateSessionAsync(tenantId, userId, sessionId)
+  - TerminateAllSessionsAsync(tenantId, userId, excludeCurrentSession)
+
+Implement IDeviceService
+
+- Methods:
+  - RegisterOrUpdateDeviceAsync(tenantId, userId, deviceContext)
+    - Called on every successful login, to track device info.
+  - GetUserDevicesAsync(tenantId, userId)
+  - RemoveDeviceAsync(tenantId, userId, deviceId)
+  - RemoveAllDevicesAsync(tenantId, userId)
+
+Implement IConsentService
+
+- Methods:
+  - GetUserConsentsAsync(tenantId, userId)
+  - RevokeConsentAsync(consentId, tenantId, userId)
+    - Revoke all refresh tokens for this (tenant, user, clientId) using the token store.
+    - Mark the consent as revoked or delete it.
+  - Integrate with token issuance flow:
+    - When user gives consent at first login to an app, create or update UserConsent.
+    - When tokens are issued later for the same consent, update LastUsedAt.
+
+Implement INotificationPreferenceService
+
+- Methods:
+  - GetPreferencesAsync(tenantId, userId)
+  - UpdatePreferencesAsync(tenantId, userId, UpdateNotificationPreferenceRequest)
+
+Implement IRecoveryOptionService
+
+- Methods:
+  - GetRecoveryOptionsAsync(tenantId, userId)
+  - UpdateRecoveryOptionsAsync(tenantId, userId, UpdateRecoveryOptionsRequest)
+    - For new email or phone, initiate verification flows using email or SMS services.
+    - Mark them as verified only after OTP confirmation.
+
+Step 5: Account APIs under `/api/account/*`
+
+All endpoints must:
+
+- Use current authenticated user as context.
+- Use tenant context from token (TenantId).
+- Never allow cross user access.
+
+Profile
+
+- GET `/api/account/profile`
+  - Returns AccountProfileDto for (tenantId, userId).
+- PUT `/api/account/profile`
+  - Body: UpdateAccountProfileRequest.
+  - Updates display name, language, timezone and avatar url if present.
+
+Security
+
+- POST `/api/account/security/change-password`
+  - Body: ChangePasswordRequest with CurrentPassword, NewPassword, ConfirmPassword.
+  - Validates and updates password via IAccountSecurityService.
+
+- GET `/api/account/security/mfa-methods`
+  - Returns list of MfaMethodDto describing active and available methods.
+
+- POST `/api/account/security/mfa/totp/setup`
+  - Starts TOTP setup flow, returning QR code data and secret (DTO to be defined).
+- POST `/api/account/security/mfa/totp/confirm`
+  - Confirms TOTP code and activates TOTP.
+- DELETE `/api/account/security/mfa/totp`
+  - Removes the TOTP method for this user.
+- POST `/api/account/security/mfa/recovery-codes/regenerate`
+  - Regenerates recovery codes and returns them once.
+
+Devices and sessions
+
+Devices:
+
+- GET `/api/account/devices`
+  - Returns list of UserDeviceDto for this tenant and user.
+- DELETE `/api/account/devices/{deviceId}`
+  - Removes the given device or trust state for this user.
+- DELETE `/api/account/devices`
+  - Removes all trusted devices for this user.
+
+Sessions:
+
+- GET `/api/account/sessions`
+  - Returns list of UserSessionDto from ISessionOverviewService.
+- DELETE `/api/account/sessions/{sessionId}`
+  - Terminates the given session if it belongs to this user.
+- DELETE `/api/account/sessions`
+  - Terminates all sessions for this user except current session.
+
+Activity
+
+- GET `/api/account/activity`
+  - Query parameters:
+    - from (optional)
+    - to (optional)
+  - Uses Observability module (AuditEvents) to return UserActivityEntryDto for:
+    - ActorId = current user
+    - Categories Auth and Security
+  - Paginate results.
+
+Consents
+
+- GET `/api/account/consents`
+  - Returns list of UserConsentDto with:
+    - ApplicationName
+    - ClientId
+    - GrantedScopes
+    - GrantedAt
+    - LastUsedAt
+
+- POST `/api/account/consents/{id}/revoke`
+  - Calls IConsentService.RevokeConsentAsync.
+  - Also revokes associated refresh tokens.
+  - Creates an audit event "Account.Consent.Revoked".
+
+Recovery and notifications
+
+- GET `/api/account/recovery-options`
+  - Returns UserRecoveryOptionDto list.
+- PUT `/api/account/recovery-options`
+  - Body: UpdateRecoveryOptionsRequest.
+  - Updates email and phone and triggers verification flows.
+
+- GET `/api/account/notification-preferences`
+  - Returns NotificationPreferenceDto list for each event type.
+- PUT `/api/account/notification-preferences`
+  - Body: UpdateNotificationPreferenceRequest.
+  - Updates which channels are enabled for each notification event.
+
+Step 6: Integration with login, MFA, consent and observability
+
+Login and devices
+
+- After a successful login, login pipeline must:
+  - Call IDeviceService.RegisterOrUpdateDeviceAsync with:
+    - TenantId, UserId
+    - User agent, OS, browser, ip, country, device identifier.
+  - If it is a new device:
+    - Write an audit event "Account.Device.New".
+    - In future phases, trigger notifications according to NotificationPreferences.
+
+Sessions
+
+- Ensure that every session created is trackable by ISessionOverviewService.
+- The Account Center session APIs should use that service to show all active sessions and terminate them.
+
+MFA
+
+- The MFA related methods in IAccountSecurityService should be wrappers on the existing MFA module from Phase 3.
+- Changing MFA configuration must:
+  - Respect policy from Security and PolicyEngine (Phase 3 and 7).
+  - Write appropriate audit events.
+
+Consent and token issuance
+
+- When user gives consent for an app during login:
+  - Create or update UserConsent.
+- During token issuance:
+  - On each successful grant where a user token is issued:
+    - Update LastUsedAt for that consent record (if consent model is in use).
+- On revoke consent through Account Center:
+  - Revoke refresh tokens and rely on existing access token expiry.
+
+Observability and audit
+
+- Use IAuditWriter to log all important account actions:
+  - "Account.Profile.Updated"
+  - "Account.PasswordChanged"
+  - "Account.Mfa.Changed"
+  - "Account.Device.Removed"
+  - "Account.Device.New"
+  - "Account.Sessions.Terminated"
+  - "Account.Consent.Revoked"
+  - "Account.RecoveryOptions.Updated"
+  - "Account.NotificationPreferences.Updated"
+
+These must show up in:
+- Tenant Observability Activity view.
+- User Activity page in Account Center.
+
+Step 7: Account Center frontend (React)
+
+Build an Account Center UI as a separate React app or as a section of existing frontend:
+
+Routing
+
+- Base route: `/account/*`
+- Requires authenticated user and tenant context.
+
+Layout
+
+- Sidebar or tab based navigation with items:
+  - Profile
+  - Security
+  - Devices and Sessions
+  - Activity
+  - Apps and Consents
+  - Recovery and Notifications
+
+Use existing component library and theming used in Login and Admin Portals, and ensure multi language support.
+
+Pages
+
+1) Profile page `/account/profile`
+
+- Shows AccountProfileDto data.
+- Form fields:
+  - DisplayName
+  - PreferredLanguage (dropdown)
+  - TimeZone (dropdown, using a list of IANA timezones)
+  - Avatar upload or url if in scope.
+- Uses:
+  - GET `/api/account/profile`
+  - PUT `/api/account/profile`
+
+2) Security page `/account/security`
+
+Sections:
+
+a) Change password
+
+- Form:
+  - Current password
+  - New password
+  - Confirm new password
+- Show validation messages and password policy violations.
+- Uses:
+  - POST `/api/account/security/change-password`
+
+b) MFA methods
+
+- List of MfaMethodDto:
+  - e.g. Authenticator App, SMS, Recovery codes.
+- Actions:
+  - Setup TOTP:
+    - Call `/api/account/security/mfa/totp/setup` to get QR code and secret.
+    - Show QR and secret.
+    - User enters OTP to confirm via `/api/account/security/mfa/totp/confirm`.
+  - Remove TOTP:
+    - Call DELETE `/api/account/security/mfa/totp`.
+  - Regenerate recovery codes:
+    - Call `/api/account/security/mfa/recovery-codes/regenerate` and show them once.
+
+3) Devices and sessions page `/account/devices-sessions`
+
+Tabs:
+
+Devices tab:
+- Table displaying UserDeviceDto entries:
+  - DeviceType with icon.
+  - Os and Browser.
+  - LastSeenAt.
+  - LastIpAddress and LastCountry.
+  - IsTrusted.
+- Actions:
+  - Remove device (call DELETE `/api/account/devices/{deviceId}`).
+  - Remove all trusted devices (DELETE `/api/account/devices`).
+
+Sessions tab:
+- List UserSessionDto:
+  - Device or user agent.
+  - Location.
+  - CreatedAt.
+  - LastActivityAt.
+  - Mark current session.
+- Actions:
+  - Sign out one session (DELETE `/api/account/sessions/{sessionId}`).
+  - Sign out from all other sessions (DELETE `/api/account/sessions`).
+
+4) Activity page `/account/activity`
+
+- Shows list of UserActivityEntryDto from GET `/api/account/activity`.
+- Columns:
+  - Time.
+  - Type (LoginSuccess, LoginFailed, PasswordChanged, MfaChanged, NewDevice etc).
+  - Location.
+  - Device or IP.
+- Provide simple filters:
+  - Date range.
+  - Event type.
+
+5) Apps and consents page `/account/apps-consents`
+
+- List UserConsentDto:
+  - ApplicationName.
+  - ClientId.
+  - GrantedScopes as badges.
+  - GrantedAt.
+  - LastUsedAt.
+- Action:
+  - Revoke access:
+    - Confirmation modal.
+    - Calls POST `/api/account/consents/{id}/revoke`.
+    - After success, remove or mark consent as revoked and inform user that the app will require login and consent again.
+
+6) Recovery and notifications page `/account/recovery-notifications`
+
+Recovery options section:
+- Shows email and phone from UserRecoveryOptionDto.
+- Indicates whether each is verified.
+- Allows updating:
+  - Update recovery email or phone.
+  - When changed, triggers a verification step:
+    - show UI to enter OTP that was sent by email or SMS.
+    - call dedicated verify endpoints if they exist or include in UpdateRecoveryOptions flow.
+
+Notification preferences section:
+- Table of NotificationEventType:
+  - NewLogin.
+  - NewDeviceTrusted.
+  - PasswordChanged.
+  - MfaChanged.
+- For each event:
+  - checkboxes or toggles for channels:
+    - Email.
+    - Sms.
+    - InApp.
+- Uses:
+  - GET `/api/account/notification-preferences`
+  - PUT `/api/account/notification-preferences`
+
+All UI must use i18n and be accessible from both desktop and mobile.
+
+Step 8: Cross cutting - localization, UX, performance
+
+Localization
+
+- All texts in Account Center UI must be localized using the existing translation system.
+- API errors must use message codes that can be mapped to localized texts.
+
+UX
+
+- All sensitive actions:
+  - Change password.
+  - MFA changes.
+  - Removing devices.
+  - Terminating sessions.
+  - Revoking consent.
+  - Updating recovery data.
+- Must:
+  - Use confirmation dialogs.
+  - Show clear success and error toasts or banners.
+
+Performance
+
+- Activity and sessions queries must be paginated or limited.
+- Audit queries for activity must use the indexes from Observability module.
+
+Step 9: Tests and final verification
+
+Tests
+
+- AccountProfileService:
+  - Get and update per tenant user.
+- AccountSecurityService:
+  - Password change validates current password and respects policy.
+  - MFA methods list and operations call the correct existing services.
+- DeviceService:
+  - Device registration and updates on login.
+  - Removal of device and all devices.
+- ConsentService:
+  - Retrieving and revoking consents.
+  - Revoking refresh tokens correctly.
+- RecoveryOptionService and NotificationPreferenceService:
+  - Correct reads and writes, including verification flags.
+
+- API tests:
+  - `/api/account/*` always scopes to the current user and tenant.
+  - No cross tenant or cross user leakage.
+
+- Frontend:
+  - Pages render and make the correct API calls.
+  - Basic navigation works.
+
+Final verification
+
+- Solution builds with Onesign.Modules.AccountCenter integrated.
+- Phase 9 migration applies cleanly on top of the schema from Phase 1 to 8.
+- After login, end user can open Account Center and:
+  - View and edit profile.
+  - Change password.
+  - Manage MFA methods.
+  - See and manage devices and sessions.
+  - See activity history.
+  - See and revoke app consents.
+  - Configure recovery options and notification preferences.
+- No TODO comments, no NotImplementedException and no empty public methods in Account Center and `/api/account/*` code paths.
+
+Important mindset
+
+- Phase 9 is where end users finally see that onesign is a serious identity product, not just a login form.
+- Use existing Security, Policy and Observability features as data sources and enforcement, not as decoration.
+- Always fail safe on security sensitive actions: if something is unclear or an error happens, deny rather than allow, and log with Observability.
+Now:
+Read Phase9-Onesign-AccountCenterSelfService.md, then implement Onesign.Modules.AccountCenter, add the Phase 9 migration, expose the `/api/account/*` API surface and build the Account Center React UI end to end with no TODOs.

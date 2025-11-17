@@ -1,0 +1,522 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
+import { getTenantId } from '@/lib/tenant-context';
+
+interface Application {
+  id: string;
+  name: string;
+  clientId: string;
+  applicationType: string;
+  redirectUris: Array<{ id: string; uri: string }>;
+}
+
+export default function TenantAppsPage() {
+  const t = useTranslations();
+  const locale = useLocale();
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newAppName, setNewAppName] = useState('');
+  const [newAppType, setNewAppType] = useState('Web');
+  const [newRedirectUris, setNewRedirectUris] = useState<string[]>(['']);
+  const [tenantId, setTenantIdState] = useState<string | null>(null);
+  const [editingApp, setEditingApp] = useState<Application | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editAppName, setEditAppName] = useState('');
+  const [editAppType, setEditAppType] = useState('Web');
+  const [showRedirectUrisModal, setShowRedirectUrisModal] = useState(false);
+  const [selectedAppForRedirectUris, setSelectedAppForRedirectUris] = useState<Application | null>(null);
+  const [newRedirectUri, setNewRedirectUri] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  useEffect(() => {
+    const contextTenantId = getTenantId();
+    if (contextTenantId) {
+      setTenantIdState(contextTenantId);
+    } else {
+      setTenantIdState('00000000-0000-0000-0000-000000000000');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (tenantId) {
+      fetchApplications();
+    }
+  }, [tenantId]);
+
+  const fetchApplications = async () => {
+    if (!tenantId) return;
+    
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/applications?tenantId=${tenantId}&pageNumber=1&pageSize=100`);
+      if (response.ok) {
+        const data = await response.json();
+        const apps = data.items || [];
+        // Fetch details for each app to get redirect URIs
+        const appsWithDetails = await Promise.all(
+          apps.map(async (app: Application) => {
+            try {
+              const detailResponse = await fetch(`http://localhost:7000/api/tenant/applications/${app.id}?tenantId=${tenantId}`);
+              if (detailResponse.ok) {
+                const detailData = await detailResponse.json();
+                return { ...app, redirectUris: detailData.redirectUris || [] };
+              }
+            } catch (error) {
+              console.error(`Error fetching details for app ${app.id}:`, error);
+            }
+            return { ...app, redirectUris: [] };
+          })
+        );
+        setApplications(appsWithDetails);
+        // Update selected app if modal is open
+        if (selectedAppForRedirectUris) {
+          const updatedApp = appsWithDetails.find(a => a.id === selectedAppForRedirectUris.id);
+          if (updatedApp) {
+            setSelectedAppForRedirectUris(updatedApp);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching applications:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateApplication = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    if (!tenantId) return;
+    
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/applications?tenantId=${tenantId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newAppName,
+          applicationType: newAppType === 'Web' ? 1 : newAppType === 'Mobile' ? 2 : 3,
+          grantType: 2, // AuthorizationCodeWithPkce
+          redirectUris: newRedirectUris.filter(uri => uri.trim() !== '')
+        })
+      });
+
+      if (response.ok) {
+        setShowCreateModal(false);
+        setNewAppName('');
+        setNewAppType('Web');
+        setNewRedirectUris(['']);
+        setSuccess(t('tenant.applications.applicationCreated'));
+        fetchApplications();
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (error) {
+      setError(t('common.error'));
+      console.error('Error creating application:', error);
+    }
+  };
+
+  const handleEditApplication = (app: Application) => {
+    setEditingApp(app);
+    setEditAppName(app.name);
+    // Map applicationType enum to string
+    const appTypeMap: Record<string, string> = {
+      'Web': 'Web',
+      'Mobile': 'Mobile',
+      'SPA': 'SPA',
+      '1': 'Web',
+      '2': 'Mobile',
+      '3': 'SPA'
+    };
+    setEditAppType(appTypeMap[app.applicationType] || 'Web');
+    setShowEditModal(true);
+  };
+
+  const handleUpdateApplication = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    if (!tenantId || !editingApp) return;
+    
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/applications/${editingApp.id}?tenantId=${tenantId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editAppName,
+          applicationType: editAppType === 'Web' ? 1 : editAppType === 'Mobile' ? 2 : 3,
+          grantType: 2 // AuthorizationCodeWithPkce
+        })
+      });
+
+      if (response.ok) {
+        setShowEditModal(false);
+        setEditingApp(null);
+        setEditAppName('');
+        setEditAppType('Web');
+        setSuccess(t('tenant.applications.applicationUpdated'));
+        fetchApplications();
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (error) {
+      setError(t('common.error'));
+      console.error('Error updating application:', error);
+    }
+  };
+
+  const handleDeleteApplication = async (appId: string) => {
+    if (!confirm(t('tenant.applications.confirmDelete'))) return;
+    setError('');
+    setSuccess('');
+    if (!tenantId) return;
+    
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/applications/${appId}?tenantId=${tenantId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        setSuccess(t('tenant.applications.applicationDeleted'));
+        fetchApplications();
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (error) {
+      setError(t('common.error'));
+      console.error('Error deleting application:', error);
+    }
+  };
+
+  const handleManageRedirectUris = (app: Application) => {
+    setSelectedAppForRedirectUris(app);
+    setShowRedirectUrisModal(true);
+    setNewRedirectUri('');
+  };
+
+  const handleAddRedirectUri = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    if (!tenantId || !selectedAppForRedirectUris) return;
+    
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/applications/${selectedAppForRedirectUris.id}/redirect-uris?tenantId=${tenantId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uri: newRedirectUri })
+      });
+
+      if (response.ok) {
+        setNewRedirectUri('');
+        setSuccess(t('tenant.applications.redirectUriAdded'));
+        // Refresh applications and update selected app
+        await fetchApplications();
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (error) {
+      setError(t('common.error'));
+      console.error('Error adding redirect URI:', error);
+    }
+  };
+
+  const handleRemoveRedirectUri = async (redirectUriId: string) => {
+    if (!confirm(t('tenant.applications.confirmRemoveRedirectUri'))) return;
+    setError('');
+    setSuccess('');
+    if (!tenantId) return;
+    
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/applications/redirect-uris/${redirectUriId}?tenantId=${tenantId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        setSuccess(t('tenant.applications.redirectUriRemoved'));
+        // Refresh applications and update selected app
+        await fetchApplications();
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (error) {
+      setError(t('common.error'));
+      console.error('Error removing redirect URI:', error);
+    }
+  };
+
+  if (loading) {
+    return <div className="p-8">{t('common.loading')}</div>;
+  }
+
+  return (
+    <div className="p-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">{t('tenant.applications.title')}</h1>
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+        >
+          {t('tenant.applications.createApplication')}
+        </button>
+      </div>
+
+      {error && (
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+          {success}
+        </div>
+      )}
+
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg max-w-md w-full">
+            <h2 className="text-xl font-bold mb-4">{t('tenant.applications.createApplication')}</h2>
+            <form onSubmit={handleCreateApplication}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">{t('tenant.applications.applicationName')}</label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-3 py-2 border rounded"
+                  value={newAppName}
+                  onChange={(e) => setNewAppName(e.target.value)}
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">{t('tenant.applications.applicationType')}</label>
+                <select
+                  className="w-full px-3 py-2 border rounded"
+                  value={newAppType}
+                  onChange={(e) => setNewAppType(e.target.value)}
+                >
+                  <option value="Web">{t('tenant.applications.web')}</option>
+                  <option value="Mobile">{t('tenant.applications.mobile')}</option>
+                  <option value="SPA">{t('tenant.applications.spa')}</option>
+                </select>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">{t('tenant.applications.redirectUris')}</label>
+                {newRedirectUris.map((uri, index) => (
+                  <input
+                    key={index}
+                    type="text"
+                    className="w-full px-3 py-2 border rounded mb-2"
+                    placeholder="https://example.com/callback"
+                    value={uri}
+                    onChange={(e) => {
+                      const updated = [...newRedirectUris];
+                      updated[index] = e.target.value;
+                      setNewRedirectUris(updated);
+                    }}
+                  />
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setNewRedirectUris([...newRedirectUris, ''])}
+                  className="text-sm text-indigo-600"
+                >
+                  {t('tenant.applications.addRedirectUri')}
+                </button>
+              </div>
+              <div className="flex gap-2">
+                <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded">
+                  {t('common.create')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="bg-gray-300 px-4 py-2 rounded"
+                >
+                  {t('common.cancel')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showEditModal && editingApp && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg max-w-md w-full">
+            <h2 className="text-xl font-bold mb-4">{t('tenant.applications.editApplication')}</h2>
+            <form onSubmit={handleUpdateApplication}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">{t('tenant.applications.applicationName')}</label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-3 py-2 border rounded"
+                  value={editAppName}
+                  onChange={(e) => setEditAppName(e.target.value)}
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">{t('tenant.applications.applicationType')}</label>
+                <select
+                  className="w-full px-3 py-2 border rounded"
+                  value={editAppType}
+                  onChange={(e) => setEditAppType(e.target.value)}
+                >
+                  <option value="Web">{t('tenant.applications.web')}</option>
+                  <option value="Mobile">{t('tenant.applications.mobile')}</option>
+                  <option value="SPA">{t('tenant.applications.spa')}</option>
+                </select>
+              </div>
+              <div className="flex gap-2">
+                <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded">
+                  {t('common.save')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingApp(null);
+                  }}
+                  className="bg-gray-300 px-4 py-2 rounded"
+                >
+                  {t('common.cancel')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showRedirectUrisModal && selectedAppForRedirectUris && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4">{t('tenant.applications.manageRedirectUris')} - {selectedAppForRedirectUris.name}</h2>
+            
+            {error && (
+              <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                {error}
+              </div>
+            )}
+
+            {success && (
+              <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+                {success}
+              </div>
+            )}
+
+            <form onSubmit={handleAddRedirectUri} className="mb-6">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  required
+                  className="flex-1 px-3 py-2 border rounded"
+                  placeholder="https://example.com/callback"
+                  value={newRedirectUri}
+                  onChange={(e) => setNewRedirectUri(e.target.value)}
+                />
+                <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded">
+                  {t('tenant.applications.addRedirectUri')}
+                </button>
+              </div>
+            </form>
+
+            <div className="mb-4">
+              <h3 className="font-semibold mb-2">{t('tenant.applications.redirectUris')}</h3>
+              {selectedAppForRedirectUris.redirectUris && selectedAppForRedirectUris.redirectUris.length > 0 ? (
+                <ul className="space-y-2">
+                  {selectedAppForRedirectUris.redirectUris.map((uri) => (
+                    <li key={uri.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                      <span className="text-sm">{uri.uri}</span>
+                      <button
+                        onClick={() => handleRemoveRedirectUri(uri.id)}
+                        className="text-red-600 hover:text-red-900 text-sm"
+                      >
+                        {t('common.delete')}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-500 text-sm">{t('tenant.applications.noRedirectUris')}</p>
+              )}
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                onClick={() => {
+                  setShowRedirectUrisModal(false);
+                  setSelectedAppForRedirectUris(null);
+                  setError('');
+                  setSuccess('');
+                }}
+                className="bg-gray-300 px-4 py-2 rounded"
+              >
+                {t('common.close')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.applications.applicationName')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.applications.clientId')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.applications.applicationType')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {applications.map((app) => (
+              <tr key={app.id}>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{app.name}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{app.clientId}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {app.applicationType === 'Web' || app.applicationType === '1' ? t('tenant.applications.web') :
+                   app.applicationType === 'Mobile' || app.applicationType === '2' ? t('tenant.applications.mobile') :
+                   app.applicationType === 'SPA' || app.applicationType === '3' ? t('tenant.applications.spa') :
+                   app.applicationType}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleEditApplication(app)}
+                      className="text-indigo-600 hover:text-indigo-900"
+                    >
+                      {t('common.edit')}
+                    </button>
+                    <button
+                      onClick={() => handleManageRedirectUris(app)}
+                      className="text-blue-600 hover:text-blue-900"
+                    >
+                      {t('tenant.applications.manageRedirectUris')}
+                    </button>
+                    <button
+                      onClick={() => handleDeleteApplication(app.id)}
+                      className="text-red-600 hover:text-red-900"
+                    >
+                      {t('common.delete')}
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+

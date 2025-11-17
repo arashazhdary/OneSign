@@ -1,0 +1,519 @@
+You are an expert .NET 10, EF Core, and React/Next.js engineer, working as an implementation assistant for the onesign SSO SaaS platform.
+
+Context
+The platform already has feature rich SSO, OrgHierarchy, Security Center, Federation, Billing, Observability, Authorization, DevPortal, Account Center, Governance, Notification Center, and Access Requests implemented in previous phases.
+
+There is a Phase 13 specification focusing on platform hardening, tenant lifecycle, data isolation and scale:
+
+- Phase13-Onesign-PlatformHardeningScale.md
+
+Your job:
+- Read all previous phase documents to understand the existing structure and patterns.
+- Read Phase13-Onesign-PlatformHardeningScale.md carefully.
+- Implement Phase 13 exactly as defined there:
+  - TenantStatus and lifecycle enforcement across the platform.
+  - Tenant data topology settings (shared database vs dedicated database).
+  - TenantDbConnectionFactory and data access routing.
+  - Migration tool from shared database to dedicated per tenant database.
+  - Tenant and client based rate limiting.
+  - Caching for TenantConfig and client configuration.
+  - Health and readiness probes suitable for production and DR scenarios.
+- Do NOT break previous phases.
+- Do NOT leave a single TODO or NotImplementedException.
+- Do NOT create empty public methods, classes, controllers, or React pages.
+
+Global constraints
+
+1) Multi language
+- The platform is multilingual (at least English and Persian).
+- All new user facing texts must be localizable:
+  - Backend: use error codes and message keys, not hardcoded final strings.
+  - Frontend: use the existing i18n mechanism.
+- Do not hardcode final English or Persian texts inside controllers or JSX.
+
+2) No TODO and no partial implementations
+- No TODO comments.
+- No NotImplementedException.
+- No empty controllers, services, or React components.
+- If something is out of scope for Phase 13, do not scaffold it.
+
+3) Modular monolith structure
+- Continue to respect the modular monolith pattern.
+- Tenant lifecycle, data isolation and rate limiting are cross cutting concerns but must be implemented in well defined infrastructure or platform layers.
+- Do not leak low level infra details into domain models beyond what Phase 13 explicitly requires.
+
+4) Platform hardening is not cosmetic
+- Tenant status must actually block or allow operations.
+- DataIsolationMode must really affect which database connection is used.
+- Rate limiting must actually protect the platform from abusive tenants or clients.
+- Health and readiness endpoints must reflect real state, not just static OK.
+
+--------------------------------------------------
+Step 1: Read specs and build a checklist
+--------------------------------------------------
+
+1) Read existing specs:
+- Phase1-Onesign-CoreSSO.md
+- Phase2-Onesign-OrgHierarchy.md
+- Phase3-Onesign-AdvancedSecurity.md
+- Phase4-Onesign-FederationProvisioning.md
+- Phase5-Onesign-BillingPlans.md
+- Phase6-Onesign-ObservabilityCompliance.md
+- Phase7-Onesign-PolicyEngine.md
+- Phase8-Onesign-DeveloperExperience.md
+- Phase9-Onesign-AccountCenterSelfService.md
+- Phase10-Onesign-IdentityGovernance.md
+- Phase11-Onesign-NotificationCenter.md
+- Phase12-Onesign-AccessRequestsWorkflow.md
+
+2) Read Phase 13 spec in detail:
+- Phase13-Onesign-PlatformHardeningScale.md
+
+3) Build an internal checklist from Phase 13:
+
+Tenant lifecycle
+- Add TenantStatus to Tenant model: Active, Suspended, Terminating, Terminated.
+- Global admin API to change tenant status with restricted transitions.
+- Enforcement of TenantStatus on all tenant scoped APIs and flows.
+
+Data topology and routing
+- TenantConfig includes:
+  - DataIsolationMode: SharedDatabase or DedicatedDatabase.
+  - DedicatedConnectionString or connection name for dedicated tenants.
+- TenantDbConnectionFactory that resolves the proper connection string for each tenant.
+- EF Core integration so DbContext uses the correct connection per request.
+
+Migration from shared to per tenant database
+- A tool or CLI to migrate a given tenant:
+  - Shared DB rows (TenantId = X) to a dedicated database.
+  - Update TenantConfig to DedicatedDatabase with the dedicated connection.
+  - Manage tenant status transitions around migration.
+  - Full logging and audit.
+
+Performance and protection
+- Caching for TenantConfig and client configuration.
+- Rate limiting per tenant and per OAuth/OIDC client.
+- Limits configurable per plan (from Billing module).
+- Proper 429 responses and metrics when limits are exceeded.
+
+Backup and DR hooks
+- BackupPolicy metadata per plan for RPO and retention.
+- Basic hooks or internal API for tenant level restore operations.
+- Health endpoints:
+  - /health/live
+  - /health/ready
+  - optionally /health/tenant/{tenantId}
+
+Treat Phase13-Onesign-PlatformHardeningScale.md as the blueprint for all design details.
+
+--------------------------------------------------
+Step 2: TenantStatus model and lifecycle enforcement
+--------------------------------------------------
+
+1) Extend Tenant domain and persistence model
+
+- Add TenantStatus enum, for example:
+  - Active
+  - Suspended
+  - Terminating
+  - Terminated
+
+- Add corresponding field in the Tenant entity and Tenant table.
+
+- Ensure there is a default of Active for existing tenants.
+
+2) Global admin API for tenant status
+
+- In the Global Admin API layer (wherever you manage tenants globally), add:
+  - `PUT /api/global/tenants/{id}/status`
+
+- Request body:
+  - NewStatus value.
+
+- Implement strict transition validation:
+  - Allowed:
+    - Active -> Suspended
+    - Suspended -> Active
+    - Active -> Terminating
+    - Suspended -> Terminating
+    - Terminating -> Terminated
+  - Disallowed transitions must be rejected with a clear error code.
+
+- For every change:
+  - Write audit events, for example:
+    - "Tenant.StatusChanged" with from and to values and actor id.
+
+3) TenantStatus enforcement middleware
+
+- Create a middleware or pipeline component that runs on every tenant scoped API request.
+
+- Responsibilities:
+  - Resolve TenantId from the context (host name, path, token, or existing tenant resolution pipeline).
+  - Load TenantStatus (using cached TenantConfig if available).
+  - If TenantStatus is:
+    - Active: allow.
+    - Suspended:
+      - Block interactive login, token issuance and most tenant APIs.
+      - Return 403 or a tenant suspended error code.
+    - Terminating or Terminated:
+      - Block all tenant facing APIs.
+      - Optionally return 404 to avoid leaking details about terminated tenants.
+
+- Exception list:
+  - GlobalAdmin and internal platform APIs must still function in order to manage status, migrations and restore.
+
+- Make sure enforcement is consistent across:
+  - Login and token endpoints.
+  - Admin Portal tenant APIs.
+  - DevPortal tenant APIs.
+  - Account Center APIs.
+
+--------------------------------------------------
+Step 3: Data topology and TenantDbConnectionFactory
+--------------------------------------------------
+
+1) Extend TenantConfig
+
+- Add fields:
+  - DataIsolationMode:
+    - SharedDatabase
+    - DedicatedDatabase
+  - DedicatedConnectionStringName or DedicatedConnectionString
+    - Choose a pattern consistent with your configuration system.
+
+2) TenantDbConnectionFactory
+
+- Define an interface such as:
+  - `ITenantDbConnectionFactory` with method:
+    - `string GetConnectionString(Guid tenantId)`
+
+- Implementation:
+
+  - Load TenantConfig:
+    - Use caching (see Step 5) to avoid frequent DB hits.
+  - If DataIsolationMode is SharedDatabase:
+    - Return the main shared database connection string.
+  - If DataIsolationMode is DedicatedDatabase:
+    - Return the dedicated connection string for this tenant.
+
+- Provide convenience methods as needed:
+  - For example:
+    - `Task<DbConnection> CreateOpenConnectionAsync(Guid tenantId)` if your architecture prefers that.
+
+3) EF Core integration
+
+- Integrate TenantDbConnectionFactory into DbContext creation.
+
+- Pattern example:
+  - Use a DbContextFactory or per request DbContext injection that:
+    - Resolves TenantId from the current context.
+    - Asks ITenantDbConnectionFactory for the connection string.
+    - Configures DbContextOptions with that connection string.
+
+- Make sure:
+  - Migrations still apply correctly.
+  - Connection lifetime and pooling are handled according to best practices.
+  - You do not break multi tenant query filters.
+
+--------------------------------------------------
+Step 4: Migration tool - Shared to Dedicated database
+--------------------------------------------------
+
+Implement a migration tool (CLI or internal command) for tenant data.
+
+1) High level behavior
+
+- Input:
+  - TenantId
+  - TargetConnectionString (for dedicated database) or connection key.
+
+- Steps:
+  1. Mark tenant status as Terminating or a maintenance state.
+  2. Copy all rows for TenantId from shared database to the new dedicated database.
+     - This requires awareness of all tenant scoped tables.
+  3. Update TenantConfig:
+     - DataIsolationMode = DedicatedDatabase
+     - DedicatedConnectionStringName or value set to the target.
+  4. Optionally clean up tenant data from the shared DB once you are certain migration succeeded.
+  5. Set tenant status back to Active.
+
+- All steps must be logged and audited:
+  - "Tenant.MigrationStarted"
+  - "Tenant.MigrationCompleted"
+  - "Tenant.MigrationFailed"
+
+2) Implementation details
+
+- Implement as:
+  - A console application within the solution, or
+  - A background job runner or admin only endpoint that triggers the migration process.
+
+- Ensure:
+  - The tool is idempotent or at least safe to rerun after partial failure.
+  - Errors are clearly reported.
+
+- Do not leave the migration pipeline half implemented.
+  - If a step is not in scope, do not scaffold it.
+
+--------------------------------------------------
+Step 5: Caching TenantConfig and client configuration
+--------------------------------------------------
+
+1) TenantConfig cache
+
+- Implement a caching layer for TenantConfig lookups.
+
+- Requirements:
+  - In memory cache for local speed.
+  - Optional distributed cache (Redis or similar) if you are running multiple nodes.
+
+- API:
+  - Something like `ITenantConfigProvider`:
+    - `Task<TenantConfig> GetTenantConfigAsync(Guid tenantId)`
+  - Internal behavior:
+    - Use cache with a TTL.
+    - Invalidate or update cache when TenantConfig is changed through admin APIs.
+
+2) ClientConfig cache
+
+- For OIDC and API clients:
+  - Implement caching for client configuration similar to TenantConfig.
+
+- Ensure:
+  - ClientId to configuration mapping is cached.
+  - Cache invalidation happens when new clients are added or updated.
+
+3) Metrics
+
+- Integrate with Observability (Phase 6):
+  - Expose cache hit and miss metrics for TenantConfig and client configuration.
+
+--------------------------------------------------
+Step 6: Rate limiting and throttling
+--------------------------------------------------
+
+1) Design
+
+- Implement rate limiting at the API gateway or API layer per:
+  - TenantId
+  - ClientId (OIDC client)
+- Rate limits must be plan aware:
+  - Use Billing module to get plan caps per tenant.
+
+2) Implementation
+
+- Introduce a rate limiting middleware or filter in the API pipeline.
+
+- Behavior:
+  - For each request:
+    - Identify TenantId and optionally ClientId.
+    - Determine the allowed rate based on the tenant plan:
+      - Basic, Pro, Enterprise, etc.
+    - Track request counts in a time window (sliding or fixed).
+    - If limit exceeded:
+      - Return HTTP 429 Too Many Requests.
+      - Include an error code and optional retry-after header.
+
+- Storage:
+  - Use an appropriate store for counters:
+    - In memory for single node.
+    - Distributed store for multi node (Redis or similar).
+
+3) Observability
+
+- Expose metrics:
+  - Per tenant and per client request counts.
+  - Rate limit hits.
+- Log events when:
+  - Rate limiting is triggered.
+
+--------------------------------------------------
+Step 7: Backup policy metadata and tenant restore hooks
+--------------------------------------------------
+
+1) BackupPolicy metadata in Billing
+
+- Extend Billing or Plan model to include:
+  - BackupPolicy:
+    - RpoHours (Recovery Point Objective).
+    - RetentionDays.
+
+- Use this metadata to inform infrastructure and documentation for backup schedules per plan.
+
+2) Tenant level restore hooks
+
+- Implement at least an internal API or CLI command stub that coordinates tenant restore, for example:
+  - `POST /api/global/tenants/{id}/restore`
+  - This endpoint is protected and for internal use only.
+
+- The restore process in this phase can mainly:
+  - Set tenant status to Terminating or maintenance.
+  - Trigger integration with your backup/infra layer.
+  - Mark completion or failure.
+  - Write audit events:
+    - "Tenant.RestoreStarted"
+    - "Tenant.RestoreCompleted"
+    - "Tenant.RestoreFailed"
+
+- Do not fake backup or restore.
+  - Hook into actual commands or at least clearly separate infra-facing interfaces that can be implemented later without changing API contracts.
+
+--------------------------------------------------
+Step 8: Health and readiness probes
+--------------------------------------------------
+
+1) Global health endpoints
+
+- Implement standard endpoints:
+  - `/health/live`
+    - Returns OK if the process is alive.
+  - `/health/ready`
+    - Returns OK only if:
+      - Required dependencies are up enough to accept traffic.
+      - Database connections are available.
+      - Optional: background queues are healthy.
+
+- Format:
+  - Use a structured JSON with status and component details.
+
+2) Optional tenant scoped health
+
+- Implement `/health/tenant/{tenantId}` if reasonable:
+  - Performs a very lightweight check:
+    - Tenant status.
+    - A short DB check on the tenant database if dedicated.
+  - Useful for diagnosing tenant specific issues.
+
+3) DR related indicators
+
+- If you have primary and secondary regions configured:
+  - Expose simple indicators:
+    - Which region is active.
+    - If failover mode is in effect.
+
+- This is optional but prepare the hooks in a way that can be extended.
+
+--------------------------------------------------
+Step 9: Frontend and admin UI adjustments
+--------------------------------------------------
+
+1) Global Admin Portal: tenant status and topology
+
+- If there is a Global Admin Portal:
+
+  - Tenant list page:
+    - Show:
+      - TenantName
+      - TenantStatus
+      - DataIsolationMode (Shared or Dedicated)
+    - Show if tenant has dedicated database configured.
+
+  - Tenant details page:
+    - Allow changing TenantStatus via the GlobalAdmin API:
+      - Active to Suspended.
+      - Suspended to Active.
+      - Active or Suspended to Terminating or Terminated with proper confirmation dialogs.
+
+2) Tenant Admin Portal: suspended banner
+
+- In the Tenant Admin Portal:
+
+  - If TenantStatus is Suspended or Terminating:
+    - Display a clear banner that the tenant is not fully operational.
+    - Disable destructive or configuration changing actions as needed.
+    - Provide localized messages.
+
+--------------------------------------------------
+Step 10: Cross cutting - localization, security, observability
+--------------------------------------------------
+
+Localization
+
+- All new user facing messages related to:
+  - Tenant status.
+  - Maintenance or suspension.
+  - Rate limiting errors.
+- Must be driven by i18n keys and not hardcoded texts.
+
+Security
+
+- Global admin and migration or restore APIs must be strictly locked down.
+- Migration and restore actions must be heavily audited:
+  - Actor, tenant id, timestamps.
+
+Observability
+
+- Extend existing Observability module to include:
+  - Metrics:
+    - QPS per tenant and per client.
+    - Rate limit hits.
+    - Cache hit and miss for TenantConfig and ClientConfig.
+    - DB latency per topology (shared vs dedicated) if feasible.
+  - Logs:
+    - Tenant status changes.
+    - Tenant migrations.
+    - DR or restore attempts.
+
+--------------------------------------------------
+Step 11: Tests and final verification
+--------------------------------------------------
+
+Backend tests
+
+- TenantStatus and enforcement:
+  - Tenant in Suspended status is blocked from login and token issuance.
+  - Terminated tenants are blocked entirely.
+  - Allowed status transitions behave as expected.
+  - Disallowed transitions are rejected.
+
+- TenantDbConnectionFactory:
+  - Shared and dedicated connection paths both work.
+  - Correct connection is selected based on TenantConfig.
+
+- Migration tool:
+  - Migrates tenant data from shared to dedicated database for a test tenant.
+  - Updates TenantConfig and tenant status correctly.
+  - Logs and audits events.
+
+- Caching:
+  - TenantConfig and ClientConfig cache are used.
+  - Cache invalidation works when tenant or client configuration changes.
+
+- Rate limiting:
+  - Per tenant and per client limits enforced.
+  - Limits differ by plan definitions from Billing.
+  - Exceeding limits returns 429 and logs metrics.
+
+- Health endpoints:
+  - /health/live and /health/ready reflect correct states and dependencies.
+
+Frontend tests
+
+- Global Admin Portal:
+  - Tenant status view and transitions work.
+  - DataIsolationMode is shown clearly.
+
+- Tenant Admin Portal:
+  - Suspended tenants show a banner and restricted UI as required.
+
+Final verification
+
+- Solution builds with Phase 13 changes fully integrated.
+- Migrations apply cleanly on top of previous phases.
+- You can:
+  - Suspend a tenant and see real blocking in API flows.
+  - Configure a tenant with dedicated database and see DbContext use dedicated connection.
+  - Run the migration tool for a test tenant.
+  - See rate limiting triggers for a high traffic tenant or client.
+  - Hit health endpoints and get meaningful responses.
+- No TODO comments, no NotImplementedException, no empty public methods, no fake or unused APIs.
+
+Important mindset
+
+- Phase 13 turns onesign from a feature rich application into a reliable platform.
+- Tenant lifecycle, data topology, rate limiting and health probes are non negotiable for serious enterprise deployments.
+- When implementing this phase, always choose the safer and more observable design instead of shortcuts.
+
+Now:
+Read Phase13-Onesign-PlatformHardeningScale.md, then implement TenantStatus lifecycle enforcement, DataIsolationMode and TenantDbConnectionFactory, the shared to dedicated migration tool, caching, rate limiting and health endpoints with no TODOs or partial implementations.
+
