@@ -17,6 +17,10 @@ using Onesign.Modules.Organization.Domain.Repositories;
 using Onesign.Modules.Organization.Domain.Services;
 using Onesign.Modules.Organization.Infrastructure.EfCore.Repositories;
 using Onesign.Modules.Organization.Infrastructure.Services;
+using Onesign.Modules.Security.Domain.Repositories;
+using Onesign.Modules.Security.Domain.Services;
+using Onesign.Modules.Security.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.Security.Infrastructure.Services;
 using Onesign.Modules.Tenants.Domain.Repositories;
 using Onesign.Modules.Tenants.Infrastructure.EfCore.Repositories;
 
@@ -33,7 +37,8 @@ builder.Services.AddValidatorsFromAssemblies(new[]
     typeof(Onesign.Modules.Tenants.Application.Validators.CreateTenantRequestValidator).Assembly,
     typeof(Onesign.Modules.Identity.Application.Validators.LoginRequestValidator).Assembly,
     typeof(Onesign.Modules.Applications.Application.Validators.CreateApplicationClientRequestValidator).Assembly,
-    typeof(Onesign.Modules.Organization.Application.Validators.CreateOrgUnitRequestValidator).Assembly
+    typeof(Onesign.Modules.Organization.Application.Validators.CreateOrgUnitRequestValidator).Assembly,
+    typeof(Onesign.Modules.Security.Application.Commands.UpdateSecurityPolicyCommand).Assembly
 });
 builder.Services.AddFluentValidationAutoValidation();
 
@@ -76,7 +81,8 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
     typeof(Onesign.Modules.Identity.Application.Commands.PasswordLoginCommand).Assembly,
     typeof(Onesign.Modules.Applications.Application.Commands.CreateApplicationClientCommand).Assembly,
     typeof(Onesign.Modules.Audit.Application.Commands.AppendAuditEventCommand).Assembly,
-    typeof(Onesign.Modules.Organization.Application.Commands.CreateOrgUnitCommand).Assembly));
+    typeof(Onesign.Modules.Organization.Application.Commands.CreateOrgUnitCommand).Assembly,
+    typeof(Onesign.Modules.Security.Application.Commands.UpdateSecurityPolicyCommand).Assembly));
 
 // Repositories
 builder.Services.AddScoped<ITenantRepository>(sp => 
@@ -115,6 +121,27 @@ builder.Services.AddScoped<IDelegatedAdminRepository>(sp =>
 // Organization Services
 builder.Services.AddScoped<IOrgTreeService, OrgTreeService>();
 builder.Services.AddScoped<IOrgAuthorizationService, OrgAuthorizationService>();
+
+// Security Repositories
+builder.Services.AddScoped<ISecurityPolicyRepository>(sp =>
+    new SecurityPolicyRepository(sp.GetRequiredService<OnesignDbContext>()));
+builder.Services.AddScoped<IOrgUnitMfaRuleRepository>(sp =>
+    new OrgUnitMfaRuleRepository(sp.GetRequiredService<OnesignDbContext>()));
+builder.Services.AddScoped<IUserMfaMethodRepository>(sp =>
+    new UserMfaMethodRepository(sp.GetRequiredService<OnesignDbContext>()));
+builder.Services.AddScoped<IMfaChallengeRepository>(sp =>
+    new MfaChallengeRepository(sp.GetRequiredService<OnesignDbContext>()));
+builder.Services.AddScoped<ITrustedDeviceRepository>(sp =>
+    new TrustedDeviceRepository(sp.GetRequiredService<OnesignDbContext>()));
+builder.Services.AddScoped<IRiskEventRepository>(sp =>
+    new RiskEventRepository(sp.GetRequiredService<OnesignDbContext>()));
+
+// Security Services
+builder.Services.AddScoped<IMfaService, MfaService>();
+builder.Services.AddScoped<IMfaChallengeService, MfaChallengeService>();
+builder.Services.AddScoped<IDeviceFingerprintService, DeviceFingerprintService>();
+builder.Services.AddScoped<IRiskEvaluationService, BasicRiskEvaluationService>();
+builder.Services.AddScoped<ISecurityPolicyService, SecurityPolicyService>();
 
 // JWT Signing Key Provider
 builder.Services.AddSingleton<Onesign.Shared.Security.IJwtSigningKeyProvider, Onesign.Shared.Security.ConfigurationJwtSigningKeyProvider>();

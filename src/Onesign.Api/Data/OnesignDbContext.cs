@@ -7,6 +7,8 @@ using Onesign.Modules.Identity.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Identity.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Organization.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Organization.Infrastructure.EfCore.Entities;
+using Onesign.Modules.Security.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Security.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Tenants.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Tenants.Infrastructure.EfCore.Entities;
 
@@ -44,6 +46,14 @@ public class OnesignDbContext : DbContext
     public DbSet<ApplicationOrgUnitEntity> ApplicationOrgUnits => Set<ApplicationOrgUnitEntity>();
     public DbSet<DelegatedAdminScopeEntity> DelegatedAdminScopes => Set<DelegatedAdminScopeEntity>();
 
+    // Security
+    public DbSet<SecurityPolicyEntity> SecurityPolicies => Set<SecurityPolicyEntity>();
+    public DbSet<OrgUnitMfaRuleEntity> OrgUnitMfaRules => Set<OrgUnitMfaRuleEntity>();
+    public DbSet<UserMfaMethodEntity> UserMfaMethods => Set<UserMfaMethodEntity>();
+    public DbSet<MfaChallengeEntity> MfaChallenges => Set<MfaChallengeEntity>();
+    public DbSet<TrustedDeviceEntity> TrustedDevices => Set<TrustedDeviceEntity>();
+    public DbSet<RiskEventEntity> RiskEvents => Set<RiskEventEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -73,6 +83,14 @@ public class OnesignDbContext : DbContext
         modelBuilder.ApplyConfiguration(new UserOrgUnitEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new ApplicationOrgUnitEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new DelegatedAdminScopeEntityTypeConfiguration());
+
+        // Security
+        modelBuilder.ApplyConfiguration(new SecurityPolicyEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new OrgUnitMfaRuleEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new UserMfaMethodEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new MfaChallengeEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new TrustedDeviceEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new RiskEventEntityTypeConfiguration());
     }
 }
 
