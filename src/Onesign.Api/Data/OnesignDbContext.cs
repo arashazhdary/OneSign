@@ -3,6 +3,8 @@ using Onesign.Modules.Applications.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Applications.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Audit.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Audit.Infrastructure.EfCore.Entities;
+using Onesign.Modules.Billing.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Billing.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Federation.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Federation.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Identity.Infrastructure.EfCore.Configurations;
@@ -63,6 +65,13 @@ public class OnesignDbContext : DbContext
     public DbSet<ScimTokenEntity> ScimTokens => Set<ScimTokenEntity>();
     public DbSet<JitProvisioningLogEntity> JitProvisioningLogs => Set<JitProvisioningLogEntity>();
 
+    // Billing
+    public DbSet<PlanEntity> Plans => Set<PlanEntity>();
+    public DbSet<PlanFeatureEntity> PlanFeatures => Set<PlanFeatureEntity>();
+    public DbSet<TenantSubscriptionEntity> TenantSubscriptions => Set<TenantSubscriptionEntity>();
+    public DbSet<UsageCounterEntity> UsageCounters => Set<UsageCounterEntity>();
+    public DbSet<TenantUsageSnapshotEntity> TenantUsageSnapshots => Set<TenantUsageSnapshotEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -107,6 +116,13 @@ public class OnesignDbContext : DbContext
         modelBuilder.ApplyConfiguration(new AttributeMappingEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new ScimTokenEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new JitProvisioningLogEntityTypeConfiguration());
+
+        // Billing
+        modelBuilder.ApplyConfiguration(new PlanEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new PlanFeatureEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new TenantSubscriptionEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new UsageCounterEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new TenantUsageSnapshotEntityTypeConfiguration());
     }
 }
 

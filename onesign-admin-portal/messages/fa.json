@@ -274,6 +274,86 @@
       "errorMessage": "پیام خطا",
       "timestamp": "زمان"
     }
+  },
+  "billing": {
+    "title": "مدیریت صورتحساب و پلن‌ها",
+    "plans": {
+      "title": "پلن‌ها",
+      "createPlan": "ایجاد پلن",
+      "editPlan": "ویرایش پلن",
+      "planName": "نام پلن",
+      "planCode": "کد پلن",
+      "planType": "نوع پلن",
+      "isActive": "فعال",
+      "free": "رایگان",
+      "pro": "حرفه‌ای",
+      "enterprise": "سازمانی",
+      "custom": "سفارشی",
+      "features": "ویژگی‌ها",
+      "addFeature": "افزودن ویژگی",
+      "featureKey": "کلید ویژگی",
+      "featureValue": "مقدار",
+      "limitType": "نوع محدودیت",
+      "softLimit": "محدودیت نرم",
+      "hardLimit": "محدودیت سخت",
+      "planCreated": "پلن با موفقیت ایجاد شد",
+      "planUpdated": "پلن با موفقیت به‌روزرسانی شد",
+      "planDeleted": "پلن با موفقیت حذف شد",
+      "confirmDelete": "آیا مطمئن هستید که می‌خواهید این پلن را حذف کنید؟"
+    },
+    "subscription": {
+      "title": "اشتراک",
+      "currentPlan": "پلن فعلی",
+      "status": "وضعیت",
+      "trial": "آزمایشی",
+      "active": "فعال",
+      "pastDue": "معوق",
+      "suspended": "معلق",
+      "canceled": "لغو شده",
+      "trialEndsAt": "پایان دوره آزمایشی",
+      "currentPeriodEnds": "پایان دوره فعلی",
+      "assignSubscription": "اختصاص اشتراک",
+      "changePlan": "تغییر پلن",
+      "subscriptionAssigned": "اشتراک با موفقیت اختصاص داده شد",
+      "planChanged": "پلن با موفقیت تغییر کرد"
+    },
+    "usage": {
+      "title": "مصرف و سهمیه‌ها",
+      "summary": "خلاصه مصرف",
+      "users": "کاربران",
+      "applications": "برنامه‌ها",
+      "idpConnections": "اتصالات IdP",
+      "orgUnits": "واحدهای سازمانی",
+      "loginsThisMonth": "ورودهای این ماه",
+      "scimCallsThisMonth": "فراخوانی‌های SCIM این ماه",
+      "quotaStatus": "وضعیت سهمیه",
+      "nearLimit": "نزدیک محدودیت",
+      "overLimit": "فراتر از محدودیت",
+      "unlimited": "نامحدود",
+      "of": "از"
+    },
+    "tenantBilling": {
+      "title": "صورتحساب",
+      "yourPlan": "پلن شما",
+      "upgrade": "ارتقای پلن",
+      "requestUpgrade": "درخواست ارتقا",
+      "upgradeRequested": "درخواست ارتقا با موفقیت ثبت شد",
+      "selectTargetPlan": "انتخاب پلن مقصد",
+      "comments": "توضیحات (اختیاری)",
+      "warningNearLimit": "شما در حال نزدیک شدن به محدودیت‌های پلن خود هستید",
+      "errorOverLimit": "شما از محدودیت‌های پلن خود فراتر رفته‌اید"
+    },
+    "features": {
+      "maxUsers": "حداکثر کاربران",
+      "maxApplications": "حداکثر برنامه‌ها",
+      "maxIdpConnections": "حداکثر اتصالات IdP",
+      "maxOrgUnits": "حداکثر واحدهای سازمانی",
+      "maxLoginsPerMonth": "حداکثر ورود در ماه",
+      "orgHierarchyEnabled": "سلسله مراتب سازمانی",
+      "advancedSecurityEnabled": "امنیت پیشرفته",
+      "federationEnabled": "فدراسیون سازمانی",
+      "scimEnabled": "فراهم‌سازی SCIM"
+    }
   }
 }
 
