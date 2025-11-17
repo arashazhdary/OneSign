@@ -1,0 +1,536 @@
+You are an expert .NET 10, EF Core, and React/Next.js engineer, acting as the implementation assistant for the onesign SSO / IAM / IGA platform.
+
+Context
+The platform already includes:
+- Multi-tenant SSO, OIDC/OAuth2, Federation, Governance, Lifecycle, DevPortal, etc.
+- Environment, Region, DR (Phase 20)
+- On-Prem / Hybrid Environment model (Phase 21)
+- Crypto / Key management and JWKS (Phase 22)
+- Admin Portal (Global + Tenant) and Account Center for end users
+
+Now you must implement Phase 23, which focuses on:
+- Privacy & Data Protection Center
+- Data retention policies per tenant & per data category
+- Automated retention cleanup (delete/anonymize)
+- Data Subject Requests (DSR): Export + Delete/Anonymize
+- Tenant Privacy Center UI
+- Account Center Privacy tab for end users
+
+Specification document:
+- Phase23-Onesign-PrivacyAndDataProtectionCenter.md
+
+Your job
+- Read Phase23-Onesign-PrivacyAndDataProtectionCenter.md carefully.
+- Implement Phase 23 end-to-end:
+  - DataRetentionPolicy model + APIs + cleanup job
+  - DataSubjectRequest (DSR) model + export & delete/anonymize services
+  - Tenant Privacy Center in Admin Portal
+  - Account Center Privacy tab for end users
+- Do NOT break previous phases.
+- Do NOT leave any TODO or NotImplementedException anywhere.
+- Any API or UI you add must be wired to real behavior (no fake stubs).
+
+Global constraints
+
+1) Multi language
+- The platform is multilingual (English + Persian).
+- All new UI labels must use the existing i18n infrastructure.
+- User-facing backend error messages must follow existing conventions.
+- No random hard-coded English texts in React components.
+
+2) No TODO / no partial implementations
+- No TODO comments.
+- No “will be implemented later” placeholders.
+- No fake retention job that logs and does nothing.
+- No DSR endpoints that only change status without actually exporting/deleting data.
+
+3) Modular monolith structure
+- Implement privacy logic in a clear module (e.g. `Onesign.Modules.Privacy`).
+- Use existing tenant context and user context infrastructure.
+- Respect multi-tenant boundaries strictly: operations are ALWAYS scoped to a tenant.
+
+4) Privacy/compliance mindset
+- For deletion: if you can’t delete because of referential constraints or business needs, anonymize instead of ignoring.
+- For logs and events: preserve technical integrity while stripping direct PII or user identifiers when anonymizing.
+- All DSR and retention executions must be audited.
+
+--------------------------------------------------
+Step 1: Implement DataRetentionPolicy & categories
+--------------------------------------------------
+
+From Phase23 spec, use the following data categories (enum/constant list):
+
+- IdentityProfile
+- AuthEvents
+- AuditLogs
+- FederationLogs
+- AccessRequests
+- LifecycleHistory
+
+1) DataRetentionPolicy entity
+
+Create entity `DataRetentionPolicy`:
+
+- Guid Id
+- Guid TenantId
+- string DataCategory       // enum-backed string
+- int RetentionPeriodDays
+- bool HardDeleteAfter
+- bool Enabled
+
+EF mapping:
+
+- Table: `Privacy_DataRetentionPolicies`
+- Unique index: (TenantId, DataCategory)
+
+Service:
+
+- `IDataRetentionPolicyService`
+  - `Task<IReadOnlyList<DataRetentionPolicy>> GetForTenantAsync(Guid tenantId)`
+  - `Task<DataRetentionPolicy> UpsertAsync(Guid tenantId, string category, int retentionDays, bool hardDeleteAfter, bool enabled)`
+  - Apply sensible defaults when creating a new tenant if policies don’t exist.
+
+API (Tenant scope):
+
+- `GET /api/tenant/privacy/retention-policies`
+  - returns list of policies for current tenant (all known categories).
+- `PUT /api/tenant/privacy/retention-policies/{category}`
+  - body: { retentionPeriodDays, hardDeleteAfter, enabled }
+  - updates or creates policy for that category.
+
+Permissions:
+- Restricted to Tenant DPO / SecurityOfficer / TenantPrivacyAdmin roles.
+
+Initialize defaults:
+- For new tenant, if no policies exist:
+  - IdentityProfile: long retention or “no automatic delete”
+  - AuthEvents: e.g. 180 days
+  - AuditLogs: e.g. 365 days
+  - FederationLogs: e.g. 180 days
+  - AccessRequests / LifecycleHistory: e.g. 365 days
+  (Implement sensible defaults in service.)
+
+--------------------------------------------------
+Step 2: Implement DataRetentionCleanupJob
+--------------------------------------------------
+
+Create background job: `DataRetentionCleanupJob`.
+
+Behavior:
+
+- Periodically (e.g. daily):
+  - For each tenant:
+    - Load tenant’s DataRetentionPolicies.
+    - For each category with Enabled=true:
+      - Compute cutoff = now - RetentionPeriodDays.
+      - Apply cleanup to corresponding tables:
+
+    Examples (implement concretely in your codebase):
+
+    - AuthEvents:
+      - Table storing login/logoff/MFA events.
+      - If HardDeleteAfter=true:
+        - DELETE rows where TenantId = currentTenant AND EventTime < cutoff.
+      - Else:
+        - Anonymize user-related columns:
+          - UserId → null or hashed ID
+          - Username/Email (if stored) → null or generic.
+          - Keep event time, result, technical info.
+
+    - AuditLogs / FederationLogs / AccessRequests / LifecycleHistory:
+      - Similar pattern: delete or anonymize user identifiers and PII, retain minimal technical metadata if HardDeleteAfter=false.
+
+- Result:
+
+  - Aggregate counts per tenant/category.
+  - Emit an audit event:
+    - "Privacy.RetentionCleanupExecuted"
+    - with tenantId, category, deletedCount, anonymizedCount, timestamp.
+
+No fake implementation:
+- The job must actually modify data in DB.
+- Use async EF operations and batch operations where possible.
+
+--------------------------------------------------
+Step 3: Implement DataSubjectRequest (DSR) model & APIs
+--------------------------------------------------
+
+Entity `DataSubjectRequest`:
+
+- Guid Id
+- Guid TenantId
+- string SubjectId          // user id in that tenant
+- string Type               // "Export" or "Delete"
+- string Status             // "Requested", "InReview", "Approved", "Processing", "Completed", "Rejected"
+- DateTimeOffset RequestedAt
+- string RequestedBy        // user id who requested (could be same as SubjectId or admin id)
+- DateTimeOffset? CompletedAt
+- string? ResultLocation    // URL/path for export result
+- string? Reason            // optional reason
+
+EF mapping:
+
+- Table: `Privacy_DataSubjectRequests`
+- Index: TenantId, SubjectId, Type, Status.
+
+Service:
+
+- `IDataSubjectRequestService`
+  - `Task<DataSubjectRequest> CreateAsync(...)`
+  - `Task<IReadOnlyList<DataSubjectRequest>> GetForTenantAsync(tenantId)`
+  - `Task<IReadOnlyList<DataSubjectRequest>> GetForSubjectAsync(tenantId, subjectId)`
+  - `Task<DataSubjectRequest?> GetByIdAsync(tenantId, id)`
+  - `Task UpdateStatusAsync(...)` (with validation of allowed transitions).
+
+--------------------------------------------------
+Step 4: Account APIs for creating DSR
+--------------------------------------------------
+
+1) End-user API
+
+Endpoint:
+
+- `POST /api/account/privacy/data-requests`
+
+Body:
+
+- { "type": "Export" } or { "type": "Delete", "reason": "..." }
+
+Behavior:
+
+- TenantId ← from current tenant context.
+- SubjectId ← current user id.
+- RequestedBy ← current user id.
+- Type ← from body.
+- Status ← "Requested".
+- RequestedAt ← now.
+
+Return DSR summary.
+
+2) Tenant Admin/DPO API for DSR on another user
+
+Endpoint:
+
+- `POST /api/tenant/privacy/data-requests`
+
+Body:
+
+- { "subjectId": "...", "type": "Export" | "Delete", "reason": "..." }
+
+Permissions:
+
+- Tenant DPO / SecurityOfficer only.
+
+Behavior:
+
+- TenantId from context.
+- SubjectId from body.
+- RequestedBy = current admin user id.
+- Status = "Requested" or "InReview" (as you decide, but consistent).
+
+Also implement list APIs:
+
+- `GET /api/tenant/privacy/data-requests`
+  - paged list of DSR for current tenant.
+- `GET /api/account/privacy/data-requests`
+  - list of DSR for current user (subject) in current tenant.
+
+--------------------------------------------------
+Step 5: Implement Export execution
+--------------------------------------------------
+
+Service:
+
+- `IDataExportService`
+  - `Task<string> ExportUserDataAsync(Guid tenantId, string subjectId, Guid dsrId)`
+
+Behavior:
+
+- Within tenant scope:
+  - Collect data for that subject from relevant modules:
+    - Identity/Profile:
+      - user record, claims, roles, org units (if present).
+    - AuthEvents:
+      - login/logout/MFA events for that user.
+    - AccessRequests:
+      - access requests submitted by that user.
+    - LifecycleHistory:
+      - joiner/mover/leaver events for that subject.
+
+- Build export package:
+
+  - Directory-like structure in memory, e.g.:
+    - profile.json
+    - auth-events.json
+    - access-requests.json
+    - lifecycle.json
+  - Serialize to JSON for each part.
+  - Bundle into a ZIP archive.
+
+- Store:
+
+  - Store ZIP in your object storage (MinIO/S3/whatever you use).
+  - Generate a signed URL or temporary token (with expiry, e.g. 7 days).
+  - Return that URL or storage path.
+
+API to execute Export:
+
+- `POST /api/tenant/privacy/data-requests/{id}/execute`
+
+Behavior:
+
+- Load DSR and validate:
+  - Type == "Export"
+  - Status in { "Requested", "InReview", "Approved" }.
+- Set Status = "Processing".
+- Call `IDataExportService.ExportUserDataAsync`.
+- On success:
+  - Set Status = "Completed".
+  - Set ResultLocation = generated URL.
+  - Set CompletedAt = now.
+- Emit audit event "Privacy.DSR.ExportExecuted" with tenantId, subjectId, dsrId.
+
+Permissions:
+
+- Tenant DPO / SecurityOfficer only.
+
+End user consumption:
+
+- Later, Account Center will call `GET /api/account/privacy/data-requests` and read ResultLocation for completed exports.
+
+--------------------------------------------------
+Step 6: Implement Delete/Anonymize execution
+--------------------------------------------------
+
+Service:
+
+- `IDataDeletionService`
+  - `Task ExecuteDeleteAsync(Guid tenantId, string subjectId, Guid dsrId)`
+
+Behavior:
+
+- For the given tenant + subject:
+
+  - User profile:
+    - If business allows full deletion:
+      - Delete or logical delete user record.
+    - Otherwise anonymize:
+      - Name → "Deleted User" (or localized i18n key).
+      - Email → generated non-real value (hash + fixed domain).
+      - Phone / address / other PII → null or generic.
+      - Remove any personal identifiers not required for audit.
+
+  - AuthEvents / AuditLogs / FederationLogs / AccessRequests / LifecycleHistory:
+    - Replace direct references to the user with anonymized identifiers if needed:
+      - UserId → hashed id (e.g. SHA-256 under a tenant-specific salt) or null.
+      - Display/email fields → removed or generic.
+
+- Ensure:
+  - No foreign keys break.
+  - No tokens or active sessions exist for that user (optional: revoke sessions as part of this).
+
+API to execute Delete:
+
+- `POST /api/tenant/privacy/data-requests/{id}/execute` when Type="Delete"
+
+Behavior:
+
+- Load DSR and validate:
+  - Type == "Delete"
+  - Status in { "Requested", "InReview", "Approved" }.
+- Set Status = "Processing".
+- Call `IDataDeletionService.ExecuteDeleteAsync`.
+- On success:
+  - Status = "Completed"
+  - CompletedAt = now.
+- Emit audit event "Privacy.DSR.DeleteExecuted".
+
+Permissions:
+
+- Tenant DPO / SecurityOfficer only.
+
+Also implement:
+
+- Option to mark DSR as Rejected:
+  - `POST /api/tenant/privacy/data-requests/{id}/reject`
+    - body: { reason }
+  - Status = "Rejected"
+  - Reason stored.
+
+--------------------------------------------------
+Step 7: Tenant Privacy Center UI (Admin Portal)
+--------------------------------------------------
+
+In Admin Portal (tenant scope), add a new section: **Privacy Center**.
+
+Route:
+
+- `/tenant/privacy`
+
+Tabs:
+
+1) Retention
+2) Data Requests
+3) Overview (summary)
+
+All UI labels must use i18n (English + Persian resources).
+
+1) Retention tab
+
+- Call:
+  - `GET /api/tenant/privacy/retention-policies`
+  - `PUT /api/tenant/privacy/retention-policies/{category}` when editing.
+
+- Table:
+  - DataCategory (localized label)
+  - RetentionPeriodDays (editable numeric input)
+  - HardDeleteAfter (toggle switch)
+  - Enabled (toggle)
+
+- Provide basic validation (min & max days).
+
+2) Data Requests tab
+
+- Call:
+  - `GET /api/tenant/privacy/data-requests`
+
+- Table columns:
+  - Id
+  - Subject (user display name + email, using existing user lookup)
+  - Type (Export/Delete)
+  - Status (badge)
+  - RequestedAt
+  - CompletedAt
+  - RequestedBy
+
+- Actions per row:
+  - “View”:
+    - Show details: Reason, ResultLocation link if Export + Completed.
+  - “Execute”:
+    - Calls `POST /api/tenant/privacy/data-requests/{id}/execute` with confirmation modal.
+    - For Export or Delete depending on Type.
+  - “Reject”:
+    - Opens modal to input reason.
+    - Calls reject endpoint.
+
+- Also allow:
+  - “Create request for user”:
+    - Opens modal:
+      - subjectId selector (user search)
+      - type (Export/Delete)
+      - reason
+    - Calls `POST /api/tenant/privacy/data-requests`.
+
+3) Overview tab
+
+- Call:
+  - a small summary API (you can introduce `/api/tenant/privacy/overview`) or compute on client from list.
+- Show:
+  - Number of DSRs last 30 days.
+  - Last retention cleanup run timestamp per tenant (you may store last run in a small table or reuse audit).
+  - Optional: number of records deleted/anonymized last run.
+
+--------------------------------------------------
+Step 8: Account Center – Privacy tab
+--------------------------------------------------
+
+In Account Center (end user), add a new tab: **Privacy**.
+
+Route:
+
+- `/account/privacy`
+
+Backend APIs:
+
+- `GET /api/account/privacy/data-requests`
+- `POST /api/account/privacy/data-requests` (for Export/Delete)
+
+UI:
+
+- Section 1: Info text
+  - Short description of data handling in this tenant (static text + i18n).
+
+- Section 2: My Requests
+  - List from `GET /api/account/privacy/data-requests`:
+    - Type (Export/Delete)
+    - Status
+    - RequestedAt
+    - CompletedAt
+    - For Export with ResultLocation and Status=Completed:
+      - “Download data” button that uses ResultLocation.
+
+- Section 3: Actions
+  - Button “Request Data Export”
+    - Confirm dialog, then POST type=Export.
+  - Button “Request Data Deletion”
+    - Strong warning dialog (cannot sign in after this, etc.).
+    - Then POST type=Delete with optional reason.
+
+All texts via i18n.
+
+--------------------------------------------------
+Step 9: Security, permissions, and audit
+--------------------------------------------------
+
+Permissions:
+
+- `/api/tenant/privacy/*`:
+  - Only Tenant DPO / SecurityOfficer / specific PrivacyAdmin roles.
+- `/api/account/privacy/*`:
+  - Only authenticated user, subjectId must be current user.
+
+Audit events to emit:
+
+- "Privacy.RetentionPolicy.Updated"
+- "Privacy.RetentionCleanupExecuted"
+- "Privacy.DSR.RequestCreated"
+- "Privacy.DSR.RequestRejected"
+- "Privacy.DSR.ExportExecuted"
+- "Privacy.DSR.DeleteExecuted"
+
+Include:
+
+- TenantId
+- SubjectId (when relevant)
+- ActorId (admin or end user)
+- RequestId (DSR Id)
+
+--------------------------------------------------
+Step 10: Tests and verification
+--------------------------------------------------
+
+Backend tests:
+
+- DataRetentionPolicy:
+  - Upsert and retrieval per tenant/category.
+- RetentionCleanupJob:
+  - With test data in AuthEvents/AuditLogs, verify:
+    - records older than cutoff are deleted or anonymized correctly.
+- DSR creation:
+  - End-user creates Export/Delete → DSR stored correctly.
+  - Admin creates DSR for another user.
+- Export:
+  - Execute Export builds expected JSON structure and stores ZIP returning a non-empty URL.
+- Delete:
+  - Execute Delete anonymizes or deletes user profile and strips PII from logs.
+- Permissions:
+  - Non-DPO admin cannot call tenant privacy APIs.
+  - User cannot request DSR for another subject.
+
+Frontend manual verification:
+
+- Tenant Privacy Center:
+  - Edit retention policies and see them persist.
+  - Create and execute Export/Delete DSRs and see status update.
+- Account Privacy:
+  - User can create DSRs and see download link for Export when completed.
+
+Mindset
+Phase 23 must give onesign a credible, enforceable privacy story:
+
+- Configurable retention (not just endless logs).
+- Real, auditable DSR handling (Export + Delete/Anonymize).
+- UI for DPO + end user visibility.
+
+Now:
+Read Phase23-Onesign-PrivacyAndDataProtectionCenter.md and implement ALL described DataRetentionPolicy, cleanup job, DSR model, export/delete services, and Tenant/Account UI, with real logic and zero TODOs.

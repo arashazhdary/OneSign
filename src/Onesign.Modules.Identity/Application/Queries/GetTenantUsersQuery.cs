@@ -7,6 +7,7 @@ namespace Onesign.Modules.Identity.Application.Queries;
 public class GetTenantUsersQuery : IRequest<PagedResult<TenantUserDto>>
 {
     public Guid TenantId { get; set; }
+    public Guid? OrgUnitId { get; set; }
     public int PageNumber { get; set; } = 1;
     public int PageSize { get; set; } = 10;
 }

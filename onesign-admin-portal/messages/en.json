@@ -16,7 +16,10 @@
       "edit": "Edit",
       "create": "Create",
       "search": "Search",
-      "close": "Close"
+      "close": "Close",
+      "all": "All",
+      "holdCtrl": "Hold Ctrl/Cmd to select multiple",
+      "actions": "Actions"
   },
   "admin": {
     "title": "Admin Portal",
@@ -95,6 +98,52 @@
       "logoUrl": "Logo URL",
       "primaryColor": "Primary Color",
       "brandingUpdated": "Branding updated successfully"
+    },
+    "orgUnits": {
+      "title": "Organization Units",
+      "createOrgUnit": "Create Org Unit",
+      "editOrgUnit": "Edit Org Unit",
+      "orgUnitName": "Name",
+      "parentOrgUnit": "Parent Org Unit",
+      "sortOrder": "Sort Order",
+      "move": "Move",
+      "delete": "Delete",
+      "orgUnitCreated": "Org Unit created successfully",
+      "orgUnitUpdated": "Org Unit updated successfully",
+      "orgUnitDeleted": "Org Unit deleted successfully",
+      "orgUnitMoved": "Org Unit moved successfully",
+      "confirmDelete": "Are you sure you want to delete this org unit? It must be empty (no users or applications).",
+      "cannotDelete": "Cannot delete org unit with assigned users or applications",
+      "selectParent": "Select Parent",
+      "root": "Root",
+      "noChildren": "No child org units"
+    },
+    "delegatedAdmins": {
+      "title": "Delegated Admins",
+      "createDelegatedAdmin": "Create Delegated Admin",
+      "user": "User",
+      "orgUnit": "Org Unit",
+      "scopeType": "Scope Type",
+      "orgOnly": "Org Only",
+      "orgAndDescendants": "Org and Descendants",
+      "delegatedAdminCreated": "Delegated admin created successfully",
+      "delegatedAdminRemoved": "Delegated admin removed successfully",
+      "confirmRemove": "Are you sure you want to remove this delegated admin?",
+      "selectUser": "Select User",
+      "selectOrgUnit": "Select Org Unit"
+    },
+    "userOrgUnits": {
+      "title": "User Org Units",
+      "primaryOrgUnit": "Primary Org Unit",
+      "secondaryOrgUnits": "Secondary Org Units",
+      "assignOrgUnits": "Assign Org Units",
+      "orgUnitsAssigned": "Org Units assigned successfully"
+    },
+    "applicationOrgUnits": {
+      "title": "Application Org Units",
+      "orgVisibility": "Org Visibility",
+      "selectOrgUnits": "Select Org Units",
+      "orgUnitsAssigned": "Org Units assigned successfully"
     }
   }
 }

@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime.CompilerServices;
 using Onesign.Modules.Applications.Application.DTOs;
 using Onesign.Modules.Applications.Domain.Repositories;
 using Onesign.Modules.Applications.Infrastructure.EfCore.Entities;
@@ -23,6 +24,54 @@ public class GetApplicationsForTenantQueryHandler : IRequestHandler<GetApplicati
     public async Task<PagedResult<ApplicationClientDto>> Handle(GetApplicationsForTenantQuery request, CancellationToken cancellationToken)
     {
         var applications = await _applicationClientRepository.GetByTenantIdAsync(request.TenantId, cancellationToken);
+        
+        // Filter by OrgUnit if provided
+        if (request.OrgUnitId.HasValue)
+        {
+            // Use parameterized SQL to avoid circular dependency and SQL injection
+            try
+            {
+                var orgUnitPathSql = FormattableStringFactory.Create(
+                    "SELECT Path FROM OrgUnits WHERE Id = {0}",
+                    request.OrgUnitId.Value);
+                var orgUnitPathResult = await _dbContext.Database
+                    .SqlQuery<string>(orgUnitPathSql)
+                    .FirstOrDefaultAsync(cancellationToken);
+                
+                if (!string.IsNullOrEmpty(orgUnitPathResult))
+                {
+                    var pathPrefix = orgUnitPathResult + "/";
+                    
+                    // Get descendant OrgUnit IDs
+                    var descendantSql = FormattableStringFactory.Create(
+                        "SELECT Id FROM OrgUnits WHERE Path LIKE {0} OR Id = {1}",
+                        pathPrefix + "%",
+                        request.OrgUnitId.Value);
+                    var descendantIds = await _dbContext.Database
+                        .SqlQuery<Guid>(descendantSql)
+                        .ToListAsync(cancellationToken);
+
+                    if (descendantIds.Any())
+                    {
+                        // Build IN clause with parameters
+                        var inClause = string.Join(",", descendantIds.Select((id, i) => $"{{{i}}}"));
+                        var sql = FormattableStringFactory.Create(
+                            $"SELECT DISTINCT ApplicationClientId FROM ApplicationOrgUnits WHERE OrgUnitId IN ({inClause})",
+                            descendantIds.Cast<object>().ToArray());
+                        var applicationOrgUnitIds = await _dbContext.Database
+                            .SqlQuery<Guid>(sql)
+                            .ToListAsync(cancellationToken);
+
+                        applications = applications.Where(a => applicationOrgUnitIds.Contains(a.Id)).ToList();
+                    }
+                }
+            }
+            catch
+            {
+                // If OrgUnits table doesn't exist yet (during migration), skip filtering
+            }
+        }
+        
         var totalCount = applications.Count;
 
         var pagedApplications = applications

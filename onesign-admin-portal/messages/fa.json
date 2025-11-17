@@ -16,7 +16,10 @@
       "edit": "ویرایش",
       "create": "ایجاد",
       "search": "جستجو",
-      "close": "بستن"
+      "close": "بستن",
+      "all": "همه",
+      "holdCtrl": "برای انتخاب چندتایی Ctrl/Cmd را نگه دارید",
+      "actions": "عملیات"
   },
   "admin": {
     "title": "پنل مدیریت",
@@ -95,6 +98,52 @@
       "logoUrl": "آدرس لوگو",
       "primaryColor": "رنگ اصلی",
       "brandingUpdated": "برندینگ با موفقیت به‌روزرسانی شد"
+    },
+    "orgUnits": {
+      "title": "واحدهای سازمانی",
+      "createOrgUnit": "ایجاد واحد سازمانی",
+      "editOrgUnit": "ویرایش واحد سازمانی",
+      "orgUnitName": "نام",
+      "parentOrgUnit": "واحد سازمانی والد",
+      "sortOrder": "ترتیب",
+      "move": "جابجایی",
+      "delete": "حذف",
+      "orgUnitCreated": "واحد سازمانی با موفقیت ایجاد شد",
+      "orgUnitUpdated": "واحد سازمانی با موفقیت به‌روزرسانی شد",
+      "orgUnitDeleted": "واحد سازمانی با موفقیت حذف شد",
+      "orgUnitMoved": "واحد سازمانی با موفقیت جابجا شد",
+      "confirmDelete": "آیا مطمئن هستید که می‌خواهید این واحد سازمانی را حذف کنید؟ باید خالی باشد (بدون کاربر یا برنامه).",
+      "cannotDelete": "نمی‌توان واحد سازمانی با کاربران یا برنامه‌های اختصاص داده شده را حذف کرد",
+      "selectParent": "انتخاب والد",
+      "root": "ریشه",
+      "noChildren": "هیچ واحد سازمانی فرزندی وجود ندارد"
+    },
+    "delegatedAdmins": {
+      "title": "مدیران تفویض شده",
+      "createDelegatedAdmin": "ایجاد مدیر تفویض شده",
+      "user": "کاربر",
+      "orgUnit": "واحد سازمانی",
+      "scopeType": "نوع محدوده",
+      "orgOnly": "فقط واحد",
+      "orgAndDescendants": "واحد و زیرمجموعه‌ها",
+      "delegatedAdminCreated": "مدیر تفویض شده با موفقیت ایجاد شد",
+      "delegatedAdminRemoved": "مدیر تفویض شده با موفقیت حذف شد",
+      "confirmRemove": "آیا مطمئن هستید که می‌خواهید این مدیر تفویض شده را حذف کنید؟",
+      "selectUser": "انتخاب کاربر",
+      "selectOrgUnit": "انتخاب واحد سازمانی"
+    },
+    "userOrgUnits": {
+      "title": "واحدهای سازمانی کاربر",
+      "primaryOrgUnit": "واحد سازمانی اصلی",
+      "secondaryOrgUnits": "واحدهای سازمانی فرعی",
+      "assignOrgUnits": "اختصاص واحدهای سازمانی",
+      "orgUnitsAssigned": "واحدهای سازمانی با موفقیت اختصاص داده شدند"
+    },
+    "applicationOrgUnits": {
+      "title": "واحدهای سازمانی برنامه",
+      "orgVisibility": "قابلیت مشاهده واحد",
+      "selectOrgUnits": "انتخاب واحدهای سازمانی",
+      "orgUnitsAssigned": "واحدهای سازمانی با موفقیت اختصاص داده شدند"
     }
   }
 }

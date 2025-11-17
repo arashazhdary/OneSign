@@ -3,8 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using Onesign.Modules.Applications.Application.Commands;
 using Onesign.Modules.Applications.Application.DTOs;
 using Onesign.Modules.Applications.Application.Queries;
+using Onesign.Modules.Organization.Application.Commands;
+using Onesign.Modules.Organization.Application.DTOs;
+using Onesign.Modules.Organization.Application.Queries;
 using Onesign.Shared.Localization;
 using Onesign.Shared.Pagination;
+using Onesign.Shared.Result;
 
 namespace Onesign.Api.Controllers.Tenant;
 
@@ -29,12 +33,14 @@ public class ApplicationsController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<PagedResult<ApplicationClientDto>>> GetApplications(
         [FromQuery] Guid tenantId,
+        [FromQuery] Guid? orgUnitId,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
     {
         var query = new GetApplicationsForTenantQuery
         {
             TenantId = tenantId,
+            OrgUnitId = orgUnitId,
             PageNumber = pageNumber,
             PageSize = pageSize
         };
@@ -217,6 +223,45 @@ public class ApplicationsController : ControllerBase
         };
         var result = await _mediator.Send(command);
         
+        if (result.IsFailure)
+        {
+            var culture = GetCulture();
+            var localizedMessage = _localizationService.GetString(result.ErrorCode ?? "UNKNOWN_ERROR", culture);
+            return BadRequest(new { errorCode = result.ErrorCode, errorMessage = localizedMessage });
+        }
+
+        return NoContent();
+    }
+
+    [HttpGet("{applicationId}/org-units")]
+    public async Task<ActionResult<AssignApplicationOrgUnitsRequest>> GetApplicationOrgUnits(Guid applicationId, [FromQuery] Guid tenantId)
+    {
+        var query = new GetApplicationOrgUnitsQuery { ApplicationClientId = applicationId, TenantId = tenantId };
+        var result = await _mediator.Send(query);
+
+        if (result.IsFailure)
+        {
+            var culture = GetCulture();
+            var localizedMessage = _localizationService.GetString(result.ErrorCode ?? "UNKNOWN_ERROR", culture);
+            return BadRequest(new { errorCode = result.ErrorCode, errorMessage = localizedMessage });
+        }
+
+        return Ok(result.Value);
+    }
+
+    [HttpPut("{applicationId}/org-units")]
+    public async Task<ActionResult> AssignApplicationOrgUnits(Guid applicationId, [FromBody] AssignApplicationOrgUnitsRequest request, [FromQuery] Guid tenantId)
+    {
+        var command = new AssignApplicationOrgUnitsCommand
+        {
+            ApplicationClientId = applicationId,
+            TenantId = tenantId,
+            OrgUnitIds = request.OrgUnitIds,
+            ActorId = Guid.Empty // TODO: Get from authenticated user
+        };
+
+        var result = await _mediator.Send(command);
+
         if (result.IsFailure)
         {
             var culture = GetCulture();

@@ -150,6 +150,54 @@ namespace Onesign.Api.Migrations
                     b.ToTable("AuditEvents", (string)null);
                 });
 
+            modelBuilder.Entity("Onesign.Modules.Identity.Infrastructure.EfCore.Entities.AuthorizationCodeEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ApplicationClientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("CodeChallenge")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("RedirectUri")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<Guid>("TenantUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("ExpiresAt");
+
+                    b.HasIndex("TenantUserId", "ApplicationClientId");
+
+                    b.ToTable("AuthorizationCodes", (string)null);
+                });
+
             modelBuilder.Entity("Onesign.Modules.Identity.Infrastructure.EfCore.Entities.ExternalLoginEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -317,6 +365,128 @@ namespace Onesign.Api.Migrations
                     b.ToTable("UserLoginSessions", (string)null);
                 });
 
+            modelBuilder.Entity("Onesign.Modules.Organization.Infrastructure.EfCore.Entities.ApplicationOrgUnitEntity", b =>
+                {
+                    b.Property<Guid>("ApplicationClientId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("OrgUnitId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("ApplicationClientId", "OrgUnitId");
+
+                    b.HasIndex("ApplicationClientId");
+
+                    b.HasIndex("OrgUnitId");
+
+                    b.ToTable("ApplicationOrgUnits", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Organization.Infrastructure.EfCore.Entities.DelegatedAdminScopeEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("OrgUnitId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ScopeType")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrgUnitId");
+
+                    b.HasIndex("TenantUserId");
+
+                    b.HasIndex("TenantUserId", "OrgUnitId");
+
+                    b.ToTable("DelegatedAdminScopes", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Organization.Infrastructure.EfCore.Entities.OrgUnitEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "Code")
+                        .IsUnique()
+                        .HasFilter("[Code] IS NOT NULL");
+
+                    b.HasIndex("TenantId", "Path");
+
+                    b.ToTable("OrgUnits", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Organization.Infrastructure.EfCore.Entities.UserOrgUnitEntity", b =>
+                {
+                    b.Property<Guid>("TenantUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("OrgUnitId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("bit");
+
+                    b.HasKey("TenantUserId", "OrgUnitId");
+
+                    b.HasIndex("OrgUnitId");
+
+                    b.HasIndex("TenantUserId");
+
+                    b.ToTable("UserOrgUnits", (string)null);
+                });
+
             modelBuilder.Entity("Onesign.Modules.Tenants.Infrastructure.EfCore.Entities.TenantConfigEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -379,6 +549,14 @@ namespace Onesign.Api.Migrations
                         .IsUnique();
 
                     b.ToTable("Tenants", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Organization.Infrastructure.EfCore.Entities.OrgUnitEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Organization.Infrastructure.EfCore.Entities.OrgUnitEntity", null)
+                        .WithMany()
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 #pragma warning restore 612, 618
         }

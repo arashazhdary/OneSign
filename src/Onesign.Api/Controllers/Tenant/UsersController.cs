@@ -3,8 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using Onesign.Modules.Identity.Application.Commands;
 using Onesign.Modules.Identity.Application.DTOs;
 using Onesign.Modules.Identity.Application.Queries;
+using Onesign.Modules.Organization.Application.Commands;
+using Onesign.Modules.Organization.Application.DTOs;
+using Onesign.Modules.Organization.Application.Queries;
 using Onesign.Shared.Localization;
 using Onesign.Shared.Pagination;
+using Onesign.Shared.Result;
 
 namespace Onesign.Api.Controllers.Tenant;
 
@@ -29,12 +33,14 @@ public class UsersController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<PagedResult<TenantUserDto>>> GetUsers(
         [FromQuery] Guid tenantId,
+        [FromQuery] Guid? orgUnitId,
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10)
     {
         var query = new GetTenantUsersQuery
         {
             TenantId = tenantId,
+            OrgUnitId = orgUnitId,
             PageNumber = pageNumber,
             PageSize = pageSize
         };
@@ -100,6 +106,46 @@ public class UsersController : ControllerBase
         }
 
         return Ok(result.Value);
+    }
+
+    [HttpGet("{tenantUserId}/org-units")]
+    public async Task<ActionResult<AssignUserOrgUnitsRequest>> GetUserOrgUnits(Guid tenantUserId, [FromQuery] Guid tenantId)
+    {
+        var query = new GetUserOrgUnitsQuery { TenantUserId = tenantUserId, TenantId = tenantId };
+        var result = await _mediator.Send(query);
+
+        if (result.IsFailure)
+        {
+            var culture = GetCulture();
+            var localizedMessage = _localizationService.GetString(result.ErrorCode ?? "UNKNOWN_ERROR", culture);
+            return BadRequest(new { errorCode = result.ErrorCode, errorMessage = localizedMessage });
+        }
+
+        return Ok(result.Value);
+    }
+
+    [HttpPut("{tenantUserId}/org-units")]
+    public async Task<ActionResult> AssignUserOrgUnits(Guid tenantUserId, [FromBody] AssignUserOrgUnitsRequest request, [FromQuery] Guid tenantId)
+    {
+        var command = new AssignUserOrgUnitsCommand
+        {
+            TenantUserId = tenantUserId,
+            TenantId = tenantId,
+            PrimaryOrgUnitId = request.PrimaryOrgUnitId,
+            SecondaryOrgUnitIds = request.SecondaryOrgUnitIds,
+            ActorId = Guid.Empty // TODO: Get from authenticated user
+        };
+
+        var result = await _mediator.Send(command);
+
+        if (result.IsFailure)
+        {
+            var culture = GetCulture();
+            var localizedMessage = _localizationService.GetString(result.ErrorCode ?? "UNKNOWN_ERROR", culture);
+            return BadRequest(new { errorCode = result.ErrorCode, errorMessage = localizedMessage });
+        }
+
+        return NoContent();
     }
 }
 

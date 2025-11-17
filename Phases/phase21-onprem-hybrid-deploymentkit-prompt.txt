@@ -1,0 +1,611 @@
+You are an expert .NET 10, EF Core, and React/Next.js engineer, acting as the implementation assistant for the onesign SSO / IAM / IGA platform.
+
+Context
+The platform already includes:
+- Multi-tenant SSO and OIDC/OAuth2
+- Tenant model and global admin portal
+- Billing, Governance, Federation, DevPortal, Observability, etc.
+- Multi-region and DR capabilities (Phase 20)
+
+Now you must implement Phase 21, which focuses on:
+- Environment registry (SaaS, Dedicated, On-Prem)
+- Deployment Descriptor (YAML) for bootstrapping environments
+- Environment bootstrap service (DB init + config + versioning)
+- License & feature configuration per environment
+- Admin UI to see environment info and feature flags
+- Deployment kit skeletons (Helm / Docker Compose) + mapping to config
+
+Specification document:
+- Phase21-Onesign-OnPrem-Hybrid-DeploymentKit.md
+
+Your job
+- Read Phase21-Onesign-OnPrem-Hybrid-DeploymentKit.md carefully.
+- Implement Phase 21 exactly as defined there by:
+  - Adding an Environment registry in the backend
+  - Implementing DeploymentDescriptor parsing and validation
+  - Implementing EnvironmentBootstrapService
+  - Implementing Environment license / feature config and feature gating
+  - Implementing Global Admin & Environment About UI
+  - Adding deploy templates (folders + files) to the repo (not just comments)
+- Do NOT break previous phases.
+- Do NOT leave any TODO or NotImplementedException.
+- Do NOT create placeholder controllers, services, or React components that do nothing.
+
+Global constraints
+
+1) Multi language
+- The platform is multilingual (English + Persian).
+- All new UI labels must use the existing i18n infrastructure.
+- No hard-coded user-facing strings scattered in code.
+
+2) No TODO and no partial implementations
+- No TODO comments.
+- No NotImplementedException.
+- No fake “bootstrap” that just logs and returns.
+- Any route or page you add must have real logic behind it.
+
+3) Modular monolith boundaries
+- Environment & deployment concerns belong in global/platform modules, not per-tenant modules.
+- License / feature gating must be centralized and not copy-pasted.
+
+4) On-Prem / Hybrid mindset
+- The result must allow a customer to:
+  - Use a YAML descriptor
+  - Bootstrap a new onesign environment
+  - See environment/version/license/feature info from UI
+  - Enforce license constraints at runtime
+
+--------------------------------------------------
+Step 1: Read the Phase 21 spec and build a checklist
+--------------------------------------------------
+
+Read:
+- Phase21-Onesign-OnPrem-Hybrid-DeploymentKit.md
+
+Extract key concepts:
+
+Environment model:
+- Environment:
+  - Id (string, unique)
+  - Name
+  - Type (SaaSShared / SaaSDedicated / OnPrem / Test)
+  - RegionId
+  - BaseUrl
+  - AppVersion
+  - DbSchemaVersion
+  - LicenseKey (stored securely / masked in UI)
+  - CreatedAt
+  - LastHeartbeatAt
+
+- Environment registry APIs:
+  - GET /api/global/environments
+  - GET /api/global/environments/{id}
+  - POST /api/global/environments
+  - PUT /api/global/environments/{id}
+
+- Heartbeat:
+  - POST /api/environment/heartbeat
+  - Periodic sender from each instance
+
+DeploymentDescriptor (YAML):
+- environment:
+  - id, name, type, region, baseUrl
+- license:
+  - key
+- database:
+  - main.connectionString (or reference)
+- storage:
+  - audit endpoint, blob endpoint
+- smtp:
+  - host, port, credentials
+- observability:
+  - logs, metrics, traces endpoints
+- features:
+  - flags for modules (Federation, Governance, DevPortal, Extensibility, etc.)
+
+Bootstrap:
+- EnvironmentBootstrapService:
+  - BootstrapAsync(DeploymentDescriptor descriptor)
+- Actions:
+  - Validate descriptor
+  - Create/update Environment record
+  - Save global config (connection strings, storage, smtp, observability, feature flags)
+  - Run DB migrations if DB is empty
+  - Sync DbSchemaVersion to current migration version
+
+License & FeatureConfig:
+- Per environment:
+  - LicenseKey
+  - MaxTenants
+  - MaxUsers
+  - MaxApplications
+  - EnabledModules (Federation, Governance, DevPortal, Extensibility, Lifecycle, AdaptiveSecurity, etc.)
+- FeatureGate:
+  - IFeatureGate / IFeatureFlagService:
+    - IsEnabled("Module.Governance")
+  - Enforcement in:
+    - module wiring
+    - critical flows (e.g. create tenant, create user)
+
+UI:
+- Global:
+  - /global/environments (list)
+  - /global/environments/{id} (detail)
+- Local environment:
+  - /admin/environment/about (Environment About for current instance)
+
+Deploy templates:
+- repo /deploy/ folder:
+  - docker-compose.example.yml
+  - helm/ with chart skeleton and values.example.yaml
+
+--------------------------------------------------
+Step 2: Implement Environment entity, EF mapping, and service
+--------------------------------------------------
+
+1) Add Environment entity
+
+Create entity class `Environment` in global/platform module:
+
+- Properties:
+  - string Id
+  - string Name
+  - string Type (or enum)
+  - string RegionId
+  - string BaseUrl
+  - string AppVersion
+  - string DbSchemaVersion
+  - string LicenseKey (encrypted/masked at rest; do not log it)
+  - DateTimeOffset CreatedAt
+  - DateTimeOffset? LastHeartbeatAt
+
+EF mapping:
+
+- Table name: Global_Environments
+- Primary key: Id
+- Indices: Type, RegionId
+
+2) Environment service
+
+Define interface:
+
+- IEnvironmentService
+  - Task<IReadOnlyList<Environment>> GetAllAsync()
+  - Task<Environment?> GetByIdAsync(string id)
+  - Task<Environment> CreateAsync(Environment env)
+  - Task<Environment> UpdateAsync(Environment env)
+  - Task UpdateHeartbeatAsync(string environmentId, string appVersion, string dbSchemaVersion, EnvironmentHealthFlags healthFlags)
+
+Implement with EF Core.
+
+3) Environment APIs
+
+Global Admin APIs:
+
+- GET /api/global/environments
+  - returns paged list with basic info (no LicenseKey full value).
+- GET /api/global/environments/{id}
+  - returns full info, but LicenseKey masked.
+- POST /api/global/environments
+  - create Environment (mostly for controlling central registry).
+- PUT /api/global/environments/{id}
+  - update environment metadata (Name, Type, RegionId, BaseUrl, not AppVersion/DbSchemaVersion).
+
+Authorization:
+- All /api/global/environments* require Global Admin / SRE.
+
+--------------------------------------------------
+Step 3: Implement heartbeat endpoint and scheduler
+--------------------------------------------------
+
+1) Heartbeat model
+
+Define a heartbeat DTO:
+
+- EnvironmentHeartbeatRequest:
+  - EnvironmentId
+  - AppVersion
+  - DbSchemaVersion
+  - Optional health flags (e.g. bool IsDbHealthy, IsStorageHealthy)
+
+API:
+
+- POST /api/environment/heartbeat
+  - no tenant context, environment level auth (based on environment-level credentials or API key).
+
+Handler:
+
+- Validate EnvironmentId exists.
+- Update Environment:
+  - LastHeartbeatAt = now
+  - AppVersion, DbSchemaVersion from request
+  - (Optionally persist health flags).
+
+2) Instance-side scheduler
+
+Add a background job in the main backend:
+
+- Reads EnvironmentId and Endpoint from config.
+- Every N minutes:
+  - builds EnvironmentHeartbeatRequest
+  - POST to /api/environment/heartbeat (or internal if registry is same instance).
+- Ensure:
+  - no TODO / empty implementation; heartbeat really calls into API.
+
+Status derivation:
+
+- Later, in UI or helper:
+  - Status = Healthy if LastHeartbeatAt < threshold (e.g. 10 min)
+  - Stale / Down otherwise.
+
+--------------------------------------------------
+Step 4: Implement DeploymentDescriptor model & parser
+--------------------------------------------------
+
+1) Descriptor classes
+
+Create POCOs:
+
+- DeploymentDescriptor
+  - Environment:
+    - Id
+    - Name
+    - Type
+    - Region
+    - BaseUrl
+  - License:
+    - Key
+  - Database:
+    - Main:
+      - ConnectionString
+  - Storage:
+    - AuditEndpoint
+    - BlobEndpoint
+  - Smtp:
+    - Host
+    - Port
+    - User
+    - Password (ref or value)
+  - Observability:
+    - LogsEndpoint
+    - MetricsEndpoint
+    - TracesEndpoint
+  - Features:
+    - Dictionary<string, bool> or strongly typed modules
+
+2) YAML parsing
+
+- Implement a small parser:
+  - Input:
+    - YAML text (string or stream)
+  - Output:
+    - DeploymentDescriptor instance
+- Add:
+  - DeploymentDescriptorParser.Parse(yaml) → descriptor
+- Add validation:
+  - DeploymentDescriptorValidator.Validate(descriptor) → List<ValidationError>
+  - Check required fields:
+    - environment.id, type, region, baseUrl
+    - license.key
+    - database.main.connectionString
+
+Do not leave parsing or validation with TODO.
+
+--------------------------------------------------
+Step 5: Implement EnvironmentBootstrapService
+--------------------------------------------------
+
+Service interface:
+
+- IEnvironmentBootstrapService
+  - Task BootstrapAsync(DeploymentDescriptor descriptor)
+
+Implementation:
+
+1) Validate descriptor:
+   - If invalid, throw a clear domain exception with validation error list.
+
+2) Create or update Environment:
+
+   - If Environment with descriptor.Environment.Id exists:
+     - update Name, Type, RegionId, BaseUrl.
+   - Else:
+     - create new Environment with:
+       - Id = descriptor.Environment.Id
+       - Name, Type, RegionId, BaseUrl
+       - LicenseKey = descriptor.License.Key (encrypted/secured)
+       - AppVersion = current application version
+       - DbSchemaVersion = current migration version
+       - CreatedAt = now
+
+3) Persist config:
+
+   - Use your global configuration mechanism to store:
+     - database connection string(s)
+     - storage endpoints
+     - smtp config
+     - observability endpoints
+     - feature flags
+
+4) Initialize/migrate DB:
+
+   - If DB schema for this environment is empty:
+     - run initial migrations.
+   - Else:
+     - run migrations to latest.
+   - Update Environment.DbSchemaVersion with actual schema version.
+
+5) Feature configuration:
+
+   - Create/update EnvironmentFeatureConfig for this Environment:
+     - EnabledModules based on descriptor.Features.
+     - Optionally default MaxTenants/MaxUsers if license is simple.
+
+Bootstrap API:
+
+- POST /api/global/environments/bootstrap
+  - Accepts raw YAML or JSON descriptor.
+  - Steps:
+    - Parse → DeploymentDescriptor
+    - Validate
+    - Call BootstrapAsync.
+
+Authorization:
+- Only Global Admin / SRE.
+
+Audit:
+- Emit:
+  - "Environment.BootstrapStarted"
+  - "Environment.BootstrapCompleted"
+  - "Environment.BootstrapFailed"
+
+--------------------------------------------------
+Step 6: Implement License & FeatureConfig per Environment
+--------------------------------------------------
+
+1) Data model
+
+Either:
+
+- Extend Environment with:
+  - LicenseKey
+  - MaxTenants
+  - MaxUsers
+  - MaxApplications
+  - EnabledModules (json string)
+
+or:
+
+- Separate table EnvironmentFeatureConfig:
+  - EnvironmentId (PK)
+  - MaxTenants
+  - MaxUsers
+  - MaxApplications
+  - EnabledModules (json or table)
+
+Implement EF mapping and migration.
+
+2) FeatureGate service
+
+Interface:
+
+- IFeatureGate
+  - bool IsEnabled(string moduleKey)
+
+Implementation:
+
+- Load EnvironmentFeatureConfig for current Environment (from cache).
+- Example module keys:
+  - "Module.Federation"
+  - "Module.Governance"
+  - "Module.DevPortal"
+  - "Module.Extensibility"
+  - "Module.IdentityLifecycle"
+  - "Module.AdaptiveSecurity"
+
+Usage:
+
+- In startup:
+  - Only wire routes / services for disabled modules if you want them soft-disabled, or keep them but enforce gating at entrypoints.
+- In business logic:
+  - Before actions like:
+    - enabling Federation config,
+    - creating Governance campaigns,
+    - enabling Extensibility,
+    - check IsEnabled.
+
+3) Limit enforcement
+
+- When creating tenants:
+  - Count existing tenants for this Environment.
+  - If MaxTenants>0 and count >= MaxTenants:
+    - throw a domain exception: license limit reached.
+- Similarly for users and applications if you want to enforce.
+
+--------------------------------------------------
+Step 7: Frontend – Global Environments UI
+--------------------------------------------------
+
+1) Global Environments list
+
+Route:
+
+- `/global/environments`
+
+Data:
+
+- GET /api/global/environments
+
+UI:
+
+- Table columns:
+  - EnvironmentId
+  - Name
+  - Type
+  - RegionId
+  - BaseUrl
+  - AppVersion
+  - Status (derived from LastHeartbeatAt)
+- Each row:
+  - link / button to go to `/global/environments/{id}` detail.
+
+2) Environment detail
+
+Route:
+
+- `/global/environments/{id}`
+
+Data:
+
+- GET /api/global/environments/{id}`
+
+UI:
+
+- Show:
+  - Id, Name, Type, RegionId, BaseUrl
+  - AppVersion
+  - DbSchemaVersion
+  - LastHeartbeatAt
+  - License summary:
+    - MaxTenants
+    - MaxUsers
+    - MaxApplications
+    - EnabledModules (badges)
+- Allow editing:
+  - Name, Type, RegionId, BaseUrl (not AppVersion/DbSchemaVersion).
+
+All labels and text must use i18n.
+
+--------------------------------------------------
+Step 8: Frontend – Environment About (current instance)
+--------------------------------------------------
+
+Add an Environment About page in Admin Portal for the current environment.
+
+Route:
+
+- `/admin/environment/about` (or similar, adjust to your structure)
+
+Backend:
+
+- Expose an endpoint:
+  - GET /api/environment/current
+  - Returns Environment info + feature config for the environment the admin UI is running on.
+
+UI:
+
+- Show:
+  - EnvironmentId
+  - EnvironmentType
+  - RegionId
+  - BaseUrl
+  - AppVersion
+  - DbSchemaVersion
+  - EnabledModules
+  - MaxTenants / MaxUsers (if appropriate to show to customer)
+- Read-only for Tenant Admin / Customer Admin.
+
+Again, use i18n keys for text.
+
+--------------------------------------------------
+Step 9: Deployment Kit – repo structure
+--------------------------------------------------
+
+Update the repository (backend side) to include a deploy folder:
+
+- /deploy/
+  - docker-compose.example.yml
+  - helm/
+    - Chart skeleton
+    - values.example.yaml
+
+docker-compose.example.yml:
+
+- Define core services:
+  - api
+  - background worker(s) if separate
+  - database (only for dev/testing)
+  - optional redis/cache if used
+- Map env vars so they correspond to DeploymentDescriptor fields (document mapping in comments).
+
+helm/values.example.yaml:
+
+- Provide sample values structure that mirrors DeploymentDescriptor:
+  - environment:
+    - id, name, type, region, baseUrl
+  - database:
+    - connectionString
+  - storage, smtp, observability, features
+
+You do not need production-grade Helm charting logic, but structure must be real and coherent.
+
+--------------------------------------------------
+Step 10: Security, audit, and version sync
+--------------------------------------------------
+
+Security:
+
+- Guard all /api/global/environments* and /api/global/environments/bootstrap behind Global Admin / SRE authorization.
+- For On-Prem local admin, enforce whatever auth you already use.
+
+Audit events:
+
+- "Environment.Created"
+- "Environment.Updated"
+- "Environment.HeartbeatReceived"
+- "Environment.BootstrapStarted"
+- "Environment.BootstrapCompleted"
+- "Environment.BootstrapFailed"
+- "Environment.LicenseUpdated"
+
+Version sync on startup:
+
+- On backend startup:
+  - Determine:
+    - AppVersion (from assembly or config)
+    - DbSchemaVersion (from migration history)
+  - Update Environment record for current EnvironmentId.
+  - This ensures About page always shows correct versions.
+
+--------------------------------------------------
+Step 11: Tests and verification
+--------------------------------------------------
+
+Backend tests:
+
+- EnvironmentService CRUD.
+- Heartbeat endpoint updates LastHeartbeatAt.
+- DeploymentDescriptorParser + Validator handle valid/invalid YAML.
+- EnvironmentBootstrapService:
+  - Creates Environment and config on first run.
+  - Updates existing Environment on subsequent runs.
+- FeatureGate:
+  - Returns expected values for enabled/disabled modules.
+- License enforcement for MaxTenants / MaxUsers.
+
+Frontend tests (manual or automated):
+
+- Global environments list and detail pages.
+- Environment About page:
+  - shows correct info for the current environment.
+
+Final verification:
+
+- You can:
+  - Define a DeploymentDescriptor YAML for a new environment.
+  - Call bootstrap API/CLI.
+  - See the new Environment in the registry UI.
+  - Environment sends heartbeat and status updates.
+  - Environment About page shows correct version and feature flags.
+
+Important mindset
+Phase 21 must leave you with a credible On-Prem / Hybrid story:
+- YAML in
+- Bootstrap + DB init
+- Environment & license visible in UI
+- Feature flags enforced
+
+If after this phase deploying On-Prem still means hand-editing appsettings and guessing what’s running where, the implementation is wrong.
+
+Now:
+Read Phase21-Onesign-OnPrem-Hybrid-DeploymentKit.md, then implement the Environment registry, DeploymentDescriptor, bootstrap service, license & feature gating, UIs, and deploy templates exactly as described above, with no TODO and no placeholder code.

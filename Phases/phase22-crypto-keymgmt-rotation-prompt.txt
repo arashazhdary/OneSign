@@ -1,0 +1,553 @@
+You are an expert .NET 10, EF Core, and React/Next.js engineer, acting as the implementation assistant for the onesign SSO / IAM / IGA platform.
+
+Context
+The platform already includes:
+- Multi-tenant SSO + OIDC/OAuth2
+- TokenService for issuing ID/Access tokens
+- Environment / Tenant model
+- Admin Portal & Global Admin area
+- Authorization, Federation, Governance, Observability, etc.
+- Environment / Region / DR capabilities (Phase 20)
+- On-Prem / Hybrid Environment model (Phase 21)
+
+Now you must implement Phase 22, which focuses on:
+- Proper crypto key management and rotation
+- KeySet + KeyVersion model (Environment/Tenant scoped)
+- JWKS endpoint driven by KeySet/KeyVersion
+- Automatic rotation job based on rotation policies
+- Manual rollover and emergency revoke APIs
+- Admin UI for Crypto dashboard and rotation policies
+
+Specification document:
+- Phase22-Onesign-CryptoKeyManagementAndRotation.md
+
+Your job
+- Read Phase22-Onesign-CryptoKeyManagementAndRotation.md carefully.
+- Implement Phase 22 EXACTLY as described, not half-baked:
+  - Introduce KeySet + KeyVersion entities and persistence
+  - Wire token signing to use KeySet/KeyVersion instead of static config keys
+  - Expose JWKS endpoint using active/passive KeyVersions
+  - Implement rotation policies + scheduled rotation job
+  - Implement manual rollover + emergency revoke APIs
+  - Implement Crypto pages in Global Admin UI (KeySets/KeyVersions + rotation policies)
+- Do NOT break previous phases.
+- Do NOT leave any TODO or NotImplementedException.
+- Do NOT create placeholders that “will be implemented later”.
+- Anything you add must work end-to-end.
+
+Global constraints
+
+1) Multi language
+- The platform is multilingual (English + Persian).
+- All new UI labels and messages must use the existing i18n infrastructure.
+- Do NOT hard-code random text in React components.
+
+2) No TODO / no partial implementations
+- No TODO comments.
+- No NotImplementedException.
+- No dummy “in-memory keystore” that is not used by the real token service.
+- If you expose an API or page, make sure it is actually functional.
+
+3) Modular monolith boundaries
+- Crypto/key management belongs in a dedicated module (e.g. `Onesign.Modules.Crypto` or similar).
+- TokenService must depend on Crypto abstraction (KeySet/KeyVersion), not on raw config keys.
+- Rotation job and APIs must respect Environment / Tenant isolation.
+
+4) Security mindset
+- Private keys must be stored securely (encrypted at rest or via provider abstraction).
+- JWKS must only expose public keys for Active/Passive versions.
+- Emergency revoke must actually stop that key from being used.
+
+--------------------------------------------------
+Step 1: Read the Phase 22 spec and create an internal checklist
+--------------------------------------------------
+
+Read:
+- Phase22-Onesign-CryptoKeyManagementAndRotation.md
+
+Extract and keep visible:
+
+Core model:
+- KeySet:
+  - Id
+  - ScopeType (Environment / Tenant)
+  - ScopeId (EnvironmentId or TenantId)
+  - Purpose (e.g. OidcSigning, SamlSigning, Encryption)
+  - IsDefaultForScope (bool)
+
+- KeyVersion:
+  - Id
+  - KeySetId
+  - Kid (string, unique per KeySet)
+  - Algorithm (e.g. RS256, ES256)
+  - KeyMaterial (encrypted blob or external reference)
+  - CreatedAt
+  - ActivatedAt
+  - ExpiredAt (nullable)
+  - State (Active / Passive / Retired / Revoked)
+
+- KeyRotationPolicy:
+  - ScopeType
+  - ScopeId
+  - Purpose
+  - RotationPeriodDays
+  - OverlapPeriodDays
+  - Enabled
+
+Behavior:
+- Each KeySet:
+  - Exactly ONE Active key for signing.
+  - Zero or more Passive keys for validation of older tokens.
+- Key generation:
+  - New KeyVersion with fresh keypair and new kid.
+- JWKS:
+  - Includes Active + Passive public keys only.
+- Token signing:
+  - Always uses Active KeyVersion (by scope+purpose), sets kid in token header.
+
+Rotation:
+- Policy per (ScopeType, ScopeId, Purpose).
+- Background job:
+  - If now >= Active.ActivatedAt + RotationPeriodDays:
+    - Create new KeyVersion → Active
+    - Previous Active → Passive with ExpiredAt = now + OverlapPeriodDays
+    - Older Passive beyond overlap → Retired.
+
+Manual operations:
+- Rollover:
+  - API to manually create a new Active version and demote old Active to Passive.
+- Revoke:
+  - Mark a KeyVersion as Revoked.
+  - If revoking Active:
+    - Optionally auto-create new Active.
+
+UI:
+- Global Crypto dashboard:
+  - List KeySets
+  - Inspect KeyVersions
+  - Trigger manual rollover
+  - Trigger revoke
+- Rotation policy UI:
+  - View + edit rotation policies.
+
+--------------------------------------------------
+Step 2: Implement KeySet, KeyVersion, KeyRotationPolicy entities and EF mappings
+--------------------------------------------------
+
+1) KeySet
+
+Create entity `KeySet` in Crypto module:
+
+- Properties:
+  - Guid Id
+  - string ScopeType   // "Environment" or "Tenant" (enum as string or actual enum)
+  - string ScopeId     // EnvironmentId or TenantId as string
+  - string Purpose     // "OidcSigning", "SamlSigning", "Encryption", ...
+  - bool IsDefaultForScope
+  - DateTimeOffset CreatedAt
+
+EF Core mapping:
+
+- Table: `Crypto_KeySets`
+- Primary key: Id
+- Index: (ScopeType, ScopeId, Purpose)
+- Unique constraint: For each (ScopeType, ScopeId, Purpose, IsDefaultForScope=true), only 1 record.
+
+2) KeyVersion
+
+Create entity `KeyVersion`:
+
+- Properties:
+  - Guid Id
+  - Guid KeySetId
+  - string Kid
+  - string Algorithm
+  - byte[] KeyMaterial   // encrypted private key blob or serialized structure
+  - DateTimeOffset CreatedAt
+  - DateTimeOffset ActivatedAt
+  - DateTimeOffset? ExpiredAt
+  - string State         // "Active", "Passive", "Retired", "Revoked"
+
+EF mapping:
+
+- Table: `Crypto_KeyVersions`
+- Index: (KeySetId, State)
+- Kid unique per KeySet (unique index: (KeySetId, Kid)).
+
+Enforce at service level:
+- At most one Active KeyVersion per KeySet.
+
+3) KeyRotationPolicy
+
+Create entity `KeyRotationPolicy`:
+
+- Properties:
+  - Guid Id
+  - string ScopeType
+  - string ScopeId
+  - string Purpose
+  - int RotationPeriodDays
+  - int OverlapPeriodDays
+  - bool Enabled
+
+EF mapping:
+
+- Table: `Crypto_KeyRotationPolicies`
+- Unique index: (ScopeType, ScopeId, Purpose).
+
+Add migrations for all these tables.
+
+--------------------------------------------------
+Step 3: Implement KeyStore abstraction and services
+--------------------------------------------------
+
+Define abstraction:
+
+- `IKeyStore`:
+  - `Task<(byte[] privateKey, byte[] publicKey)> GenerateKeyPairAsync(string algorithm)`
+  - `Task<PrivateKeyHandle> GetPrivateKeyAsync(KeyVersion version)`
+  - `Task<PublicKeyMaterial> GetPublicKeyAsync(KeyVersion version)`
+
+Implement an initial provider that:
+- Generates RSA keys (e.g. 2048/3072) or EC keys for RS256/ES256.
+- Stores private key in encrypted form in KeyVersion.KeyMaterial.
+- Extracts public parameters for building JWK.
+
+Define service:
+
+- `IKeySetService`:
+  - `Task<KeyVersion> GetActiveSigningKeyAsync(string scopeType, string scopeId, string purpose)`
+  - `Task<IReadOnlyList<KeyVersion>> GetPublicVersionsAsync(string scopeType, string scopeId, string purpose)` // Active+Passive
+  - `Task<KeySet> EnsureDefaultKeySetAsync(string scopeType, string scopeId, string purpose)`
+  - `Task<KeyVersion> CreateInitialKeyAsync(KeySet keySet, string algorithm)`
+
+Ensure:
+- During Environment bootstrap (Phase 21), for OIDC signing:
+  - Ensure default KeySet exists for:
+    - ScopeType = "Environment"
+    - ScopeId = current EnvironmentId
+    - Purpose = "OidcSigning"
+  - If no KeyVersion:
+    - Create initial Active KeyVersion with generated keypair.
+
+--------------------------------------------------
+Step 4: Wire token signing and validation to use KeySet/KeyVersion
+--------------------------------------------------
+
+In the token issuance pipeline:
+
+1) Replace static keys with Crypto services:
+
+- Before signing token:
+  - Determine scope:
+    - For now, use Environment-scoped signing:
+      - scopeType = "Environment"
+      - scopeId = current EnvironmentId
+      - purpose = "OidcSigning"
+  - Call:
+    - `GetActiveSigningKeyAsync(scopeType, scopeId, "OidcSigning")`
+  - Use KeyVersion:
+    - KeyVersion.Algorithm → map to signing algorithm (RS256, ES256, etc).
+    - Get PrivateKey from IKeyStore.
+    - Sign token (ID token, access token) using that private key.
+  - Set `kid` in JWT header = KeyVersion.Kid.
+
+2) Validation:
+
+- For internal validation:
+  - Use IKeyStore.GetPublicKeyAsync for relevant versions.
+  - Or reuse JWKS building logic internally.
+- For external clients:
+  - They will call JWKS endpoint to get public keys.
+
+Ensure:
+- No static “signingKey” remains in config being used by TokenService.
+- All signing flows are using KeySet-based keys.
+
+--------------------------------------------------
+Step 5: Implement JWKS endpoint
+--------------------------------------------------
+
+Create controller, e.g. `JwksController`:
+
+Route:
+- `/oidc/.well-known/jwks.json` for environment-level.
+(If you already support per-tenant discovery, you can extend in future; for Phase 22 basic environment-level is fine.)
+
+Behavior:
+
+- Determine scope:
+  - Environment-level: current EnvironmentId.
+- Use `IKeySetService.GetPublicVersionsAsync("Environment", envId, "OidcSigning")` to get all KeyVersions with State ∈ {Active, Passive}.
+- Convert each KeyVersion to JWK:
+
+  - kty = "RSA" or "EC"
+  - alg = Algorithm (RS256, ES256, etc.)
+  - kid = KeyVersion.Kid
+  - use = "sig"
+  - key-specific parts:
+    - RSA: n, e
+    - EC: crv, x, y
+
+- Build `{"keys": [ ... ]}` JSON.
+- Add caching headers (e.g. short Cache-Control or ETag) to avoid spamming.
+
+Make sure:
+- Revoked and Retired states are NOT returned in JWKS.
+
+--------------------------------------------------
+Step 6: Implement rotation policy and scheduled rotation job
+--------------------------------------------------
+
+1) Rotation policy service
+
+Define `IRotationPolicyService`:
+
+- `Task<KeyRotationPolicy?> GetPolicyAsync(string scopeType, string scopeId, string purpose)`
+- `Task<KeyRotationPolicy> UpsertPolicyAsync(KeyRotationPolicy policy)`
+- `Task<IReadOnlyList<KeyRotationPolicy>> GetAllPoliciesAsync()`
+
+2) Rotation job
+
+Create background job `KeyRotationJob`:
+
+- Periodically (e.g. once per day):
+  - Fetch all enabled KeyRotationPolicies.
+  - For each:
+    - Resolve KeySet (ScopeType, ScopeId, Purpose).
+    - Get Active KeyVersion.
+    - If Active.ActivatedAt + RotationPeriodDays <= now:
+      - Generate new keypair via IKeyStore.
+      - Create new KeyVersion:
+        - State = Active
+        - ActivatedAt = now
+      - Old Active:
+        - Set State = Passive
+        - Set ExpiredAt = now + OverlapPeriodDays
+      - Any Passive that ExpiredAt <= now:
+        - Set State = Retired.
+
+3) Logging & audit:
+
+- On each rotation:
+  - Log with clear message.
+  - Emit audit event: "Crypto.KeyVersion.Rotated" with:
+    - ScopeType, ScopeId, KeySetId, OldKid, NewKid.
+
+--------------------------------------------------
+Step 7: Implement manual rollover and emergency revoke APIs
+--------------------------------------------------
+
+1) Manual rollover
+
+Service:
+
+- `IKeyRolloverService`
+  - `Task<KeyVersion> RolloverAsync(Guid keySetId, string algorithm)`
+
+Behavior:
+
+- Load KeySet and Active KeyVersion.
+- Generate new keypair with same algorithm or provided algorithm.
+- Create new KeyVersion:
+  - State = Active
+  - ActivatedAt = now
+- Active old:
+  - State = Passive
+  - ExpiredAt = now + defaultOverlap (e.g. from policy or config).
+- Audit:
+  - "Crypto.KeyVersion.Rotated" with actor info.
+
+API:
+
+- `POST /api/global/crypto/keysets/{keySetId}/rollover`
+  - Body: optional algorithm.
+  - Permissions: Global Admin / SecurityOfficer.
+
+2) Emergency revoke
+
+Service:
+
+- `IKeyRevocationService`
+  - `Task RevokeAsync(Guid keyVersionId, bool autoCreateNewActive)`
+
+Behavior:
+
+- Load KeyVersion.
+- Set State = Revoked.
+- If autoCreateNewActive == true and revoked key was Active:
+  - Call Rollover for KeySet to create new Active key.
+- JWKS must not return Revoked key.
+
+API:
+
+- `POST /api/global/crypto/keyversions/{id}/revoke`
+  - Body: { autoCreateNewActive: bool }
+  - Permissions: Global Admin / SecurityOfficer.
+  - Show big warning in UI before calling.
+
+--------------------------------------------------
+Step 8: Implement rotation policy APIs
+--------------------------------------------------
+
+Global API endpoints (sample):
+
+- GET `/api/global/crypto/rotation-policies`
+  - List all policies.
+- PUT `/api/global/crypto/rotation-policies/{scopeType}/{scopeId}/{purpose}`
+  - Create or update policy.
+
+Validation:
+
+- RotationPeriodDays > 0
+- OverlapPeriodDays >= 0
+- If Enabled = true, enforce sane upper/lower bounds (e.g. not 1 day rotation if you don’t want that).
+
+Permissions:
+- Restricted to Global Admin / SecurityOfficer.
+
+--------------------------------------------------
+Step 9: Admin Portal – Crypto UI
+--------------------------------------------------
+
+1) Global Crypto dashboard – KeySets
+
+Route:
+
+- `/global/crypto/keys`
+
+Data:
+
+- `GET /api/global/crypto/keysets` (with summary info per KeySet).
+
+UI:
+
+- Table:
+  - ScopeType (Environment / Tenant)
+  - ScopeId (display as Environment name or Tenant name)
+  - Purpose
+  - ActiveKey Kid
+  - LastRotationAt (from most recent Active.ActivatedAt)
+- On row click:
+  - Navigate to `/global/crypto/keys/{keySetId}`.
+
+2) KeySet detail – KeyVersions
+
+Route:
+
+- `/global/crypto/keys/{keySetId}`
+
+Data:
+
+- `GET /api/global/crypto/keysets/{id}` including versions.
+
+UI:
+
+- Show KeySet header:
+  - ScopeType, ScopeId, Purpose, IsDefaultForScope.
+- Table of KeyVersions:
+  - Kid
+  - Algorithm
+  - State (Active / Passive / Retired / Revoked) with badges
+  - CreatedAt
+  - ActivatedAt
+  - ExpiredAt
+- Actions:
+  - Button “Manual Rollover” (calls rollover API).
+  - For each KeyVersion:
+    - Button “Revoke” (disabled for already Revoked/Retired), with confirm modal.
+
+All text must use i18n keys.
+
+3) Rotation policies page
+
+Route:
+
+- `/global/crypto/rotation-policies`
+
+Data:
+
+- `GET /api/global/crypto/rotation-policies`
+
+UI:
+
+- Table:
+  - ScopeType
+  - ScopeId (display name)
+  - Purpose
+  - RotationPeriodDays
+  - OverlapPeriodDays
+  - Enabled (toggle)
+- Edit modal:
+  - Fields:
+    - RotationPeriodDays
+    - OverlapPeriodDays
+    - Enabled (checkbox)
+  - Save → `PUT /api/global/crypto/rotation-policies/...`
+
+--------------------------------------------------
+Step 10: Security, audit, migration, tests
+--------------------------------------------------
+
+Security:
+
+- All `/api/global/crypto/*` endpoints:
+  - Must be restricted to Global Admin / SecurityOfficer roles.
+- JWKS endpoint:
+  - Public, no auth, only public keys.
+
+Audit:
+
+- Emit audit events for:
+  - "Crypto.KeySet.Created"
+  - "Crypto.KeyVersion.Created"
+  - "Crypto.KeyVersion.Rotated"
+  - "Crypto.KeyVersion.Revoked"
+  - "Crypto.RotationPolicy.Updated"
+- Include scope and kid in metadata.
+- Use existing audit infrastructure.
+
+Migration from old static keys:
+
+- If the system previously used a static signing key from config:
+  - On first startup with Phase 22:
+    - Detect presence of old config signing key.
+    - Create a KeySet and KeyVersion from that key:
+      - KeySet: Environment-level, Purpose = OidcSigning.
+      - KeyVersion: Active, Kid = generated value.
+    - After migration, TokenService must only use KeySet/KeyVersion, not the old config field.
+
+Tests:
+
+- Unit tests:
+  - Key generation and persistence.
+  - Token signing uses KeyVersionActive and sets correct kid.
+  - JWKS returns correct public keys.
+  - Rotation job:
+    - Creates new Active and demotes old one to Passive/Retired correctly.
+  - Manual rollover:
+    - Creates new Active; JWKS reflects new kid.
+  - Revoke:
+    - Mark key as Revoked; JWKS no longer contains that key.
+
+- Integration test:
+  - Issue token → read JWKS → validate signature using returned key.
+  - After rotation:
+    - New tokens use new kid.
+    - Old tokens can still be validated by Passive key.
+  - After revoke:
+    - Revoked key disappears from JWKS.
+
+--------------------------------------------------
+Mindset
+Phase 22 must give onesign a real, auditable crypto story:
+- Versioned keys
+- JWKS with proper kids
+- Automatic rotation
+- Emergency revoke
+- UI visibility
+
+Anything less than that (single static key in config, no rotation, no revoke) is NOT acceptable for an enterprise SSO.
+
+Now:
+Read Phase22-Onesign-CryptoKeyManagementAndRotation.md and implement all described Crypto, KeySet, KeyVersion, JWKS, rotation, revoke and UI layers as above, with real working code and zero TODOs.

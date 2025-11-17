@@ -12,12 +12,27 @@ interface Application {
   redirectUris: Array<{ id: string; uri: string }>;
 }
 
+interface OrgUnitTreeNode {
+  id: string;
+  parentId: string | null;
+  name: string;
+  code?: string;
+  level: number;
+  status: number;
+  children: OrgUnitTreeNode[];
+}
+
 export default function TenantAppsPage() {
   const t = useTranslations();
   const locale = useLocale();
   const [applications, setApplications] = useState<Application[]>([]);
+  const [orgTree, setOrgTree] = useState<OrgUnitTreeNode[]>([]);
+  const [selectedOrgUnitId, setSelectedOrgUnitId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showAssignOrgUnitsModal, setShowAssignOrgUnitsModal] = useState(false);
+  const [selectedAppForOrgUnits, setSelectedAppForOrgUnits] = useState<Application | null>(null);
+  const [selectedOrgUnitIds, setSelectedOrgUnitIds] = useState<string[]>([]);
   const [newAppName, setNewAppName] = useState('');
   const [newAppType, setNewAppType] = useState('Web');
   const [newRedirectUris, setNewRedirectUris] = useState<string[]>(['']);
@@ -44,14 +59,16 @@ export default function TenantAppsPage() {
   useEffect(() => {
     if (tenantId) {
       fetchApplications();
+      fetchOrgTree();
     }
-  }, [tenantId]);
+  }, [tenantId, selectedOrgUnitId]);
 
   const fetchApplications = async () => {
     if (!tenantId) return;
     
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/applications?tenantId=${tenantId}&pageNumber=1&pageSize=100`);
+      const url = `http://localhost:7000/api/tenant/applications?tenantId=${tenantId}&pageNumber=1&pageSize=100${selectedOrgUnitId ? `&orgUnitId=${selectedOrgUnitId}` : ''}`;
+      const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
         const apps = data.items || [];
@@ -83,6 +100,80 @@ export default function TenantAppsPage() {
       console.error('Error fetching applications:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchOrgTree = async () => {
+    if (!tenantId) return;
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/org-units/tree?tenantId=${tenantId}`, {
+        headers: { 'Accept-Language': locale }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setOrgTree(data);
+      }
+    } catch (error) {
+      console.error('Error fetching org tree:', error);
+    }
+  };
+
+  const getAllNodes = (nodes: OrgUnitTreeNode[]): OrgUnitTreeNode[] => {
+    const result: OrgUnitTreeNode[] = [];
+    nodes.forEach(node => {
+      result.push(node);
+      if (node.children) {
+        result.push(...getAllNodes(node.children));
+      }
+    });
+    return result;
+  };
+
+  const handleAssignOrgUnits = async (app: Application) => {
+    setSelectedAppForOrgUnits(app);
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/applications/${app.id}/org-units?tenantId=${tenantId}`, {
+        headers: { 'Accept-Language': locale }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSelectedOrgUnitIds(data.orgUnitIds || []);
+      }
+    } catch (error) {
+      console.error('Error fetching application org units:', error);
+    }
+    setShowAssignOrgUnitsModal(true);
+  };
+
+  const handleSaveOrgUnits = async () => {
+    if (!selectedAppForOrgUnits) return;
+    setError('');
+    setSuccess('');
+    
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/applications/${selectedAppForOrgUnits.id}/org-units?tenantId=${tenantId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept-Language': locale
+        },
+        body: JSON.stringify({
+          orgUnitIds: selectedOrgUnitIds
+        })
+      });
+
+      if (response.ok) {
+        setSuccess(t('tenant.applicationOrgUnits.orgUnitsAssigned'));
+        setShowAssignOrgUnitsModal(false);
+        setSelectedAppForOrgUnits(null);
+        fetchApplications();
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (error) {
+      setError(t('common.error'));
+      console.error('Error assigning org units:', error);
     }
   };
 
@@ -268,6 +359,23 @@ export default function TenantAppsPage() {
         >
           {t('tenant.applications.createApplication')}
         </button>
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-2">{t('tenant.orgUnits.title')}</label>
+        <select
+          value={selectedOrgUnitId}
+          onChange={(e) => {
+            setSelectedOrgUnitId(e.target.value);
+            setLoading(true);
+          }}
+          className="w-full max-w-xs px-3 py-2 border rounded"
+        >
+          <option value="">{t('common.all') || 'All'}</option>
+          {getAllNodes(orgTree).map(node => (
+            <option key={node.id} value={node.id}>{node.name}</option>
+          ))}
+        </select>
       </div>
 
       {error && (
@@ -468,6 +576,62 @@ export default function TenantAppsPage() {
         </div>
       )}
 
+      {/* Assign OrgUnits Modal */}
+      {showAssignOrgUnitsModal && selectedAppForOrgUnits && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg max-w-md w-full">
+            <h2 className="text-xl font-bold mb-4">{t('tenant.applicationOrgUnits.selectOrgUnits')} - {selectedAppForOrgUnits.name}</h2>
+            <div className="mb-4">
+              <label className="block mb-2">{t('tenant.applicationOrgUnits.orgVisibility')}</label>
+              <select
+                multiple
+                value={selectedOrgUnitIds}
+                onChange={(e) => {
+                  const selected = Array.from(e.target.selectedOptions, option => option.value);
+                  setSelectedOrgUnitIds(selected);
+                }}
+                className="w-full border rounded px-3 py-2"
+                size={8}
+              >
+                {getAllNodes(orgTree).map(node => (
+                  <option key={node.id} value={node.id}>{node.name}</option>
+                ))}
+              </select>
+              <p className="text-sm text-gray-500 mt-1">{t('common.holdCtrl') || 'Hold Ctrl/Cmd to select multiple'}</p>
+            </div>
+            {error && (
+              <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+                {success}
+              </div>
+            )}
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => {
+                  setShowAssignOrgUnitsModal(false);
+                  setSelectedAppForOrgUnits(null);
+                  setError('');
+                  setSuccess('');
+                }}
+                className="px-4 py-2 border rounded"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={handleSaveOrgUnits}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                {t('common.save')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -496,6 +660,12 @@ export default function TenantAppsPage() {
                       className="text-indigo-600 hover:text-indigo-900"
                     >
                       {t('common.edit')}
+                    </button>
+                    <button
+                      onClick={() => handleAssignOrgUnits(app)}
+                      className="text-green-600 hover:text-green-900"
+                    >
+                      {t('tenant.applicationOrgUnits.selectOrgUnits')}
                     </button>
                     <button
                       onClick={() => handleManageRedirectUris(app)}

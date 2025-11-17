@@ -5,6 +5,8 @@ using Onesign.Modules.Audit.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Audit.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Identity.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Identity.Infrastructure.EfCore.Entities;
+using Onesign.Modules.Organization.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Organization.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Tenants.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Tenants.Infrastructure.EfCore.Entities;
 
@@ -36,6 +38,12 @@ public class OnesignDbContext : DbContext
     // Audit
     public DbSet<AuditEventEntity> AuditEvents => Set<AuditEventEntity>();
 
+    // Organization
+    public DbSet<OrgUnitEntity> OrgUnits => Set<OrgUnitEntity>();
+    public DbSet<UserOrgUnitEntity> UserOrgUnits => Set<UserOrgUnitEntity>();
+    public DbSet<ApplicationOrgUnitEntity> ApplicationOrgUnits => Set<ApplicationOrgUnitEntity>();
+    public DbSet<DelegatedAdminScopeEntity> DelegatedAdminScopes => Set<DelegatedAdminScopeEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -59,6 +67,12 @@ public class OnesignDbContext : DbContext
 
         // Audit
         modelBuilder.ApplyConfiguration(new AuditEventEntityTypeConfiguration());
+
+        // Organization
+        modelBuilder.ApplyConfiguration(new OrgUnitEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new UserOrgUnitEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new ApplicationOrgUnitEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new DelegatedAdminScopeEntityTypeConfiguration());
     }
 }
 
