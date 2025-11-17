@@ -3,6 +3,8 @@ using Onesign.Modules.Applications.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Applications.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Audit.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Audit.Infrastructure.EfCore.Entities;
+using Onesign.Modules.Federation.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Federation.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Identity.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Identity.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Organization.Infrastructure.EfCore.Configurations;
@@ -54,6 +56,13 @@ public class OnesignDbContext : DbContext
     public DbSet<TrustedDeviceEntity> TrustedDevices => Set<TrustedDeviceEntity>();
     public DbSet<RiskEventEntity> RiskEvents => Set<RiskEventEntity>();
 
+    // Federation
+    public DbSet<SamlProviderEntity> SamlProviders => Set<SamlProviderEntity>();
+    public DbSet<OidcFederationProviderEntity> OidcFederationProviders => Set<OidcFederationProviderEntity>();
+    public DbSet<AttributeMappingEntity> AttributeMappings => Set<AttributeMappingEntity>();
+    public DbSet<ScimTokenEntity> ScimTokens => Set<ScimTokenEntity>();
+    public DbSet<JitProvisioningLogEntity> JitProvisioningLogs => Set<JitProvisioningLogEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -91,6 +100,13 @@ public class OnesignDbContext : DbContext
         modelBuilder.ApplyConfiguration(new MfaChallengeEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new TrustedDeviceEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new RiskEventEntityTypeConfiguration());
+
+        // Federation
+        modelBuilder.ApplyConfiguration(new SamlProviderEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new OidcFederationProviderEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new AttributeMappingEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new ScimTokenEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new JitProvisioningLogEntityTypeConfiguration());
     }
 }
 

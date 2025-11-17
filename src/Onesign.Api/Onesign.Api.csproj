@@ -28,6 +28,7 @@
     <ProjectReference Include="..\Onesign.Modules.Audit\Onesign.Modules.Audit.csproj" />
     <ProjectReference Include="..\Onesign.Modules.Organization\Onesign.Modules.Organization.csproj" />
     <ProjectReference Include="..\Onesign.Modules.Security\Onesign.Modules.Security.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Federation\Onesign.Modules.Federation.csproj" />
   </ItemGroup>
 
 </Project>
