@@ -74,5 +74,11 @@ public class ApplicationOrgUnitRepository : IApplicationOrgUnitRepository
             await _dbContext.SaveChangesAsync(cancellationToken);
         }
     }
+
+    public async Task<bool> HasApplicationsAsync(Guid orgUnitId, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Set<ApplicationOrgUnitEntity>()
+            .AnyAsync(x => x.OrgUnitId == orgUnitId, cancellationToken);
+    }
 }
 

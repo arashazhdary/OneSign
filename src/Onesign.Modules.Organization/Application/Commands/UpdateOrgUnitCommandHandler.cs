@@ -13,17 +13,20 @@ public class UpdateOrgUnitCommandHandler : IRequestHandler<UpdateOrgUnitCommand,
 {
     private readonly IOrgTreeService _orgTreeService;
     private readonly IOrgUnitRepository _orgUnitRepository;
+    private readonly IOrgAuthorizationService _orgAuthorizationService;
     private readonly IMediator _mediator;
     private readonly ILogger<UpdateOrgUnitCommandHandler> _logger;
 
     public UpdateOrgUnitCommandHandler(
         IOrgTreeService orgTreeService,
         IOrgUnitRepository orgUnitRepository,
+        IOrgAuthorizationService orgAuthorizationService,
         IMediator mediator,
         ILogger<UpdateOrgUnitCommandHandler> logger)
     {
         _orgTreeService = orgTreeService;
         _orgUnitRepository = orgUnitRepository;
+        _orgAuthorizationService = orgAuthorizationService;
         _mediator = mediator;
         _logger = logger;
     }
@@ -31,6 +34,14 @@ public class UpdateOrgUnitCommandHandler : IRequestHandler<UpdateOrgUnitCommand,
     public async Task<Result<OrgUnitDto>> Handle(UpdateOrgUnitCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Updating OrgUnit: Id={Id}, Name={Name}", request.OrgUnitId, request.Name);
+
+        // Authorization check
+        var canManage = await _orgAuthorizationService.CanManageOrgUnitAsync(request.ActorId, request.OrgUnitId, cancellationToken);
+        if (!canManage)
+        {
+            _logger.LogWarning("User {ActorId} is not authorized to manage OrgUnit {OrgUnitId}", request.ActorId, request.OrgUnitId);
+            return Result.Failure<OrgUnitDto>("UNAUTHORIZED", "You are not authorized to update this organizational unit");
+        }
 
         var orgUnit = await _orgUnitRepository.GetByIdAsync(request.OrgUnitId, cancellationToken);
         if (orgUnit == null)

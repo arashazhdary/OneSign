@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { getCurrentUserScope, CurrentUserScopeDto } from '@/lib/api/users';
 
 interface DelegatedAdmin {
   id: string;
@@ -38,17 +39,33 @@ export default function DelegatedAdminsPage() {
   const [selectedOrgUnitId, setSelectedOrgUnitId] = useState('');
   const [selectedScopeType, setSelectedScopeType] = useState<number>(2);
   const [tenantId, setTenantId] = useState<string>('');
+  const [userScope, setUserScope] = useState<CurrentUserScopeDto | null>(null);
+  const [scopeLoading, setScopeLoading] = useState(true);
 
   useEffect(() => {
     const tid = getTenantId();
     if (tid) {
       setTenantId(tid);
       loadData(tid);
+      fetchUserScope(tid);
     } else {
       setTenantId('00000000-0000-0000-0000-000000000000');
       loadData('00000000-0000-0000-0000-000000000000');
+      fetchUserScope('00000000-0000-0000-0000-000000000000');
     }
   }, []);
+
+  const fetchUserScope = async (tid: string) => {
+    try {
+      setScopeLoading(true);
+      const scope = await getCurrentUserScope(tid);
+      setUserScope(scope);
+    } catch (err) {
+      console.error('Error fetching user scope:', err);
+    } finally {
+      setScopeLoading(false);
+    }
+  };
 
   const loadData = async (tid: string) => {
     try {
@@ -147,8 +164,20 @@ export default function DelegatedAdminsPage() {
     }
   };
 
-  if (loading) {
+  if (loading || scopeLoading) {
     return <div className="p-8">{t('common.loading')}</div>;
+  }
+
+  // Show access restriction for non-global admins
+  if (userScope && !userScope.isGlobalAdmin) {
+    return (
+      <div className="p-8">
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-6 py-4 rounded-lg">
+          <h2 className="text-xl font-bold mb-2">Access Restricted</h2>
+          <p>Only global administrators can manage delegated admins.</p>
+        </div>
+      </div>
+    );
   }
 
   return (

@@ -8,11 +8,19 @@ namespace Onesign.Modules.Organization.Infrastructure.Services;
 public class OrgTreeService : IOrgTreeService
 {
     private readonly IOrgUnitRepository _orgUnitRepository;
+    private readonly IUserOrgUnitRepository _userOrgUnitRepository;
+    private readonly IApplicationOrgUnitRepository _applicationOrgUnitRepository;
     private readonly ILogger<OrgTreeService> _logger;
 
-    public OrgTreeService(IOrgUnitRepository orgUnitRepository, ILogger<OrgTreeService> logger)
+    public OrgTreeService(
+        IOrgUnitRepository orgUnitRepository,
+        IUserOrgUnitRepository userOrgUnitRepository,
+        IApplicationOrgUnitRepository applicationOrgUnitRepository,
+        ILogger<OrgTreeService> logger)
     {
         _orgUnitRepository = orgUnitRepository;
+        _userOrgUnitRepository = userOrgUnitRepository;
+        _applicationOrgUnitRepository = applicationOrgUnitRepository;
         _logger = logger;
     }
 
@@ -148,6 +156,20 @@ public class OrgTreeService : IOrgTreeService
         if (hasChildren)
         {
             throw new InvalidOperationException("Cannot delete OrgUnit with children");
+        }
+
+        // Check if it has assigned users
+        var hasUsers = await _userOrgUnitRepository.HasUsersAsync(orgUnitId, cancellationToken);
+        if (hasUsers)
+        {
+            throw new InvalidOperationException("Cannot delete OrgUnit with assigned users");
+        }
+
+        // Check if it has assigned applications
+        var hasApplications = await _applicationOrgUnitRepository.HasApplicationsAsync(orgUnitId, cancellationToken);
+        if (hasApplications)
+        {
+            throw new InvalidOperationException("Cannot delete OrgUnit with assigned applications");
         }
 
         await _orgUnitRepository.DeleteAsync(orgUnitId, cancellationToken);

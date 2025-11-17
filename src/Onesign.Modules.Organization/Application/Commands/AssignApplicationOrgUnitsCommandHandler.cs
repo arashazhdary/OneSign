@@ -12,17 +12,20 @@ public class AssignApplicationOrgUnitsCommandHandler : IRequestHandler<AssignApp
 {
     private readonly IApplicationOrgUnitRepository _applicationOrgUnitRepository;
     private readonly IOrgUnitRepository _orgUnitRepository;
+    private readonly IOrgAuthorizationService _orgAuthorizationService;
     private readonly IMediator _mediator;
     private readonly ILogger<AssignApplicationOrgUnitsCommandHandler> _logger;
 
     public AssignApplicationOrgUnitsCommandHandler(
         IApplicationOrgUnitRepository applicationOrgUnitRepository,
         IOrgUnitRepository orgUnitRepository,
+        IOrgAuthorizationService orgAuthorizationService,
         IMediator mediator,
         ILogger<AssignApplicationOrgUnitsCommandHandler> logger)
     {
         _applicationOrgUnitRepository = applicationOrgUnitRepository;
         _orgUnitRepository = orgUnitRepository;
+        _orgAuthorizationService = orgAuthorizationService;
         _mediator = mediator;
         _logger = logger;
     }
@@ -30,6 +33,14 @@ public class AssignApplicationOrgUnitsCommandHandler : IRequestHandler<AssignApp
     public async Task<Result> Handle(AssignApplicationOrgUnitsCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Assigning OrgUnits to application: ApplicationClientId={ApplicationClientId}", request.ApplicationClientId);
+
+        // Authorization check
+        var canManageApplication = await _orgAuthorizationService.CanManageApplicationAsync(request.ActorId, request.ApplicationClientId, cancellationToken);
+        if (!canManageApplication)
+        {
+            _logger.LogWarning("User {ActorId} is not authorized to manage application {ApplicationClientId}", request.ActorId, request.ApplicationClientId);
+            return Result.Failure("UNAUTHORIZED", "You are not authorized to assign organizational units to this application");
+        }
 
         // Validate OrgUnits
         foreach (var orgUnitId in request.OrgUnitIds)

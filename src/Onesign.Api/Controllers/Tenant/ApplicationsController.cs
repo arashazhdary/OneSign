@@ -12,9 +12,8 @@ using Onesign.Shared.Result;
 
 namespace Onesign.Api.Controllers.Tenant;
 
-[ApiController]
 [Route("api/tenant/applications")]
-public class ApplicationsController : ControllerBase
+public class ApplicationsController : Onesign.Api.Controllers.TenantControllerBase
 {
     private readonly IMediator _mediator;
     private readonly ILocalizationService _localizationService;
@@ -25,7 +24,7 @@ public class ApplicationsController : ControllerBase
         _localizationService = localizationService;
     }
 
-    private string GetCulture()
+    private new string GetCulture()
     {
         return HttpContext.Items["Culture"]?.ToString() ?? "en";
     }
@@ -257,7 +256,7 @@ public class ApplicationsController : ControllerBase
             ApplicationClientId = applicationId,
             TenantId = tenantId,
             OrgUnitIds = request.OrgUnitIds,
-            ActorId = Guid.Empty // TODO: Get from authenticated user
+            ActorId = GetCurrentUserId()
         };
 
         var result = await _mediator.Send(command);

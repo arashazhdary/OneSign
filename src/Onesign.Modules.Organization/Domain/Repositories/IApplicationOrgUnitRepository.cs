@@ -11,5 +11,6 @@ public interface IApplicationOrgUnitRepository
     Task AddRangeAsync(List<ApplicationOrgUnit> applicationOrgUnits, CancellationToken cancellationToken = default);
     Task DeleteByApplicationClientIdAsync(Guid applicationClientId, CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid applicationClientId, Guid orgUnitId, CancellationToken cancellationToken = default);
+    Task<bool> HasApplicationsAsync(Guid orgUnitId, CancellationToken cancellationToken = default);
 }
 

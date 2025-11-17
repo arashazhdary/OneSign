@@ -8,9 +8,8 @@ using Onesign.Shared.Result;
 
 namespace Onesign.Api.Controllers.Tenant;
 
-[ApiController]
 [Route("api/tenant/delegated-admins")]
-public class DelegatedAdminsController : ControllerBase
+public class DelegatedAdminsController : Onesign.Api.Controllers.TenantControllerBase
 {
     private readonly IMediator _mediator;
     private readonly ILocalizationService _localizationService;
@@ -19,12 +18,6 @@ public class DelegatedAdminsController : ControllerBase
     {
         _mediator = mediator;
         _localizationService = localizationService;
-    }
-
-    private System.Globalization.CultureInfo GetCulture()
-    {
-        var cultureName = Request.Headers["Accept-Language"].FirstOrDefault() ?? "en";
-        return new System.Globalization.CultureInfo(cultureName);
     }
 
     [HttpGet]
@@ -52,7 +45,7 @@ public class DelegatedAdminsController : ControllerBase
             TenantId = tenantId,
             OrgUnitId = request.OrgUnitId,
             ScopeType = request.ScopeType,
-            ActorId = Guid.Empty // TODO: Get from authenticated user
+            ActorId = GetCurrentUserId()
         };
 
         var result = await _mediator.Send(command);
@@ -74,7 +67,7 @@ public class DelegatedAdminsController : ControllerBase
         {
             DelegatedAdminId = id,
             TenantId = tenantId,
-            ActorId = Guid.Empty // TODO: Get from authenticated user
+            ActorId = GetCurrentUserId()
         };
 
         var result = await _mediator.Send(command);

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { getCurrentUserScope, CurrentUserScopeDto } from '@/lib/api/users';
 
 interface OrgUnitTreeNode {
   id: string;
@@ -28,17 +29,33 @@ export default function OrgUnitsPage() {
   const [newOrgUnitName, setNewOrgUnitName] = useState('');
   const [newParentId, setNewParentId] = useState<string | null>(null);
   const [tenantId, setTenantId] = useState<string>('');
+  const [userScope, setUserScope] = useState<CurrentUserScopeDto | null>(null);
+  const [scopeLoading, setScopeLoading] = useState(true);
 
   useEffect(() => {
     const tid = getTenantId();
     if (tid) {
       setTenantId(tid);
       fetchTree(tid);
+      fetchUserScope(tid);
     } else {
       setTenantId('00000000-0000-0000-0000-000000000000');
       fetchTree('00000000-0000-0000-0000-000000000000');
+      fetchUserScope('00000000-0000-0000-0000-000000000000');
     }
   }, []);
+
+  const fetchUserScope = async (tid: string) => {
+    try {
+      setScopeLoading(true);
+      const scope = await getCurrentUserScope(tid);
+      setUserScope(scope);
+    } catch (err) {
+      console.error('Error fetching user scope:', err);
+    } finally {
+      setScopeLoading(false);
+    }
+  };
 
   const fetchTree = async (tid: string) => {
     try {
@@ -178,6 +195,7 @@ export default function OrgUnitsPage() {
   const renderTreeNode = (node: OrgUnitTreeNode, level: number = 0) => {
     const hasChildren = node.children && node.children.length > 0;
     const isExpanded = expandedNodes.has(node.id);
+    const isEditable = canEditOrgUnit(node.id);
 
     return (
       <div key={node.id} style={{ marginLeft: `${level * 20}px` }}>
@@ -192,7 +210,10 @@ export default function OrgUnitsPage() {
           ) : (
             <span className="w-6"></span>
           )}
-          <span className="font-medium">{node.name}</span>
+          <span className={`font-medium ${!isEditable ? 'text-gray-500' : ''}`}>
+            {node.name}
+            {!isEditable && <span className="ml-2 text-xs">🔒</span>}
+          </span>
           <div className="flex gap-2 ml-auto">
             <button
               onClick={() => {
@@ -200,7 +221,8 @@ export default function OrgUnitsPage() {
                 setNewOrgUnitName(node.name);
                 setShowEditModal(true);
               }}
-              className="text-blue-600 hover:text-blue-800"
+              className={`${isEditable ? 'text-blue-600 hover:text-blue-800' : 'text-gray-400 cursor-not-allowed'}`}
+              disabled={!isEditable}
             >
               {t('common.edit')}
             </button>
@@ -210,13 +232,15 @@ export default function OrgUnitsPage() {
                 setNewParentId(null);
                 setShowMoveModal(true);
               }}
-              className="text-green-600 hover:text-green-800"
+              className={`${isEditable ? 'text-green-600 hover:text-green-800' : 'text-gray-400 cursor-not-allowed'}`}
+              disabled={!isEditable}
             >
               {t('tenant.orgUnits.move')}
             </button>
             <button
               onClick={() => handleDelete(node)}
-              className="text-red-600 hover:text-red-800"
+              className={`${isEditable ? 'text-red-600 hover:text-red-800' : 'text-gray-400 cursor-not-allowed'}`}
+              disabled={!isEditable}
             >
               {t('common.delete')}
             </button>
@@ -242,7 +266,29 @@ export default function OrgUnitsPage() {
     return result;
   };
 
-  if (loading) {
+  const filterTreeByAllowedOrgUnits = (nodes: OrgUnitTreeNode[], allowedIds: string[]): OrgUnitTreeNode[] => {
+    return nodes
+      .filter(node => allowedIds.includes(node.id))
+      .map(node => ({
+        ...node,
+        children: filterTreeByAllowedOrgUnits(node.children || [], allowedIds)
+      }));
+  };
+
+  const canEditOrgUnit = (nodeId: string): boolean => {
+    if (!userScope) return true;
+    if (userScope.isGlobalAdmin) return true;
+    return userScope.rootOrgUnitIds.includes(nodeId);
+  };
+
+  const getFilteredTree = (): OrgUnitTreeNode[] => {
+    if (!userScope || userScope.isGlobalAdmin) {
+      return tree;
+    }
+    return filterTreeByAllowedOrgUnits(tree, userScope.allowedOrgUnitIds);
+  };
+
+  if (loading || scopeLoading) {
     return <div className="p-8">{t('common.loading')}</div>;
   }
 
@@ -250,16 +296,18 @@ export default function OrgUnitsPage() {
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{t('tenant.orgUnits.title')}</h1>
-        <button
-          onClick={() => {
-            setNewParentId(null);
-            setNewOrgUnitName('');
-            setShowCreateModal(true);
-          }}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          {t('tenant.orgUnits.createOrgUnit')}
-        </button>
+        {(!userScope || userScope.isGlobalAdmin || userScope.rootOrgUnitIds.length > 0) && (
+          <button
+            onClick={() => {
+              setNewParentId(null);
+              setNewOrgUnitName('');
+              setShowCreateModal(true);
+            }}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            {t('tenant.orgUnits.createOrgUnit')}
+          </button>
+        )}
       </div>
 
       {error && (
@@ -269,10 +317,10 @@ export default function OrgUnitsPage() {
       )}
 
       <div className="bg-white rounded-lg shadow p-6">
-        {tree.length === 0 ? (
+        {getFilteredTree().length === 0 ? (
           <p>{t('tenant.orgUnits.noChildren')}</p>
         ) : (
-          tree.map(node => renderTreeNode(node))
+          getFilteredTree().map(node => renderTreeNode(node))
         )}
       </div>
 

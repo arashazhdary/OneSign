@@ -12,25 +12,36 @@ public class AssignUserOrgUnitsCommandHandler : IRequestHandler<AssignUserOrgUni
 {
     private readonly IUserOrgUnitRepository _userOrgUnitRepository;
     private readonly IOrgUnitRepository _orgUnitRepository;
+    private readonly IOrgAuthorizationService _orgAuthorizationService;
     private readonly IMediator _mediator;
     private readonly ILogger<AssignUserOrgUnitsCommandHandler> _logger;
 
     public AssignUserOrgUnitsCommandHandler(
         IUserOrgUnitRepository userOrgUnitRepository,
         IOrgUnitRepository orgUnitRepository,
+        IOrgAuthorizationService orgAuthorizationService,
         IMediator mediator,
         ILogger<AssignUserOrgUnitsCommandHandler> logger)
     {
         _userOrgUnitRepository = userOrgUnitRepository;
         _orgUnitRepository = orgUnitRepository;
+        _orgAuthorizationService = orgAuthorizationService;
         _mediator = mediator;
         _logger = logger;
     }
 
     public async Task<Result> Handle(AssignUserOrgUnitsCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Assigning OrgUnits to user: TenantUserId={TenantUserId}, Primary={PrimaryOrgUnitId}", 
+        _logger.LogInformation("Assigning OrgUnits to user: TenantUserId={TenantUserId}, Primary={PrimaryOrgUnitId}",
             request.TenantUserId, request.PrimaryOrgUnitId);
+
+        // Authorization check
+        var canManageUser = await _orgAuthorizationService.CanManageUserAsync(request.ActorId, request.TenantUserId, cancellationToken);
+        if (!canManageUser)
+        {
+            _logger.LogWarning("User {ActorId} is not authorized to manage user {TenantUserId}", request.ActorId, request.TenantUserId);
+            return Result.Failure("UNAUTHORIZED", "You are not authorized to assign organizational units to this user");
+        }
 
         // Validate primary OrgUnit
         var primaryOrgUnit = await _orgUnitRepository.GetByIdAsync(request.PrimaryOrgUnitId, cancellationToken);

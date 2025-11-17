@@ -12,5 +12,6 @@ public interface IUserOrgUnitRepository
     Task AddRangeAsync(List<UserOrgUnit> userOrgUnits, CancellationToken cancellationToken = default);
     Task DeleteByTenantUserIdAsync(Guid tenantUserId, CancellationToken cancellationToken = default);
     Task DeleteAsync(Guid tenantUserId, Guid orgUnitId, CancellationToken cancellationToken = default);
+    Task<bool> HasUsersAsync(Guid orgUnitId, CancellationToken cancellationToken = default);
 }
 
