@@ -9,6 +9,10 @@ using Onesign.Modules.Applications.Domain.Repositories;
 using Onesign.Modules.Applications.Infrastructure.EfCore.Repositories;
 using Onesign.Modules.Audit.Domain.Repositories;
 using Onesign.Modules.Audit.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.Authorization.Application.Services;
+using Onesign.Modules.Authorization.Domain.Repositories;
+using Onesign.Modules.Authorization.Domain.Services;
+using Onesign.Modules.Authorization.Infrastructure.EfCore.Repositories;
 using Onesign.Modules.Identity.Domain.Repositories;
 using Onesign.Modules.Identity.Domain.Services;
 using Onesign.Modules.Identity.Infrastructure.EfCore.Repositories;
@@ -82,7 +86,8 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
     typeof(Onesign.Modules.Applications.Application.Commands.CreateApplicationClientCommand).Assembly,
     typeof(Onesign.Modules.Audit.Application.Commands.AppendAuditEventCommand).Assembly,
     typeof(Onesign.Modules.Organization.Application.Commands.CreateOrgUnitCommand).Assembly,
-    typeof(Onesign.Modules.Security.Application.Commands.UpdateSecurityPolicyCommand).Assembly));
+    typeof(Onesign.Modules.Security.Application.Commands.UpdateSecurityPolicyCommand).Assembly,
+    typeof(Onesign.Modules.Authorization.Application.Commands.CreatePolicyCommand).Assembly));
 
 // Repositories
 builder.Services.AddScoped<ITenantRepository>(sp => 
@@ -142,6 +147,15 @@ builder.Services.AddScoped<IMfaChallengeService, MfaChallengeService>();
 builder.Services.AddScoped<IDeviceFingerprintService, DeviceFingerprintService>();
 builder.Services.AddScoped<IRiskEvaluationService, BasicRiskEvaluationService>();
 builder.Services.AddScoped<ISecurityPolicyService, SecurityPolicyService>();
+
+// Authorization Repositories
+builder.Services.AddScoped<IPolicyDefinitionRepository>(sp =>
+    new PolicyDefinitionRepository(sp.GetRequiredService<OnesignDbContext>()));
+builder.Services.AddScoped<IPolicyAssignmentRepository>(sp =>
+    new PolicyAssignmentRepository(sp.GetRequiredService<OnesignDbContext>()));
+
+// Authorization Services
+builder.Services.AddScoped<IPolicyEvaluationService, PolicyEvaluationService>();
 
 // JWT Signing Key Provider
 builder.Services.AddSingleton<Onesign.Shared.Security.IJwtSigningKeyProvider, Onesign.Shared.Security.ConfigurationJwtSigningKeyProvider>();

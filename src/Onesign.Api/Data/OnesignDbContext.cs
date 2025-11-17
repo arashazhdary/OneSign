@@ -3,6 +3,8 @@ using Onesign.Modules.Applications.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Applications.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Audit.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Audit.Infrastructure.EfCore.Entities;
+using Onesign.Modules.Authorization.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Authorization.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Billing.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Billing.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Federation.Infrastructure.EfCore.Configurations;
@@ -77,6 +79,13 @@ public class OnesignDbContext : DbContext
     // Observability
     public DbSet<AuditEventEntity> AuditEventsObservability => Set<AuditEventEntity>();
 
+    // Authorization
+    public DbSet<PolicyDefinitionEntity> PolicyDefinitions => Set<PolicyDefinitionEntity>();
+    public DbSet<PolicyConditionGroupEntity> PolicyConditionGroups => Set<PolicyConditionGroupEntity>();
+    public DbSet<PolicyConditionEntity> PolicyConditions => Set<PolicyConditionEntity>();
+    public DbSet<PolicyTargetEntity> PolicyTargets => Set<PolicyTargetEntity>();
+    public DbSet<PolicyAssignmentEntity> PolicyAssignments => Set<PolicyAssignmentEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -131,6 +140,13 @@ public class OnesignDbContext : DbContext
 
         // Observability
         modelBuilder.ApplyConfiguration(new AuditEventEntityTypeConfiguration());
+
+        // Authorization
+        modelBuilder.ApplyConfiguration(new PolicyDefinitionEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new PolicyConditionGroupEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new PolicyConditionEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new PolicyTargetEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new PolicyAssignmentEntityTypeConfiguration());
     }
 }
 
