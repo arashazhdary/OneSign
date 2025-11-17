@@ -354,6 +354,66 @@
       "federationEnabled": "فدراسیون سازمانی",
       "scimEnabled": "فراهم‌سازی SCIM"
     }
+  },
+  "observability": {
+    "title": "رصد و لاگ سیستم",
+    "audit": {
+      "title": "لاگ سیستم",
+      "search": "جستجوی رویدادها",
+      "category": "دسته‌بندی",
+      "severity": "شدت",
+      "actor": "عامل",
+      "action": "عملیات",
+      "target": "هدف",
+      "ipAddress": "آدرس IP",
+      "occurredAt": "زمان رخداد",
+      "details": "جزئیات",
+      "noEvents": "هیچ رویدادی یافت نشد",
+      "categories": {
+        "authentication": "احراز هویت",
+        "security": "امنیت",
+        "userManagement": "مدیریت کاربران",
+        "applicationManagement": "مدیریت برنامه‌ها",
+        "billing": "صورتحساب",
+        "federation": "فدراسیون",
+        "scim": "SCIM",
+        "organizationManagement": "مدیریت سازمان",
+        "systemConfiguration": "پیکربندی سیستم",
+        "accessControl": "کنترل دسترسی"
+      },
+      "severities": {
+        "info": "اطلاعات",
+        "warning": "هشدار",
+        "error": "خطا",
+        "critical": "بحرانی"
+      }
+    },
+    "alerts": {
+      "title": "هشدارها",
+      "rules": "قوانین هشدار",
+      "channels": "کانال‌های هشدار",
+      "notifications": "اعلان‌های هشدار",
+      "createRule": "ایجاد قانون هشدار",
+      "createChannel": "ایجاد کانال هشدار",
+      "ruleName": "نام قانون",
+      "metricKey": "کلید معیار",
+      "threshold": "آستانه",
+      "window": "بازه زمانی",
+      "enabled": "فعال",
+      "channelName": "نام کانال",
+      "channelType": "نوع کانال",
+      "email": "ایمیل",
+      "webhook": "Webhook"
+    },
+    "logStreaming": {
+      "title": "ارسال لاگ",
+      "create": "ایجاد جریان لاگ",
+      "name": "نام جریان",
+      "type": "نوع جریان",
+      "targetUrl": "آدرس مقصد",
+      "enabled": "فعال",
+      "lastPushed": "آخرین ارسال"
+    }
   }
 }
 

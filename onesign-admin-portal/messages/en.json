@@ -354,6 +354,66 @@
       "federationEnabled": "Enterprise Federation",
       "scimEnabled": "SCIM Provisioning"
     }
+  },
+  "observability": {
+    "title": "Observability & Audit",
+    "audit": {
+      "title": "Audit Log",
+      "search": "Search Audit Events",
+      "category": "Category",
+      "severity": "Severity",
+      "actor": "Actor",
+      "action": "Action",
+      "target": "Target",
+      "ipAddress": "IP Address",
+      "occurredAt": "Occurred At",
+      "details": "Details",
+      "noEvents": "No audit events found",
+      "categories": {
+        "authentication": "Authentication",
+        "security": "Security",
+        "userManagement": "User Management",
+        "applicationManagement": "Application Management",
+        "billing": "Billing",
+        "federation": "Federation",
+        "scim": "SCIM",
+        "organizationManagement": "Organization Management",
+        "systemConfiguration": "System Configuration",
+        "accessControl": "Access Control"
+      },
+      "severities": {
+        "info": "Info",
+        "warning": "Warning",
+        "error": "Error",
+        "critical": "Critical"
+      }
+    },
+    "alerts": {
+      "title": "Alerts",
+      "rules": "Alert Rules",
+      "channels": "Alert Channels",
+      "notifications": "Alert Notifications",
+      "createRule": "Create Alert Rule",
+      "createChannel": "Create Alert Channel",
+      "ruleName": "Rule Name",
+      "metricKey": "Metric Key",
+      "threshold": "Threshold",
+      "window": "Time Window",
+      "enabled": "Enabled",
+      "channelName": "Channel Name",
+      "channelType": "Channel Type",
+      "email": "Email",
+      "webhook": "Webhook"
+    },
+    "logStreaming": {
+      "title": "Log Streaming",
+      "create": "Create Log Stream",
+      "name": "Stream Name",
+      "type": "Stream Type",
+      "targetUrl": "Target URL",
+      "enabled": "Enabled",
+      "lastPushed": "Last Pushed"
+    }
   }
 }
 

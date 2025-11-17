@@ -30,6 +30,7 @@
     <ProjectReference Include="..\Onesign.Modules.Security\Onesign.Modules.Security.csproj" />
     <ProjectReference Include="..\Onesign.Modules.Federation\Onesign.Modules.Federation.csproj" />
     <ProjectReference Include="..\Onesign.Modules.Billing\Onesign.Modules.Billing.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Observability\Onesign.Modules.Observability.csproj" />
   </ItemGroup>
 
 </Project>

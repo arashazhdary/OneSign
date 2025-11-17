@@ -7,6 +7,8 @@ using Onesign.Modules.Billing.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Billing.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Federation.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Federation.Infrastructure.EfCore.Entities;
+using Onesign.Modules.Observability.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Observability.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Identity.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Identity.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Organization.Infrastructure.EfCore.Configurations;
@@ -72,6 +74,9 @@ public class OnesignDbContext : DbContext
     public DbSet<UsageCounterEntity> UsageCounters => Set<UsageCounterEntity>();
     public DbSet<TenantUsageSnapshotEntity> TenantUsageSnapshots => Set<TenantUsageSnapshotEntity>();
 
+    // Observability
+    public DbSet<AuditEventEntity> AuditEventsObservability => Set<AuditEventEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -123,6 +128,9 @@ public class OnesignDbContext : DbContext
         modelBuilder.ApplyConfiguration(new TenantSubscriptionEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new UsageCounterEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new TenantUsageSnapshotEntityTypeConfiguration());
+
+        // Observability
+        modelBuilder.ApplyConfiguration(new AuditEventEntityTypeConfiguration());
     }
 }
 
