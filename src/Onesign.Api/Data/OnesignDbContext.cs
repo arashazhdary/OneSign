@@ -9,6 +9,36 @@ using Onesign.Modules.Organization.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Organization.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Tenants.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Tenants.Infrastructure.EfCore.Entities;
+// Phase 11 - Notification Center
+using Onesign.Modules.NotificationCenter.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.NotificationCenter.Infrastructure.EfCore.Entities;
+// Phase 12 - Access Requests
+using Onesign.Modules.AccessRequests.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.AccessRequests.Infrastructure.EfCore.Entities;
+// Phase 15 - Identity Lifecycle
+using Onesign.Modules.IdentityLifecycle.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.IdentityLifecycle.Infrastructure.EfCore.Entities;
+// Phase 16 - Privileged Access
+using Onesign.Modules.PrivilegedAccess.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.PrivilegedAccess.Infrastructure.EfCore.Entities;
+// Phase 17 - Identity Insights
+using Onesign.Modules.IdentityInsights.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.IdentityInsights.Infrastructure.EfCore.Entities;
+// Phase 19 - Extensibility
+using Onesign.Modules.Extensibility.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Extensibility.Infrastructure.EfCore.Entities;
+// Phase 20 - Multi-Region
+using Onesign.Modules.MultiRegion.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.MultiRegion.Infrastructure.EfCore.Entities;
+// Phase 21 - Deployment
+using Onesign.Modules.Deployment.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Deployment.Infrastructure.EfCore.Entities;
+// Phase 22 - Crypto
+using Onesign.Modules.Crypto.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Crypto.Infrastructure.EfCore.Entities;
+// Phase 23 - Privacy
+using Onesign.Modules.Privacy.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Privacy.Infrastructure.EfCore.Entities;
 
 namespace Onesign.Api.Data;
 
@@ -44,6 +74,60 @@ public class OnesignDbContext : DbContext
     public DbSet<ApplicationOrgUnitEntity> ApplicationOrgUnits => Set<ApplicationOrgUnitEntity>();
     public DbSet<DelegatedAdminScopeEntity> DelegatedAdminScopes => Set<DelegatedAdminScopeEntity>();
 
+    // NotificationCenter
+    public DbSet<NotificationTemplateEntity> NotificationTemplates => Set<NotificationTemplateEntity>();
+    public DbSet<NotificationChannelConfigEntity> NotificationChannelConfigs => Set<NotificationChannelConfigEntity>();
+    public DbSet<NotificationOutboxItemEntity> NotificationOutboxItems => Set<NotificationOutboxItemEntity>();
+    public DbSet<NotificationEventSubscriptionEntity> NotificationEventSubscriptions => Set<NotificationEventSubscriptionEntity>();
+    public DbSet<NotificationDeliveryLogEntity> NotificationDeliveryLogs => Set<NotificationDeliveryLogEntity>();
+
+    // AccessRequests
+    public DbSet<AccessRequestEntity> AccessRequests => Set<AccessRequestEntity>();
+    public DbSet<ApprovalStepEntity> ApprovalSteps => Set<ApprovalStepEntity>();
+    public DbSet<AccessRequestItemEntity> AccessRequestItems => Set<AccessRequestItemEntity>();
+    public DbSet<WorkflowDefinitionEntity> WorkflowDefinitions => Set<WorkflowDefinitionEntity>();
+
+    // IdentityLifecycle
+    public DbSet<HRIdentityRecordEntity> HRIdentityRecords => Set<HRIdentityRecordEntity>();
+    public DbSet<LifecycleEventEntity> LifecycleEvents => Set<LifecycleEventEntity>();
+    public DbSet<AccessPackageEntity> AccessPackages => Set<AccessPackageEntity>();
+    public DbSet<LifecyclePolicyEntity> LifecyclePolicies => Set<LifecyclePolicyEntity>();
+
+    // PrivilegedAccess
+    public DbSet<JitGrantEntity> JitGrants => Set<JitGrantEntity>();
+    public DbSet<BreakGlassAccountEntity> BreakGlassAccounts => Set<BreakGlassAccountEntity>();
+    public DbSet<PrivilegedSessionEntity> PrivilegedSessions => Set<PrivilegedSessionEntity>();
+
+    // IdentityInsights
+    public DbSet<UserRiskProfileEntity> UserRiskProfiles => Set<UserRiskProfileEntity>();
+    public DbSet<InsightEntity> Insights => Set<InsightEntity>();
+    public DbSet<TenantRiskProfileEntity> TenantRiskProfiles => Set<TenantRiskProfileEntity>();
+
+    // Extensibility
+    public DbSet<WebhookSubscriptionEntity> WebhookSubscriptions => Set<WebhookSubscriptionEntity>();
+    public DbSet<LoginHookEntity> LoginHooks => Set<LoginHookEntity>();
+    public DbSet<TokenTransformationRuleEntity> TokenTransformationRules => Set<TokenTransformationRuleEntity>();
+    public DbSet<WebhookDeliveryLogEntity> WebhookDeliveryLogs => Set<WebhookDeliveryLogEntity>();
+
+    // MultiRegion
+    public DbSet<RegionEntity> Regions => Set<RegionEntity>();
+    public DbSet<TenantDataResidencyEntity> TenantDataResidencies => Set<TenantDataResidencyEntity>();
+    public DbSet<RegionBackupSetEntity> RegionBackupSets => Set<RegionBackupSetEntity>();
+    public DbSet<TenantBackupSetEntity> TenantBackupSets => Set<TenantBackupSetEntity>();
+
+    // Deployment
+    public DbSet<DeploymentEnvironmentEntity> DeploymentEnvironments => Set<DeploymentEnvironmentEntity>();
+    public DbSet<EnvironmentFeatureConfigEntity> EnvironmentFeatureConfigs => Set<EnvironmentFeatureConfigEntity>();
+
+    // Crypto
+    public DbSet<KeySetEntity> KeySets => Set<KeySetEntity>();
+    public DbSet<KeyVersionEntity> KeyVersions => Set<KeyVersionEntity>();
+    public DbSet<KeyRotationPolicyEntity> KeyRotationPolicies => Set<KeyRotationPolicyEntity>();
+
+    // Privacy
+    public DbSet<DataRetentionPolicyEntity> DataRetentionPolicies => Set<DataRetentionPolicyEntity>();
+    public DbSet<DataSubjectRequestEntity> DataSubjectRequests => Set<DataSubjectRequestEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -73,6 +157,60 @@ public class OnesignDbContext : DbContext
         modelBuilder.ApplyConfiguration(new UserOrgUnitEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new ApplicationOrgUnitEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new DelegatedAdminScopeEntityTypeConfiguration());
+
+        // NotificationCenter
+        modelBuilder.ApplyConfiguration(new NotificationTemplateEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new NotificationChannelConfigEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new NotificationOutboxItemEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new NotificationEventSubscriptionEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new NotificationDeliveryLogEntityTypeConfiguration());
+
+        // AccessRequests
+        modelBuilder.ApplyConfiguration(new AccessRequestEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new ApprovalStepEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new AccessRequestItemEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new WorkflowDefinitionEntityTypeConfiguration());
+
+        // IdentityLifecycle
+        modelBuilder.ApplyConfiguration(new HRIdentityRecordEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new LifecycleEventEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new AccessPackageEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new LifecyclePolicyEntityTypeConfiguration());
+
+        // PrivilegedAccess
+        modelBuilder.ApplyConfiguration(new JitGrantEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new BreakGlassAccountEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new PrivilegedSessionEntityTypeConfiguration());
+
+        // IdentityInsights
+        modelBuilder.ApplyConfiguration(new UserRiskProfileEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new InsightEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new TenantRiskProfileEntityTypeConfiguration());
+
+        // Extensibility
+        modelBuilder.ApplyConfiguration(new WebhookSubscriptionEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new LoginHookEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new TokenTransformationRuleEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new WebhookDeliveryLogEntityTypeConfiguration());
+
+        // MultiRegion
+        modelBuilder.ApplyConfiguration(new RegionEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new TenantDataResidencyEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new RegionBackupSetEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new TenantBackupSetEntityTypeConfiguration());
+
+        // Deployment
+        modelBuilder.ApplyConfiguration(new DeploymentEnvironmentEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new EnvironmentFeatureConfigEntityTypeConfiguration());
+
+        // Crypto
+        modelBuilder.ApplyConfiguration(new KeySetEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new KeyVersionEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new KeyRotationPolicyEntityTypeConfiguration());
+
+        // Privacy
+        modelBuilder.ApplyConfiguration(new DataRetentionPolicyEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new DataSubjectRequestEntityTypeConfiguration());
     }
 }
 
