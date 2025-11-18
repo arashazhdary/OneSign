@@ -19,6 +19,16 @@ using Onesign.Modules.Organization.Infrastructure.EfCore.Repositories;
 using Onesign.Modules.Organization.Infrastructure.Services;
 using Onesign.Modules.Tenants.Domain.Repositories;
 using Onesign.Modules.Tenants.Infrastructure.EfCore.Repositories;
+// Phase 11 - NotificationCenter
+using Onesign.Modules.NotificationCenter.Domain.Repositories;
+using Onesign.Modules.NotificationCenter.Domain.Services;
+using Onesign.Modules.NotificationCenter.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.NotificationCenter.Application.Services;
+// Phase 12 - AccessRequests
+using Onesign.Modules.AccessRequests.Domain.Repositories;
+using Onesign.Modules.AccessRequests.Domain.Services;
+using Onesign.Modules.AccessRequests.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.AccessRequests.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -76,7 +86,15 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
     typeof(Onesign.Modules.Identity.Application.Commands.PasswordLoginCommand).Assembly,
     typeof(Onesign.Modules.Applications.Application.Commands.CreateApplicationClientCommand).Assembly,
     typeof(Onesign.Modules.Audit.Application.Commands.AppendAuditEventCommand).Assembly,
-    typeof(Onesign.Modules.Organization.Application.Commands.CreateOrgUnitCommand).Assembly));
+    typeof(Onesign.Modules.Organization.Application.Commands.CreateOrgUnitCommand).Assembly,
+    // Phase 11-20 Modules
+    typeof(Onesign.Modules.NotificationCenter.Application.Commands.SendNotificationCommand).Assembly,
+    typeof(Onesign.Modules.AccessRequests.Application.Commands.CreateAccessRequestCommand).Assembly,
+    typeof(Onesign.Modules.IdentityLifecycle.Application.Commands.SyncHRDataCommand).Assembly,
+    typeof(Onesign.Modules.PrivilegedAccess.Application.Commands.RequestJitAccessCommand).Assembly,
+    typeof(Onesign.Modules.IdentityInsights.Application.Queries.GetUserRiskProfileQuery).Assembly,
+    typeof(Onesign.Modules.Extensibility.Application.Commands.CreateWebhookCommand).Assembly,
+    typeof(Onesign.Modules.MultiRegion.Application.Commands.CreateRegionCommand).Assembly));
 
 // Repositories
 builder.Services.AddScoped<ITenantRepository>(sp => 
@@ -115,6 +133,24 @@ builder.Services.AddScoped<IDelegatedAdminRepository>(sp =>
 // Organization Services
 builder.Services.AddScoped<IOrgTreeService, OrgTreeService>();
 builder.Services.AddScoped<IOrgAuthorizationService, OrgAuthorizationService>();
+
+// NotificationCenter Repositories
+builder.Services.AddScoped<INotificationTemplateRepository>(sp =>
+    new NotificationTemplateRepository(sp.GetRequiredService<OnesignDbContext>()));
+builder.Services.AddScoped<INotificationOutboxRepository>(sp =>
+    new NotificationOutboxRepository(sp.GetRequiredService<OnesignDbContext>()));
+builder.Services.AddScoped<INotificationEventSubscriptionRepository>(sp =>
+    new NotificationEventSubscriptionRepository(sp.GetRequiredService<OnesignDbContext>()));
+
+// NotificationCenter Services
+builder.Services.AddScoped<INotificationRouter, NotificationRouterService>();
+
+// AccessRequests Repositories
+builder.Services.AddScoped<IAccessRequestRepository>(sp =>
+    new AccessRequestRepository(sp.GetRequiredService<OnesignDbContext>()));
+
+// AccessRequests Services
+builder.Services.AddScoped<IWorkflowEngine, WorkflowEngineService>();
 
 // JWT Signing Key Provider
 builder.Services.AddSingleton<Onesign.Shared.Security.IJwtSigningKeyProvider, Onesign.Shared.Security.ConfigurationJwtSigningKeyProvider>();

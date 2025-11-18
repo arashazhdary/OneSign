@@ -27,6 +27,14 @@
     <ProjectReference Include="..\Onesign.Modules.Applications\Onesign.Modules.Applications.csproj" />
     <ProjectReference Include="..\Onesign.Modules.Audit\Onesign.Modules.Audit.csproj" />
     <ProjectReference Include="..\Onesign.Modules.Organization\Onesign.Modules.Organization.csproj" />
+    <!-- Phase 11-20 Modules -->
+    <ProjectReference Include="..\Onesign.Modules.NotificationCenter\Onesign.Modules.NotificationCenter.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.AccessRequests\Onesign.Modules.AccessRequests.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.IdentityLifecycle\Onesign.Modules.IdentityLifecycle.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.PrivilegedAccess\Onesign.Modules.PrivilegedAccess.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.IdentityInsights\Onesign.Modules.IdentityInsights.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Extensibility\Onesign.Modules.Extensibility.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.MultiRegion\Onesign.Modules.MultiRegion.csproj" />
   </ItemGroup>
 
 </Project>
