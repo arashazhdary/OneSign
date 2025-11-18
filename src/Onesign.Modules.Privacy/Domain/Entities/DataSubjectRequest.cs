@@ -14,4 +14,11 @@ public class DataSubjectRequest
     public DateTime? CompletedAt { get; set; }
     public string? ResultLocation { get; set; }
     public string? Reason { get; set; }
+
+    // Alias for ResultLocation
+    public string? ResultUrl
+    {
+        get => ResultLocation;
+        set => ResultLocation = value;
+    }
 }

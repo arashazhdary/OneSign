@@ -41,6 +41,16 @@ public class SecuritySignalRepository : ISecuritySignalRepository
         return entities.Select(MapToDomain).ToList();
     }
 
+    public async Task<IReadOnlyList<SecuritySignal>> GetRecentSignalsAsync(Guid tenantId, Guid userId, TimeSpan window, CancellationToken ct = default)
+    {
+        var cutoff = DateTime.UtcNow - window;
+        var entities = await _dbContext.Set<SecuritySignalEntity>()
+            .Where(x => x.TenantId == tenantId && x.UserId == userId && x.DetectedAt >= cutoff)
+            .OrderByDescending(x => x.DetectedAt)
+            .ToListAsync(ct);
+        return entities.Select(MapToDomain).ToList();
+    }
+
     public async Task<IReadOnlyList<SecuritySignal>> GetByTypeAsync(Guid tenantId, SecuritySignalType signalType, CancellationToken ct = default)
     {
         var entities = await _dbContext.Set<SecuritySignalEntity>()

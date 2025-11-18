@@ -40,6 +40,16 @@ public class WebhookDeliveryLogRepository : IWebhookDeliveryLogRepository
         return entities.Select(MapToDomain).ToList();
     }
 
+    public async Task<IReadOnlyList<WebhookDeliveryLog>> GetByTenantIdAsync(Guid tenantId, int limit, CancellationToken ct = default)
+    {
+        var entities = await _dbContext.Set<WebhookDeliveryLogEntity>()
+            .Where(x => x.TenantId == tenantId)
+            .OrderByDescending(x => x.CreatedAt)
+            .Take(limit)
+            .ToListAsync(ct);
+        return entities.Select(MapToDomain).ToList();
+    }
+
     public async Task<IReadOnlyList<WebhookDeliveryLog>> GetByStatusAsync(Guid tenantId, WebhookDeliveryStatus status, CancellationToken ct = default)
     {
         var entities = await _dbContext.Set<WebhookDeliveryLogEntity>()
@@ -56,6 +66,16 @@ public class WebhookDeliveryLogRepository : IWebhookDeliveryLogRepository
                         (x.Status == (int)WebhookDeliveryStatus.Pending || x.Status == (int)WebhookDeliveryStatus.Retrying) &&
                         x.AttemptCount < maxAttempts)
             .OrderBy(x => x.CreatedAt)
+            .ToListAsync(ct);
+        return entities.Select(MapToDomain).ToList();
+    }
+
+    public async Task<IReadOnlyList<WebhookDeliveryLog>> GetPendingDeliveriesAsync(int batchSize, CancellationToken ct = default)
+    {
+        var entities = await _dbContext.Set<WebhookDeliveryLogEntity>()
+            .Where(x => x.Status == (int)WebhookDeliveryStatus.Pending || x.Status == (int)WebhookDeliveryStatus.Retrying)
+            .OrderBy(x => x.CreatedAt)
+            .Take(batchSize)
             .ToListAsync(ct);
         return entities.Select(MapToDomain).ToList();
     }

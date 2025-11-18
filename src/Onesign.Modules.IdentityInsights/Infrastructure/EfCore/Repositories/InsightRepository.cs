@@ -22,6 +22,42 @@ public class InsightRepository : IInsightRepository
         return entity == null ? null : MapToDomain(entity);
     }
 
+    public async Task<Insight?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct = default)
+    {
+        var entity = await _dbContext.Set<InsightEntity>()
+            .FirstOrDefaultAsync(x => x.TenantId == tenantId && x.Id == id, ct);
+        return entity == null ? null : MapToDomain(entity);
+    }
+
+    public async Task<IReadOnlyList<Insight>> GetAllByTenantAsync(Guid tenantId, CancellationToken ct = default)
+    {
+        var entities = await _dbContext.Set<InsightEntity>()
+            .Where(x => x.TenantId == tenantId)
+            .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync(ct);
+        return entities.Select(MapToDomain).ToList();
+    }
+
+    public async Task<IReadOnlyList<Insight>> GetOpenInsightsAsync(Guid tenantId, CancellationToken ct = default)
+    {
+        var entities = await _dbContext.Set<InsightEntity>()
+            .Where(x => x.TenantId == tenantId && x.Status == (int)InsightStatus.Open)
+            .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync(ct);
+        return entities.Select(MapToDomain).ToList();
+    }
+
+    public async Task<Insight?> GetExistingInsightAsync(Guid tenantId, InsightType type, string scopeType, Guid? scopeId, CancellationToken ct = default)
+    {
+        var entity = await _dbContext.Set<InsightEntity>()
+            .FirstOrDefaultAsync(x => x.TenantId == tenantId &&
+                                      x.Type == (int)type &&
+                                      x.ScopeType == scopeType &&
+                                      x.ScopeId == scopeId &&
+                                      x.Status == (int)InsightStatus.Open, ct);
+        return entity == null ? null : MapToDomain(entity);
+    }
+
     public async Task<IReadOnlyList<Insight>> GetByTenantIdAsync(Guid tenantId, CancellationToken ct = default)
     {
         var entities = await _dbContext.Set<InsightEntity>()

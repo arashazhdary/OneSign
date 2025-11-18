@@ -17,6 +17,7 @@ class Program
         rootCommand.AddCommand(new LogoutCommand());
         rootCommand.AddCommand(new UsersCommand());
         rootCommand.AddCommand(new AppsCommand());
+        rootCommand.AddCommand(new TenantsCommand());
         rootCommand.AddCommand(new ConfigCommand());
 
         // Add version option

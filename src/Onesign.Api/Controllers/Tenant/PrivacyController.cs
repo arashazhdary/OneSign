@@ -42,8 +42,10 @@ public class PrivacyController : ControllerBase
         DataCategory category,
         [FromBody] UpdateRetentionPolicyRequest request)
     {
-        // TODO: Get TenantId from context
-        var tenantId = Guid.Empty;
+        var tenantIdClaim = User.FindFirst("tenant_id")?.Value;
+        var tenantId = !string.IsNullOrEmpty(tenantIdClaim) && Guid.TryParse(tenantIdClaim, out var tid)
+            ? tid
+            : Guid.Empty;
 
         var command = new UpdateRetentionPolicyCommand
         {
@@ -59,7 +61,7 @@ public class PrivacyController : ControllerBase
         if (!result.IsSuccess)
             return BadRequest(new { error = result.Error });
 
-        return Ok();
+        return Ok(result.Value);
     }
 
     /// <summary>

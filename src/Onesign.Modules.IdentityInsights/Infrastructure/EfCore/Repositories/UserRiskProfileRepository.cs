@@ -21,6 +21,14 @@ public class UserRiskProfileRepository : IUserRiskProfileRepository
         return entity == null ? null : MapToDomain(entity);
     }
 
+    public async Task<IReadOnlyList<UserRiskProfile>> GetAllByTenantAsync(Guid tenantId, CancellationToken ct = default)
+    {
+        var entities = await _dbContext.Set<UserRiskProfileEntity>()
+            .Where(x => x.TenantId == tenantId)
+            .ToListAsync(ct);
+        return entities.Select(MapToDomain).ToList();
+    }
+
     public async Task<IReadOnlyList<UserRiskProfile>> GetHighRiskUsersAsync(Guid tenantId, int minRiskScore, CancellationToken ct = default)
     {
         var entities = await _dbContext.Set<UserRiskProfileEntity>()
