@@ -51,6 +51,9 @@ using Onesign.Modules.Crypto.Infrastructure.EfCore.Entities;
 // Phase 23 - Privacy
 using Onesign.Modules.Privacy.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Privacy.Infrastructure.EfCore.Entities;
+// Phase 18 - Adaptive Security
+using Onesign.Modules.AdaptiveSecurity.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.AdaptiveSecurity.Infrastructure.EfCore.Entities;
 
 namespace Onesign.Api.Data;
 
@@ -147,6 +150,10 @@ public class OnesignDbContext : DbContext
     public DbSet<DataRetentionPolicyEntity> DataRetentionPolicies => Set<DataRetentionPolicyEntity>();
     public DbSet<DataSubjectRequestEntity> DataSubjectRequests => Set<DataSubjectRequestEntity>();
 
+    // AdaptiveSecurity
+    public DbSet<AdaptivePolicyEntity> AdaptivePolicies => Set<AdaptivePolicyEntity>();
+    public DbSet<SecuritySignalEntity> SecuritySignals => Set<SecuritySignalEntity>();
+    public DbSet<UserSecurityContextEntity> UserSecurityContexts => Set<UserSecurityContextEntity>();
     // Federation
     public DbSet<SamlProviderEntity> SamlProviders => Set<SamlProviderEntity>();
     public DbSet<OidcFederationProviderEntity> OidcFederationProviders => Set<OidcFederationProviderEntity>();
@@ -299,6 +306,11 @@ public class OnesignDbContext : DbContext
         // Privacy
         modelBuilder.ApplyConfiguration(new DataRetentionPolicyEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new DataSubjectRequestEntityTypeConfiguration());
+
+        // AdaptiveSecurity
+        modelBuilder.ApplyConfiguration(new AdaptivePolicyEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new SecuritySignalEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new UserSecurityContextEntityTypeConfiguration());
     }
 }
 

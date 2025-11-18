@@ -30,6 +30,32 @@ public enum AuditEventType
     ApplicationOrgUnitAssigned = 26,
     ApplicationOrgUnitRemoved = 27,
     DelegatedAdminCreated = 28,
-    DelegatedAdminRemoved = 29
+    DelegatedAdminRemoved = 29,
+
+    // Security Events (Phase 13)
+    SecurityBreach = 100,
+    SuspiciousActivity = 101,
+    FailedLoginAttempt = 102,
+    AccountLockout = 103,
+    RateLimitExceeded = 104,
+    UnauthorizedAccess = 105,
+    TokenCompromised = 106,
+    CertificateExpiring = 107,
+    CertificateExpired = 108,
+    MfaEnrolled = 109,
+    MfaDisabled = 110,
+    MfaBypass = 111,
+    ApiKeyCreated = 112,
+    ApiKeyRevoked = 113,
+    IpBlocked = 114,
+    IpUnblocked = 115,
+    TenantSuspended = 116,
+    TenantReactivated = 117,
+    DataExportRequested = 118,
+    DataDeletionRequested = 119,
+    PrivilegeEscalation = 120,
+    ConfigurationChanged = 121,
+    SecurityPolicyViolation = 122,
+    AnomalousPattern = 123
 }
 
