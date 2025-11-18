@@ -94,7 +94,11 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
     typeof(Onesign.Modules.PrivilegedAccess.Application.Commands.RequestJitAccessCommand).Assembly,
     typeof(Onesign.Modules.IdentityInsights.Application.Queries.GetUserRiskProfileQuery).Assembly,
     typeof(Onesign.Modules.Extensibility.Application.Commands.CreateWebhookCommand).Assembly,
-    typeof(Onesign.Modules.MultiRegion.Application.Commands.CreateRegionCommand).Assembly));
+    typeof(Onesign.Modules.MultiRegion.Application.Commands.CreateRegionCommand).Assembly,
+    // Phase 21-23 Modules
+    typeof(Onesign.Modules.Deployment.Application.Commands.BootstrapEnvironmentCommand).Assembly,
+    typeof(Onesign.Modules.Crypto.Application.Commands.RolloverKeyCommand).Assembly,
+    typeof(Onesign.Modules.Privacy.Application.Commands.CreateDataSubjectRequestCommand).Assembly));
 
 // Repositories
 builder.Services.AddScoped<ITenantRepository>(sp => 

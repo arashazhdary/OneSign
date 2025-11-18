@@ -30,6 +30,15 @@ using Onesign.Modules.Extensibility.Infrastructure.EfCore.Entities;
 // Phase 20 - Multi-Region
 using Onesign.Modules.MultiRegion.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.MultiRegion.Infrastructure.EfCore.Entities;
+// Phase 21 - Deployment
+using Onesign.Modules.Deployment.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Deployment.Infrastructure.EfCore.Entities;
+// Phase 22 - Crypto
+using Onesign.Modules.Crypto.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Crypto.Infrastructure.EfCore.Entities;
+// Phase 23 - Privacy
+using Onesign.Modules.Privacy.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Privacy.Infrastructure.EfCore.Entities;
 
 namespace Onesign.Api.Data;
 
@@ -96,6 +105,19 @@ public class OnesignDbContext : DbContext
     // MultiRegion
     public DbSet<RegionEntity> Regions => Set<RegionEntity>();
 
+    // Deployment
+    public DbSet<DeploymentEnvironmentEntity> DeploymentEnvironments => Set<DeploymentEnvironmentEntity>();
+    public DbSet<EnvironmentFeatureConfigEntity> EnvironmentFeatureConfigs => Set<EnvironmentFeatureConfigEntity>();
+
+    // Crypto
+    public DbSet<KeySetEntity> KeySets => Set<KeySetEntity>();
+    public DbSet<KeyVersionEntity> KeyVersions => Set<KeyVersionEntity>();
+    public DbSet<KeyRotationPolicyEntity> KeyRotationPolicies => Set<KeyRotationPolicyEntity>();
+
+    // Privacy
+    public DbSet<DataRetentionPolicyEntity> DataRetentionPolicies => Set<DataRetentionPolicyEntity>();
+    public DbSet<DataSubjectRequestEntity> DataSubjectRequests => Set<DataSubjectRequestEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -156,6 +178,19 @@ public class OnesignDbContext : DbContext
 
         // MultiRegion
         modelBuilder.ApplyConfiguration(new RegionEntityTypeConfiguration());
+
+        // Deployment
+        modelBuilder.ApplyConfiguration(new DeploymentEnvironmentEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new EnvironmentFeatureConfigEntityTypeConfiguration());
+
+        // Crypto
+        modelBuilder.ApplyConfiguration(new KeySetEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new KeyVersionEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new KeyRotationPolicyEntityTypeConfiguration());
+
+        // Privacy
+        modelBuilder.ApplyConfiguration(new DataRetentionPolicyEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new DataSubjectRequestEntityTypeConfiguration());
     }
 }
 

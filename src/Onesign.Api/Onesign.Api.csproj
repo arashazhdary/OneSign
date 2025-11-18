@@ -35,6 +35,10 @@
     <ProjectReference Include="..\Onesign.Modules.IdentityInsights\Onesign.Modules.IdentityInsights.csproj" />
     <ProjectReference Include="..\Onesign.Modules.Extensibility\Onesign.Modules.Extensibility.csproj" />
     <ProjectReference Include="..\Onesign.Modules.MultiRegion\Onesign.Modules.MultiRegion.csproj" />
+    <!-- Phase 21-23 Modules -->
+    <ProjectReference Include="..\Onesign.Modules.Deployment\Onesign.Modules.Deployment.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Crypto\Onesign.Modules.Crypto.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Privacy\Onesign.Modules.Privacy.csproj" />
   </ItemGroup>
 
 </Project>
