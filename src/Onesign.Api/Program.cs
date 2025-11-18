@@ -29,6 +29,9 @@ using Onesign.Modules.AccessRequests.Domain.Repositories;
 using Onesign.Modules.AccessRequests.Domain.Services;
 using Onesign.Modules.AccessRequests.Infrastructure.EfCore.Repositories;
 using Onesign.Modules.AccessRequests.Application.Services;
+// Phase 13 - Platform Hardening & Scale
+using Onesign.Shared.MultiTenancy;
+using Onesign.Shared.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -98,7 +101,9 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
     // Phase 21-23 Modules
     typeof(Onesign.Modules.Deployment.Application.Commands.BootstrapEnvironmentCommand).Assembly,
     typeof(Onesign.Modules.Crypto.Application.Commands.RolloverKeyCommand).Assembly,
-    typeof(Onesign.Modules.Privacy.Application.Commands.CreateDataSubjectRequestCommand).Assembly));
+    typeof(Onesign.Modules.Privacy.Application.Commands.CreateDataSubjectRequestCommand).Assembly,
+    // Phase 18 - Adaptive Security
+    typeof(Onesign.Modules.AdaptiveSecurity.Application.Commands.CreateAdaptivePolicyCommand).Assembly));
 
 // Repositories
 builder.Services.AddScoped<ITenantRepository>(sp => 
@@ -179,9 +184,25 @@ builder.Services.AddScoped<Onesign.Shared.Localization.ILocalizationService, One
 // HttpClient for external services
 builder.Services.AddHttpClient();
 
+// Phase 13 - Platform Hardening & Scale Services
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ITenantContextAccessor, TenantContextAccessor>();
+builder.Services.AddSingleton<IResourceQuotaService, ResourceQuotaService>();
+
 // Background services
 builder.Services.AddHostedService<SessionCleanupService>();
 builder.Services.AddHostedService<ClientSecretCleanupService>();
+builder.Services.AddHostedService<NotificationDeliveryWorker>();
+builder.Services.AddHostedService<LifecycleProcessorWorker>();
+builder.Services.AddHostedService<JitExpiryWorker>();
+builder.Services.AddHostedService<RiskScoringWorker>();
+builder.Services.AddHostedService<WebhookDeliveryWorker>();
+builder.Services.AddHostedService<RetentionCleanupWorker>();
+builder.Services.AddHostedService<KeyRotationWorker>();
+builder.Services.AddHostedService<BackupSchedulerWorker>();
+builder.Services.AddHostedService<HealthCheckWorker>();
+builder.Services.AddHostedService<AuditCleanupWorker>();
+builder.Services.AddHostedService<InsightGenerationWorker>();
 
 var app = builder.Build();
 
@@ -196,17 +217,30 @@ app.UseCors();
 app.UseHttpsRedirection();
 app.UseSession();
 
-// Rate Limiting (must be before other middleware)
+// Security Headers (must be first to ensure all responses have headers)
+app.UseMiddleware<Onesign.Api.Middleware.SecurityHeadersMiddleware>();
+
+// Global Exception Handler (must be early in pipeline)
+app.UseMiddleware<Onesign.Api.Middleware.GlobalExceptionHandlerMiddleware>();
+
+// Rate Limiting - IP-based (legacy, for basic protection)
 app.UseMiddleware<Onesign.Api.Middleware.RateLimitMiddleware>();
 
 // Localization middleware (must be before controllers)
 app.UseMiddleware<Onesign.Api.Middleware.LocalizationMiddleware>();
 
-// Global Exception Handler (must be early in pipeline)
-app.UseMiddleware<Onesign.Api.Middleware.GlobalExceptionHandlerMiddleware>();
-
 // JWT Authentication Middleware (must be before UseAuthorization)
 app.UseMiddleware<Onesign.Api.Middleware.JwtAuthenticationMiddleware>();
+
+// Phase 13 - Tenant Isolation and Status Middleware
+// Tenant Isolation - Extract and validate tenant context
+app.UseMiddleware<Onesign.Api.Middleware.TenantIsolationMiddleware>();
+
+// Tenant Status - Check tenant status (suspended/maintenance)
+app.UseMiddleware<Onesign.Api.Middleware.TenantStatusMiddleware>();
+
+// Per-Tenant Rate Limiting - Apply rate limits based on tenant plan
+app.UseMiddleware<Onesign.Api.Middleware.TenantRateLimitMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
