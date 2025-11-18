@@ -52,6 +52,8 @@
     <ProjectReference Include="..\Onesign.Modules.AccessRequests\Onesign.Modules.AccessRequests.csproj" />
     <ProjectReference Include="..\Onesign.Modules.AdaptiveSecurity\Onesign.Modules.AdaptiveSecurity.csproj" />
     <ProjectReference Include="..\Onesign.Modules.AccountCenter\Onesign.Modules.AccountCenter.csproj" />
+    <ProjectReference Include="..\Onesign.Cli\Onesign.Cli.csproj" />
+    <ProjectReference Include="..\Onesign.Sdk.DotNet\Onesign.Sdk.DotNet.csproj" />
   </ItemGroup>
 
 </Project>
