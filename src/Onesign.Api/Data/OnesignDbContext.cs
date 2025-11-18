@@ -3,6 +3,16 @@ using Onesign.Modules.Applications.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Applications.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Audit.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Audit.Infrastructure.EfCore.Entities;
+using Onesign.Modules.Authorization.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Authorization.Infrastructure.EfCore.Entities;
+using Onesign.Modules.Billing.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Billing.Infrastructure.EfCore.Entities;
+using Onesign.Modules.Developer.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Developer.Infrastructure.EfCore.Entities;
+using Onesign.Modules.Federation.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Federation.Infrastructure.EfCore.Entities;
+using Onesign.Modules.Observability.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Observability.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Identity.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Identity.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Organization.Infrastructure.EfCore.Configurations;
@@ -137,6 +147,37 @@ public class OnesignDbContext : DbContext
     public DbSet<DataRetentionPolicyEntity> DataRetentionPolicies => Set<DataRetentionPolicyEntity>();
     public DbSet<DataSubjectRequestEntity> DataSubjectRequests => Set<DataSubjectRequestEntity>();
 
+    // Federation
+    public DbSet<SamlProviderEntity> SamlProviders => Set<SamlProviderEntity>();
+    public DbSet<OidcFederationProviderEntity> OidcFederationProviders => Set<OidcFederationProviderEntity>();
+    public DbSet<AttributeMappingEntity> AttributeMappings => Set<AttributeMappingEntity>();
+    public DbSet<ScimTokenEntity> ScimTokens => Set<ScimTokenEntity>();
+    public DbSet<JitProvisioningLogEntity> JitProvisioningLogs => Set<JitProvisioningLogEntity>();
+
+    // Billing
+    public DbSet<PlanEntity> Plans => Set<PlanEntity>();
+    public DbSet<PlanFeatureEntity> PlanFeatures => Set<PlanFeatureEntity>();
+    public DbSet<TenantSubscriptionEntity> TenantSubscriptions => Set<TenantSubscriptionEntity>();
+    public DbSet<UsageCounterEntity> UsageCounters => Set<UsageCounterEntity>();
+    public DbSet<TenantUsageSnapshotEntity> TenantUsageSnapshots => Set<TenantUsageSnapshotEntity>();
+
+    // Observability
+    public DbSet<AuditEventEntity> AuditEventsObservability => Set<AuditEventEntity>();
+
+    // Authorization
+    public DbSet<PolicyDefinitionEntity> PolicyDefinitions => Set<PolicyDefinitionEntity>();
+    public DbSet<PolicyConditionGroupEntity> PolicyConditionGroups => Set<PolicyConditionGroupEntity>();
+    public DbSet<PolicyConditionEntity> PolicyConditions => Set<PolicyConditionEntity>();
+    public DbSet<PolicyTargetEntity> PolicyTargets => Set<PolicyTargetEntity>();
+    public DbSet<PolicyAssignmentEntity> PolicyAssignments => Set<PolicyAssignmentEntity>();
+
+    // Developer
+    public DbSet<ApiKeyEntity> ApiKeys => Set<ApiKeyEntity>();
+    public DbSet<ServiceAccountEntity> ServiceAccounts => Set<ServiceAccountEntity>();
+    public DbSet<SdkConfigurationEntity> SdkConfigurations => Set<SdkConfigurationEntity>();
+    public DbSet<WebhookEndpointEntity> WebhookEndpoints => Set<WebhookEndpointEntity>();
+    public DbSet<ApiUsageLogEntity> ApiUsageLogs => Set<ApiUsageLogEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -174,6 +215,37 @@ public class OnesignDbContext : DbContext
         modelBuilder.ApplyConfiguration(new MfaChallengeEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new TrustedDeviceEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new RiskEventEntityTypeConfiguration());
+
+        // Federation
+        modelBuilder.ApplyConfiguration(new SamlProviderEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new OidcFederationProviderEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new AttributeMappingEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new ScimTokenEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new JitProvisioningLogEntityTypeConfiguration());
+
+        // Billing
+        modelBuilder.ApplyConfiguration(new PlanEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new PlanFeatureEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new TenantSubscriptionEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new UsageCounterEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new TenantUsageSnapshotEntityTypeConfiguration());
+
+        // Observability
+        modelBuilder.ApplyConfiguration(new AuditEventEntityTypeConfiguration());
+
+        // Authorization
+        modelBuilder.ApplyConfiguration(new PolicyDefinitionEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new PolicyConditionGroupEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new PolicyConditionEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new PolicyTargetEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new PolicyAssignmentEntityTypeConfiguration());
+
+        // Developer
+        modelBuilder.ApplyConfiguration(new ApiKeyEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new ServiceAccountEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new SdkConfigurationEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new WebhookEndpointEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new ApiUsageLogEntityTypeConfiguration());
         // NotificationCenter
         modelBuilder.ApplyConfiguration(new NotificationTemplateEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new NotificationChannelConfigEntityTypeConfiguration());
