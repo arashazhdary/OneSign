@@ -39,6 +39,19 @@
     "processing": "Processing authentication...",
     "success": "Authentication successful",
     "error": "Authentication failed"
+  },
+  "mfa": {
+    "title": "Two-Factor Authentication",
+    "enterCode": "Enter the verification code from",
+    "code": "Verification Code",
+    "methodTotp": "your authenticator app",
+    "methodEmail": "your email",
+    "methodSms": "your phone",
+    "methodGeneric": "your device",
+    "rememberDevice": "Trust this device for 30 days",
+    "verify": "Verify",
+    "invalidCode": "Invalid verification code",
+    "backToLogin": "Back to Login"
   }
 }
 

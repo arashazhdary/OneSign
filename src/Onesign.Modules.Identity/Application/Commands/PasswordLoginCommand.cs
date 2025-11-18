@@ -10,5 +10,6 @@ public class PasswordLoginCommand : IRequest<Result<LoginResponse>>
     public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
     public Guid? ClientId { get; set; }
+    public string? DeviceFingerprint { get; set; }
 }
 

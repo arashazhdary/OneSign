@@ -145,6 +145,52 @@
       "selectOrgUnits": "انتخاب واحدهای سازمانی",
       "orgUnitsAssigned": "واحدهای سازمانی با موفقیت اختصاص داده شدند"
     }
+  },
+  "security": {
+    "title": "مرکز امنیت",
+    "policySettings": "تنظیمات خط‌مشی امنیتی",
+    "mfaRequirement": "الزام احراز هویت دو مرحله‌ای",
+    "mfaNone": "هیچکدام - غیرفعال",
+    "mfaAdminsOnly": "فقط مدیران",
+    "mfaAllUsers": "همه کاربران",
+    "allowTrustedDevices": "اجازه دستگاه‌های مورد اعتماد",
+    "trustedDeviceExpireDays": "انقضای دستگاه مورد اعتماد (روز)",
+    "sessionTimeoutMinutes": "زمان انقضای نشست (دقیقه)",
+    "maxFailedLoginAttempts": "حداکثر تلاش ناموفق ورود",
+    "updatePolicy": "به‌روزرسانی خط‌مشی امنیتی",
+    "policyUpdated": "خط‌مشی امنیتی با موفقیت به‌روزرسانی شد",
+    "mfaMethods": "روش‌های احراز هویت دو مرحله‌ای",
+    "mfaMethodsDescription": "مدیریت روش‌های احراز هویت دو مرحله‌ای",
+    "enrollTotp": "ثبت‌نام اپلیکیشن احراز هویت (TOTP)",
+    "scanQrCode": "این کد QR را با اپلیکیشن احراز هویت خود اسکن کنید",
+    "enterTotpCode": "کد ۶ رقمی از اپلیکیشن خود را وارد کنید",
+    "confirm": "تایید",
+    "totpEnrolled": "TOTP با موفقیت ثبت شد",
+    "invalidTotpCode": "کد TOTP نامعتبر است"
+  },
+  "riskEvents": {
+    "title": "رویدادهای ریسک",
+    "date": "تاریخ",
+    "eventType": "نوع رویداد",
+    "riskLevel": "سطح ریسک",
+    "ipAddress": "آدرس IP",
+    "location": "موقعیت",
+    "details": "جزئیات",
+    "allTypes": "همه انواع",
+    "allLevels": "همه سطوح",
+    "noEvents": "هیچ رویداد ریسکی یافت نشد",
+    "newDeviceLogin": "ورود از دستگاه جدید",
+    "geoAnomaly": "ناهنجاری جغرافیایی",
+    "multipleFailedLogins": "تلاش‌های ناموفق متعدد",
+    "suspiciousActivity": "فعالیت مشکوک",
+    "accountLockout": "قفل شدن حساب",
+    "unknown": "نامشخص",
+    "low": "کم",
+    "medium": "متوسط",
+    "high": "زیاد",
+    "page": "صفحه",
+    "previous": "قبلی",
+    "next": "بعدی"
   }
 }
 

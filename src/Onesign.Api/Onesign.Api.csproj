@@ -27,6 +27,7 @@
     <ProjectReference Include="..\Onesign.Modules.Applications\Onesign.Modules.Applications.csproj" />
     <ProjectReference Include="..\Onesign.Modules.Audit\Onesign.Modules.Audit.csproj" />
     <ProjectReference Include="..\Onesign.Modules.Organization\Onesign.Modules.Organization.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Security\Onesign.Modules.Security.csproj" />
     <!-- Phase 11-20 Modules -->
     <ProjectReference Include="..\Onesign.Modules.NotificationCenter\Onesign.Modules.NotificationCenter.csproj" />
     <ProjectReference Include="..\Onesign.Modules.AccessRequests\Onesign.Modules.AccessRequests.csproj" />

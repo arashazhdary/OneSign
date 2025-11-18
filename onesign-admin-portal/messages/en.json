@@ -145,6 +145,52 @@
       "selectOrgUnits": "Select Org Units",
       "orgUnitsAssigned": "Org Units assigned successfully"
     }
+  },
+  "security": {
+    "title": "Security Center",
+    "policySettings": "Security Policy Settings",
+    "mfaRequirement": "MFA Requirement",
+    "mfaNone": "None - MFA Disabled",
+    "mfaAdminsOnly": "Admins Only",
+    "mfaAllUsers": "All Users",
+    "allowTrustedDevices": "Allow Trusted Devices",
+    "trustedDeviceExpireDays": "Trusted Device Expiration (Days)",
+    "sessionTimeoutMinutes": "Session Timeout (Minutes)",
+    "maxFailedLoginAttempts": "Max Failed Login Attempts",
+    "updatePolicy": "Update Security Policy",
+    "policyUpdated": "Security policy updated successfully",
+    "mfaMethods": "MFA Methods",
+    "mfaMethodsDescription": "Manage your multi-factor authentication methods",
+    "enrollTotp": "Enroll Authenticator App (TOTP)",
+    "scanQrCode": "Scan this QR code with your authenticator app",
+    "enterTotpCode": "Enter the 6-digit code from your app",
+    "confirm": "Confirm",
+    "totpEnrolled": "TOTP enrolled successfully",
+    "invalidTotpCode": "Invalid TOTP code"
+  },
+  "riskEvents": {
+    "title": "Risk Events",
+    "date": "Date",
+    "eventType": "Event Type",
+    "riskLevel": "Risk Level",
+    "ipAddress": "IP Address",
+    "location": "Location",
+    "details": "Details",
+    "allTypes": "All Types",
+    "allLevels": "All Levels",
+    "noEvents": "No risk events found",
+    "newDeviceLogin": "New Device Login",
+    "geoAnomaly": "Geographic Anomaly",
+    "multipleFailedLogins": "Multiple Failed Logins",
+    "suspiciousActivity": "Suspicious Activity",
+    "accountLockout": "Account Lockout",
+    "unknown": "Unknown",
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "page": "Page",
+    "previous": "Previous",
+    "next": "Next"
   }
 }
 

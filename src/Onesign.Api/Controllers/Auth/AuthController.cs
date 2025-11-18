@@ -71,7 +71,8 @@ public class AuthController : ControllerBase
         {
             TenantId = tenantId,
             Email = request.Email,
-            Password = request.Password
+            Password = request.Password,
+            DeviceFingerprint = request.DeviceFingerprint
         };
         var result = await _mediator.Send(command);
         
