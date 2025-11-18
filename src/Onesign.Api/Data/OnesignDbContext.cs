@@ -91,19 +91,29 @@ public class OnesignDbContext : DbContext
     public DbSet<HRIdentityRecordEntity> HRIdentityRecords => Set<HRIdentityRecordEntity>();
     public DbSet<LifecycleEventEntity> LifecycleEvents => Set<LifecycleEventEntity>();
     public DbSet<AccessPackageEntity> AccessPackages => Set<AccessPackageEntity>();
+    public DbSet<LifecyclePolicyEntity> LifecyclePolicies => Set<LifecyclePolicyEntity>();
 
     // PrivilegedAccess
     public DbSet<JitGrantEntity> JitGrants => Set<JitGrantEntity>();
+    public DbSet<BreakGlassAccountEntity> BreakGlassAccounts => Set<BreakGlassAccountEntity>();
+    public DbSet<PrivilegedSessionEntity> PrivilegedSessions => Set<PrivilegedSessionEntity>();
 
     // IdentityInsights
     public DbSet<UserRiskProfileEntity> UserRiskProfiles => Set<UserRiskProfileEntity>();
     public DbSet<InsightEntity> Insights => Set<InsightEntity>();
+    public DbSet<TenantRiskProfileEntity> TenantRiskProfiles => Set<TenantRiskProfileEntity>();
 
     // Extensibility
     public DbSet<WebhookSubscriptionEntity> WebhookSubscriptions => Set<WebhookSubscriptionEntity>();
+    public DbSet<LoginHookEntity> LoginHooks => Set<LoginHookEntity>();
+    public DbSet<TokenTransformationRuleEntity> TokenTransformationRules => Set<TokenTransformationRuleEntity>();
+    public DbSet<WebhookDeliveryLogEntity> WebhookDeliveryLogs => Set<WebhookDeliveryLogEntity>();
 
     // MultiRegion
     public DbSet<RegionEntity> Regions => Set<RegionEntity>();
+    public DbSet<TenantDataResidencyEntity> TenantDataResidencies => Set<TenantDataResidencyEntity>();
+    public DbSet<RegionBackupSetEntity> RegionBackupSets => Set<RegionBackupSetEntity>();
+    public DbSet<TenantBackupSetEntity> TenantBackupSets => Set<TenantBackupSetEntity>();
 
     // Deployment
     public DbSet<DeploymentEnvironmentEntity> DeploymentEnvironments => Set<DeploymentEnvironmentEntity>();
@@ -165,19 +175,29 @@ public class OnesignDbContext : DbContext
         modelBuilder.ApplyConfiguration(new HRIdentityRecordEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new LifecycleEventEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new AccessPackageEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new LifecyclePolicyEntityTypeConfiguration());
 
         // PrivilegedAccess
         modelBuilder.ApplyConfiguration(new JitGrantEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new BreakGlassAccountEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new PrivilegedSessionEntityTypeConfiguration());
 
         // IdentityInsights
         modelBuilder.ApplyConfiguration(new UserRiskProfileEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new InsightEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new TenantRiskProfileEntityTypeConfiguration());
 
         // Extensibility
         modelBuilder.ApplyConfiguration(new WebhookSubscriptionEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new LoginHookEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new TokenTransformationRuleEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new WebhookDeliveryLogEntityTypeConfiguration());
 
         // MultiRegion
         modelBuilder.ApplyConfiguration(new RegionEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new TenantDataResidencyEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new RegionBackupSetEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new TenantBackupSetEntityTypeConfiguration());
 
         // Deployment
         modelBuilder.ApplyConfiguration(new DeploymentEnvironmentEntityTypeConfiguration());
