@@ -6,6 +6,9 @@ using Onesign.Modules.Identity.Application.DTOs;
 using Onesign.Modules.Identity.Domain.Entities;
 using Onesign.Modules.Identity.Domain.Repositories;
 using Onesign.Modules.Identity.Domain.Services;
+using Onesign.Modules.Security.Application.Commands;
+using Onesign.Modules.Security.Application.Queries;
+using Onesign.Modules.Security.Domain.Enums;
 using Onesign.Shared.Result;
 using System.Security.Cryptography;
 
@@ -68,6 +71,68 @@ public class PasswordLoginCommandHandler : IRequestHandler<PasswordLoginCommand,
         {
             _logger.LogWarning("Login failed: user account disabled for TenantUserId: {TenantUserId}", tenantUser.Id);
             return Result.Failure<LoginResponse>("USER_INACTIVE", "User account is not active");
+        }
+
+        // Check if MFA is required
+        var mfaRequiredQuery = new CheckMfaRequirementQuery
+        {
+            TenantId = request.TenantId,
+            UserId = tenantUser.Id,
+            OrgUnitId = null, // Can be extracted from user's org unit assignment
+            IsAdmin = tenantUser.IsAdmin
+        };
+        var mfaRequired = await _mediator.Send(mfaRequiredQuery, cancellationToken);
+
+        if (mfaRequired && !string.IsNullOrEmpty(request.DeviceFingerprint))
+        {
+            // Check if device is trusted
+            var trustedDeviceQuery = new CheckTrustedDeviceQuery
+            {
+                UserId = tenantUser.Id,
+                DeviceFingerprint = request.DeviceFingerprint
+            };
+            var isTrusted = await _mediator.Send(trustedDeviceQuery, cancellationToken);
+
+            if (isTrusted)
+            {
+                mfaRequired = false;
+                _logger.LogInformation("MFA bypassed for trusted device. TenantUserId: {TenantUserId}", tenantUser.Id);
+            }
+        }
+
+        // If MFA is required and device is not trusted, create MFA challenge
+        if (mfaRequired)
+        {
+            try
+            {
+                var challengeCommand = new CreateMfaChallengeCommand
+                {
+                    UserId = tenantUser.Id,
+                    TenantId = request.TenantId,
+                    PreferredMethodType = null,
+                    UserEmail = globalUser.Email
+                };
+                var challenge = await _mediator.Send(challengeCommand, cancellationToken);
+
+                _logger.LogInformation("MFA challenge created for TenantUserId: {TenantUserId}", tenantUser.Id);
+
+                return Result.Success(new LoginResponse
+                {
+                    MfaRequired = true,
+                    ChallengeId = challenge.ChallengeId,
+                    MfaMethodType = challenge.MethodType,
+                    MaskedDestination = challenge.MaskedDestination,
+                    AccessToken = string.Empty,
+                    IdToken = string.Empty,
+                    TokenType = "Bearer",
+                    ExpiresIn = 0
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create MFA challenge for TenantUserId: {TenantUserId}", tenantUser.Id);
+                return Result.Failure<LoginResponse>("MFA_CHALLENGE_FAILED", "Failed to create MFA challenge");
+            }
         }
 
         var clientId = request.ClientId ?? Guid.Empty;

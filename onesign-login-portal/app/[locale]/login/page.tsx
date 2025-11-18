@@ -168,7 +168,20 @@ export default function LoginPage() {
       }
 
       const data = await response.json();
-      
+
+      // Check if MFA is required
+      if (data.mfaRequired) {
+        // Redirect to MFA challenge page
+        const mfaUrl = `/${locale}/mfa-challenge?challengeId=${data.challengeId}&methodType=${data.mfaMethodType}&tenantId=${tenantId}`;
+        if (clientId) {
+          router.push(`${mfaUrl}&client_id=${clientId}&redirect_uri=${redirectUri}&state=${state || ''}&code_challenge=${codeChallenge || ''}&code_challenge_method=${codeChallengeMethod || ''}`);
+        } else {
+          router.push(mfaUrl);
+        }
+        setLoading(false);
+        return;
+      }
+
       // If OIDC flow, redirect to authorize endpoint
       if (clientId && redirectUri) {
         const authorizeUrl = new URL('http://localhost:7000/connect/authorize');
@@ -180,7 +193,7 @@ export default function LoginPage() {
         if (codeChallenge) authorizeUrl.searchParams.set('code_challenge', codeChallenge);
         if (codeChallengeMethod) authorizeUrl.searchParams.set('code_challenge_method', codeChallengeMethod);
         authorizeUrl.searchParams.set('tenantId', tenantId);
-        
+
         // Authorization code will be handled by the callback page
         window.location.href = authorizeUrl.toString();
       } else {
