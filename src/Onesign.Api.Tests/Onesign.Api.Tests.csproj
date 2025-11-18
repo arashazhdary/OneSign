@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -20,8 +20,10 @@
 
   <ItemGroup>
     <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="FluentAssertions" Version="8.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.0" />
     <PackageReference Include="MediatR" Version="13.1.0" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,6 +32,11 @@
     <ProjectReference Include="..\Onesign.Modules.Identity\Onesign.Modules.Identity.csproj" />
     <ProjectReference Include="..\Onesign.Modules.Applications\Onesign.Modules.Applications.csproj" />
     <ProjectReference Include="..\Onesign.Modules.Audit\Onesign.Modules.Audit.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Authorization\Onesign.Modules.Authorization.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Federation\Onesign.Modules.Federation.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Billing\Onesign.Modules.Billing.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.NotificationCenter\Onesign.Modules.NotificationCenter.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Security\Onesign.Modules.Security.csproj" />
     <ProjectReference Include="..\Onesign.Shared\Onesign.Shared.csproj" />
   </ItemGroup>
 
