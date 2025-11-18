@@ -37,7 +37,21 @@
     <ProjectReference Include="..\Onesign.Modules.Billing\Onesign.Modules.Billing.csproj" />
     <ProjectReference Include="..\Onesign.Modules.NotificationCenter\Onesign.Modules.NotificationCenter.csproj" />
     <ProjectReference Include="..\Onesign.Modules.Security\Onesign.Modules.Security.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Privacy\Onesign.Modules.Privacy.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Governance\Onesign.Modules.Governance.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Observability\Onesign.Modules.Observability.csproj" />
     <ProjectReference Include="..\Onesign.Shared\Onesign.Shared.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Crypto\Onesign.Modules.Crypto.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Deployment\Onesign.Modules.Deployment.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Developer\Onesign.Modules.Developer.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Extensibility\Onesign.Modules.Extensibility.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.IdentityInsights\Onesign.Modules.IdentityInsights.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.IdentityLifecycle\Onesign.Modules.IdentityLifecycle.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.MultiRegion\Onesign.Modules.MultiRegion.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.PrivilegedAccess\Onesign.Modules.PrivilegedAccess.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.AccessRequests\Onesign.Modules.AccessRequests.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.AdaptiveSecurity\Onesign.Modules.AdaptiveSecurity.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.AccountCenter\Onesign.Modules.AccountCenter.csproj" />
   </ItemGroup>
 
 </Project>
