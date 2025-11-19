@@ -116,7 +116,7 @@ public class DashboardContextHandler : IContextHandler
     {
         try
         {
-            var riskyUsers = await _securityPostureRepository.GetHighRiskUsersAsync(tenantId, 100, cancellationToken);
+            var riskyUsers = await _securityPostureRepository.GetHighRiskUsersAsync(tenantId, 1, 100, cancellationToken);
             return riskyUsers?.Count ?? 0;
         }
         catch (Exception ex)
@@ -144,7 +144,7 @@ public class DashboardContextHandler : IContextHandler
     {
         try
         {
-            var riskyUsers = await _securityPostureRepository.GetHighRiskUsersAsync(tenantId, 5, cancellationToken);
+            var riskyUsers = await _securityPostureRepository.GetHighRiskUsersAsync(tenantId, 1, 5, cancellationToken);
             if (riskyUsers == null)
                 return new List<TopRiskDto>();
 

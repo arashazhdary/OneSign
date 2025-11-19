@@ -17,5 +17,9 @@ public class TenantDailyUsageSnapshot
     public int AccessRequestApprovedCount { get; set; }
     public int LifecycleEventsCount { get; set; }
     public int EmergencyAccessCount { get; set; }
+    public int ActiveIncidents { get; set; }
+    public int PendingChangeSets { get; set; }
+    public int RiskyApplications { get; set; }
+    public int SecurityScore { get; set; }
     public DateTime CreatedAt { get; set; }
 }

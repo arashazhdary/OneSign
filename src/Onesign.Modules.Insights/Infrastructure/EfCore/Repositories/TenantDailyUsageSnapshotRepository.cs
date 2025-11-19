@@ -55,6 +55,15 @@ public class TenantDailyUsageSnapshotRepository : ITenantDailyUsageSnapshotRepos
         return entities.Select(MapToDomain).ToList();
     }
 
+    public async Task<TenantDailyUsageSnapshot?> GetLatestAsync(Guid tenantId, CancellationToken ct = default)
+    {
+        var entity = await _dbContext.Set<TenantDailyUsageSnapshotEntity>()
+            .Where(x => x.TenantId == tenantId)
+            .OrderByDescending(x => x.Date)
+            .FirstOrDefaultAsync(ct);
+        return entity == null ? null : MapToDomain(entity);
+    }
+
     public async Task AddAsync(TenantDailyUsageSnapshot snapshot, CancellationToken ct = default)
     {
         var entity = MapToEntity(snapshot);
@@ -80,6 +89,10 @@ public class TenantDailyUsageSnapshotRepository : ITenantDailyUsageSnapshotRepos
             entity.AccessRequestApprovedCount = snapshot.AccessRequestApprovedCount;
             entity.LifecycleEventsCount = snapshot.LifecycleEventsCount;
             entity.EmergencyAccessCount = snapshot.EmergencyAccessCount;
+            entity.ActiveIncidents = snapshot.ActiveIncidents;
+            entity.PendingChangeSets = snapshot.PendingChangeSets;
+            entity.RiskyApplications = snapshot.RiskyApplications;
+            entity.SecurityScore = snapshot.SecurityScore;
             await _dbContext.SaveChangesAsync(ct);
         }
     }
@@ -121,6 +134,10 @@ public class TenantDailyUsageSnapshotRepository : ITenantDailyUsageSnapshotRepos
         AccessRequestApprovedCount = entity.AccessRequestApprovedCount,
         LifecycleEventsCount = entity.LifecycleEventsCount,
         EmergencyAccessCount = entity.EmergencyAccessCount,
+        ActiveIncidents = entity.ActiveIncidents,
+        PendingChangeSets = entity.PendingChangeSets,
+        RiskyApplications = entity.RiskyApplications,
+        SecurityScore = entity.SecurityScore,
         CreatedAt = entity.CreatedAt
     };
 
@@ -141,6 +158,10 @@ public class TenantDailyUsageSnapshotRepository : ITenantDailyUsageSnapshotRepos
         AccessRequestApprovedCount = snapshot.AccessRequestApprovedCount,
         LifecycleEventsCount = snapshot.LifecycleEventsCount,
         EmergencyAccessCount = snapshot.EmergencyAccessCount,
+        ActiveIncidents = snapshot.ActiveIncidents,
+        PendingChangeSets = snapshot.PendingChangeSets,
+        RiskyApplications = snapshot.RiskyApplications,
+        SecurityScore = snapshot.SecurityScore,
         CreatedAt = snapshot.CreatedAt
     };
 }
