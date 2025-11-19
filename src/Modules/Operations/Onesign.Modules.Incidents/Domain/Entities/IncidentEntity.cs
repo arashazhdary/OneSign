@@ -2,7 +2,10 @@ using Onesign.Modules.Incidents.Domain.Enums;
 
 namespace Onesign.Modules.Incidents.Domain.Entities;
 
-public class IncidentEntity
+/// <summary>
+/// Represents a linked entity associated with an incident (e.g., affected user, application, etc.)
+/// </summary>
+public class IncidentLinkedItem
 {
     public Guid Id { get; set; }
     public Guid IncidentId { get; set; }
@@ -11,3 +14,7 @@ public class IncidentEntity
     public string EntityName { get; set; } = string.Empty;
     public IncidentEntityRole Role { get; set; }
 }
+
+// Alias for backward compatibility
+[Obsolete("Use IncidentLinkedItem instead. This alias will be removed in a future version.")]
+public class IncidentEntity : IncidentLinkedItem { }

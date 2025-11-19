@@ -233,7 +233,7 @@ public class OnesignDbContext : DbContext
     public DbSet<TenantUsageSnapshotEntity> TenantUsageSnapshots => Set<TenantUsageSnapshotEntity>();
 
     // Observability
-    public DbSet<AuditEventEntity> AuditEventsObservability => Set<AuditEventEntity>();
+    public DbSet<Onesign.Modules.Observability.Infrastructure.EfCore.Entities.ObservabilityAuditEventEntity> ObservabilityAuditEvents => Set<Onesign.Modules.Observability.Infrastructure.EfCore.Entities.ObservabilityAuditEventEntity>();
 
     // Authorization
     public DbSet<PolicyDefinitionEntity> PolicyDefinitions => Set<PolicyDefinitionEntity>();
@@ -302,7 +302,7 @@ public class OnesignDbContext : DbContext
         modelBuilder.ApplyConfiguration(new TenantUsageSnapshotEntityTypeConfiguration());
 
         // Observability
-        modelBuilder.ApplyConfiguration(new AuditEventEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new Onesign.Modules.Observability.Infrastructure.EfCore.Configurations.ObservabilityAuditEventEntityTypeConfiguration());
 
         // Authorization
         modelBuilder.ApplyConfiguration(new PolicyDefinitionEntityTypeConfiguration());
