@@ -54,6 +54,14 @@
     <ProjectReference Include="..\Onesign.Modules.AccountCenter\Onesign.Modules.AccountCenter.csproj" />
     <ProjectReference Include="..\Onesign.Cli\Onesign.Cli.csproj" />
     <ProjectReference Include="..\Onesign.Sdk.DotNet\Onesign.Sdk.DotNet.csproj" />
+    <!-- Phase 24-30 Modules -->
+    <ProjectReference Include="..\Onesign.Modules.Platform\Onesign.Modules.Platform.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Insights\Onesign.Modules.Insights.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Automation\Onesign.Modules.Automation.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.ChangeManagement\Onesign.Modules.ChangeManagement.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Incidents\Onesign.Modules.Incidents.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Hunting\Onesign.Modules.Hunting.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Copilot\Onesign.Modules.Copilot.csproj" />
   </ItemGroup>
 
 </Project>

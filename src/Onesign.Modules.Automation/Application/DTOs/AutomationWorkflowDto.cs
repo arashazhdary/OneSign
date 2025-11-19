@@ -62,6 +62,20 @@ public class AutomationExecutionDto
     public int ActionsExecutedCount { get; set; }
     public int ActionsFailedCount { get; set; }
     public string PayloadSnapshot { get; set; } = "{}";
+    public long? DurationMs { get; set; }
+    public List<ActionExecutionLogDto> ActionLogs { get; set; } = new();
+}
+
+public class ActionExecutionLogDto
+{
+    public string ActionType { get; set; } = string.Empty;
+    public int Order { get; set; }
+    public bool IsCritical { get; set; }
+    public DateTimeOffset StartedAt { get; set; }
+    public DateTimeOffset? CompletedAt { get; set; }
+    public string Status { get; set; } = "Pending";
+    public string? ErrorMessage { get; set; }
+    public string? ResultData { get; set; }
 }
 
 public class WorkflowTestResultDto

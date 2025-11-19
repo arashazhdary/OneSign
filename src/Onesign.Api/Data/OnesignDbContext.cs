@@ -57,6 +57,24 @@ using Onesign.Modules.AdaptiveSecurity.Infrastructure.EfCore.Entities;
 // Phase 26 - Automation
 using Onesign.Modules.Automation.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Automation.Infrastructure.EfCore.Entities;
+// Phase 24 - Platform
+using Onesign.Modules.Platform.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Platform.Infrastructure.EfCore.Entities;
+// Phase 25 - Insights
+using Onesign.Modules.Insights.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Insights.Infrastructure.EfCore.Entities;
+// Phase 27 - Change Management
+using Onesign.Modules.ChangeManagement.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.ChangeManagement.Infrastructure.EfCore.Entities;
+// Phase 28 - Incidents
+using Onesign.Modules.Incidents.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Incidents.Infrastructure.EfCore.Entities;
+// Phase 29 - Hunting
+using Onesign.Modules.Hunting.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Hunting.Infrastructure.EfCore.Entities;
+// Phase 30 - Copilot
+using Onesign.Modules.Copilot.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Copilot.Infrastructure.EfCore.Entities;
 
 namespace Onesign.Api.Data;
 
@@ -164,6 +182,41 @@ public class OnesignDbContext : DbContext
     public DbSet<AutomationConditionEntity> AutomationConditions => Set<AutomationConditionEntity>();
     public DbSet<AutomationActionEntity> AutomationActions => Set<AutomationActionEntity>();
     public DbSet<AutomationExecutionEntity> AutomationExecutions => Set<AutomationExecutionEntity>();
+
+    // Platform
+    public DbSet<PlatformVersionEntity> PlatformVersions => Set<PlatformVersionEntity>();
+    public DbSet<MigrationHistoryEntity> MigrationHistories => Set<MigrationHistoryEntity>();
+    public DbSet<IntegrationTestResultEntity> IntegrationTestResults => Set<IntegrationTestResultEntity>();
+
+    // Insights
+    public DbSet<TenantDailyUsageSnapshotEntity> TenantDailyUsageSnapshots => Set<TenantDailyUsageSnapshotEntity>();
+    public DbSet<ApplicationDailyUsageSnapshotEntity> ApplicationDailyUsageSnapshots => Set<ApplicationDailyUsageSnapshotEntity>();
+    public DbSet<UserSecurityPostureEntity> UserSecurityPostures => Set<UserSecurityPostureEntity>();
+    public DbSet<ReportSubscriptionEntity> ReportSubscriptions => Set<ReportSubscriptionEntity>();
+
+    // ChangeManagement
+    public DbSet<ChangeSetEntity> ChangeSets => Set<ChangeSetEntity>();
+    public DbSet<ChangeItemEntity> ChangeItems => Set<ChangeItemEntity>();
+    public DbSet<ChangeApprovalRuleEntity> ChangeApprovalRules => Set<ChangeApprovalRuleEntity>();
+    public DbSet<ChangeApprovalEntity> ChangeApprovals => Set<ChangeApprovalEntity>();
+    public DbSet<ChangeExecutionLogEntity> ChangeExecutionLogs => Set<ChangeExecutionLogEntity>();
+
+    // Incidents
+    public DbSet<Onesign.Modules.Incidents.Infrastructure.EfCore.Entities.IncidentEntity> Incidents => Set<Onesign.Modules.Incidents.Infrastructure.EfCore.Entities.IncidentEntity>();
+    public DbSet<IncidentEventEntity> IncidentEvents => Set<IncidentEventEntity>();
+    public DbSet<IncidentLinkedEntity> IncidentLinkedEntities => Set<IncidentLinkedEntity>();
+    public DbSet<IncidentNoteEntity> IncidentNotes => Set<IncidentNoteEntity>();
+    public DbSet<IncidentPlaybookRunEntity> IncidentPlaybookRuns => Set<IncidentPlaybookRunEntity>();
+
+    // Hunting
+    public DbSet<SavedQueryEntity> SavedQueries => Set<SavedQueryEntity>();
+    public DbSet<ScheduledHuntEntity> ScheduledHunts => Set<ScheduledHuntEntity>();
+    public DbSet<HuntRunEntity> HuntRuns => Set<HuntRunEntity>();
+    public DbSet<HuntSampleRowEntity> HuntSampleRows => Set<HuntSampleRowEntity>();
+
+    // Copilot
+    public DbSet<CopilotConversationEntity> CopilotConversations => Set<CopilotConversationEntity>();
+    public DbSet<CopilotMessageEntity> CopilotMessages => Set<CopilotMessageEntity>();
 
     // Federation
     public DbSet<SamlProviderEntity> SamlProviders => Set<SamlProviderEntity>();
@@ -329,6 +382,41 @@ public class OnesignDbContext : DbContext
         modelBuilder.ApplyConfiguration(new AutomationConditionEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new AutomationActionEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new AutomationExecutionEntityTypeConfiguration());
+
+        // Platform
+        modelBuilder.ApplyConfiguration(new PlatformVersionEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new MigrationHistoryEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new IntegrationTestResultEntityTypeConfiguration());
+
+        // Insights
+        modelBuilder.ApplyConfiguration(new TenantDailyUsageSnapshotEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new ApplicationDailyUsageSnapshotEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new UserSecurityPostureEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new ReportSubscriptionEntityTypeConfiguration());
+
+        // ChangeManagement
+        modelBuilder.ApplyConfiguration(new ChangeSetEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new ChangeItemEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new ChangeApprovalRuleEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new ChangeApprovalEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new ChangeExecutionLogEntityTypeConfiguration());
+
+        // Incidents
+        modelBuilder.ApplyConfiguration(new IncidentEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new IncidentEventEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new IncidentLinkedEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new IncidentNoteEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new IncidentPlaybookRunEntityTypeConfiguration());
+
+        // Hunting
+        modelBuilder.ApplyConfiguration(new SavedQueryEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new ScheduledHuntEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new HuntRunEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new HuntSampleRowEntityTypeConfiguration());
+
+        // Copilot
+        modelBuilder.ApplyConfiguration(new CopilotConversationEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new CopilotMessageEntityTypeConfiguration());
     }
 }
 

@@ -40,3 +40,33 @@ public class GetExecutionByIdQuery : IRequest<Result<AutomationExecutionDto>>
     public Guid Id { get; set; }
     public Guid TenantId { get; set; }
 }
+
+public class GetAvailableEventTypesQuery : IRequest<Result<EventTypesCatalogDto>>
+{
+}
+
+public class GetAvailableActionTypesQuery : IRequest<Result<List<ActionTypeCatalogDto>>>
+{
+}
+
+public class EventTypesCatalogDto
+{
+    public List<string> AllEventTypes { get; set; } = new();
+    public Dictionary<string, List<string>> EventTypesByCategory { get; set; } = new();
+}
+
+public class ActionTypeCatalogDto
+{
+    public string Name { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public List<ActionConfigSchemaDto> ConfigSchema { get; set; } = new();
+}
+
+public class ActionConfigSchemaDto
+{
+    public string Name { get; set; } = string.Empty;
+    public string Type { get; set; } = string.Empty;
+    public bool Required { get; set; }
+    public string? Description { get; set; }
+}

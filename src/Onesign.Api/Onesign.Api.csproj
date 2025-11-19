@@ -49,6 +49,15 @@
     <ProjectReference Include="..\Onesign.Modules.AdaptiveSecurity\Onesign.Modules.AdaptiveSecurity.csproj" />
     <!-- Phase 26 - Automation -->
     <ProjectReference Include="..\Onesign.Modules.Automation\Onesign.Modules.Automation.csproj" />
+    <!-- Phase 24-30 Modules -->
+    <ProjectReference Include="..\Onesign.Modules.Platform\Onesign.Modules.Platform.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Insights\Onesign.Modules.Insights.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.ChangeManagement\Onesign.Modules.ChangeManagement.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Incidents\Onesign.Modules.Incidents.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Hunting\Onesign.Modules.Hunting.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Copilot\Onesign.Modules.Copilot.csproj" />
+    <!-- Phase 10 - Governance -->
+    <ProjectReference Include="..\Onesign.Modules.Governance\Onesign.Modules.Governance.csproj" />
   </ItemGroup>
 
 </Project>

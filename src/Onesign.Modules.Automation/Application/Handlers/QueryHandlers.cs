@@ -1,6 +1,7 @@
 using MediatR;
 using Onesign.Modules.Automation.Application.DTOs;
 using Onesign.Modules.Automation.Application.Queries;
+using Onesign.Modules.Automation.Domain.Constants;
 using Onesign.Modules.Automation.Domain.Enums;
 using Onesign.Modules.Automation.Domain.Repositories;
 using Onesign.Shared.Result;
@@ -125,7 +126,7 @@ public class GetExecutionsQueryHandler : IRequestHandler<GetExecutionsQuery, Res
 
         var dtos = executions.Select(e => new AutomationExecutionDto
         {
-            Id = e.Id, WorkflowId = e.WorkflowId, WorkflowName = e.WorkflowName, TenantId = e.TenantId, EventType = e.EventType, EventId = e.EventId, StartedAt = e.StartedAt, CompletedAt = e.CompletedAt, Status = e.Status.ToString(), ErrorMessage = e.ErrorMessage, ActionsExecutedCount = e.ActionsExecutedCount, ActionsFailedCount = e.ActionsFailedCount, PayloadSnapshot = e.PayloadSnapshot
+            Id = e.Id, WorkflowId = e.WorkflowId, WorkflowName = e.WorkflowName, TenantId = e.TenantId, EventType = e.EventType, EventId = e.EventId, StartedAt = e.StartedAt, CompletedAt = e.CompletedAt, Status = e.Status.ToString(), ErrorMessage = e.ErrorMessage, ActionsExecutedCount = e.ActionsExecutedCount, ActionsFailedCount = e.ActionsFailedCount, PayloadSnapshot = e.PayloadSnapshot, DurationMs = e.CompletedAt.HasValue ? (long)(e.CompletedAt.Value - e.StartedAt).TotalMilliseconds : null
         }).ToList();
 
         return Result.Success(new PaginatedResultDto<AutomationExecutionDto>
@@ -153,9 +154,142 @@ public class GetExecutionByIdQueryHandler : IRequestHandler<GetExecutionByIdQuer
         if (execution == null || execution.TenantId != request.TenantId)
             return Result.Failure<AutomationExecutionDto>("NotFound", "Execution not found");
 
+        var durationMs = execution.CompletedAt.HasValue
+            ? (long)(execution.CompletedAt.Value - execution.StartedAt).TotalMilliseconds
+            : (long?)null;
+
         return Result.Success(new AutomationExecutionDto
         {
-            Id = execution.Id, WorkflowId = execution.WorkflowId, WorkflowName = execution.WorkflowName, TenantId = execution.TenantId, EventType = execution.EventType, EventId = execution.EventId, StartedAt = execution.StartedAt, CompletedAt = execution.CompletedAt, Status = execution.Status.ToString(), ErrorMessage = execution.ErrorMessage, ActionsExecutedCount = execution.ActionsExecutedCount, ActionsFailedCount = execution.ActionsFailedCount, PayloadSnapshot = execution.PayloadSnapshot
+            Id = execution.Id, WorkflowId = execution.WorkflowId, WorkflowName = execution.WorkflowName, TenantId = execution.TenantId, EventType = execution.EventType, EventId = execution.EventId, StartedAt = execution.StartedAt, CompletedAt = execution.CompletedAt, Status = execution.Status.ToString(), ErrorMessage = execution.ErrorMessage, ActionsExecutedCount = execution.ActionsExecutedCount, ActionsFailedCount = execution.ActionsFailedCount, PayloadSnapshot = execution.PayloadSnapshot, DurationMs = durationMs
         });
+    }
+}
+
+public class GetAvailableEventTypesQueryHandler : IRequestHandler<GetAvailableEventTypesQuery, Result<EventTypesCatalogDto>>
+{
+    public Task<Result<EventTypesCatalogDto>> Handle(GetAvailableEventTypesQuery request, CancellationToken cancellationToken)
+    {
+        var catalog = new EventTypesCatalogDto
+        {
+            AllEventTypes = AutomationEventTypes.GetAllEventTypes().ToList(),
+            EventTypesByCategory = AutomationEventTypes.GetEventTypesByCategory()
+                .ToDictionary(x => x.Key, x => x.Value.ToList())
+        };
+
+        return Task.FromResult(Result.Success(catalog));
+    }
+}
+
+public class GetAvailableActionTypesQueryHandler : IRequestHandler<GetAvailableActionTypesQuery, Result<List<ActionTypeCatalogDto>>>
+{
+    public Task<Result<List<ActionTypeCatalogDto>>> Handle(GetAvailableActionTypesQuery request, CancellationToken cancellationToken)
+    {
+        var actions = new List<ActionTypeCatalogDto>
+        {
+            // Internal actions
+            new()
+            {
+                Name = "RevokeSessions",
+                Category = "Internal",
+                Description = "Revokes all active sessions for the target user",
+                ConfigSchema = new List<ActionConfigSchemaDto>
+                {
+                    new() { Name = "userId", Type = "guid", Required = false, Description = "Target user ID (defaults to event user)" }
+                }
+            },
+            new()
+            {
+                Name = "RequireMfaNextSignIn",
+                Category = "Internal",
+                Description = "Requires the user to complete MFA on their next sign-in",
+                ConfigSchema = new List<ActionConfigSchemaDto>
+                {
+                    new() { Name = "userId", Type = "guid", Required = false, Description = "Target user ID (defaults to event user)" }
+                }
+            },
+            new()
+            {
+                Name = "LockUserAccount",
+                Category = "Internal",
+                Description = "Locks the user account preventing any sign-ins",
+                ConfigSchema = new List<ActionConfigSchemaDto>
+                {
+                    new() { Name = "userId", Type = "guid", Required = false, Description = "Target user ID (defaults to event user)" }
+                }
+            },
+            new()
+            {
+                Name = "DisableAppAccess",
+                Category = "Internal",
+                Description = "Disables access to a specific application for the user",
+                ConfigSchema = new List<ActionConfigSchemaDto>
+                {
+                    new() { Name = "userId", Type = "guid", Required = false, Description = "Target user ID (defaults to event user)" },
+                    new() { Name = "appId", Type = "guid", Required = false, Description = "Target application ID (defaults to event app)" }
+                }
+            },
+            new()
+            {
+                Name = "TriggerAccessReview",
+                Category = "Internal",
+                Description = "Creates an access review for the specified target",
+                ConfigSchema = new List<ActionConfigSchemaDto>
+                {
+                    new() { Name = "targetType", Type = "string", Required = false, Description = "Type of target (App, User, Group)" },
+                    new() { Name = "targetId", Type = "string", Required = false, Description = "Target resource ID" }
+                }
+            },
+
+            // Notification actions
+            new()
+            {
+                Name = "SendEmail",
+                Category = "Notification",
+                Description = "Sends an email notification to specified recipients",
+                ConfigSchema = new List<ActionConfigSchemaDto>
+                {
+                    new() { Name = "recipients", Type = "string[]", Required = false, Description = "Email addresses (defaults to event user email)" },
+                    new() { Name = "subject", Type = "string", Required = false, Description = "Email subject" },
+                    new() { Name = "body", Type = "string", Required = false, Description = "Email body (supports {{placeholders}})" },
+                    new() { Name = "templateId", Type = "string", Required = false, Description = "Email template ID to use" }
+                }
+            },
+            new()
+            {
+                Name = "SendToChannel",
+                Category = "Notification",
+                Description = "Sends a message to Slack, Teams, or other channel",
+                ConfigSchema = new List<ActionConfigSchemaDto>
+                {
+                    new() { Name = "channelType", Type = "string", Required = false, Description = "Channel type (Slack, Teams)" },
+                    new() { Name = "webhookUrl", Type = "string", Required = true, Description = "Webhook URL for the channel" },
+                    new() { Name = "message", Type = "string", Required = false, Description = "Message to send (supports {{placeholders}})" }
+                }
+            },
+
+            // Extensibility actions
+            new()
+            {
+                Name = "InvokeWebhook",
+                Category = "Extensibility",
+                Description = "Invokes an external webhook with event data",
+                ConfigSchema = new List<ActionConfigSchemaDto>
+                {
+                    new() { Name = "url", Type = "string", Required = true, Description = "Webhook URL to invoke" }
+                }
+            },
+            new()
+            {
+                Name = "PushEventToQueue",
+                Category = "Extensibility",
+                Description = "Pushes event data to a message queue for async processing",
+                ConfigSchema = new List<ActionConfigSchemaDto>
+                {
+                    new() { Name = "topic", Type = "string", Required = false, Description = "Queue topic name (default: automation-events)" }
+                }
+            }
+        };
+
+        return Task.FromResult(Result.Success(actions));
     }
 }

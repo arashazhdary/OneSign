@@ -49,6 +49,33 @@ using Onesign.Modules.Automation.Domain.Repositories;
 using Onesign.Modules.Automation.Domain.Services;
 using Onesign.Modules.Automation.Infrastructure.EfCore.Repositories;
 using Onesign.Modules.Automation.Application.Services;
+// Phase 24 - Platform
+using Onesign.Modules.Platform.Domain.Repositories;
+using Onesign.Modules.Platform.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.Platform.Application.Services;
+// Phase 25 - Insights
+using Onesign.Modules.Insights.Domain.Repositories;
+using Onesign.Modules.Insights.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.Insights.Application.Services;
+using Onesign.Modules.Insights.Application.Jobs;
+// Phase 27 - Change Management
+using Onesign.Modules.ChangeManagement.Domain.Repositories;
+using Onesign.Modules.ChangeManagement.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.ChangeManagement.Application.Services;
+using Onesign.Modules.ChangeManagement.Application.Jobs;
+// Phase 28 - Incidents
+using Onesign.Modules.Incidents.Domain.Repositories;
+using Onesign.Modules.Incidents.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.Incidents.Application.Services;
+// Phase 29 - Hunting
+using Onesign.Modules.Hunting.Domain.Repositories;
+using Onesign.Modules.Hunting.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.Hunting.Application.Services;
+using Onesign.Modules.Hunting.Application.Jobs;
+// Phase 30 - Copilot
+using Onesign.Modules.Copilot.Domain.Repositories;
+using Onesign.Modules.Copilot.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.Copilot.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -110,8 +137,7 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
     typeof(Onesign.Modules.Organization.Application.Commands.CreateOrgUnitCommand).Assembly,
     typeof(Onesign.Modules.Security.Application.Commands.UpdateSecurityPolicyCommand).Assembly,
     typeof(Onesign.Modules.Authorization.Application.Commands.CreatePolicyCommand).Assembly,
-    typeof(Onesign.Modules.Developer.Application.Commands.CreateApiKeyCommand).Assembly));
-    typeof(Onesign.Modules.Security.Application.Commands.UpdateSecurityPolicyCommand).Assembly));
+    typeof(Onesign.Modules.Developer.Application.Commands.CreateApiKeyCommand).Assembly,
     // Phase 11-20 Modules
     typeof(Onesign.Modules.NotificationCenter.Application.Commands.SendNotificationCommand).Assembly,
     typeof(Onesign.Modules.AccessRequests.Application.Commands.CreateAccessRequestCommand).Assembly,
@@ -127,7 +153,14 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
     // Phase 18 - Adaptive Security
     typeof(Onesign.Modules.AdaptiveSecurity.Application.Commands.CreateAdaptivePolicyCommand).Assembly,
     // Phase 26 - Automation
-    typeof(Onesign.Modules.Automation.Application.Commands.CreateWorkflowCommand).Assembly));
+    typeof(Onesign.Modules.Automation.Application.Commands.CreateWorkflowCommand).Assembly,
+    // Phase 24-30 Modules
+    typeof(Onesign.Modules.Platform.Application.Commands.ApplyMigrationCommand).Assembly,
+    typeof(Onesign.Modules.Insights.Application.Commands.CreateReportSubscriptionCommand).Assembly,
+    typeof(Onesign.Modules.ChangeManagement.Application.Commands.CreateChangeSetCommand).Assembly,
+    typeof(Onesign.Modules.Incidents.Application.Commands.CreateIncidentCommand).Assembly,
+    typeof(Onesign.Modules.Hunting.Application.Commands.CreateSavedQueryCommand).Assembly,
+    typeof(Onesign.Modules.Copilot.Application.Commands.SendCopilotQueryCommand).Assembly));
 
 // Repositories
 builder.Services.AddScoped<ITenantRepository>(sp => 
@@ -243,6 +276,89 @@ builder.Services.AddHttpClient("AutomationWebhook", client =>
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
+// Platform Repositories
+builder.Services.AddScoped<IPlatformVersionRepository>(sp =>
+    new PlatformVersionRepository(sp.GetRequiredService<OnesignDbContext>()));
+builder.Services.AddScoped<IMigrationHistoryRepository>(sp =>
+    new MigrationHistoryRepository(sp.GetRequiredService<OnesignDbContext>()));
+builder.Services.AddScoped<IIntegrationTestResultRepository>(sp =>
+    new IntegrationTestResultRepository(sp.GetRequiredService<OnesignDbContext>()));
+
+// Platform Services
+builder.Services.AddScoped<IPlatformHealthAggregator, PlatformHealthAggregator>();
+builder.Services.AddScoped<IPlatformVersionService, PlatformVersionService>();
+builder.Services.AddScoped<IMigrationService, MigrationService>();
+builder.Services.AddScoped<IApiDocumentationService, ApiDocumentationService>();
+builder.Services.AddScoped<IDiagnosticsService, DiagnosticsService>();
+
+// Insights Repositories
+builder.Services.AddScoped<ITenantDailyUsageSnapshotRepository>(sp =>
+    new TenantDailyUsageSnapshotRepository(sp.GetRequiredService<OnesignDbContext>()));
+builder.Services.AddScoped<IApplicationDailyUsageSnapshotRepository>(sp =>
+    new ApplicationDailyUsageSnapshotRepository(sp.GetRequiredService<OnesignDbContext>()));
+builder.Services.AddScoped<IUserSecurityPostureRepository>(sp =>
+    new UserSecurityPostureRepository(sp.GetRequiredService<OnesignDbContext>()));
+builder.Services.AddScoped<IReportSubscriptionRepository>(sp =>
+    new ReportSubscriptionRepository(sp.GetRequiredService<OnesignDbContext>()));
+
+// Insights Services
+builder.Services.AddScoped<IInsightsAggregationService, InsightsAggregationService>();
+builder.Services.AddScoped<IReportGenerationService, ReportGenerationService>();
+builder.Services.AddScoped<IExportService, ExportService>();
+
+// ChangeManagement Repositories
+builder.Services.AddScoped<IChangeSetRepository>(sp =>
+    new ChangeSetRepository(sp.GetRequiredService<OnesignDbContext>()));
+builder.Services.AddScoped<IChangeApprovalRuleRepository>(sp =>
+    new ChangeApprovalRuleRepository(sp.GetRequiredService<OnesignDbContext>()));
+builder.Services.AddScoped<IChangeApprovalRepository>(sp =>
+    new ChangeApprovalRepository(sp.GetRequiredService<OnesignDbContext>()));
+builder.Services.AddScoped<IChangeExecutionLogRepository>(sp =>
+    new ChangeExecutionLogRepository(sp.GetRequiredService<OnesignDbContext>()));
+
+// ChangeManagement Services
+builder.Services.AddScoped<ISimulationEngine, SimulationEngine>();
+builder.Services.AddScoped<IChangeSetExecutionService, ChangeSetExecutionService>();
+builder.Services.AddScoped<IApprovalWorkflowService, ApprovalWorkflowService>();
+
+// Incidents Repositories
+builder.Services.AddScoped<IIncidentRepository>(sp =>
+    new IncidentRepository(sp.GetRequiredService<OnesignDbContext>()));
+builder.Services.AddScoped<IIncidentEventRepository>(sp =>
+    new IncidentEventRepository(sp.GetRequiredService<OnesignDbContext>()));
+builder.Services.AddScoped<IIncidentNoteRepository>(sp =>
+    new IncidentNoteRepository(sp.GetRequiredService<OnesignDbContext>()));
+
+// Incidents Services
+builder.Services.AddScoped<IIncidentDetectionService, IncidentDetectionService>();
+builder.Services.AddScoped<IIncidentCorrelationService, IncidentCorrelationService>();
+builder.Services.AddScoped<IIncidentTimelineService, IncidentTimelineService>();
+builder.Services.AddScoped<IIncidentPlaybookService, IncidentPlaybookService>();
+
+// Hunting Repositories
+builder.Services.AddScoped<ISavedQueryRepository>(sp =>
+    new SavedQueryRepository(sp.GetRequiredService<OnesignDbContext>()));
+builder.Services.AddScoped<IScheduledHuntRepository>(sp =>
+    new ScheduledHuntRepository(sp.GetRequiredService<OnesignDbContext>()));
+builder.Services.AddScoped<IHuntRunRepository>(sp =>
+    new HuntRunRepository(sp.GetRequiredService<OnesignDbContext>()));
+
+// Hunting Services
+builder.Services.AddScoped<IOqlParser, OqlParser>();
+builder.Services.AddScoped<IOqlExecutor, OqlExecutor>();
+builder.Services.AddScoped<IScheduledHuntRunner, ScheduledHuntRunner>();
+builder.Services.AddScoped<IHuntActionExecutor, HuntActionExecutor>();
+
+// Copilot Repositories
+builder.Services.AddScoped<ICopilotConversationRepository>(sp =>
+    new CopilotConversationRepository(sp.GetRequiredService<OnesignDbContext>()));
+
+// Copilot Services
+builder.Services.AddScoped<ICopilotContextBuilder, CopilotContextBuilder>();
+builder.Services.AddScoped<ICopilotOrchestrator, CopilotOrchestrator>();
+builder.Services.AddScoped<ICopilotResponseGenerator, CopilotResponseGenerator>();
+builder.Services.AddScoped<ICopilotActionExecutor, CopilotActionExecutor>();
+
 // JWT Signing Key Provider
 builder.Services.AddSingleton<Onesign.Shared.Security.IJwtSigningKeyProvider, Onesign.Shared.Security.ConfigurationJwtSigningKeyProvider>();
 
@@ -286,6 +402,11 @@ builder.Services.AddHostedService<HealthCheckWorker>();
 builder.Services.AddHostedService<AuditCleanupWorker>();
 builder.Services.AddHostedService<InsightGenerationWorker>();
 builder.Services.AddHostedService<AutomationEventProcessor>();
+// Phase 24-30 Background Services
+builder.Services.AddHostedService<DailyInsightsAggregationJob>();
+builder.Services.AddHostedService<ScheduledReportsJob>();
+builder.Services.AddHostedService<ScheduledChangeSetApplyJob>();
+builder.Services.AddHostedService<ScheduledHuntsRunnerJob>();
 
 var app = builder.Build();
 
