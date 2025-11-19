@@ -1,0 +1,465 @@
+You are a senior software architect and staff-level engineer for the onesign platform:
+- Multi-tenant SSO / IAM / IGA SaaS
+- Backend: .NET 10 modular monolith (Clean Architecture)
+- Frontend: React / Next.js (Admin Portal, Login Portal, DevPortal, Account Center)
+- Multi-language (English LTR as primary, Persian RTL as secondary)
+
+Phases 1–24 have already implemented:
+- Core multi-tenant SSO, OIDC/OAuth2, OrgUnits, Authorization (RBAC/ABAC), Federation, Billing
+- Observability (logs/metrics/traces), DevPortal, Governance, NotificationCenter
+- AccessRequests, IdentityLifecycle, PrivilegedAccess, AdaptiveSecurity, Extensibility
+- MultiRegion DR, Environment & On-Prem/Hybrid deployment, Crypto & JWKS, Privacy & DSR
+
+Now you must design and implement **Phase 25: Insights & Reporting Center**.
+
+==================================================
+Phase 25 – Insights & Reporting Center (SPEC)
+==================================================
+
+Goal:
+Turn onesign from a “black-box SSO engine” into a product with:
+- Real security & usage insights for Tenant Admins and Global Admins
+- Dashboards for SSO adoption, MFA coverage, risky events, access requests, lifecycle activity
+- Exportable reports (CSV/JSON)
+- Optional scheduled email reports via NotificationCenter
+
+If you only expose raw logs and no real insights or reports, enterprise customers will say:
+“You’re just a login box, not a security platform.”
+
+--------------------------------------------------
+1. Personas and scope
+--------------------------------------------------
+
+Personas:
+
+1) Tenant Security Officer / Tenant Admin
+   - Wants:
+     - Overview of security posture for the tenant:
+       - MFA adoption
+       - SSO coverage (apps behind onesign vs total apps)
+       - High-risk sign-in events (from AdaptiveSecurity / Auth logs)
+       - AccessRequests volume & approval times
+       - Lifecycle events (joiner/mover/leaver) activity
+     - Per-app and per-user usage stats:
+       - How many users actually use each app via SSO
+       - Who hasn’t enabled MFA
+     - Export data as CSV for further analysis.
+
+2) Global Admin / Platform Owner
+   - Wants:
+     - Cross-tenant insights:
+       - Most active tenants
+       - MFA adoption by tenant
+       - Risky tenants (failed logins, high risk score, many emergency access, etc.)
+     - Reports to show adoption and upsell opportunities.
+
+3) Auditor / Compliance
+   - Wants:
+     - Evidence:
+       - Usage reports
+       - MFA coverage reports
+       - Access review and governance activity summary.
+
+Scope of Phase 25:
+- Read-only analytics & reporting (no new policy or auth decisions).
+- Aggregated data, not raw event storage (we already have Observability & logs).
+- Respect Privacy & DSR rules: no unnecessary PII, only what is allowed per tenant.
+
+--------------------------------------------------
+2. Data model – Insights module
+--------------------------------------------------
+
+Create a dedicated module, e.g. `Onesign.Modules.Insights` (or extend Observability module if that’s more consistent), responsible for storing aggregated snapshots and report configs.
+
+2.1 Aggregated snapshot entities
+
+Entity: `TenantDailyUsageSnapshot`
+- Id (Guid)
+- TenantId (Guid)
+- Date (date only, UTC)
+- TotalUsers (int)
+- ActiveUsers (int)                   // logged in that day
+- MfaEnabledUsers (int)
+- TotalApplications (int)
+- ApplicationsWithSSOEnabled (int)
+- TotalSignInCount (int)
+- FailedSignInCount (int)
+- HighRiskSignInCount (int)          // from AdaptiveSecurity / risk engine
+- AccessRequestCount (int)           // created that day
+- AccessRequestApprovedCount (int)
+- LifecycleEventsCount (int)         // joiner/mover/leaver total
+- EmergencyAccessCount (int)         // from PrivilegedAccess / break glass
+
+Entity: `ApplicationDailyUsageSnapshot`
+- Id (Guid)
+- TenantId (Guid)
+- ApplicationId (Guid)
+- Date (date)
+- UniqueUsers (int)
+- SignInCount (int)
+- FailedSignInCount (int)
+- HighRiskSignInCount (int)
+
+Entity: `UserSecurityPosture`
+- Id (Guid)
+- TenantId (Guid)
+- UserId (Guid)
+- LastSignInAt (DateTimeOffset?)
+- MfaEnabled (bool)
+- EnabledAppsCount (int)         // number of apps user has access to
+- UsedAppsLast30DaysCount (int)  // number of apps the user actually used in last 30d
+- HighRiskEventsLast30Days (int)
+
+You may adjust fields slightly to match existing schema, but the idea is:
+- One daily snapshot per tenant
+- One daily snapshot per (tenant, app)
+- One security posture row per (tenant, user)
+
+2.2 Report subscription entity
+
+Entity: `ReportSubscription`
+- Id (Guid)
+- ScopeType (string)       // "Tenant" or "Global"
+- ScopeId (Guid?)          // TenantId if ScopeType = Tenant; null for Global
+- ReportType (string)      // e.g. "TenantSecuritySummary", "TenantUsageSummary", "GlobalTenantsOverview"
+- CronOrFrequency (string) // simple frequency description, e.g. "Daily", "Weekly"
+- EmailRecipients (string) // comma-separated or separate table
+- IsActive (bool)
+- CreatedAt
+- CreatedByUserId
+
+These will be used with NotificationCenter to send scheduled reports.
+
+--------------------------------------------------
+3. Aggregation jobs
+--------------------------------------------------
+
+Create a background job in the Insights module:
+
+Job: `DailyInsightsAggregationJob`
+
+Behavior (runs once per day, per environment):
+
+For each Tenant:
+  - Read source data from existing tables/modules:
+    - Identity/Users:
+      - total users, mfa-enabled users
+    - Applications / Clients:
+      - total apps, apps with SSO enabled
+    - Auth / Audit events:
+      - sign-in count, failed sign-in count, high-risk sign-ins for that day
+    - AccessRequests module:
+      - created and approved requests for that day
+    - IdentityLifecycle module:
+      - lifecycle events for that day
+    - PrivilegedAccess:
+      - emergency access grants
+
+  - Write or update a `TenantDailyUsageSnapshot` for that date.
+
+For per-app usage:
+  - Query events grouped by (TenantId, AppId, Date).
+  - Populate `ApplicationDailyUsageSnapshot` with:
+    - unique users
+    - sign-in / failed / high-risk counts.
+
+For user posture:
+  - For each active user:
+    - compute:
+      - LastSignInAt (from auth events)
+      - MfaEnabled (current user state)
+      - EnabledAppsCount (from authorization / app assignments)
+      - UsedAppsLast30DaysCount (from app usage events)
+      - HighRiskEventsLast30Days
+  - Upsert `UserSecurityPosture`.
+
+Make sure:
+- Multi-tenant isolation is respected.
+- Aggregation queries are efficient, using proper indexes.
+- If data is huge, use batching per tenant.
+
+--------------------------------------------------
+4. APIs – backend
+--------------------------------------------------
+
+4.1 Tenant-level Insights APIs
+
+Base route: `/api/tenant/insights`
+
+Endpoints:
+
+1) `GET /api/tenant/insights/overview?from=YYYY-MM-DD&to=YYYY-MM-DD`
+   - Returns:
+     - Time series of TenantDailyUsageSnapshot between from/to.
+     - Pre-aggregated metrics:
+       - Average daily active users
+       - MFA adoption percentage (MfaEnabledUsers / TotalUsers)
+       - SSO coverage (ApplicationsWithSSOEnabled / TotalApplications)
+       - FailedSignIn rate
+       - HighRiskSignIn rate
+       - AccessRequest volume over time
+
+2) `GET /api/tenant/insights/apps?date=YYYY-MM-DD`
+   - Returns:
+     - List of ApplicationDailyUsageSnapshot for that date (or last N days aggregated).
+     - For each app:
+       - UniqueUsers
+       - SignInCount
+       - FailedSignInCount
+       - HighRiskSignInCount
+
+3) `GET /api/tenant/insights/users/security-posture?sortBy=MfaEnabled|Risk&...`
+   - Returns list of UserSecurityPosture records with filters:
+     - MfaEnabled = false
+     - HighRiskEventsLast30Days > 0
+   - Used to build “Weak users” / “At-risk users” lists.
+
+4) Export endpoints (CSV):
+
+   - `GET /api/tenant/insights/export/overview?from=...&to=...&format=csv`
+   - `GET /api/tenant/insights/export/users?format=csv&filter=...`
+
+   These return CSV for tenant admins to download.
+
+All tenant endpoints must:
+- Be scoped to the current tenant context.
+- Enforce Tenant Admin / SecurityOfficer roles.
+
+4.2 Global-level Insights APIs
+
+Base route: `/api/global/insights`
+
+Endpoints:
+
+1) `GET /api/global/insights/tenants/overview?from=...&to=...`
+   - Aggregates TenantDailyUsageSnapshot per tenant:
+     - total sign-ins, MFA adoption %, active users, etc.
+   - Supports sorting:
+     - by total sign-ins, MFA adoption, risk, etc.
+
+2) `GET /api/global/insights/tenants/risky`
+   - Returns tenants with:
+     - high ratio of failed sign-ins
+     - low MFA adoption
+     - many high-risk sign-ins.
+
+3) `GET /api/global/insights/export/tenants?from=...&to=...&format=csv`
+   - CSV export for global-level reporting.
+
+Global endpoints must:
+- Be accessible only to Global Admin / Platform Owner.
+
+4.3 ReportSubscription APIs
+
+Base route: `/api/tenant/insights/report-subscriptions` and `/api/global/insights/report-subscriptions`
+
+Tenant scope:
+- `GET /api/tenant/insights/report-subscriptions`
+- `POST /api/tenant/insights/report-subscriptions`
+- `PUT /api/tenant/insights/report-subscriptions/{id}`
+- `DELETE /api/tenant/insights/report-subscriptions/{id}`
+
+Global scope:
+- Similar endpoints under `/api/global/insights/report-subscriptions`.
+
+These configure scheduled email reports (see section 5).
+
+--------------------------------------------------
+5. Scheduled reports via NotificationCenter
+--------------------------------------------------
+
+Use the NotificationCenter module (Phase 11) to send scheduled email reports.
+
+Job: `ScheduledReportsJob` in Insights module.
+
+Behavior:
+
+- Periodically (e.g. every hour):
+  - Load active `ReportSubscription`s.
+  - Determine which ones should fire now based on CronOrFrequency.
+  - For each:
+    - Generate the corresponding report payload:
+      - For TenantSecuritySummary:
+        - Use the tenant’s `/api/tenant/insights/overview` data.
+      - For GlobalTenantsOverview:
+        - Use `/api/global/insights/tenants/overview` data.
+    - Render a simple email-friendly report:
+      - HTML table + key metrics.
+    - Use NotificationCenter to send emails to EmailRecipients.
+  - Emit audit events:
+    - "Insights.ReportGenerated"
+    - "Insights.ReportDelivered"
+
+No fake implementation:
+- The job must actually generate summaries and call NotificationCenter.
+
+--------------------------------------------------
+6. Frontend – Admin Portal
+--------------------------------------------------
+
+6.1 Tenant Admin – Insights section
+
+Add a new section under Tenant Admin Portal:
+
+Route: `/tenant/insights`
+
+Tabs:
+1) Overview
+2) Applications
+3) Users
+4) Reports (subscriptions)
+
+All text must go through i18n (English + Persian).
+
+Overview tab:
+- Calls: `/api/tenant/insights/overview`
+- Shows:
+  - Time series chart (line chart) of:
+    - Daily active users
+    - Sign-ins
+    - Failed sign-ins
+  - Cards:
+    - MFA adoption % (MfaEnabledUsers / TotalUsers)
+    - SSO coverage %
+    - High-risk sign-in count (last 7/30 days)
+    - Access requests last 30 days
+  - Filters for date range.
+
+Applications tab:
+- Calls: `/api/tenant/insights/apps`
+- Shows table:
+  - App name
+  - Unique users
+  - SignInCount
+  - FailedSignInCount
+  - HighRiskSignInCount
+- Support basic sorting and filtering.
+- Export button → `export/apps` endpoint (CSV).
+
+Users tab:
+- Calls: `/api/tenant/insights/users/security-posture`
+- Table with:
+  - User display name + email
+  - MfaEnabled (badge)
+  - LastSignInAt
+  - EnabledAppsCount
+  - UsedAppsLast30DaysCount
+  - HighRiskEventsLast30Days
+- Filters:
+  - “MFA disabled only”
+  - “Has high-risk events”
+- Export CSV.
+
+Reports tab:
+- Manage `ReportSubscription`s:
+  - List existing subscriptions:
+    - ReportType
+    - Frequency
+    - EmailRecipients
+    - IsActive
+  - Create/edit forms:
+    - choose ReportType (TenantSecuritySummary, TenantUsageSummary, etc.)
+    - choose Frequency (Daily/Weekly)
+    - input recipients.
+  - Toggle Active/Inactive.
+
+6.2 Global Admin – Insights section
+
+Route: `/global/insights`
+
+Tabs:
+1) Tenants Overview
+2) Risky Tenants
+3) Reports
+
+Tenants Overview:
+- Calls: `/api/global/insights/tenants/overview`
+- Table:
+  - Tenant name
+  - Active users
+  - Total sign-ins
+  - MFA adoption %
+  - SSO coverage %
+  - High risk sign-ins
+- Sorting and basic filters.
+- Export CSV.
+
+Risky Tenants:
+- Calls: `/api/global/insights/tenants/risky`
+- Highlight tenants with bad metrics.
+
+Reports:
+- Manage global-level `ReportSubscription`s.
+
+--------------------------------------------------
+7. Cross-cutting constraints
+--------------------------------------------------
+
+1) Multi-tenant & environment
+- Every new entity must include TenantId where appropriate.
+- Global views may aggregate across tenants but must not expose per-user PII unnecessarily.
+
+2) Privacy & DSR
+- Respect the Privacy module:
+  - Aggregated snapshots should not re-introduce PII that was anonymized or deleted by DSR.
+  - When a user is anonymized/deleted:
+    - Update `UserSecurityPosture` accordingly (e.g. mark as anonymized).
+  - Export endpoints must only expose data allowed for Tenant Admin, not for other tenants.
+
+3) Security & authorization
+- Ensure all new APIs have proper authorization attributes and role checks.
+- No insights endpoint should be callable by end users; only Admin roles per spec.
+
+4) Observability & audit
+- Integrate with Observability module (logs/metrics) where appropriate.
+- Emit audit events for:
+  - "Insights.SnapshotGenerated"
+  - "Insights.ReportSubscriptionCreated/Updated/Deleted"
+  - "Insights.ReportGenerated"
+  - "Insights.ReportDelivered"
+
+5) Multi-language
+- All new frontend text must use translation keys.
+- Backend error messages should follow existing localization pattern, if applicable.
+
+6) No TODO / no half-implementation
+- No TODO comments.
+- No NotImplementedException.
+- No stub endpoints that just return empty arrays.
+- Aggregation must actually read data from real tables (Auth, AccessRequests, Lifecycle, etc.), not fake numbers.
+
+==================================================
+Your task now
+==================================================
+
+1) Implement the `Onesign.Modules.Insights` module (or equivalent) with:
+   - Entities and EF mappings:
+     - TenantDailyUsageSnapshot
+     - ApplicationDailyUsageSnapshot
+     - UserSecurityPosture
+     - ReportSubscription
+   - Aggregation job: DailyInsightsAggregationJob
+   - ScheduledReportsJob integrated with NotificationCenter
+   - Tenant and Global Insights APIs as specified.
+
+2) Implement Admin Portal UI:
+   - `/tenant/insights` with Overview, Applications, Users, Reports tabs.
+   - `/global/insights` with Tenants Overview, Risky Tenants, Reports tabs.
+   - All UI wired to real APIs, no dummy data.
+
+3) Implement CSV export endpoints and wire download buttons.
+
+4) Add tests:
+   - Aggregation correctness for a sample tenant.
+   - API responses for overview/apps/users/global endpoints.
+   - ReportSubscription CRUD and ScheduledReports job.
+
+5) Make sure:
+   - The solution builds.
+   - Existing tests still pass.
+   - New features behave correctly in minimal manual testing.
+
+Remember:
+- Don’t leave any feature half-done.
+- Don’t invent different behavior than the spec above.
+- Use existing patterns and modules (Observability, NotificationCenter, Privacy, etc.) instead of re-inventing them.
