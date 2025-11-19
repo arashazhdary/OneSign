@@ -1,0 +1,645 @@
+You are a senior software architect and staff-level engineer working on the onesign platform:
+
+- Multi-tenant SSO / IAM / IGA SaaS
+- Backend: .NET 10, modular monolith, Clean Architecture, per-module boundaries
+- Frontend: React / Next.js (Admin Portal, Login Portal, DevPortal, Account Center)
+- Full multi-language support (English LTR as primary, Persian RTL as secondary) in UI
+
+Previous phases have already implemented, among others:
+- Core SSO, OIDC/OAuth2, OrgUnits, Authorization (RBAC/ABAC)
+- Federation, SCIM, AccessRequests, IdentityLifecycle
+- PrivilegedAccess, AdaptiveSecurity, Extensibility
+- DevPortal, NotificationCenter
+- MultiRegion DR, Environment & On-Prem/Hybrid deployment
+- Crypto, Privacy & DSR
+- Insights & Reporting Center (Phase 25)
+
+Your task now is to DESIGN AND IMPLEMENT **Phase 26: Automation & Playbooks Center** as a production-grade feature.
+
+You must NOT leave TODOs or “implement later” stubs. Everything you touch must WORK for real.
+
+==================================================
+HIGH LEVEL – WHAT PHASE 26 IS
+==================================================
+
+Goal: turn onesign from “I give you logs and reports” into “I actually act on them”.
+
+Phase 26 introduces an **Automation & Playbooks Center**:
+
+- Event-driven security and IAM automation
+- If X happens → do Y automatically
+- Per-tenant workflows + global templates
+- Full audit trail of what ran and why
+
+Examples:
+
+- If there is a high-risk sign-in from an unusual country and the user does not have MFA:
+  - Revoke sessions
+  - Require MFA next sign-in
+  - Email the Tenant Security Officer
+
+- If a “Leaver” lifecycle event happens:
+  - Revoke all sensitive app access
+  - Disable privileged roles
+  - Notify HR / IT via email or webhook
+
+- If tenant risk score is high (from Insights):
+  - Trigger a special access review
+  - Notify global security
+
+==================================================
+GLOBAL RULES (MUST FOLLOW)
+==================================================
+
+1) No TODO, no half-implementation
+- No TODO comments.
+- No NotImplementedException.
+- No fake endpoints that return empty arrays.
+- If you add an API or UI, it must be backed by real logic.
+
+2) Respect modular monolith
+- Implement this as a dedicated module:
+  - `Onesign.Modules.Automation`
+- Keep domain, application, infrastructure, API layering consistent with existing modules.
+
+3) Strict multi-tenant behavior
+- Tenant workflows are scoped by TenantId.
+- Global templates are separate, applied per-tenant when executed.
+- NO cross-tenant data leaks anywhere.
+
+4) Privacy & PII
+- Do NOT store full PII in execution logs.
+- Mask or minimize event payload in AutomationExecution.PayloadSnapshot.
+- Respect anonymization/DSR: if a user is anonymized, automation logs must not expose the old PII.
+
+5) Security
+- Automation is dangerous:
+  - Locking accounts
+  - Revoking access
+- Only appropriate admin roles can manage workflows.
+- High-impact actions must be properly protected and audited.
+
+6) Multi-language UI
+- Any UI you add MUST use the existing i18n system.
+- No hard-coded English labels in components.
+
+==================================================
+CONCEPTS – WHAT YOU MUST BUILD
+==================================================
+
+Phase 26 introduces:
+
+1) **AutomationWorkflow**
+   - A playbook describing:
+     - Triggers (which events)
+     - Conditions (when)
+     - Actions (what to do)
+
+2) **Triggers**
+   - Which events fire the workflow.
+   - Examples:
+     - `Auth.SignInSucceeded`
+     - `Auth.SignInFailed`
+     - `Auth.HighRiskSignInDetected`
+     - `AccessRequest.Created`
+     - `AccessRequest.Approved`
+     - `Lifecycle.LeaverDetected`
+     - `PrivilegedAccess.BreakGlassUsed`
+     - `Insights.TenantRiskScoreHigh`
+
+3) **Conditions**
+   - Boolean rules on event payload fields:
+     - `riskScore >= 80`
+     - `user.mfaEnabled == false`
+     - `location.country IN ["US","GB","DE"]`
+   - Implemented via a small JSON-based expression (JsonLogic-style).
+
+4) **Actions**
+   - Internal security actions:
+     - RevokeSessions(userId)
+     - RequireMfaNextSignIn(userId)
+     - LockUserAccount(userId)
+     - DisableAppAccess(userId, appId)
+     - TriggerAccessReview(appId or orgUnit)
+   - Notification actions:
+     - SendEmail(to, templateId, data)
+     - SendToChannel (Slack/Teams/Webhook)
+   - Extensibility actions:
+     - InvokeWebhook(url, payload)
+     - PushEventToQueue(topic, message)
+
+5) **Execution logs**
+   - AutomationExecution records:
+     - which workflow ran
+     - for which event
+     - what actions ran
+     - which ones failed and why
+
+6) **Global templates vs tenant workflows**
+   - Global Admin defines templates as best practices.
+   - Tenants can:
+     - clone templates into their own workflows
+     - sometimes customize them (if allowed)
+   - Some templates may be “enforced” globally.
+
+==================================================
+BACKEND – DATA MODEL (YOU MUST IMPLEMENT)
+==================================================
+
+Create a module `Onesign.Modules.Automation` with at least these entities:
+
+1) AutomationWorkflow
+
+- Id (Guid)
+- TenantId (Guid?)             // null for global templates
+- Name (string)
+- Description (string?)
+- ScopeType (string)           // "Tenant" or "Global"
+- IsTemplate (bool)
+- IsEnabled (bool)
+- Severity (string?)           // "Info", "Warning", "Critical" (optional)
+- CreatedAt (DateTimeOffset)
+- CreatedByUserId (Guid)
+- UpdatedAt (DateTimeOffset?)
+- UpdatedByUserId (Guid?)
+
+Table name: e.g. `Automation_Workflows`.
+
+2) AutomationTrigger
+
+- Id (Guid)
+- WorkflowId (Guid, FK to AutomationWorkflow)
+- EventType (string)           // e.g. "Auth.HighRiskSignInDetected"
+- SourceModule (string)        // e.g. "Auth", "AccessRequests", ...
+
+Table: `Automation_Triggers`.
+
+3) AutomationCondition
+
+- Id (Guid)
+- WorkflowId (Guid, FK)
+- ExpressionType (string)      // "JsonLogic" or "SimpleRule"
+- Expression (string)          // JSON DSL
+- Order (int)
+
+Table: `Automation_Conditions`.
+
+Example Expression (JsonLogic-style):
+
+{
+  "all": [
+    { ">=": [ { "var": "riskScore" }, 80 ] },
+    { "==": [ { "var": "user.mfaEnabled" }, false ] },
+    { "in": [ { "var": "location.country" }, ["US", "GB", "DE"] ] }
+  ]
+}
+
+4) AutomationAction
+
+- Id (Guid)
+- WorkflowId (Guid, FK)
+- ActionType (string)          // "RevokeSessions", "SendEmail", "InvokeWebhook", ...
+- Order (int)
+- ConfigJson (string)          // action-specific config (templateId, webhookUrl, ...)
+- IsCritical (bool)
+
+Table: `Automation_Actions`.
+
+5) AutomationExecution
+
+- Id (Guid)
+- WorkflowId (Guid, FK)
+- TenantId (Guid)
+- EventType (string)
+- EventId (string?)            // optional if event has an id
+- StartedAt (DateTimeOffset)
+- CompletedAt (DateTimeOffset?)
+- Status (string)              // "Pending", "Running", "Succeeded", "Failed", "Skipped"
+- ErrorMessage (string?)
+- ActionsExecutedCount (int)
+- ActionsFailedCount (int)
+- PayloadSnapshot (string)     // sanitized payload summary
+
+Table: `Automation_Executions`.
+
+You must:
+- Create EF Core mappings and migrations.
+- Add indexes where appropriate:
+  - TenantId, WorkflowId, EventType
+  - EventId + WorkflowId for idempotency.
+
+==================================================
+BACKEND – CONDITION ENGINE & ACTION HANDLERS
+==================================================
+
+1) Condition evaluation
+
+Implement a reusable condition evaluator:
+
+- Input:
+  - ExpressionType (e.g. "JsonLogic")
+  - Expression (JSON string)
+  - Event payload (as a dictionary / JObject / typed object)
+- Output:
+  - Boolean: true if conditions match, false otherwise
+
+Support at least:
+
+- Operators:
+  - ==, !=, >, >=, <, <=
+  - logical all/any (AND/OR)
+  - in, not in
+- Variable selectors:
+  - "riskScore"
+  - "user.mfaEnabled"
+  - "location.country"
+  - "app.id"
+
+2) Action handlers
+
+Implement action execution service(s) that:
+
+- For each AutomationAction, based on ActionType:
+  - Parse ConfigJson
+  - Call the right dependency/module
+  - Return a result (success/failure, optional message)
+
+MANDATORY internal actions to implement:
+
+- `RevokeSessions(userId)`
+  - Integrate with existing Auth/Session store to invalidate all current sessions for the user in this tenant.
+
+- `RequireMfaNextSignIn(userId)`
+  - Integrate with AdaptiveSecurity/Auth to enforce MFA on next login (set appropriate flag/requirement for this user).
+
+- `LockUserAccount(userId)`
+  - Call Identity module to lock the user's account.
+
+- `DisableAppAccess(userId, appId)`
+  - Call Authorization/App assignment module to remove or disable that user's access to a specific app.
+
+MANDATORY notification/extension actions:
+
+- `SendEmail`
+  - Use NotificationCenter:
+    - TemplateId
+    - Recipients
+    - Data (variables from event payload)
+  - Must actually send email.
+
+- `InvokeWebhook`
+  - HTTP POST to the configured URL with:
+    - event summary
+    - workflow id
+  - With timeout and error handling.
+
+No “fake handlers” allowed. Every configured ActionType must have real effect.
+
+==================================================
+BACKEND – EVENT BUS & AUTOMATION ENGINE
+==================================================
+
+1) EventBus subscription
+
+Wire Automation module into the existing event publishing mechanism so it can receive events like:
+
+- "Auth.SignInSucceeded"
+- "Auth.SignInFailed"
+- "Auth.HighRiskSignInDetected"
+- "AccessRequest.Created"
+- "AccessRequest.Approved"
+- "Lifecycle.LeaverDetected"
+- "PrivilegedAccess.BreakGlassUsed"
+- "Insights.TenantRiskScoreHigh"
+
+Assumptions:
+
+- Each event payload contains at least:
+  - TenantId
+  - Maybe UserId, AppId, RiskScore, Location, Device, etc.
+
+2) AutomationEngine
+
+Implement a core service `IAutomationEngine` with something like:
+
+- `Task HandleEventAsync(string eventType, object payload, string? eventId)`
+
+Behavior:
+
+- Determine tenant from payload.
+- Fetch all active workflows that:
+  - Match the eventType through their triggers.
+  - Are either:
+    - tenant-scoped workflows for that TenantId
+    - global workflows/templates that are enforced for all tenants.
+
+- For each such workflow:
+
+  - Evaluate conditions (if any). If false:
+    - Optionally log a "Skipped" execution or skip without creating a record.
+
+  - If true:
+    - Create AutomationExecution:
+      - Status = "Running"
+      - PayloadSnapshot = sanitized subset of payload (no full PII).
+    - Execute actions in defined order:
+      - For each action:
+        - Run the handler.
+        - Keep track of success/failure counts.
+        - Respect IsCritical:
+          - If a critical action fails, you may stop the chain and mark execution Failed.
+    - At the end:
+      - Set Status = "Succeeded" or "Failed".
+      - Fill ActionsExecutedCount and ActionsFailedCount.
+    - Persist execution record.
+
+3) Idempotency & throttling
+
+- Use (WorkflowId + EventId) to prevent double execution for the same event, if EventId is provided.
+- Optionally enforce per-tenant rate limits if needed (at least keep the design extension point ready).
+
+==================================================
+BACKEND – APIs YOU MUST IMPLEMENT
+==================================================
+
+1) Tenant Automation APIs
+
+Base: `/api/tenant/automation`
+
+Implement:
+
+- `GET /api/tenant/automation/workflows`
+  - List workflows for current tenant.
+
+- `GET /api/tenant/automation/workflows/{id}`
+  - Details of a workflow, including triggers, conditions, actions.
+
+- `POST /api/tenant/automation/workflows`
+  - Create a new workflow for the current tenant.
+
+- `PUT /api/tenant/automation/workflows/{id}`
+  - Update workflow (name, description, triggers, conditions, actions, IsEnabled).
+
+- `DELETE /api/tenant/automation/workflows/{id}`
+
+- `POST /api/tenant/automation/workflows/{id}/enable`
+- `POST /api/tenant/automation/workflows/{id}/disable`
+
+- `POST /api/tenant/automation/workflows/{id}/test`
+  - Body: sample event payload.
+  - Behavior:
+    - Evaluate triggers/conditions against sample payload.
+    - Return:
+      - matched = true/false
+      - the list of actions that would execute (without executing them).
+
+- `GET /api/tenant/automation/executions?workflowId=&status=&from=&to=&page=&pageSize=`
+  - List AutomationExecution records for current tenant with filtering and pagination.
+
+Permissions:
+- Only roles like TenantAutomationAdmin / TenantSecurityOfficer / TenantAdmin (depending on policy) may access these endpoints.
+
+2) Global Automation Template APIs
+
+Base: `/api/global/automation`
+
+Implement:
+
+- `GET /api/global/automation/templates`
+- `GET /api/global/automation/templates/{id}`
+- `POST /api/global/automation/templates`
+- `PUT /api/global/automation/templates/{id}`
+- `DELETE /api/global/automation/templates/{id}`
+
+Templates are AutomationWorkflow records with:
+- ScopeType = "Global"
+- IsTemplate = true
+- TenantId = null
+
+Additional actions:
+
+- `POST /api/global/automation/templates/{id}/publish`
+  - Make the template visible in tenant UI as a clonable template.
+
+- `POST /api/global/automation/templates/{id}/enforce`
+  - Mark it as globally enforced:
+    - Effective workflows must run for all tenants.
+    - Tenants may or may not be allowed to disable/override depending on flags you add (for example: tenantCanDisable, tenantCanOverrideConditions).
+
+Permissions:
+- Only GlobalAdmin / PlatformOwner.
+
+==================================================
+FRONTEND – TENANT AUTOMATION CENTER
+==================================================
+
+In the Tenant Admin Portal, add:
+
+Route: `/tenant/automation`
+
+With tabs:
+
+1) Workflows
+2) Executions
+3) Templates
+
+All texts MUST use i18n, no hard-coded strings.
+
+1) Workflows tab:
+
+- Fetch from `/api/tenant/automation/workflows`.
+- Show table:
+  - Name
+  - Triggers (event types)
+  - IsEnabled
+  - LastExecutionAt
+  - Success / Failure ratio (if available)
+- Actions:
+  - Create
+  - Edit
+  - Enable/Disable
+  - Delete
+  - (Optional) Duplicate
+
+- Workflow editor (multi-step form):
+  - Step 1: Basic info
+    - Name, Description, IsEnabled
+  - Step 2: Triggers
+    - Select one or more EventType values from a fixed set.
+  - Step 3: Conditions
+    - Simple rule builder for Expression (field + operator + value).
+    - Show and save as JSON expression in Expression.
+  - Step 4: Actions
+    - For each action:
+      - choose ActionType
+      - configure fields (for example email recipients, templateId, webhook URL, target app, etc.)
+  - Step 5: Test
+    - User provides a sample event JSON.
+    - Call `/test` endpoint.
+    - Display whether workflow matches and which actions would fire.
+
+2) Executions tab:
+
+- Fetch from `/api/tenant/automation/executions`.
+- Show table:
+  - ExecutionId
+  - WorkflowName
+  - EventType
+  - StartedAt
+  - Status
+  - ActionsExecutedCount
+  - ActionsFailedCount
+- Detail view:
+  - Show limited payload summary (masked).
+  - List action results with status and error messages.
+
+3) Templates tab:
+
+- Fetch global templates from `/api/global/automation/templates` (through a suitable backend or tenant-scoped projection).
+- Show:
+  - Name
+  - Description
+  - Recommended scenario
+- Action:
+  - “Use this template”
+    - Creates a new tenant workflow pre-populated from that template, then opens the workflow editor.
+
+==================================================
+FRONTEND – GLOBAL AUTOMATION CENTER
+==================================================
+
+In the Global Admin Portal, add:
+
+Route: `/global/automation`
+
+Tabs:
+
+1) Templates
+2) Global Workflows (enforced)
+3) Executions (overview)
+
+1) Templates tab:
+
+- CRUD for global templates via `/api/global/automation/templates`.
+- Fields:
+  - Name, Description
+  - Triggers (default)
+  - Conditions (default)
+  - Actions (default)
+  - Flags:
+    - isEnforced
+    - tenantCanDisable
+    - tenantCanOverrideConditions
+- Actions:
+  - Publish
+  - Enforce
+  - Un-enforce
+
+2) Global Workflows tab:
+
+- Show globally enforced workflows and their effective tenants (a summary view).
+
+3) Executions tab:
+
+- High level view of AutomationExecution aggregated per tenant/workflow for troubleshooting.
+- This can reuse existing global insights/observability infrastructure.
+
+==================================================
+AUDIT, OBSERVABILITY, TESTS
+==================================================
+
+You must add:
+
+1) Audit events for:
+
+- "Automation.WorkflowCreated"
+- "Automation.WorkflowUpdated"
+- "Automation.WorkflowDeleted"
+- "Automation.WorkflowEnabled"
+- "Automation.WorkflowDisabled"
+- "Automation.TemplateCreated"
+- "Automation.TemplatePublished"
+- "Automation.TemplateEnforced"
+- "Automation.ExecutionStarted"
+- "Automation.ExecutionCompleted"
+
+Each audit event must include:
+- TenantId (if applicable)
+- WorkflowId
+- ActorId (for admin actions)
+- Status (for execution)
+
+2) Observability:
+
+- Log failures and timeouts in actions.
+- Metrics:
+  - Automation executions per tenant
+  - Success/failure counts
+  - Average execution time
+  - Per-action-type failure rates
+
+3) Tests:
+
+- Condition evaluation:
+  - riskScore conditions
+  - mfaEnabled conditions
+  - country-based conditions
+- Action execution:
+  - RevokeSessions
+  - RequireMfaNextSignIn
+  - LockUserAccount
+  - SendEmail (NotificationCenter)
+  - InvokeWebhook (with error handling)
+- Event → workflow → actions:
+  - For example:
+    - HighRiskSignIn event with riskScore >= threshold and mfaEnabled=false triggers:
+      - RevokeSessions
+      - RequireMfaNextSignIn
+      - SendEmail
+- APIs:
+  - Workflow CRUD, enable/disable
+  - Test endpoint
+  - Execution listing
+  - Global template CRUD, publish, enforce
+
+==================================================
+WHAT YOU MUST DO STEP BY STEP
+==================================================
+
+1) Scan the repo structure and locate:
+   - where modules live
+   - where event bus integration exists
+   - where NotificationCenter, Auth, Identity, etc. are implemented.
+
+2) Create the `Onesign.Modules.Automation` module:
+   - domain entities
+   - EF mappings & migrations
+   - repositories/application services
+
+3) Implement:
+   - Condition evaluation engine
+   - Action execution service
+   - AutomationEngine (event handler)
+
+4) Wire AutomationEngine to the event bus:
+   - Subscribe to relevant events
+   - Call HandleEventAsync for each.
+
+5) Implement tenant & global Automation APIs exactly as described.
+
+6) Implement the Admin Portal UIs:
+   - `/tenant/automation` with Workflows / Executions / Templates tabs.
+   - `/global/automation` with Templates / Global Workflows / Executions tabs.
+   - Fully wired to the APIs.
+
+7) Add tests and run them.
+
+8) Make sure:
+   - The solution builds.
+   - No TODO or NotImplemented remains in the Automation module.
+   - Features work end-to-end for at least:
+     - a high-risk sign-in scenario
+     - a leaver lifecycle scenario.
+
+Be ruthless with yourself:
+- If something is hand-wavy, incomplete, or would blow up in a real tenant, FIX IT NOW instead of leaving it for “later”.
