@@ -24,4 +24,11 @@ public class IncidentEntity
     public string? ResolutionSummary { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+
+    // Additional properties
+    public Guid? AssignedTo { get; set; }
+    public bool IsEscalated { get; set; }
+    public string? EscalationReason { get; set; }
+    public string? RootCause { get; set; }
+    public string? ClosingNotes { get; set; }
 }

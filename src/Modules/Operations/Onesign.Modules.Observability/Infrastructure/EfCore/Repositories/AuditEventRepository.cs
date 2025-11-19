@@ -17,7 +17,7 @@ public class AuditEventRepository : IAuditEventRepository
 
     public async Task<AuditEvent?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var entity = await _dbContext.Set<AuditEventEntity>()
+        var entity = await _dbContext.Set<ObservabilityAuditEventEntity>()
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         return entity?.ToDomain();
@@ -35,7 +35,7 @@ public class AuditEventRepository : IAuditEventRepository
         int take,
         CancellationToken cancellationToken = default)
     {
-        var query = _dbContext.Set<AuditEventEntity>().AsQueryable();
+        var query = _dbContext.Set<ObservabilityAuditEventEntity>().AsQueryable();
 
         if (tenantId.HasValue)
         {
@@ -91,7 +91,7 @@ public class AuditEventRepository : IAuditEventRepository
         string? action,
         CancellationToken cancellationToken = default)
     {
-        var query = _dbContext.Set<AuditEventEntity>().AsQueryable();
+        var query = _dbContext.Set<ObservabilityAuditEventEntity>().AsQueryable();
 
         if (tenantId.HasValue)
         {
@@ -133,8 +133,8 @@ public class AuditEventRepository : IAuditEventRepository
 
     public async Task<AuditEvent> AddAsync(AuditEvent auditEvent, CancellationToken cancellationToken = default)
     {
-        var entity = AuditEventEntity.FromDomain(auditEvent);
-        await _dbContext.Set<AuditEventEntity>().AddAsync(entity, cancellationToken);
+        var entity = ObservabilityAuditEventEntity.FromDomain(auditEvent);
+        await _dbContext.Set<ObservabilityAuditEventEntity>().AddAsync(entity, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
         return entity.ToDomain();
     }

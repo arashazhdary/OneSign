@@ -22,16 +22,17 @@ public class CreateIncidentCommandTests
             TenantId = Guid.NewGuid(),
             Title = "Security Breach Detected",
             Description = "Unauthorized access attempt detected",
-            Severity = (int)IncidentSeverity.Critical,
-            Source = "SecurityMonitor",
-            AffectedResources = new List<string> { "user:123", "app:456" },
-            Tags = new List<string> { "security", "urgent" }
+            Category = IncidentCategory.CompromisedAccount,
+            Severity = IncidentSeverity.Critical,
+            DetectionSource = DetectionSource.Manual,
+            PrimaryUserId = Guid.NewGuid(),
+            AffectedUsersCount = 2,
+            AffectedAppsCount = 1
         };
 
         // Assert
         command.Title.Should().Be("Security Breach Detected");
-        command.Severity.Should().Be((int)IncidentSeverity.Critical);
-        command.AffectedResources.Should().HaveCount(2);
+        command.Severity.Should().Be(IncidentSeverity.Critical);
     }
 }
 
@@ -47,17 +48,17 @@ public class UpdateIncidentCommandTests
         // Arrange & Act
         var command = new UpdateIncidentCommand
         {
-            TenantId = Guid.NewGuid(),
-            IncidentId = Guid.NewGuid(),
+            Id = Guid.NewGuid(),
             Title = "Updated Title",
             Description = "Updated description",
-            Severity = (int)IncidentSeverity.High,
-            AssignedTo = Guid.NewGuid()
+            Category = IncidentCategory.CompromisedAccount,
+            Severity = IncidentSeverity.High,
+            UpdatedByUserId = Guid.NewGuid()
         };
 
         // Assert
-        command.IncidentId.Should().NotBeEmpty();
-        command.AssignedTo.Should().NotBeEmpty();
+        command.Id.Should().NotBeEmpty();
+        command.Title.Should().Be("Updated Title");
     }
 }
 
@@ -73,15 +74,15 @@ public class AssignIncidentCommandTests
         // Arrange & Act
         var command = new AssignIncidentCommand
         {
-            TenantId = Guid.NewGuid(),
-            IncidentId = Guid.NewGuid(),
-            AssignedTo = Guid.NewGuid(),
-            AssignedBy = Guid.NewGuid()
+            Id = Guid.NewGuid(),
+            AssignToUserId = Guid.NewGuid(),
+            AssignedByUserId = Guid.NewGuid(),
+            Note = "Assigned for investigation"
         };
 
         // Assert
-        command.AssignedTo.Should().NotBeEmpty();
-        command.AssignedBy.Should().NotBeEmpty();
+        command.AssignToUserId.Should().NotBeEmpty();
+        command.AssignedByUserId.Should().NotBeEmpty();
     }
 }
 
@@ -97,16 +98,13 @@ public class ResolveIncidentCommandTests
         // Arrange & Act
         var command = new ResolveIncidentCommand
         {
-            TenantId = Guid.NewGuid(),
-            IncidentId = Guid.NewGuid(),
-            ResolvedBy = Guid.NewGuid(),
-            Resolution = "Issue resolved by blocking IP",
-            RootCause = "Brute force attack"
+            Id = Guid.NewGuid(),
+            ResolvedByUserId = Guid.NewGuid(),
+            ResolutionSummary = "Issue resolved by patching vulnerability"
         };
 
         // Assert
-        command.Resolution.Should().Be("Issue resolved by blocking IP");
-        command.RootCause.Should().Be("Brute force attack");
+        command.ResolutionSummary.Should().Contain("resolved");
     }
 }
 
@@ -122,14 +120,13 @@ public class CloseIncidentCommandTests
         // Arrange & Act
         var command = new CloseIncidentCommand
         {
-            TenantId = Guid.NewGuid(),
-            IncidentId = Guid.NewGuid(),
-            ClosedBy = Guid.NewGuid(),
-            ClosureNotes = "Verified resolution is effective"
+            Id = Guid.NewGuid(),
+            ClosedByUserId = Guid.NewGuid(),
+            FinalNote = "Incident closed after verification"
         };
 
         // Assert
-        command.ClosureNotes.Should().Be("Verified resolution is effective");
+        command.FinalNote.Should().Contain("closed");
     }
 }
 
@@ -193,18 +190,18 @@ public class GetIncidentsQueryTests
         var query = new GetIncidentsQuery
         {
             TenantId = Guid.NewGuid(),
-            Status = (int)IncidentStatus.Open,
-            Severity = (int)IncidentSeverity.Critical,
-            AssignedTo = Guid.NewGuid(),
-            StartDate = DateTime.UtcNow.AddDays(-30),
-            EndDate = DateTime.UtcNow,
-            PageNumber = 1,
+            Status = IncidentStatus.New,
+            Severity = IncidentSeverity.Critical,
+            PrimaryUserId = Guid.NewGuid(),
+            From = DateTime.UtcNow.AddDays(-30),
+            To = DateTime.UtcNow,
+            Page = 1,
             PageSize = 20
         };
 
         // Assert
-        query.Status.Should().Be((int)IncidentStatus.Open);
-        query.Severity.Should().Be((int)IncidentSeverity.Critical);
+        query.Status.Should().Be(IncidentStatus.New);
+        query.Severity.Should().Be(IncidentSeverity.Critical);
     }
 }
 
@@ -240,14 +237,14 @@ public class GetIncidentTimelineQueryTests
     public void GetIncidentTimelineQuery_ShouldHaveIncidentId()
     {
         // Arrange & Act
+        var incidentId = Guid.NewGuid();
         var query = new GetIncidentTimelineQuery
         {
-            TenantId = Guid.NewGuid(),
-            IncidentId = Guid.NewGuid()
+            IncidentId = incidentId
         };
 
         // Assert
-        query.IncidentId.Should().NotBeEmpty();
+        query.IncidentId.Should().Be(incidentId);
     }
 }
 
@@ -279,7 +276,7 @@ public class GetIncidentDashboardQueryTests
 public class IncidentEntityTests
 {
     [Fact]
-    public void Incident_ShouldBeCreatedWithOpenStatus()
+    public void Incident_ShouldBeCreatedWithNewStatus()
     {
         // Arrange & Act
         var incident = new Incident(
@@ -291,22 +288,21 @@ public class IncidentEntityTests
             "Test");
 
         // Assert
-        incident.Status.Should().Be(IncidentStatus.Open);
+        incident.Status.Should().Be(IncidentStatus.New);
         incident.Title.Should().Be("Test Incident");
     }
 
     [Fact]
-    public void Incident_Assign_ShouldSetAssigneeAndChangeStatus()
+    public void Incident_Assign_ShouldSetAssignee()
     {
         // Arrange
         var incident = new Incident(
             Guid.NewGuid(),
             Guid.NewGuid(),
-            "Incident",
-            "Desc",
-            IncidentSeverity.High,
+            "Test Incident",
+            "Description",
+            IncidentSeverity.Medium,
             "Test");
-
         var assigneeId = Guid.NewGuid();
 
         // Act
@@ -314,51 +310,51 @@ public class IncidentEntityTests
 
         // Assert
         incident.AssignedTo.Should().Be(assigneeId);
-        incident.Status.Should().Be(IncidentStatus.InProgress);
     }
 
     [Fact]
-    public void Incident_Resolve_ShouldChangeStatusToResolved()
+    public void Incident_Resolve_ShouldSetResolvedStatus()
     {
         // Arrange
         var incident = new Incident(
             Guid.NewGuid(),
             Guid.NewGuid(),
-            "Incident",
-            "Desc",
-            IncidentSeverity.High,
+            "Test Incident",
+            "Description",
+            IncidentSeverity.Medium,
             "Test");
-        incident.Assign(Guid.NewGuid());
+        var userId = Guid.NewGuid();
 
         // Act
-        incident.Resolve(Guid.NewGuid(), "Fixed", "Root cause");
+        incident.Resolve(userId, "Fixed the issue", "Root cause identified");
 
         // Assert
         incident.Status.Should().Be(IncidentStatus.Resolved);
-        incident.Resolution.Should().Be("Fixed");
-        incident.ResolvedAt.Should().NotBeNull();
+        incident.ResolvedByUserId.Should().Be(userId);
+        incident.ResolutionSummary.Should().Be("Fixed the issue");
+        incident.RootCause.Should().Be("Root cause identified");
     }
 
     [Fact]
-    public void Incident_Close_ShouldChangeStatusToClosed()
+    public void Incident_Close_ShouldSetClosedStatus()
     {
         // Arrange
         var incident = new Incident(
             Guid.NewGuid(),
             Guid.NewGuid(),
-            "Incident",
-            "Desc",
-            IncidentSeverity.High,
+            "Test Incident",
+            "Description",
+            IncidentSeverity.Medium,
             "Test");
-        incident.Assign(Guid.NewGuid());
-        incident.Resolve(Guid.NewGuid(), "Fixed", "Root cause");
+        var userId = Guid.NewGuid();
 
         // Act
-        incident.Close(Guid.NewGuid(), "Verified");
+        incident.Close(userId, "Closing notes");
 
         // Assert
         incident.Status.Should().Be(IncidentStatus.Closed);
-        incident.ClosedAt.Should().NotBeNull();
+        incident.ClosedByUserId.Should().Be(userId);
+        incident.ClosingNotes.Should().Be("Closing notes");
     }
 
     [Fact]
@@ -368,93 +364,63 @@ public class IncidentEntityTests
         var incident = new Incident(
             Guid.NewGuid(),
             Guid.NewGuid(),
-            "Incident",
-            "Desc",
-            IncidentSeverity.High,
+            "Test Incident",
+            "Description",
+            IncidentSeverity.Medium,
             "Test");
+        var userId = Guid.NewGuid();
 
         // Act
-        incident.Escalate(Guid.NewGuid(), "Need help");
+        incident.Escalate(userId, "Needs senior review");
 
         // Assert
         incident.IsEscalated.Should().BeTrue();
+        incident.EscalationReason.Should().Be("Needs senior review");
     }
 
     [Fact]
-    public void Incident_AddComment_ShouldAddCommentToIncident()
+    public void Incident_AddComment_ShouldAddToCommentsList()
     {
         // Arrange
         var incident = new Incident(
             Guid.NewGuid(),
             Guid.NewGuid(),
-            "Incident",
-            "Desc",
-            IncidentSeverity.High,
+            "Test Incident",
+            "Description",
+            IncidentSeverity.Medium,
             "Test");
+        var userId = Guid.NewGuid();
 
         // Act
-        incident.AddComment(Guid.NewGuid(), "Investigation started");
+        incident.AddComment(userId, "Test comment");
 
         // Assert
         incident.Comments.Should().HaveCount(1);
+        incident.Comments[0].Text.Should().Be("Test comment");
+        incident.Comments[0].UserId.Should().Be(userId);
     }
-}
 
-#endregion
-
-#region IncidentComment Entity Tests
-
-public class IncidentCommentEntityTests
-{
-    [Fact]
-    public void IncidentComment_ShouldBeCreatedCorrectly()
+    [Theory]
+    [InlineData(IncidentStatus.New)]
+    [InlineData(IncidentStatus.Acknowledged)]
+    [InlineData(IncidentStatus.Investigating)]
+    [InlineData(IncidentStatus.Resolved)]
+    [InlineData(IncidentStatus.Closed)]
+    public void Incident_StatusValues_ShouldBeValid(IncidentStatus status)
     {
-        // Arrange & Act
-        var comment = new IncidentComment(
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            Guid.NewGuid(),
-            "This is a comment");
-
         // Assert
-        comment.Content.Should().Be("This is a comment");
-        comment.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        Enum.IsDefined(typeof(IncidentStatus), status).Should().BeTrue();
     }
-}
 
-#endregion
-
-#region IncidentSeverity Enum Tests
-
-public class IncidentSeverityEnumTests
-{
     [Theory]
     [InlineData(IncidentSeverity.Low)]
     [InlineData(IncidentSeverity.Medium)]
     [InlineData(IncidentSeverity.High)]
     [InlineData(IncidentSeverity.Critical)]
-    public void IncidentSeverity_ShouldHaveCorrectValues(IncidentSeverity severity)
+    public void Incident_SeverityValues_ShouldBeValid(IncidentSeverity severity)
     {
         // Assert
-        severity.Should().BeDefined();
-    }
-}
-
-#endregion
-
-#region IncidentStatus Enum Tests
-
-public class IncidentStatusEnumTests
-{
-    [Theory]
-    [InlineData(IncidentStatus.Open)]
-    [InlineData(IncidentStatus.InProgress)]
-    [InlineData(IncidentStatus.Resolved)]
-    [InlineData(IncidentStatus.Closed)]
-    public void IncidentStatus_ShouldHaveCorrectValues(IncidentStatus status)
-    {
-        // Assert
-        status.Should().BeDefined();
+        Enum.IsDefined(typeof(IncidentSeverity), severity).Should().BeTrue();
     }
 }
 

@@ -420,3 +420,73 @@ public class GetRelatedIncidentsQueryHandler : IRequestHandler<GetRelatedInciden
         UpdatedAt = incident.UpdatedAt
     };
 }
+
+public class GetIncidentDashboardQueryHandler : IRequestHandler<GetIncidentDashboardQuery, IncidentDashboardDto?>
+{
+    private readonly IIncidentRepository _repository;
+
+    public GetIncidentDashboardQueryHandler(IIncidentRepository repository)
+    {
+        _repository = repository;
+    }
+
+    public async Task<IncidentDashboardDto?> Handle(GetIncidentDashboardQuery request, CancellationToken cancellationToken)
+    {
+        var totalIncidents = await _repository.GetCountByTenantAsync(request.TenantId, cancellationToken);
+        var openIncidents = await _repository.GetCountByStatusAsync(request.TenantId, IncidentStatus.New, cancellationToken);
+        var resolvedIncidents = await _repository.GetCountByStatusAsync(request.TenantId, IncidentStatus.Resolved, cancellationToken);
+        var criticalIncidents = await _repository.GetBySeverityAsync(request.TenantId, IncidentSeverity.Critical, cancellationToken);
+
+        return new IncidentDashboardDto
+        {
+            TotalIncidents = totalIncidents,
+            OpenIncidents = openIncidents,
+            ResolvedIncidents = resolvedIncidents,
+            CriticalIncidents = criticalIncidents.Count,
+            AverageResolutionTimeHours = 0,
+            Trends = new List<IncidentTrendDto>()
+        };
+    }
+}
+
+public class GetIncidentDetailsQueryHandler : IRequestHandler<GetIncidentDetailsQuery, IncidentDetailDto?>
+{
+    private readonly IIncidentRepository _repository;
+
+    public GetIncidentDetailsQueryHandler(IIncidentRepository repository)
+    {
+        _repository = repository;
+    }
+
+    public async Task<IncidentDetailDto?> Handle(GetIncidentDetailsQuery request, CancellationToken cancellationToken)
+    {
+        var incident = await _repository.GetByIdAsync(request.IncidentId, cancellationToken);
+        if (incident == null) return null;
+
+        return new IncidentDetailDto
+        {
+            Id = incident.Id,
+            TenantId = incident.TenantId,
+            Title = incident.Title,
+            Description = incident.Description,
+            Category = incident.Category,
+            Severity = incident.Severity,
+            Status = incident.Status,
+            DetectionSource = incident.DetectionSource,
+            PrimaryUserId = incident.PrimaryUserId,
+            PrimaryAppId = incident.PrimaryAppId,
+            AffectedUsersCount = incident.AffectedUsersCount,
+            AffectedAppsCount = incident.AffectedAppsCount,
+            DetectedAt = incident.DetectedAt,
+            AcknowledgedAt = incident.AcknowledgedAt,
+            AcknowledgedByUserId = incident.AcknowledgedByUserId,
+            ResolvedAt = incident.ResolvedAt,
+            ResolvedByUserId = incident.ResolvedByUserId,
+            ClosedAt = incident.ClosedAt,
+            ClosedByUserId = incident.ClosedByUserId,
+            ResolutionSummary = incident.ResolutionSummary,
+            CreatedAt = incident.CreatedAt,
+            UpdatedAt = incident.UpdatedAt
+        };
+    }
+}

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Onesign.Modules.Observability.Domain.Entities;
 using Onesign.Modules.Observability.Domain.Enums;
 using Onesign.Modules.Observability.Infrastructure.EfCore.Entities;
+using AuditEventEntity = Onesign.Modules.Observability.Infrastructure.EfCore.Entities.ObservabilityAuditEventEntity;
 using Onesign.Modules.Observability.Infrastructure.EfCore.Repositories;
 using Xunit;
 

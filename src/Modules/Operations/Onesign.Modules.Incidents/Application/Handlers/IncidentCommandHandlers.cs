@@ -698,3 +698,56 @@ public class RunPlaybookOnIncidentCommandHandler : IRequestHandler<RunPlaybookOn
         };
     }
 }
+
+public class AddIncidentCommentCommandHandler : IRequestHandler<AddIncidentCommentCommand, bool>
+{
+    private readonly IIncidentRepository _repository;
+    private readonly ILogger<AddIncidentCommentCommandHandler> _logger;
+
+    public AddIncidentCommentCommandHandler(
+        IIncidentRepository repository,
+        ILogger<AddIncidentCommentCommandHandler> logger)
+    {
+        _repository = repository;
+        _logger = logger;
+    }
+
+    public async Task<bool> Handle(AddIncidentCommentCommand request, CancellationToken cancellationToken)
+    {
+        var incident = await _repository.GetByIdAsync(request.IncidentId, cancellationToken);
+        if (incident == null) return false;
+
+        incident.AddComment(request.AuthorId, request.Content);
+        await _repository.UpdateAsync(incident, cancellationToken);
+
+        _logger.LogInformation("Added comment to incident {IncidentId} by user {UserId}", request.IncidentId, request.AuthorId);
+        return true;
+    }
+}
+
+public class EscalateIncidentCommandHandler : IRequestHandler<EscalateIncidentCommand, bool>
+{
+    private readonly IIncidentRepository _repository;
+    private readonly ILogger<EscalateIncidentCommandHandler> _logger;
+
+    public EscalateIncidentCommandHandler(
+        IIncidentRepository repository,
+        ILogger<EscalateIncidentCommandHandler> logger)
+    {
+        _repository = repository;
+        _logger = logger;
+    }
+
+    public async Task<bool> Handle(EscalateIncidentCommand request, CancellationToken cancellationToken)
+    {
+        var incident = await _repository.GetByIdAsync(request.IncidentId, cancellationToken);
+        if (incident == null) return false;
+
+        incident.Escalate(request.EscalatedBy, request.Reason);
+        incident.AssignedTo = request.EscalateTo;
+        await _repository.UpdateAsync(incident, cancellationToken);
+
+        _logger.LogInformation("Escalated incident {IncidentId} to user {EscalateTo}", request.IncidentId, request.EscalateTo);
+        return true;
+    }
+}

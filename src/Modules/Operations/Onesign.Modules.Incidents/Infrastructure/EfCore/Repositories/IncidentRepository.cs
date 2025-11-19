@@ -179,7 +179,12 @@ public class IncidentRepository : IIncidentRepository
         ClosedByUserId = entity.ClosedByUserId,
         ResolutionSummary = entity.ResolutionSummary,
         CreatedAt = entity.CreatedAt,
-        UpdatedAt = entity.UpdatedAt
+        UpdatedAt = entity.UpdatedAt,
+        AssignedTo = entity.AssignedTo,
+        IsEscalated = entity.IsEscalated,
+        EscalationReason = entity.EscalationReason,
+        RootCause = entity.RootCause,
+        ClosingNotes = entity.ClosingNotes
     };
 
     private static Infrastructure.EfCore.Entities.IncidentEntity MapToEntity(Incident incident) => new()
@@ -205,6 +210,11 @@ public class IncidentRepository : IIncidentRepository
         ClosedByUserId = incident.ClosedByUserId,
         ResolutionSummary = incident.ResolutionSummary,
         CreatedAt = incident.CreatedAt,
-        UpdatedAt = incident.UpdatedAt
+        UpdatedAt = incident.UpdatedAt,
+        AssignedTo = incident.AssignedTo,
+        IsEscalated = incident.IsEscalated,
+        EscalationReason = incident.EscalationReason,
+        RootCause = incident.RootCause,
+        ClosingNotes = incident.ClosingNotes
     };
 }

@@ -1,15 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Onesign.Data.Contexts;
 using Onesign.Modules.Observability.Infrastructure.EfCore.Entities;
+using Onesign.Modules.Tenants.Infrastructure.EfCore.Entities;
 
 namespace Onesign.Modules.Observability.Infrastructure.EfCore.Configurations;
 
-public class AuditEventEntityTypeConfiguration : IEntityTypeConfiguration<AuditEventEntity>
+public class ObservabilityAuditEventEntityTypeConfiguration : IEntityTypeConfiguration<ObservabilityAuditEventEntity>
 {
-    public void Configure(EntityTypeBuilder<AuditEventEntity> builder)
+    public void Configure(EntityTypeBuilder<ObservabilityAuditEventEntity> builder)
     {
-        builder.ToTable("AuditEvents");
+        builder.ToTable("ObservabilityAuditEvents");
 
         builder.HasKey(x => x.Id);
 
@@ -67,19 +67,19 @@ public class AuditEventEntityTypeConfiguration : IEntityTypeConfiguration<AuditE
 
         // Critical indexes for efficient searching
         builder.HasIndex(x => new { x.TenantId, x.OccurredAt })
-            .HasDatabaseName("IX_AuditEvents_TenantId_OccurredAt");
+            .HasDatabaseName("IX_ObservabilityAuditEvents_TenantId_OccurredAt");
 
         builder.HasIndex(x => new { x.TenantId, x.Category, x.OccurredAt })
-            .HasDatabaseName("IX_AuditEvents_TenantId_Category_OccurredAt");
+            .HasDatabaseName("IX_ObservabilityAuditEvents_TenantId_Category_OccurredAt");
 
         builder.HasIndex(x => new { x.ActorId, x.OccurredAt })
-            .HasDatabaseName("IX_AuditEvents_ActorId_OccurredAt");
+            .HasDatabaseName("IX_ObservabilityAuditEvents_ActorId_OccurredAt");
 
         builder.HasIndex(x => x.CorrelationId)
-            .HasDatabaseName("IX_AuditEvents_CorrelationId");
+            .HasDatabaseName("IX_ObservabilityAuditEvents_CorrelationId");
 
         builder.HasIndex(x => x.OccurredAt)
-            .HasDatabaseName("IX_AuditEvents_OccurredAt");
+            .HasDatabaseName("IX_ObservabilityAuditEvents_OccurredAt");
 
         // Foreign key to Tenant (optional - can be null for global events)
         builder.HasOne<TenantEntity>()

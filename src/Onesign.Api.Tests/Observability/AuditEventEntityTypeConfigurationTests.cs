@@ -2,6 +2,8 @@ using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Onesign.Modules.Observability.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Observability.Infrastructure.EfCore.Entities;
+using AuditEventEntity = Onesign.Modules.Observability.Infrastructure.EfCore.Entities.ObservabilityAuditEventEntity;
+using AuditEventEntityTypeConfiguration = Onesign.Modules.Observability.Infrastructure.EfCore.Configurations.ObservabilityAuditEventEntityTypeConfiguration;
 using Xunit;
 
 namespace Onesign.Api.Tests.Observability;
@@ -23,7 +25,7 @@ public class AuditEventEntityTypeConfigurationTests
 
         // Assert
         entityType.Should().NotBeNull();
-        entityType!.GetTableName().Should().Be("AuditEvents");
+        entityType!.GetTableName().Should().Be("ObservabilityAuditEvents");
     }
 
     [Fact]

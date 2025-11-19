@@ -3,7 +3,7 @@ using Onesign.Modules.Observability.Domain.Enums;
 
 namespace Onesign.Modules.Observability.Infrastructure.EfCore.Entities;
 
-public class AuditEventEntity
+public class ObservabilityAuditEventEntity
 {
     public Guid Id { get; set; }
     public Guid? TenantId { get; set; }
@@ -49,9 +49,9 @@ public class AuditEventEntity
         };
     }
 
-    public static AuditEventEntity FromDomain(AuditEvent auditEvent)
+    public static ObservabilityAuditEventEntity FromDomain(AuditEvent auditEvent)
     {
-        return new AuditEventEntity
+        return new ObservabilityAuditEventEntity
         {
             Id = auditEvent.Id,
             TenantId = auditEvent.TenantId,
