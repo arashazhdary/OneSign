@@ -5,5 +5,6 @@ public enum NotificationChannel
     Email = 1,
     Sms = 2,
     InApp = 3,
-    Webhook = 4
+    Webhook = 4,
+    Push = 5
 }

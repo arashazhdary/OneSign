@@ -31,6 +31,15 @@ public class LoginHookRepository : ILoginHookRepository
         return entities.Select(MapToDomain).ToList();
     }
 
+    public async Task<IReadOnlyList<LoginHook>> GetByTenantAndStageAsync(Guid tenantId, HookStage stage, CancellationToken ct = default)
+    {
+        var entities = await _dbContext.Set<LoginHookEntity>()
+            .Where(x => x.TenantId == tenantId && x.Stage == (int)stage)
+            .OrderBy(x => x.Name)
+            .ToListAsync(ct);
+        return entities.Select(MapToDomain).ToList();
+    }
+
     public async Task<IReadOnlyList<LoginHook>> GetEnabledByStageAsync(Guid tenantId, HookStage stage, CancellationToken ct = default)
     {
         var entities = await _dbContext.Set<LoginHookEntity>()

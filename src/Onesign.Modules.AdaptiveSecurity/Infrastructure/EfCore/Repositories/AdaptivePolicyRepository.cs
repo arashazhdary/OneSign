@@ -23,6 +23,13 @@ public class AdaptivePolicyRepository : IAdaptivePolicyRepository
         return entity == null ? null : MapToDomain(entity);
     }
 
+    public async Task<AdaptivePolicy?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct = default)
+    {
+        var entity = await _dbContext.Set<AdaptivePolicyEntity>()
+            .FirstOrDefaultAsync(x => x.TenantId == tenantId && x.Id == id, ct);
+        return entity == null ? null : MapToDomain(entity);
+    }
+
     public async Task<IReadOnlyList<AdaptivePolicy>> GetByTenantAsync(Guid tenantId, CancellationToken ct = default)
     {
         var entities = await _dbContext.Set<AdaptivePolicyEntity>()
@@ -30,6 +37,11 @@ public class AdaptivePolicyRepository : IAdaptivePolicyRepository
             .OrderBy(x => x.Priority)
             .ToListAsync(ct);
         return entities.Select(MapToDomain).ToList();
+    }
+
+    public async Task<IReadOnlyList<AdaptivePolicy>> GetByTenantIdAsync(Guid tenantId, CancellationToken ct = default)
+    {
+        return await GetByTenantAsync(tenantId, ct);
     }
 
     public async Task<IReadOnlyList<AdaptivePolicy>> GetEnabledPoliciesAsync(Guid tenantId, CancellationToken ct = default)

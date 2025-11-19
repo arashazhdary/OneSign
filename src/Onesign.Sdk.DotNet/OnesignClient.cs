@@ -14,6 +14,8 @@ public class OnesignClient : IDisposable
     public UsersService Users { get; }
     public ApplicationsService Applications { get; }
     public TenantsService Tenants { get; }
+    public RolesService Roles { get; }
+    public TokenValidationService TokenValidation { get; }
 
     public OnesignClient(string baseUrl, string clientId, string clientSecret)
         : this(new OnesignOptions
@@ -37,6 +39,8 @@ public class OnesignClient : IDisposable
         Users = new UsersService(_httpClient, Auth);
         Applications = new ApplicationsService(_httpClient, Auth);
         Tenants = new TenantsService(_httpClient, Auth);
+        Roles = new RolesService(_httpClient, Auth);
+        TokenValidation = new TokenValidationService(_httpClient, _options);
     }
 
     private void ConfigureHttpClient()
