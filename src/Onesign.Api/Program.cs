@@ -235,6 +235,7 @@ builder.Services.AddScoped<IAutomationExecutionRepository>(sp =>
 builder.Services.AddScoped<IConditionEvaluator, ConditionEvaluatorService>();
 builder.Services.AddScoped<IActionExecutor, ActionExecutorService>();
 builder.Services.AddScoped<IAutomationEngine, AutomationEngineService>();
+builder.Services.AddScoped<Onesign.Modules.Automation.Application.Services.IAutomationTriggerService, Onesign.Modules.Automation.Application.Services.AutomationTriggerService>();
 
 // HttpClient for automation webhooks
 builder.Services.AddHttpClient("AutomationWebhook", client =>
@@ -284,6 +285,7 @@ builder.Services.AddHostedService<BackupSchedulerWorker>();
 builder.Services.AddHostedService<HealthCheckWorker>();
 builder.Services.AddHostedService<AuditCleanupWorker>();
 builder.Services.AddHostedService<InsightGenerationWorker>();
+builder.Services.AddHostedService<AutomationEventProcessor>();
 
 var app = builder.Build();
 
