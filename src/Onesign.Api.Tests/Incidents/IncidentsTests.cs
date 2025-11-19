@@ -22,7 +22,7 @@ public class CreateIncidentCommandTests
             TenantId = Guid.NewGuid(),
             Title = "Security Breach Detected",
             Description = "Unauthorized access attempt detected",
-            Category = IncidentCategory.Security,
+            Category = IncidentCategory.CompromisedAccount,
             Severity = IncidentSeverity.Critical,
             DetectionSource = DetectionSource.Manual,
             PrimaryUserId = Guid.NewGuid(),
@@ -51,7 +51,7 @@ public class UpdateIncidentCommandTests
             Id = Guid.NewGuid(),
             Title = "Updated Title",
             Description = "Updated description",
-            Category = IncidentCategory.Security,
+            Category = IncidentCategory.CompromisedAccount,
             Severity = IncidentSeverity.High,
             UpdatedByUserId = Guid.NewGuid()
         };
