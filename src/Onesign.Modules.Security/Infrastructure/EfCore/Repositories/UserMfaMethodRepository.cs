@@ -31,6 +31,11 @@ public class UserMfaMethodRepository : IUserMfaMethodRepository
         return entities.Select(e => e.ToDomain()).ToList();
     }
 
+    public async Task<List<UserMfaMethod>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await GetByTenantUserIdAsync(userId, cancellationToken);
+    }
+
     public async Task<UserMfaMethod?> GetPrimaryByTenantUserIdAsync(Guid tenantUserId, CancellationToken cancellationToken = default)
     {
         var entity = await _dbContext.Set<UserMfaMethodEntity>()

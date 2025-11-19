@@ -31,11 +31,34 @@ public class OrgUnitMfaRuleRepository : IOrgUnitMfaRuleRepository
         return entity?.ToDomain();
     }
 
+    public async Task AddAsync(OrgUnitMfaRule rule, CancellationToken cancellationToken = default)
+    {
+        var entity = OrgUnitMfaRuleEntity.FromDomain(rule);
+        await _dbContext.Set<OrgUnitMfaRuleEntity>().AddAsync(entity, cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task AddRangeAsync(List<OrgUnitMfaRule> rules, CancellationToken cancellationToken = default)
     {
         var entities = rules.Select(OrgUnitMfaRuleEntity.FromDomain).ToList();
         await _dbContext.Set<OrgUnitMfaRuleEntity>().AddRangeAsync(entities, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task UpdateAsync(OrgUnitMfaRule rule, CancellationToken cancellationToken = default)
+    {
+        var entity = await _dbContext.Set<OrgUnitMfaRuleEntity>()
+            .FirstOrDefaultAsync(x => x.Id == rule.Id, cancellationToken);
+
+        if (entity != null)
+        {
+            entity.TenantId = rule.TenantId;
+            entity.OrgUnitId = rule.OrgUnitId;
+            entity.MfaRequired = rule.MfaRequired;
+            entity.UpdatedAt = rule.UpdatedAt;
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
     }
 
     public async Task DeleteByTenantIdAsync(Guid tenantId, CancellationToken cancellationToken = default)

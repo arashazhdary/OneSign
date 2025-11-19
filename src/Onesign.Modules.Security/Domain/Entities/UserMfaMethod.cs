@@ -6,8 +6,10 @@ public class UserMfaMethod
 {
     public Guid Id { get; private set; }
     public Guid TenantUserId { get; private set; }
+    public Guid UserId => TenantUserId;
     public MfaMethodType MethodType { get; private set; }
     public bool IsPrimary { get; private set; }
+    public bool IsDefault => IsPrimary;
     public bool IsVerified { get; private set; }
     public string SecretEncrypted { get; private set; }
     public DateTime CreatedAt { get; private set; }
@@ -39,5 +41,20 @@ public class UserMfaMethod
     {
         IsVerified = false;
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    public static UserMfaMethod Create(
+        Guid userId,
+        Guid tenantId,
+        MfaMethodType methodType,
+        string encryptedSecret,
+        bool isDefault)
+    {
+        return new UserMfaMethod(
+            Guid.NewGuid(),
+            userId,
+            methodType,
+            isDefault,
+            encryptedSecret);
     }
 }

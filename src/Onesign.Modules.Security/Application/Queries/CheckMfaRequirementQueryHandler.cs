@@ -15,10 +15,8 @@ public class CheckMfaRequirementQueryHandler : IRequestHandler<CheckMfaRequireme
     public async Task<bool> Handle(CheckMfaRequirementQuery request, CancellationToken cancellationToken)
     {
         return await _policyService.IsMfaRequiredAsync(
-            request.TenantId,
             request.UserId,
-            request.OrgUnitId,
-            request.IsAdmin,
+            request.TenantId,
             cancellationToken
         );
     }

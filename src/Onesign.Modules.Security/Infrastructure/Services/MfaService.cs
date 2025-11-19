@@ -37,6 +37,23 @@ public class MfaService : IMfaService
         return $"otpauth://totp/{encodedIssuer}:{encodedAccountName}?secret={secret}&issuer={encodedIssuer}";
     }
 
+    public string GenerateQrCodeUri(string userEmail, string secret)
+    {
+        return GenerateOtpauthUrl(secret, "OneSign", userEmail);
+    }
+
+    public string GenerateEmailOtpCode()
+    {
+        return GenerateOtpCode();
+    }
+
+    public string EncryptSecret(string secret)
+    {
+        // Simple encryption - in production, use proper encryption
+        var bytes = Encoding.UTF8.GetBytes(secret);
+        return Convert.ToBase64String(bytes);
+    }
+
     public bool VerifyTotpCode(string secret, string code)
     {
         if (string.IsNullOrEmpty(secret))

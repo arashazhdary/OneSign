@@ -14,11 +14,22 @@ public interface IDeviceFingerprintService
         string deviceId,
         CancellationToken cancellationToken = default);
 
+    Task<bool> IsTrustedAsync(
+        Guid tenantUserId,
+        string deviceId,
+        CancellationToken cancellationToken = default);
+
     Task<TrustedDevice> MarkDeviceAsTrustedAsync(
         Guid tenantUserId,
         string deviceId,
         string deviceName,
         int rememberDays,
+        CancellationToken cancellationToken = default);
+
+    Task MarkAsTrustedAsync(
+        Guid userId,
+        Guid tenantId,
+        string deviceFingerprint,
         CancellationToken cancellationToken = default);
 
     Task UpdateDeviceLastSeenAsync(

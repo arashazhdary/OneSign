@@ -177,4 +177,19 @@ public class SecurityPolicyService : ISecurityPolicyService
             blockLevel: RiskLevel.High // Only block on High risk by default
         );
     }
+
+    public async Task<bool> IsMfaRequiredAsync(
+        Guid tenantUserId,
+        Guid tenantId,
+        CancellationToken cancellationToken = default)
+    {
+        return await GetEffectiveMfaRequirementAsync(
+            tenantUserId,
+            tenantId,
+            new List<Guid>(),
+            false,
+            false,
+            RiskLevel.Low,
+            cancellationToken);
+    }
 }

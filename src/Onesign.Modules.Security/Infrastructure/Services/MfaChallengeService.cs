@@ -145,4 +145,57 @@ public class MfaChallengeService : IMfaChallengeService
 
         return false;
     }
+
+    public async Task<MfaChallenge> CreateChallengeAsync(
+        Guid tenantUserId,
+        Guid tenantId,
+        Guid methodId,
+        MfaMethodType methodType,
+        CancellationToken cancellationToken = default)
+    {
+        var challenge = new MfaChallenge(
+            id: Guid.NewGuid(),
+            tenantUserId: tenantUserId,
+            methodType: methodType,
+            codeHash: string.Empty,
+            expiresAt: DateTime.UtcNow.AddMinutes(5),
+            deviceId: string.Empty,
+            ipAddress: string.Empty
+        )
+        {
+            TenantId = tenantId
+        };
+
+        await _mfaChallengeRepository.AddAsync(challenge, cancellationToken);
+        return challenge;
+    }
+
+    public async Task<bool> VerifyChallengeAsync(
+        Guid challengeId,
+        string code,
+        CancellationToken cancellationToken = default)
+    {
+        return await ValidateAndConsumeChallengeAsync(challengeId, code, cancellationToken);
+    }
+
+    public async Task<MfaChallenge?> GetChallengeAsync(
+        Guid challengeId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _mfaChallengeRepository.GetByIdAsync(challengeId, cancellationToken);
+    }
+
+    public async Task SetChallengeCodeAsync(
+        Guid challengeId,
+        string code,
+        CancellationToken cancellationToken = default)
+    {
+        var challenge = await _mfaChallengeRepository.GetByIdAsync(challengeId, cancellationToken);
+        if (challenge != null)
+        {
+            var codeHash = _mfaService.HashCode(code);
+            challenge.SetCodeHash(codeHash);
+            await _mfaChallengeRepository.UpdateAsync(challenge, cancellationToken);
+        }
+    }
 }

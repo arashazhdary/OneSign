@@ -33,4 +33,9 @@ public interface ISecurityPolicyService
         RiskLevel riskLevel,
         Guid tenantId,
         CancellationToken cancellationToken = default);
+
+    Task<bool> IsMfaRequiredAsync(
+        Guid tenantUserId,
+        Guid tenantId,
+        CancellationToken cancellationToken = default);
 }

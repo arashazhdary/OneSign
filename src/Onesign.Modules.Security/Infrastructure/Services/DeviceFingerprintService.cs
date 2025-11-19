@@ -130,4 +130,26 @@ public class DeviceFingerprintService : IDeviceFingerprintService
         device.UpdateLastSeen();
         await _trustedDeviceRepository.UpdateAsync(device, cancellationToken);
     }
+
+    public async Task<bool> IsTrustedAsync(
+        Guid tenantUserId,
+        string deviceId,
+        CancellationToken cancellationToken = default)
+    {
+        return await IsTrustedDeviceAsync(tenantUserId, deviceId, cancellationToken);
+    }
+
+    public async Task MarkAsTrustedAsync(
+        Guid userId,
+        Guid tenantId,
+        string deviceFingerprint,
+        CancellationToken cancellationToken = default)
+    {
+        await MarkDeviceAsTrustedAsync(
+            userId,
+            deviceFingerprint,
+            "Trusted Device",
+            30,
+            cancellationToken);
+    }
 }

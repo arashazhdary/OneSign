@@ -21,10 +21,10 @@ public class RecordRiskEventCommandHandler : IRequestHandler<RecordRiskEventComm
             request.TenantId,
             (RiskEventType)request.EventType,
             (RiskLevel)request.RiskLevel,
-            request.IpAddress,
-            request.UserAgent,
-            request.Location,
-            request.Details
+            request.IpAddress ?? string.Empty,
+            request.UserAgent ?? string.Empty,
+            request.Location ?? string.Empty,
+            request.Details ?? string.Empty
         );
 
         await _repository.AddAsync(riskEvent, cancellationToken);

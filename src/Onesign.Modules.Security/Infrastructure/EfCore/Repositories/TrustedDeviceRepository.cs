@@ -31,6 +31,15 @@ public class TrustedDeviceRepository : ITrustedDeviceRepository
         return entities.Select(e => e.ToDomain()).ToList();
     }
 
+    public async Task<List<TrustedDevice>> GetActiveByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        var entities = await _dbContext.Set<TrustedDeviceEntity>()
+            .Where(x => x.TenantUserId == userId && (x.ExpiresAt == null || x.ExpiresAt > DateTime.UtcNow))
+            .ToListAsync(cancellationToken);
+
+        return entities.Select(e => e.ToDomain()).ToList();
+    }
+
     public async Task<TrustedDevice?> GetByDeviceIdAsync(Guid tenantUserId, string deviceId, CancellationToken cancellationToken = default)
     {
         var entity = await _dbContext.Set<TrustedDeviceEntity>()

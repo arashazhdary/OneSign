@@ -43,4 +43,12 @@ public class MfaChallenge
     {
         return DateTime.UtcNow > ExpiresAt;
     }
+
+    public Guid UserId => TenantUserId;
+    public Guid TenantId { get; set; }
+
+    public void SetCodeHash(string codeHash)
+    {
+        CodeHash = codeHash;
+    }
 }

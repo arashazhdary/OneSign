@@ -37,4 +37,26 @@ public class RiskEvent
         DetailsJson = detailsJson;
         CreatedAt = DateTime.UtcNow;
     }
+
+    public static RiskEvent Create(
+        Guid? userId,
+        Guid? tenantId,
+        RiskEventType eventType,
+        RiskLevel riskLevel,
+        string ipAddress,
+        string userAgent,
+        string location,
+        string details)
+    {
+        return new RiskEvent(
+            Guid.NewGuid(),
+            tenantId,
+            userId,
+            eventType,
+            riskLevel,
+            ipAddress,
+            location,
+            userAgent,
+            details);
+    }
 }

@@ -17,6 +17,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Onesign.Shared\Onesign.Shared.csproj" />
     <ProjectReference Include="..\Onesign.Modules.Audit\Onesign.Modules.Audit.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Security\Onesign.Modules.Security.csproj" />
   </ItemGroup>
 
 </Project>

@@ -22,8 +22,8 @@ public class GetTrustedDevicesQueryHandler : IRequestHandler<GetTrustedDevicesQu
             Id = d.Id,
             DeviceName = d.DeviceName,
             CreatedAt = d.CreatedAt,
-            ExpiresAt = d.ExpiresAt,
-            LastUsedAt = d.LastUsedAt
+            ExpiresAt = d.ExpiresAt ?? DateTime.MaxValue,
+            LastUsedAt = d.LastSeenAt
         }).ToList();
     }
 }
