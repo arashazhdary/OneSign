@@ -502,6 +502,40 @@
       "sdkConfigurations": "SDK Configurations",
       "usageAnalytics": "Usage Analytics"
     }
+  },
+  "automation": {
+    "title": "Automation & Playbooks",
+    "tabs": {
+      "workflows": "Workflows",
+      "executions": "Executions",
+      "templates": "Templates"
+    },
+    "createWorkflow": "Create Workflow",
+    "name": "Name",
+    "description": "Description",
+    "severity": "Severity",
+    "triggers": "Triggers",
+    "trigger": "Trigger",
+    "action": "Action",
+    "actions": "Actions",
+    "actionsRun": "Actions Run",
+    "status": "Status",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "enable": "Enable",
+    "disable": "Disable",
+    "enableImmediately": "Enable immediately",
+    "workflow": "Workflow",
+    "eventType": "Event Type",
+    "startedAt": "Started At",
+    "workflowCreated": "Workflow created successfully",
+    "workflowDeleted": "Workflow deleted successfully",
+    "templateCloned": "Template cloned successfully",
+    "confirmDelete": "Are you sure you want to delete this workflow?",
+    "noWorkflows": "No workflows found. Create your first automation workflow.",
+    "noExecutions": "No executions found.",
+    "noTemplates": "No templates available.",
+    "useTemplate": "Use This Template"
   }
 }
 

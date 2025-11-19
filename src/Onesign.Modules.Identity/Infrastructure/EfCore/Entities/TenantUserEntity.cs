@@ -13,5 +13,11 @@ public class TenantUserEntity
     public DateTime? LastLoginAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+
+    // Automation-related fields
+    public bool RequireMfaNextSignIn { get; set; }
+    public bool IsLocked { get; set; }
+    public DateTime? LockedAt { get; set; }
+    public string? LockReason { get; set; }
 }
 

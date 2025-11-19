@@ -44,6 +44,11 @@ using Onesign.Modules.AccessRequests.Application.Services;
 // Phase 13 - Platform Hardening & Scale
 using Onesign.Shared.MultiTenancy;
 using Onesign.Shared.Services;
+// Phase 26 - Automation
+using Onesign.Modules.Automation.Domain.Repositories;
+using Onesign.Modules.Automation.Domain.Services;
+using Onesign.Modules.Automation.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.Automation.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -120,7 +125,9 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
     typeof(Onesign.Modules.Crypto.Application.Commands.RolloverKeyCommand).Assembly,
     typeof(Onesign.Modules.Privacy.Application.Commands.CreateDataSubjectRequestCommand).Assembly,
     // Phase 18 - Adaptive Security
-    typeof(Onesign.Modules.AdaptiveSecurity.Application.Commands.CreateAdaptivePolicyCommand).Assembly));
+    typeof(Onesign.Modules.AdaptiveSecurity.Application.Commands.CreateAdaptivePolicyCommand).Assembly,
+    // Phase 26 - Automation
+    typeof(Onesign.Modules.Automation.Application.Commands.CreateWorkflowCommand).Assembly));
 
 // Repositories
 builder.Services.AddScoped<ITenantRepository>(sp => 
@@ -217,6 +224,23 @@ builder.Services.AddScoped<IApiUsageLogRepository>(sp =>
 
 // Developer Services
 builder.Services.AddScoped<IApiKeyService, ApiKeyService>();
+
+// Automation Repositories
+builder.Services.AddScoped<IAutomationWorkflowRepository>(sp =>
+    new AutomationWorkflowRepository(sp.GetRequiredService<OnesignDbContext>()));
+builder.Services.AddScoped<IAutomationExecutionRepository>(sp =>
+    new AutomationExecutionRepository(sp.GetRequiredService<OnesignDbContext>()));
+
+// Automation Services
+builder.Services.AddScoped<IConditionEvaluator, ConditionEvaluatorService>();
+builder.Services.AddScoped<IActionExecutor, ActionExecutorService>();
+builder.Services.AddScoped<IAutomationEngine, AutomationEngineService>();
+
+// HttpClient for automation webhooks
+builder.Services.AddHttpClient("AutomationWebhook", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 
 // JWT Signing Key Provider
 builder.Services.AddSingleton<Onesign.Shared.Security.IJwtSigningKeyProvider, Onesign.Shared.Security.ConfigurationJwtSigningKeyProvider>();

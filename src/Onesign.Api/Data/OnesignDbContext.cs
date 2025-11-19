@@ -54,6 +54,9 @@ using Onesign.Modules.Privacy.Infrastructure.EfCore.Entities;
 // Phase 18 - Adaptive Security
 using Onesign.Modules.AdaptiveSecurity.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.AdaptiveSecurity.Infrastructure.EfCore.Entities;
+// Phase 26 - Automation
+using Onesign.Modules.Automation.Infrastructure.EfCore.Configurations;
+using Onesign.Modules.Automation.Infrastructure.EfCore.Entities;
 
 namespace Onesign.Api.Data;
 
@@ -154,6 +157,14 @@ public class OnesignDbContext : DbContext
     public DbSet<AdaptivePolicyEntity> AdaptivePolicies => Set<AdaptivePolicyEntity>();
     public DbSet<SecuritySignalEntity> SecuritySignals => Set<SecuritySignalEntity>();
     public DbSet<UserSecurityContextEntity> UserSecurityContexts => Set<UserSecurityContextEntity>();
+
+    // Automation
+    public DbSet<AutomationWorkflowEntity> AutomationWorkflows => Set<AutomationWorkflowEntity>();
+    public DbSet<AutomationTriggerEntity> AutomationTriggers => Set<AutomationTriggerEntity>();
+    public DbSet<AutomationConditionEntity> AutomationConditions => Set<AutomationConditionEntity>();
+    public DbSet<AutomationActionEntity> AutomationActions => Set<AutomationActionEntity>();
+    public DbSet<AutomationExecutionEntity> AutomationExecutions => Set<AutomationExecutionEntity>();
+
     // Federation
     public DbSet<SamlProviderEntity> SamlProviders => Set<SamlProviderEntity>();
     public DbSet<OidcFederationProviderEntity> OidcFederationProviders => Set<OidcFederationProviderEntity>();
@@ -311,6 +322,13 @@ public class OnesignDbContext : DbContext
         modelBuilder.ApplyConfiguration(new AdaptivePolicyEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new SecuritySignalEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new UserSecurityContextEntityTypeConfiguration());
+
+        // Automation
+        modelBuilder.ApplyConfiguration(new AutomationWorkflowEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new AutomationTriggerEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new AutomationConditionEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new AutomationActionEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new AutomationExecutionEntityTypeConfiguration());
     }
 }
 
