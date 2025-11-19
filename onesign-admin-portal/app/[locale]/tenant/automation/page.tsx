@@ -1,0 +1,469 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
+import { getTenantId } from '@/lib/tenant-context';
+import {
+  getWorkflows,
+  getExecutions,
+  getAvailableTemplates,
+  createWorkflow,
+  deleteWorkflow,
+  enableWorkflow,
+  disableWorkflow,
+  cloneTemplate,
+  AutomationWorkflowDto,
+  AutomationExecutionDto,
+  EVENT_TYPES,
+  ACTION_TYPES,
+} from '@/lib/api/automation';
+
+type Tab = 'workflows' | 'executions' | 'templates';
+
+export default function TenantAutomationPage() {
+  const t = useTranslations();
+  const [activeTab, setActiveTab] = useState<Tab>('workflows');
+  const [tenantId, setTenantIdState] = useState<string>('');
+  const [userId] = useState('00000000-0000-0000-0000-000000000001');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const [workflows, setWorkflows] = useState<AutomationWorkflowDto[]>([]);
+  const [executions, setExecutions] = useState<AutomationExecutionDto[]>([]);
+  const [templates, setTemplates] = useState<AutomationWorkflowDto[]>([]);
+  const [totalExecutions, setTotalExecutions] = useState(0);
+  const [executionPage, setExecutionPage] = useState(1);
+
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newWorkflow, setNewWorkflow] = useState({
+    name: '',
+    description: '',
+    severity: 'Info',
+    isEnabled: true,
+    triggers: [{ eventType: EVENT_TYPES[0], sourceModule: 'Auth' }],
+    conditions: [] as { expressionType: string; expression: string; order: number }[],
+    actions: [{ actionType: ACTION_TYPES[0], order: 0, configJson: '{}', isCritical: false }],
+  });
+
+  useEffect(() => {
+    const contextTenantId = getTenantId();
+    setTenantIdState(contextTenantId || '00000000-0000-0000-0000-000000000000');
+  }, []);
+
+  useEffect(() => {
+    if (tenantId) {
+      fetchData();
+    }
+  }, [tenantId, activeTab, executionPage]);
+
+  const fetchData = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      if (activeTab === 'workflows') {
+        const data = await getWorkflows(tenantId);
+        setWorkflows(data);
+      } else if (activeTab === 'executions') {
+        const data = await getExecutions(tenantId, { page: executionPage, pageSize: 20 });
+        setExecutions(data.items);
+        setTotalExecutions(data.totalCount);
+      } else if (activeTab === 'templates') {
+        const data = await getAvailableTemplates();
+        setTemplates(data);
+      }
+    } catch (err) {
+      setError(t('common.error'));
+      console.error('Error fetching data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateWorkflow = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    try {
+      await createWorkflow({
+        tenantId,
+        userId,
+        ...newWorkflow,
+      });
+      setSuccess(t('automation.workflowCreated'));
+      setShowCreateModal(false);
+      setNewWorkflow({
+        name: '',
+        description: '',
+        severity: 'Info',
+        isEnabled: true,
+        triggers: [{ eventType: EVENT_TYPES[0], sourceModule: 'Auth' }],
+        conditions: [],
+        actions: [{ actionType: ACTION_TYPES[0], order: 0, configJson: '{}', isCritical: false }],
+      });
+      fetchData();
+    } catch (err) {
+      setError(t('common.error'));
+    }
+  };
+
+  const handleDeleteWorkflow = async (id: string) => {
+    if (!confirm(t('automation.confirmDelete'))) return;
+    try {
+      await deleteWorkflow(id, tenantId);
+      setSuccess(t('automation.workflowDeleted'));
+      fetchData();
+    } catch (err) {
+      setError(t('common.error'));
+    }
+  };
+
+  const handleToggleWorkflow = async (workflow: AutomationWorkflowDto) => {
+    try {
+      if (workflow.isEnabled) {
+        await disableWorkflow(workflow.id, tenantId, userId);
+      } else {
+        await enableWorkflow(workflow.id, tenantId, userId);
+      }
+      fetchData();
+    } catch (err) {
+      setError(t('common.error'));
+    }
+  };
+
+  const handleCloneTemplate = async (template: AutomationWorkflowDto) => {
+    try {
+      await cloneTemplate(template.id, tenantId, userId);
+      setSuccess(t('automation.templateCloned'));
+      setActiveTab('workflows');
+      fetchData();
+    } catch (err) {
+      setError(t('common.error'));
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Succeeded': return 'bg-green-100 text-green-800';
+      case 'Failed': return 'bg-red-100 text-red-800';
+      case 'Running': return 'bg-blue-100 text-blue-800';
+      case 'Skipped': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-yellow-100 text-yellow-800';
+    }
+  };
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'Critical': return 'bg-red-100 text-red-800';
+      case 'Warning': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-blue-100 text-blue-800';
+    }
+  };
+
+  if (loading && !workflows.length && !executions.length && !templates.length) {
+    return <div className="p-8">{t('common.loading')}</div>;
+  }
+
+  return (
+    <div className="p-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">{t('automation.title')}</h1>
+        {activeTab === 'workflows' && (
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+          >
+            {t('automation.createWorkflow')}
+          </button>
+        )}
+      </div>
+
+      {error && (
+        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>
+      )}
+      {success && (
+        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">{success}</div>
+      )}
+
+      <div className="mb-6 border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8">
+          {(['workflows', 'executions', 'templates'] as Tab[]).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === tab
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              {t(`automation.tabs.${tab}`)}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {activeTab === 'workflows' && (
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('automation.name')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('automation.triggers')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('automation.severity')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('automation.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('automation.actions')}</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {workflows.map((workflow) => (
+                <tr key={workflow.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">{workflow.name}</div>
+                    {workflow.description && (
+                      <div className="text-sm text-gray-500">{workflow.description}</div>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {workflow.triggers.map(t => t.eventType).join(', ')}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 py-1 rounded text-xs ${getSeverityColor(workflow.severity)}`}>
+                      {workflow.severity}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 py-1 rounded text-xs ${workflow.isEnabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                      {workflow.isEnabled ? t('automation.enabled') : t('automation.disabled')}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleToggleWorkflow(workflow)}
+                        className="text-indigo-600 hover:text-indigo-900"
+                      >
+                        {workflow.isEnabled ? t('automation.disable') : t('automation.enable')}
+                      </button>
+                      <button
+                        onClick={() => handleDeleteWorkflow(workflow.id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        {t('common.delete')}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {workflows.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                    {t('automation.noWorkflows')}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {activeTab === 'executions' && (
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('automation.workflow')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('automation.eventType')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('automation.startedAt')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('automation.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('automation.actionsRun')}</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {executions.map((execution) => (
+                <tr key={execution.id}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {execution.workflowName || execution.workflowId}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {execution.eventType}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {new Date(execution.startedAt).toLocaleString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 py-1 rounded text-xs ${getStatusColor(execution.status)}`}>
+                      {execution.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {execution.actionsExecutedCount} / {execution.actionsExecutedCount + execution.actionsFailedCount}
+                    {execution.actionsFailedCount > 0 && (
+                      <span className="text-red-600 ml-1">({execution.actionsFailedCount} failed)</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {executions.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                    {t('automation.noExecutions')}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+          {totalExecutions > 20 && (
+            <div className="px-6 py-4 flex justify-between items-center border-t">
+              <button
+                onClick={() => setExecutionPage(p => Math.max(1, p - 1))}
+                disabled={executionPage === 1}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                {t('common.previous')}
+              </button>
+              <span className="text-sm text-gray-500">
+                {t('common.page')} {executionPage} / {Math.ceil(totalExecutions / 20)}
+              </span>
+              <button
+                onClick={() => setExecutionPage(p => p + 1)}
+                disabled={executionPage >= Math.ceil(totalExecutions / 20)}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                {t('common.next')}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'templates' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {templates.map((template) => (
+            <div key={template.id} className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">{template.name}</h3>
+              {template.description && (
+                <p className="text-sm text-gray-500 mb-4">{template.description}</p>
+              )}
+              <div className="mb-4">
+                <span className={`px-2 py-1 rounded text-xs ${getSeverityColor(template.severity)}`}>
+                  {template.severity}
+                </span>
+              </div>
+              <div className="text-sm text-gray-500 mb-4">
+                <strong>{t('automation.triggers')}:</strong> {template.triggers.map(t => t.eventType).join(', ')}
+              </div>
+              <button
+                onClick={() => handleCloneTemplate(template)}
+                className="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+              >
+                {t('automation.useTemplate')}
+              </button>
+            </div>
+          ))}
+          {templates.length === 0 && (
+            <div className="col-span-3 text-center text-gray-500 py-8">
+              {t('automation.noTemplates')}
+            </div>
+          )}
+        </div>
+      )}
+
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4">{t('automation.createWorkflow')}</h2>
+            <form onSubmit={handleCreateWorkflow}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">{t('automation.name')}</label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-3 py-2 border rounded"
+                  value={newWorkflow.name}
+                  onChange={(e) => setNewWorkflow({ ...newWorkflow, name: e.target.value })}
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">{t('automation.description')}</label>
+                <textarea
+                  className="w-full px-3 py-2 border rounded"
+                  value={newWorkflow.description}
+                  onChange={(e) => setNewWorkflow({ ...newWorkflow, description: e.target.value })}
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">{t('automation.severity')}</label>
+                <select
+                  className="w-full px-3 py-2 border rounded"
+                  value={newWorkflow.severity}
+                  onChange={(e) => setNewWorkflow({ ...newWorkflow, severity: e.target.value })}
+                >
+                  <option value="Info">Info</option>
+                  <option value="Warning">Warning</option>
+                  <option value="Critical">Critical</option>
+                </select>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">{t('automation.trigger')}</label>
+                <select
+                  className="w-full px-3 py-2 border rounded"
+                  value={newWorkflow.triggers[0]?.eventType}
+                  onChange={(e) => setNewWorkflow({
+                    ...newWorkflow,
+                    triggers: [{ eventType: e.target.value, sourceModule: e.target.value.split('.')[0] }]
+                  })}
+                >
+                  {EVENT_TYPES.map(et => (
+                    <option key={et} value={et}>{et}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">{t('automation.action')}</label>
+                <select
+                  className="w-full px-3 py-2 border rounded"
+                  value={newWorkflow.actions[0]?.actionType}
+                  onChange={(e) => setNewWorkflow({
+                    ...newWorkflow,
+                    actions: [{ actionType: e.target.value, order: 0, configJson: '{}', isCritical: false }]
+                  })}
+                >
+                  {ACTION_TYPES.map(at => (
+                    <option key={at} value={at}>{at}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="mb-4">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    className="mr-2"
+                    checked={newWorkflow.isEnabled}
+                    onChange={(e) => setNewWorkflow({ ...newWorkflow, isEnabled: e.target.checked })}
+                  />
+                  {t('automation.enableImmediately')}
+                </label>
+              </div>
+              <div className="flex gap-2 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="px-4 py-2 border rounded"
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                >
+                  {t('common.create')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

@@ -47,6 +47,8 @@
     <ProjectReference Include="..\Onesign.Modules.Privacy\Onesign.Modules.Privacy.csproj" />
     <!-- Phase 18 - Adaptive Security -->
     <ProjectReference Include="..\Onesign.Modules.AdaptiveSecurity\Onesign.Modules.AdaptiveSecurity.csproj" />
+    <!-- Phase 26 - Automation -->
+    <ProjectReference Include="..\Onesign.Modules.Automation\Onesign.Modules.Automation.csproj" />
   </ItemGroup>
 
 </Project>

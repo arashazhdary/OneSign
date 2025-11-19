@@ -502,6 +502,40 @@
       "sdkConfigurations": "پیکربندی SDK",
       "usageAnalytics": "تحلیل استفاده"
     }
+  },
+  "automation": {
+    "title": "اتوماسیون و پلی‌بوک‌ها",
+    "tabs": {
+      "workflows": "گردش کارها",
+      "executions": "اجراها",
+      "templates": "قالب‌ها"
+    },
+    "createWorkflow": "ایجاد گردش کار",
+    "name": "نام",
+    "description": "توضیحات",
+    "severity": "شدت",
+    "triggers": "محرک‌ها",
+    "trigger": "محرک",
+    "action": "عملیات",
+    "actions": "عملیات‌ها",
+    "actionsRun": "عملیات‌های اجرا شده",
+    "status": "وضعیت",
+    "enabled": "فعال",
+    "disabled": "غیرفعال",
+    "enable": "فعال کردن",
+    "disable": "غیرفعال کردن",
+    "enableImmediately": "فعال‌سازی فوری",
+    "workflow": "گردش کار",
+    "eventType": "نوع رویداد",
+    "startedAt": "زمان شروع",
+    "workflowCreated": "گردش کار با موفقیت ایجاد شد",
+    "workflowDeleted": "گردش کار با موفقیت حذف شد",
+    "templateCloned": "قالب با موفقیت کپی شد",
+    "confirmDelete": "آیا مطمئن هستید که می‌خواهید این گردش کار را حذف کنید؟",
+    "noWorkflows": "گردش کاری یافت نشد. اولین گردش کار اتوماسیون خود را ایجاد کنید.",
+    "noExecutions": "اجرایی یافت نشد.",
+    "noTemplates": "قالبی در دسترس نیست.",
+    "useTemplate": "استفاده از این قالب"
   }
 }
 
