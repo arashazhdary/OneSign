@@ -15,7 +15,7 @@ public class Incident
         Title = title;
         Description = description;
         Severity = severity;
-        Status = IncidentStatus.Open;
+        Status = IncidentStatus.New;
         DetectedAt = DateTime.UtcNow;
         CreatedAt = DateTime.UtcNow;
     }
