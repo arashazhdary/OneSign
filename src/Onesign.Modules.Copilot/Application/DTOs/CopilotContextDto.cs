@@ -18,6 +18,8 @@ public class DashboardContextData
     public int RiskyApplications { get; set; }
     public List<TopRiskDto> TopRisks { get; set; } = new();
     public List<RecentActivityDto> RecentActivities { get; set; } = new();
+    public object? MfaStats { get; set; }
+    public int SecurityScore { get; set; }
 }
 
 public class TopRiskDto
@@ -44,9 +46,13 @@ public class IncidentContextData
     public string Severity { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
+    public string? AssignedTo { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
     public List<IncidentEventDto> Events { get; set; } = new();
     public List<IncidentEntityDto> Entities { get; set; } = new();
     public List<PlaybookDto> AvailablePlaybooks { get; set; } = new();
+    public List<object> PlaybookRuns { get; set; } = new();
 }
 
 public class IncidentEventDto
@@ -78,9 +84,12 @@ public class PolicyContextData
     public string PolicyName { get; set; } = string.Empty;
     public string PolicyType { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
     public List<PolicyRuleDto> Rules { get; set; } = new();
     public int MatchCount { get; set; }
     public List<PolicyMatchDto> RecentMatches { get; set; } = new();
+    public int AffectedUsers { get; set; }
+    public int AffectedApplications { get; set; }
 }
 
 public class PolicyRuleDto
@@ -105,8 +114,13 @@ public class ChangeSetContextData
     public string Name { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
+    public string RequestedBy { get; set; } = string.Empty;
+    public DateTimeOffset CreatedAt { get; set; }
+    public DateTimeOffset? ScheduledFor { get; set; }
     public List<ChangeItemDto> Items { get; set; } = new();
     public SimulationSummaryDto? SimulationSummary { get; set; }
+    public List<object> ExecutionLogs { get; set; } = new();
 }
 
 public class ChangeItemDto
@@ -132,6 +146,7 @@ public class HuntingContextData
 {
     public List<SavedQueryDto> SavedQueries { get; set; } = new();
     public List<ScheduledHuntDto> ScheduledHunts { get; set; } = new();
+    public List<object> RecentRuns { get; set; } = new();
     public HuntResultsDto? CurrentResults { get; set; }
 }
 
@@ -169,6 +184,8 @@ public class AutomationContextData
 {
     public List<WorkflowSummaryDto> Workflows { get; set; } = new();
     public List<RecentExecutionDto> RecentExecutions { get; set; } = new();
+    public object? SelectedWorkflow { get; set; }
+    public object? ExecutionStats { get; set; }
 }
 
 public class WorkflowSummaryDto

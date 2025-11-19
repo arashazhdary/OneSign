@@ -1,16 +1,32 @@
 using Microsoft.Extensions.Logging;
 using Onesign.Modules.Copilot.Application.DTOs;
 using Onesign.Modules.Copilot.Domain.Enums;
+using Onesign.Modules.Incidents.Application.Services;
+using Onesign.Modules.Incidents.Domain.Repositories;
+using Onesign.Modules.Automation.Domain.Repositories;
 
 namespace Onesign.Modules.Copilot.Application.Services.ContextHandlers;
 
 public class IncidentContextHandler : IContextHandler
 {
     private readonly ILogger<IncidentContextHandler> _logger;
+    private readonly IIncidentRepository _incidentRepository;
+    private readonly IIncidentEventRepository _eventRepository;
+    private readonly IIncidentPlaybookService _playbookService;
+    private readonly IAutomationWorkflowRepository _workflowRepository;
 
-    public IncidentContextHandler(ILogger<IncidentContextHandler> logger)
+    public IncidentContextHandler(
+        ILogger<IncidentContextHandler> logger,
+        IIncidentRepository incidentRepository,
+        IIncidentEventRepository eventRepository,
+        IIncidentPlaybookService playbookService,
+        IAutomationWorkflowRepository workflowRepository)
     {
         _logger = logger;
+        _incidentRepository = incidentRepository;
+        _eventRepository = eventRepository;
+        _playbookService = playbookService;
+        _workflowRepository = workflowRepository;
     }
 
     public ContextType SupportedContextType => ContextType.Incident;
@@ -38,28 +54,111 @@ public class IncidentContextHandler : IContextHandler
             ["severity"] = incidentData.Severity,
             ["status"] = incidentData.Status,
             ["description"] = incidentData.Description,
+            ["category"] = incidentData.Category,
+            ["assignedTo"] = incidentData.AssignedTo,
+            ["createdAt"] = incidentData.CreatedAt,
             ["events"] = incidentData.Events,
             ["entities"] = incidentData.Entities,
-            ["availablePlaybooks"] = incidentData.AvailablePlaybooks
+            ["availablePlaybooks"] = incidentData.AvailablePlaybooks,
+            ["playbookRuns"] = incidentData.PlaybookRuns
         };
     }
 
-    private Task<IncidentContextData?> GetIncidentDataAsync(Guid tenantId, Guid incidentId, CancellationToken cancellationToken)
+    private async Task<IncidentContextData?> GetIncidentDataAsync(Guid tenantId, Guid incidentId, CancellationToken cancellationToken)
     {
-        // Integration with Incidents module would go here
-        // This would fetch incident details, related events, entities, and available playbooks
-        var data = new IncidentContextData
+        try
         {
-            IncidentId = incidentId,
-            Title = string.Empty,
-            Severity = "Medium",
-            Status = "Open",
-            Description = string.Empty,
-            Events = new List<IncidentEventDto>(),
-            Entities = new List<IncidentEntityDto>(),
-            AvailablePlaybooks = new List<PlaybookDto>()
-        };
+            var incident = await _incidentRepository.GetByIdAsync(incidentId, cancellationToken);
+            if (incident == null || incident.TenantId != tenantId)
+            {
+                _logger.LogWarning("Incident {IncidentId} not found for tenant {TenantId}", incidentId, tenantId);
+                return null;
+            }
 
-        return Task.FromResult<IncidentContextData?>(data);
+            // Get related events
+            var events = await _eventRepository.GetByIncidentAsync(incidentId, cancellationToken);
+            var eventDtos = events.Select(e => new IncidentEventDto
+            {
+                EventId = e.Id,
+                EventType = e.EventType,
+                Description = e.Description,
+                Timestamp = e.EventTime
+            }).Take(20).ToList();
+
+            // Get playbook runs
+            var playbookRuns = await _playbookService.GetPlaybookRunsForIncidentAsync(incidentId, cancellationToken);
+            var playbookRunDtos = playbookRuns.Select(r => new PlaybookRunDto
+            {
+                RunId = r.Id,
+                WorkflowName = r.WorkflowName,
+                Status = r.Status.ToString(),
+                StartedAt = r.StartedAt,
+                CompletedAt = r.CompletedAt
+            }).ToList();
+
+            // Get available playbooks (automation workflows for incident response)
+            var workflows = await _workflowRepository.GetByTenantIdAsync(tenantId, cancellationToken);
+            var availablePlaybooks = workflows
+                .Where(w => w.IsEnabled)
+                .Select(w => new PlaybookDto
+                {
+                    PlaybookId = w.Id,
+                    Name = w.Name,
+                    Description = w.Description ?? string.Empty
+                }).ToList();
+
+            // Build entities from incident
+            var entities = new List<IncidentEntityDto>();
+            if (incident.AffectedUserId.HasValue)
+            {
+                entities.Add(new IncidentEntityDto
+                {
+                    EntityType = "User",
+                    EntityId = incident.AffectedUserId.Value,
+                    EntityName = incident.AffectedUserDisplayName ?? "Unknown User",
+                    Role = "Affected"
+                });
+            }
+            if (incident.AffectedApplicationId.HasValue)
+            {
+                entities.Add(new IncidentEntityDto
+                {
+                    EntityType = "Application",
+                    EntityId = incident.AffectedApplicationId.Value,
+                    EntityName = incident.AffectedApplicationName ?? "Unknown Application",
+                    Role = "Affected"
+                });
+            }
+
+            return new IncidentContextData
+            {
+                IncidentId = incident.Id,
+                Title = incident.Title,
+                Severity = incident.Severity.ToString(),
+                Status = incident.Status.ToString(),
+                Description = incident.Description ?? string.Empty,
+                Category = incident.Category.ToString(),
+                AssignedTo = incident.AssignedToDisplayName,
+                CreatedAt = incident.CreatedAt,
+                Events = eventDtos,
+                Entities = entities,
+                AvailablePlaybooks = availablePlaybooks,
+                PlaybookRuns = playbookRunDtos
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get incident data for {IncidentId}", incidentId);
+            return null;
+        }
     }
+}
+
+public class PlaybookRunDto
+{
+    public Guid RunId { get; set; }
+    public string WorkflowName { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public DateTimeOffset StartedAt { get; set; }
+    public DateTimeOffset? CompletedAt { get; set; }
 }

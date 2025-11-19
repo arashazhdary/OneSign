@@ -79,6 +79,7 @@ public class ReportSubscriptionRepository : IReportSubscriptionRepository
             entity.IsActive = subscription.IsActive;
             entity.UpdatedAt = subscription.UpdatedAt;
             entity.UpdatedByUserId = subscription.UpdatedByUserId;
+            entity.LastSentAt = subscription.LastSentAt;
             await _dbContext.SaveChangesAsync(ct);
         }
     }
@@ -106,7 +107,8 @@ public class ReportSubscriptionRepository : IReportSubscriptionRepository
         CreatedAt = entity.CreatedAt,
         CreatedByUserId = entity.CreatedByUserId,
         UpdatedAt = entity.UpdatedAt,
-        UpdatedByUserId = entity.UpdatedByUserId
+        UpdatedByUserId = entity.UpdatedByUserId,
+        LastSentAt = entity.LastSentAt
     };
 
     private static ReportSubscriptionEntity MapToEntity(ReportSubscription subscription) => new()
@@ -121,6 +123,7 @@ public class ReportSubscriptionRepository : IReportSubscriptionRepository
         CreatedAt = subscription.CreatedAt,
         CreatedByUserId = subscription.CreatedByUserId,
         UpdatedAt = subscription.UpdatedAt,
-        UpdatedByUserId = subscription.UpdatedByUserId
+        UpdatedByUserId = subscription.UpdatedByUserId,
+        LastSentAt = subscription.LastSentAt
     };
 }
