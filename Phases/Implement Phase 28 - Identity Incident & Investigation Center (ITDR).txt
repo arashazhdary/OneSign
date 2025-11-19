@@ -1,0 +1,638 @@
+You are a senior software architect and staff-level engineer working on the onesign platform:
+
+- Multi-tenant SSO / IAM / IGA SaaS
+- Backend: .NET 10, modular monolith, Clean Architecture, per-module boundaries
+- Frontend: React / Next.js (Admin Portal: Global + Tenant, Login Portal, DevPortal, Account Center)
+- Full multi-language support (English LTR as primary, Persian RTL as secondary) in UI
+
+Previous phases (1–27) have implemented, among others:
+- Core SSO, OIDC/OAuth2, OrgUnits, RBAC/ABAC authorization
+- Federation, SCIM, AccessRequests, IdentityLifecycle
+- PrivilegedAccess, AdaptiveSecurity (risk based signals)
+- Extensibility, NotificationCenter, DevPortal
+- MultiRegion DR, Environment & On-Prem/Hybrid deployment
+- Crypto, Privacy & DSR
+- Phase 25: Insights & Reporting Center
+- Phase 26: Automation & Playbooks Center (event driven workflows)
+- Phase 27: Change Management & Policy Simulation Center
+
+Your job now is to DESIGN AND IMPLEMENT **Phase 28: Identity Incident & Investigation Center (ITDR)** as a production grade feature.
+
+This phase is about turning raw signals, alerts, and logs into manageable security incidents with full investigation workflows.
+
+You must NOT leave TODOs or stubs. Everything must work end to end.
+
+==================================================
+HIGH LEVEL – WHAT PHASE 28 IS
+==================================================
+
+Goal: give Tenant Security teams and Global Security teams a proper **Incident & Investigation Center** focused on identity and access.
+
+Identity Threat Detection and Response (ITDR) for onesign:
+
+- Collect signals from:
+  - AdaptiveSecurity (high risk sign ins, impossible travel, suspicious devices)
+  - PrivilegedAccess (break glass usage, JIT misuse)
+  - AccessRequests (suspicious approvals, mass access grants)
+  - Insights (Phase 25) (risky tenants, risk spikes)
+  - Automation (Phase 26) (playbooks that executed critical actions)
+  - ChangeManagement (Phase 27) (changes that might have caused issues)
+
+- Correlate them into **Incidents** instead of isolated alerts.
+- Provide:
+  - Incident lifecycle (New, Triaged, InProgress, Contained, Resolved, Closed)
+  - Timeline view of events and actions
+  - Links to affected entities (users, apps, tenants, automation workflows, changes)
+  - Ability to run automation playbooks from the incident
+  - Full audit history of the investigation
+
+This is not a general SIEM. It is **identity focused** incident management built into onesign.
+
+==================================================
+GLOBAL RULES YOU MUST FOLLOW
+==================================================
+
+1) No TODO, no half implementation
+- No TODO comments.
+- No NotImplementedException.
+- No fake incidents that are never populated.
+- All implemented APIs and UI must be backed by working logic and persistent data.
+
+2) Respect modular monolith architecture
+- Implement a dedicated module:
+  - `Onesign.Modules.Incidents` (or similar name)
+- Follow domain, application, infrastructure, API layering as used in other modules.
+
+3) Strict multi tenant behavior
+- Tenant incidents are scoped to that tenant.
+- Global security team can see cross tenant incidents in a safe way.
+- No cross tenant data leaks in tenant views.
+
+4) Security and privacy
+- Incident data is highly sensitive.
+- Only proper roles can access incidents and details.
+- Payloads must not contain raw secrets or unnecessary PII.
+
+5) Multi language UI
+- Any UI added must use the existing i18n mechanism.
+- No hard coded English copy in React.
+
+==================================================
+CORE CONCEPTS YOU MUST IMPLEMENT
+==================================================
+
+Phase 28 introduces these core concepts:
+
+1) **Incident**
+   - A security case that groups related alerts, events, and actions.
+
+2) **IncidentEventLink**
+   - Links domain events or alerts (from other modules) to an Incident.
+
+3) **IncidentEntityLink**
+   - Links impacted entities:
+     - Users
+     - Applications
+     - OrgUnits
+     - Tenants
+     - Automation workflows
+     - ChangeSets (Phase 27) that might be related.
+
+4) **IncidentTask / Work item**
+   - Optional tasks inside an incident:
+     - for triage, containment, eradication, communication.
+
+5) **IncidentComment**
+   - Analyst comments and notes on the incident.
+
+6) **Incident lifecycle**
+   - Status flow:
+     - New
+     - Triaged
+     - InProgress
+     - Contained
+     - Resolved
+     - Closed
+   - With severity, category, and assignment.
+
+7) **Correlation and creation logic**
+   - Signals get grouped into existing incidents when possible, or new incidents are created.
+
+==================================================
+BACKEND – DATA MODEL (YOU MUST IMPLEMENT)
+==================================================
+
+Create a module `Onesign.Modules.Incidents` with at least these entities:
+
+1) Incident
+
+Represents a security incident for a tenant or globally.
+
+Fields example:
+
+- Id (Guid)
+- TenantId (Guid?)              // null for global or multi tenant incidents, but tenant level is primary focus
+- Title (string)
+- Description (string?)
+- Category (string)             // e.g. "SuspiciousSignIn", "PrivilegedMisuse", "MassAccessGrant", "ConfigChangeIncident"
+- Severity (string)             // e.g. "Low", "Medium", "High", "Critical"
+- Status (string)               // "New", "Triaged", "InProgress", "Contained", "Resolved", "Closed"
+- DetectionSource (string)      // e.g. "AdaptiveSecurity", "Insights", "Automation", "Manual"
+- CreatedByUserId (Guid?)       // null or system for auto created
+- AssignedToUserId (Guid?)      // security analyst handling it
+- OpenedAt (DateTimeOffset)
+- LastUpdatedAt (DateTimeOffset)
+- ContainedAt (DateTimeOffset?)
+- ResolvedAt (DateTimeOffset?)
+- ClosedAt (DateTimeOffset?)
+
+- RiskScoreBefore (int?)        // snapshot from Insights
+- RiskScoreAfter (int?)         // optional
+- RelatedTenantRiskLevel (string?) // optional
+
+Table name: `Incidents_Incidents`.
+
+2) IncidentEventLink
+
+Logs which events or alerts are linked to the incident.
+
+- Id (Guid)
+- IncidentId (Guid, FK)
+- EventType (string)            // e.g. "Auth.HighRiskSignInDetected"
+- EventId (string)              // identifier from the source module, if available
+- SourceModule (string)         // "Auth", "AdaptiveSecurity", "PrivilegedAccess", "Automation", "Insights", "ChangeManagement", ...
+- OccurredAt (DateTimeOffset)
+- Summary (string)              // short text summarizing event
+- RawReferenceJson (string?)    // optional structured reference (not full log data)
+
+Table: `Incidents_EventLinks`.
+
+3) IncidentEntityLink
+
+Connects impacted entities to an incident.
+
+- Id (Guid)
+- IncidentId (Guid, FK)
+- EntityType (string)           // "User", "Application", "OrgUnit", "Tenant", "AutomationWorkflow", "ChangeSet"
+- EntityId (string)             // ID as string, can be Guid or other, but stored as string
+- DisplayName (string?)         // optional cached display name at time of linking
+- RelationshipType (string)     // "PrimaryTarget", "IndirectlyAffected", "SourceOfChange"
+
+Table: `Incidents_EntityLinks`.
+
+4) IncidentTask
+
+Work items within an incident.
+
+- Id (Guid)
+- IncidentId (Guid, FK)
+- Title (string)
+- Description (string?)
+- Status (string)               // "Open", "InProgress", "Done", "Cancelled"
+- AssignedToUserId (Guid?)
+- CreatedAt (DateTimeOffset)
+- CompletedAt (DateTimeOffset?)
+
+Table: `Incidents_Tasks`.
+
+5) IncidentComment
+
+Comments and notes on the incident.
+
+- Id (Guid)
+- IncidentId (Guid, FK)
+- AuthorUserId (Guid?)
+- Content (string)
+- CreatedAt (DateTimeOffset)
+
+Table: `Incidents_Comments`.
+
+6) IncidentPlaybookRunLink (optional but recommended)
+
+Link to Automation workflows (Phase 26) that were run in context of this incident.
+
+- Id (Guid)
+- IncidentId (Guid, FK)
+- WorkflowId (Guid)            // from Automation module
+- ExecutionId (Guid?)          // if AutomationExecution exists
+- TriggeredAt (DateTimeOffset)
+- ResultStatus (string?)       // "Succeeded", "Failed", etc.
+
+Table: `Incidents_PlaybookLinks`.
+
+You must:
+
+- Create EF Core mappings and migrations.
+- Add indexes on TenantId, Status, Severity, Category, DetectionSource, AssignedToUserId.
+- Make it efficient to query incidents per tenant and for global views.
+
+==================================================
+BACKEND – INCIDENT CREATION AND CORRELATION
+==================================================
+
+Implement an Incident ingestion service that consumes signals from other modules and creates or updates incidents.
+
+1) Signal sources
+
+At minimum, integrate:
+
+- AdaptiveSecurity:
+  - high risk sign in events
+  - impossible travel
+  - unusual devices
+- PrivilegedAccess:
+  - break glass usage
+  - failed privileged access attempts
+- AccessRequests:
+  - abnormal volumes or suspicious approvals (for now, treat suspicious ones based on simple rules, e.g. large number of critical app requests in short time)
+- Insights:
+  - high risk tenant flags, big risk score jumps
+- Automation:
+  - failed critical actions
+  - repeated automation actions on the same user/app (could signal persistent issue)
+- ChangeManagement:
+  - changesets of category "AuthorizationPolicy" or "TenantSecuritySettings" that led to anomalies (you can link these manually or via simple correlation rules).
+
+2) Correlation logic
+
+Implement a simple but real correlation strategy:
+
+When a new signal arrives:
+
+- Build a correlation key based on:
+  - TenantId
+  - UserId (if present)
+  - AppId (if present)
+  - EventTypeCategory (for example "HighRiskSignIn", "PrivilegedMisuse", "MassAccessChange")
+
+- Attempt to find an existing **open** incident (Status not Closed) for that tenant where:
+  - Same primary user or app, or
+  - Same category and close time proximity (for example within the last N hours).
+
+If found:
+
+- Link the new signal via IncidentEventLink.
+- Update incident:
+  - LastUpdatedAt
+  - maybe Severity if pattern is getting worse.
+
+If not found:
+
+- Create a new Incident with:
+  - Title derived from signal type, e.g. "High risk sign in for user X" or "Break glass used on app Y".
+  - Category based on source.
+  - Severity based on risk level (for example from AdaptiveSecurity).
+  - DetectionSource set to the module.
+  - TenantId and relevant fields set.
+- Add IncidentEventLink and IncidentEntityLink entries.
+
+3) Configurability and extensibility
+
+Keep correlation logic in a service that can be tuned later, but do not hide it behind "TODO implement proper correlation".
+
+==================================================
+BACKEND – INCIDENT LIFECYCLE AND ACTIONS
+==================================================
+
+Implement services and invariants for:
+
+- Updating incident status:
+  - New → Triaged → InProgress → Contained → Resolved → Closed.
+- Changing severity and category.
+- Assigning incident to analysts.
+- Adding tasks and comments.
+
+You must:
+
+- Enforce valid transitions (no going from Closed back to New without an explicit rule).
+- Automatically set timestamps:
+  - OpenedAt when created.
+  - ContainedAt when status first transitions to Contained.
+  - ResolvedAt when first set to Resolved.
+  - ClosedAt when set to Closed.
+
+Integrate with Automation (Phase 26):
+
+- It should be possible to:
+  - Record that a specific AutomationWorkflow was executed for this incident (IncidentPlaybookRunLink).
+  - Optionally trigger an Automation workflow from API/UI actions (see frontend section).
+
+==================================================
+BACKEND – APIS YOU MUST IMPLEMENT
+==================================================
+
+You must expose both tenant scoped and global scoped Incident APIs.
+
+1) Tenant Incident APIs
+
+Base: `/api/tenant/incidents`
+
+Endpoints:
+
+- `GET /api/tenant/incidents?status=&severity=&category=&assignedTo=&from=&to=&page=&pageSize=`
+  - List incidents for the current tenant.
+  - Filtering by status, severity, category, assignee, date range.
+
+- `GET /api/tenant/incidents/{id}`
+  - Full details:
+    - Incident
+    - linked events (EventLinks)
+    - linked entities (EntityLinks)
+    - tasks
+    - comments
+    - linked playbook runs (if any)
+
+- `POST /api/tenant/incidents`
+  - Create a manual incident:
+    - For example when analyst wants to open a case not automatically generated.
+
+- `PUT /api/tenant/incidents/{id}`
+  - Update title, description, severity, category, assignedTo.
+
+- `POST /api/tenant/incidents/{id}/status`
+  - Change status:
+    - body: { status: "InProgress" | "Contained" | "Resolved" | "Closed" }
+  - Apply lifecycle rules and timestamps.
+
+- `POST /api/tenant/incidents/{id}/tasks`
+  - Create a new IncidentTask.
+
+- `PUT /api/tenant/incidents/{id}/tasks/{taskId}`
+  - Update task (status, title, description, assignedTo).
+
+- `POST /api/tenant/incidents/{id}/comments`
+  - Add a comment.
+
+- `GET /api/tenant/incidents/{id}/timeline`
+  - Returns ordered timeline combining:
+    - IncidentEventLinks
+    - status changes
+    - tasks created and completed
+    - comments
+    - playbook runs
+
+- `POST /api/tenant/incidents/{id}/run-playbook`
+  - Trigger a specific Automation workflow for the context of this incident.
+  - Body:
+    - workflowId
+    - optional parameters
+  - Behavior:
+    - Call Automation module with contextual payload (user/app/tenant related to incident).
+    - Record IncidentPlaybookRunLink.
+
+Permissions:
+
+- Only roles like TenantSecurityOfficer, TenantSecurityAnalyst, TenantAdmin (with proper rights) can access these APIs.
+
+2) Global Incident APIs
+
+Base: `/api/global/incidents`
+
+Endpoints (simpler but powerful):
+
+- `GET /api/global/incidents?tenantId=&status=&severity=&category=&from=&to=&page=&pageSize=`
+  - Cross tenant listing of incidents.
+
+- `GET /api/global/incidents/{id}`
+  - Full incident view, but with cross tenant context.
+
+- `GET /api/global/incidents/summary?from=&to=`
+  - Aggregated stats:
+    - total incidents per tenant
+    - critical incidents count
+    - time to contain and time to resolve metrics
+
+Permissions:
+
+- Only GlobalSecurityAdmin / GlobalAdmin.
+
+==================================================
+FRONTEND – TENANT INCIDENT CENTER (ADMIN PORTAL)
+==================================================
+
+In the Tenant Admin Portal, add an **Incident Center**:
+
+Route: `/tenant/incidents`
+
+Sections or tabs:
+
+1) Incidents list
+2) My queue (assigned to me)
+3) Incident details view
+
+1) Incidents list
+
+- Table with:
+  - Id or short incident number
+  - Title
+  - Category
+  - Severity (color coded)
+  - Status
+  - DetectionSource
+  - AssignedTo
+  - OpenedAt
+  - LastUpdatedAt
+
+- Filters:
+  - Status
+  - Severity
+  - DetectionSource
+  - Date range
+  - Search by user or app name (based on EntityLinks)
+
+- Actions:
+  - Open incident details
+  - Quick assign to self
+  - Create new manual incident
+
+2) My queue
+
+- Same table filtered by AssignedTo = current user.
+
+3) Incident details view
+
+- Layout:
+
+  - Left pane:
+    - Incident summary:
+      - Title, Description
+      - Category, Severity
+      - Status with dropdown to change
+      - AssignedTo user selector
+      - DetectionSource
+      - Timestamps (Opened, Contained, Resolved, Closed)
+
+    - Impact overview:
+      - Linked users (chips or small table)
+      - Linked apps
+      - Linked OrgUnits
+      - Linked ChangeSets (Phase 27) if any
+      - Linked Automation workflows or runs
+
+  - Right main pane with tabs:
+    1. Timeline
+    2. Tasks
+    3. Comments
+    4. Playbooks
+
+  - Timeline tab:
+    - Combined chronological view of:
+      - events (EventLinks)
+      - status changes
+      - tasks opened/closed
+      - comments
+      - playbook runs
+    - Each item shows:
+      - time
+      - type
+      - short description
+      - link to source if applicable
+
+  - Tasks tab:
+    - List tasks with status
+    - Create new task
+    - Update tasks, mark as done
+
+  - Comments tab:
+    - Comment thread with author and time
+    - Add new comments
+
+  - Playbooks tab:
+    - List recommended Automation workflows (optional)
+    - Action:
+      - Run a playbook:
+        - choose workflow from a dropdown
+        - confirm
+        - call `/run-playbook`
+      - Show previous playbook runs with status
+
+All UI strings must come from i18n.
+
+==================================================
+FRONTEND – GLOBAL INCIDENT CENTER (GLOBAL ADMIN)
+==================================================
+
+In the Global Admin Portal, add:
+
+Route: `/global/incidents`
+
+Sections:
+
+1) Incidents overview (cross tenant)
+2) Tenants security posture and incident stats
+3) Incident details (global view)
+
+1) Incidents overview
+
+- Table similar to tenant view but with Tenant column:
+  - TenantName
+  - Title
+  - Category
+  - Severity
+  - Status
+  - DetectionSource
+  - OpenedAt
+  - LastUpdatedAt
+
+- Filters:
+  - tenant, severity, category, status, date range.
+
+2) Tenants security stats
+
+- Summary:
+  - incidents count per tenant
+  - number of critical incidents
+  - average time to contain
+  - average time to resolve
+
+3) Incident details
+
+- Reuse the same details component but with a global context and ability to pivot to the tenant context if needed.
+
+==================================================
+AUDIT, OBSERVABILITY, TESTS
+==================================================
+
+1) Audit events
+
+Emit audit events for key activities such as:
+
+- "Incident.Created"
+- "Incident.Updated"
+- "Incident.StatusChanged"
+- "Incident.Assigned"
+- "Incident.CommentAdded"
+- "Incident.TaskCreated"
+- "Incident.TaskUpdated"
+- "Incident.PlaybookTriggered"
+
+Each event must include:
+
+- TenantId where applicable
+- IncidentId
+- ActorUserId (if user triggered)
+- Old and new status for status changes
+
+2) Observability
+
+- Log ingestion failures when converting signals into incidents.
+- Metrics:
+  - incidents created per source module
+  - open vs closed incidents per tenant
+  - mean time to contain (MTTC)
+  - mean time to resolve (MTTR)
+
+3) Tests
+
+Add tests for:
+
+- Correlation logic:
+  - multiple high risk sign in events for same user should aggregate into one incident.
+  - break glass events create or attach to appropriate incident.
+
+- Incident lifecycle:
+  - allowed transitions only
+  - timestamps set correctly.
+
+- API behavior:
+  - list and filter incidents
+  - get details
+  - create comment, task, update status.
+
+- Playbook integration:
+  - invoking run-playbook on an incident triggers Automation module and logs a playbook run link.
+
+==================================================
+WHAT YOU MUST DO NOW
+==================================================
+
+1) Inspect the existing codebase to locate:
+   - AdaptiveSecurity, PrivilegedAccess, AccessRequests, Insights, Automation, ChangeManagement modules
+   - Admin Portal structure
+
+2) Create the `Onesign.Modules.Incidents` module:
+   - Entities, EF mappings, migrations
+   - Repositories and services for Incidents, EventLinks, EntityLinks, Tasks, Comments, PlaybookLinks
+
+3) Implement the signal ingestion and correlation service:
+   - Accept signals from AdaptiveSecurity, PrivilegedAccess, etc
+   - Map them to Incidents and links
+
+4) Implement backend APIs:
+   - `/api/tenant/incidents/*`
+   - `/api/global/incidents/*`
+
+5) Implement frontend:
+   - Tenant Incident Center at `/tenant/incidents`
+   - Global Incident Center at `/global/incidents`
+
+6) Wire in audit and observability.
+
+7) Add tests and run them.
+
+8) Verify at least these scenarios end to end:
+
+   - A high risk sign in event for a user creates an incident, links the user and events, and shows in the tenant Incident Center.
+   - A break glass usage in PrivilegedAccess attaches to an existing incident, and an Automation playbook can be launched from the incident to contain the risk.
+
+Be ruthless: if an incident exists but nobody can investigate it properly in the UI, or if it is not correlated correctly, that is your bug. Design and implement this so that a real security team could actually use it during an identity incident.
