@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Onesign.Api.Data;
+using Onesign.Data.Contexts;
 using Onesign.Modules.Hunting.Domain.Entities;
 using Onesign.Modules.Hunting.Domain.Enums;
 using Onesign.Modules.Hunting.Domain.Repositories;

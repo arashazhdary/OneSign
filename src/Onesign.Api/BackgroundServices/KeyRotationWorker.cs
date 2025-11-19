@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Onesign.Api.Data;
+using Onesign.Data.Contexts;
 
 namespace Onesign.Api.BackgroundServices;
 

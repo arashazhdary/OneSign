@@ -1,7 +1,7 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using Onesign.Api.Data;
+using Onesign.Data.Contexts;
 using Onesign.Modules.Tenants.Application.Commands;
 using Onesign.Modules.Tenants.Domain.Entities;
 using Onesign.Modules.Tenants.Domain.Repositories;

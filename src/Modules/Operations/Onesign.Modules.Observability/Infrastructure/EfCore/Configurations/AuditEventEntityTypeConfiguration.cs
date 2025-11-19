@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Onesign.Api.Data;
+using Onesign.Data.Contexts;
 using Onesign.Modules.Observability.Infrastructure.EfCore.Entities;
 
 namespace Onesign.Modules.Observability.Infrastructure.EfCore.Configurations;

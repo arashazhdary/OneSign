@@ -3,7 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Onesign.Api.Data;
+using Onesign.Data.Contexts;
 using Onesign.Modules.Privacy.Domain.Services;
 
 namespace Onesign.Modules.Privacy.Infrastructure.Services;

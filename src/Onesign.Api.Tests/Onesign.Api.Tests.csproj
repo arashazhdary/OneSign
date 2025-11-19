@@ -28,40 +28,47 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Onesign.Api\Onesign.Api.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Tenants\Onesign.Modules.Tenants.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Identity\Onesign.Modules.Identity.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Applications\Onesign.Modules.Applications.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Audit\Onesign.Modules.Audit.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Authorization\Onesign.Modules.Authorization.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Federation\Onesign.Modules.Federation.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Billing\Onesign.Modules.Billing.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.NotificationCenter\Onesign.Modules.NotificationCenter.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Security\Onesign.Modules.Security.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Privacy\Onesign.Modules.Privacy.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Governance\Onesign.Modules.Governance.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Observability\Onesign.Modules.Observability.csproj" />
+    <ProjectReference Include="..\Onesign.Data\Onesign.Data.csproj" />
     <ProjectReference Include="..\Onesign.Shared\Onesign.Shared.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Crypto\Onesign.Modules.Crypto.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Deployment\Onesign.Modules.Deployment.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Developer\Onesign.Modules.Developer.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Extensibility\Onesign.Modules.Extensibility.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.IdentityInsights\Onesign.Modules.IdentityInsights.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.IdentityLifecycle\Onesign.Modules.IdentityLifecycle.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.MultiRegion\Onesign.Modules.MultiRegion.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.PrivilegedAccess\Onesign.Modules.PrivilegedAccess.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.AccessRequests\Onesign.Modules.AccessRequests.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.AdaptiveSecurity\Onesign.Modules.AdaptiveSecurity.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.AccountCenter\Onesign.Modules.AccountCenter.csproj" />
     <ProjectReference Include="..\Onesign.Cli\Onesign.Cli.csproj" />
     <ProjectReference Include="..\Onesign.Sdk.DotNet\Onesign.Sdk.DotNet.csproj" />
-    <!-- Phase 24-30 Modules -->
-    <ProjectReference Include="..\Onesign.Modules.Platform\Onesign.Modules.Platform.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Insights\Onesign.Modules.Insights.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Automation\Onesign.Modules.Automation.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.ChangeManagement\Onesign.Modules.ChangeManagement.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Incidents\Onesign.Modules.Incidents.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Hunting\Onesign.Modules.Hunting.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Copilot\Onesign.Modules.Copilot.csproj" />
+    <!-- Platform Modules -->
+    <ProjectReference Include="..\Modules\Platform\Onesign.Modules.Tenants\Onesign.Modules.Tenants.csproj" />
+    <ProjectReference Include="..\Modules\Platform\Onesign.Modules.MultiRegion\Onesign.Modules.MultiRegion.csproj" />
+    <ProjectReference Include="..\Modules\Platform\Onesign.Modules.Deployment\Onesign.Modules.Deployment.csproj" />
+    <ProjectReference Include="..\Modules\Platform\Onesign.Modules.Crypto\Onesign.Modules.Crypto.csproj" />
+    <ProjectReference Include="..\Modules\Platform\Onesign.Modules.Platform\Onesign.Modules.Platform.csproj" />
+    <!-- Security Modules -->
+    <ProjectReference Include="..\Modules\Security\Onesign.Modules.Identity\Onesign.Modules.Identity.csproj" />
+    <ProjectReference Include="..\Modules\Security\Onesign.Modules.Security\Onesign.Modules.Security.csproj" />
+    <ProjectReference Include="..\Modules\Security\Onesign.Modules.Authorization\Onesign.Modules.Authorization.csproj" />
+    <ProjectReference Include="..\Modules\Security\Onesign.Modules.AccessRequests\Onesign.Modules.AccessRequests.csproj" />
+    <ProjectReference Include="..\Modules\Security\Onesign.Modules.PrivilegedAccess\Onesign.Modules.PrivilegedAccess.csproj" />
+    <ProjectReference Include="..\Modules\Security\Onesign.Modules.AdaptiveSecurity\Onesign.Modules.AdaptiveSecurity.csproj" />
+    <!-- Business Modules -->
+    <ProjectReference Include="..\Modules\Business\Onesign.Modules.Applications\Onesign.Modules.Applications.csproj" />
+    <ProjectReference Include="..\Modules\Business\Onesign.Modules.Organization\Onesign.Modules.Organization.csproj" />
+    <ProjectReference Include="..\Modules\Business\Onesign.Modules.Billing\Onesign.Modules.Billing.csproj" />
+    <ProjectReference Include="..\Modules\Business\Onesign.Modules.AccountCenter\Onesign.Modules.AccountCenter.csproj" />
+    <!-- Governance Modules -->
+    <ProjectReference Include="..\Modules\Governance\Onesign.Modules.Federation\Onesign.Modules.Federation.csproj" />
+    <ProjectReference Include="..\Modules\Governance\Onesign.Modules.IdentityLifecycle\Onesign.Modules.IdentityLifecycle.csproj" />
+    <ProjectReference Include="..\Modules\Governance\Onesign.Modules.IdentityInsights\Onesign.Modules.IdentityInsights.csproj" />
+    <ProjectReference Include="..\Modules\Governance\Onesign.Modules.Governance\Onesign.Modules.Governance.csproj" />
+    <!-- Operations Modules -->
+    <ProjectReference Include="..\Modules\Operations\Onesign.Modules.Observability\Onesign.Modules.Observability.csproj" />
+    <ProjectReference Include="..\Modules\Operations\Onesign.Modules.Automation\Onesign.Modules.Automation.csproj" />
+    <ProjectReference Include="..\Modules\Operations\Onesign.Modules.Insights\Onesign.Modules.Insights.csproj" />
+    <ProjectReference Include="..\Modules\Operations\Onesign.Modules.ChangeManagement\Onesign.Modules.ChangeManagement.csproj" />
+    <ProjectReference Include="..\Modules\Operations\Onesign.Modules.Incidents\Onesign.Modules.Incidents.csproj" />
+    <ProjectReference Include="..\Modules\Operations\Onesign.Modules.Hunting\Onesign.Modules.Hunting.csproj" />
+    <!-- Integration Modules -->
+    <ProjectReference Include="..\Modules\Integration\Onesign.Modules.Audit\Onesign.Modules.Audit.csproj" />
+    <ProjectReference Include="..\Modules\Integration\Onesign.Modules.Developer\Onesign.Modules.Developer.csproj" />
+    <ProjectReference Include="..\Modules\Integration\Onesign.Modules.NotificationCenter\Onesign.Modules.NotificationCenter.csproj" />
+    <ProjectReference Include="..\Modules\Integration\Onesign.Modules.Extensibility\Onesign.Modules.Extensibility.csproj" />
+    <ProjectReference Include="..\Modules\Integration\Onesign.Modules.Privacy\Onesign.Modules.Privacy.csproj" />
+    <ProjectReference Include="..\Modules\Integration\Onesign.Modules.Copilot\Onesign.Modules.Copilot.csproj" />
   </ItemGroup>
 
 </Project>

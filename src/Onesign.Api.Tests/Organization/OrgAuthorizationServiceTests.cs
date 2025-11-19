@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Onesign.Api.Data;
+using Onesign.Data.Contexts;
 using Onesign.Modules.Applications.Infrastructure.EfCore.Repositories;
 using Onesign.Modules.Identity.Domain.Entities;
 using Onesign.Modules.Identity.Domain.Enums;

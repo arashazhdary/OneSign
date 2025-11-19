@@ -1,6 +1,6 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Onesign.Api.Data;
+using Onesign.Data.Contexts;
 using Onesign.Modules.Billing.Application.DTOs;
 using Onesign.Modules.Billing.Domain.Enums;
 using Onesign.Modules.Billing.Domain.Repositories;

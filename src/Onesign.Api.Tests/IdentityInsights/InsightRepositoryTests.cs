@@ -1,6 +1,6 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Onesign.Api.Data;
+using Onesign.Data.Contexts;
 using Onesign.Modules.IdentityInsights.Domain.Entities;
 using Onesign.Modules.IdentityInsights.Domain.Enums;
 using Onesign.Modules.IdentityInsights.Infrastructure.EfCore.Repositories;

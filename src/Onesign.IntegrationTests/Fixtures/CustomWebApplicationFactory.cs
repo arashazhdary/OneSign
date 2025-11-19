@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Onesign.Api.Data;
+using Onesign.Data.Contexts;
 using Testcontainers.MsSql;
 
 namespace Onesign.IntegrationTests.Fixtures;

@@ -1,7 +1,7 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using Onesign.Api.Data;
+using Onesign.Data.Contexts;
 using Onesign.Modules.Authorization.Application.Services;
 using Onesign.Modules.Authorization.Domain.Entities;
 using Onesign.Modules.Authorization.Domain.Enums;

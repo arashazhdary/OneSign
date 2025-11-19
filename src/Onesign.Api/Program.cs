@@ -4,7 +4,7 @@ using FluentValidation.AspNetCore;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Onesign.Api.BackgroundServices;
-using Onesign.Api.Data;
+using Onesign.Data.Contexts;
 using Onesign.Modules.Applications.Domain.Repositories;
 using Onesign.Modules.Applications.Infrastructure.EfCore.Repositories;
 using Onesign.Modules.Audit.Domain.Repositories;

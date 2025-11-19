@@ -76,7 +76,7 @@ using Onesign.Modules.Hunting.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Copilot.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Copilot.Infrastructure.EfCore.Entities;
 
-namespace Onesign.Api.Data;
+namespace Onesign.Data.Contexts;
 
 public class OnesignDbContext : DbContext
 {

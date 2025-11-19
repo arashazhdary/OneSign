@@ -16,11 +16,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Onesign.Shared\Onesign.Shared.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Audit\Onesign.Modules.Audit.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Identity\Onesign.Modules.Identity.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Applications\Onesign.Modules.Applications.csproj" />
-    <ProjectReference Include="..\Onesign.Modules.Tenants\Onesign.Modules.Tenants.csproj" />
+    <ProjectReference Include="..\..\..\..\Onesign.Shared\Onesign.Shared.csproj" />
+    <ProjectReference Include="..\..\Integration\Onesign.Modules.Audit\Onesign.Modules.Audit.csproj" />
+    <ProjectReference Include="..\..\Security\Onesign.Modules.Identity\Onesign.Modules.Identity.csproj" />
+    <ProjectReference Include="..\..\Business\Onesign.Modules.Applications\Onesign.Modules.Applications.csproj" />
+    <ProjectReference Include="..\..\Platform\Onesign.Modules.Tenants\Onesign.Modules.Tenants.csproj" />
   </ItemGroup>
 
 </Project>
