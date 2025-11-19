@@ -31,6 +31,7 @@
     <ProjectReference Include="..\Modules\Business\Onesign.Modules.Applications\Onesign.Modules.Applications.csproj" />
     <ProjectReference Include="..\Modules\Business\Onesign.Modules.Organization\Onesign.Modules.Organization.csproj" />
     <ProjectReference Include="..\Modules\Business\Onesign.Modules.Billing\Onesign.Modules.Billing.csproj" />
+    <ProjectReference Include="..\Modules\Business\Onesign.Modules.AccountCenter\Onesign.Modules.AccountCenter.csproj" />
     <!-- Governance Modules -->
     <ProjectReference Include="..\Modules\Governance\Onesign.Modules.Federation\Onesign.Modules.Federation.csproj" />
     <ProjectReference Include="..\Modules\Governance\Onesign.Modules.IdentityLifecycle\Onesign.Modules.IdentityLifecycle.csproj" />
