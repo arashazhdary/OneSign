@@ -2,7 +2,7 @@ using Xunit;
 using Moq;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Onesign.Api.Data;
+using Onesign.Data.Contexts;
 using Onesign.Modules.Audit.Domain.Entities;
 using Onesign.Modules.Audit.Domain.Enums;
 using Onesign.Modules.Audit.Infrastructure.EfCore.Repositories;

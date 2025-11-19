@@ -3,7 +3,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Onesign.Api.Data;
+using Onesign.Data.Contexts;
 using Onesign.Modules.Audit.Application.Commands;
 using Onesign.Modules.Audit.Domain.Enums;
 using Onesign.Modules.Tenants.Application.Commands;

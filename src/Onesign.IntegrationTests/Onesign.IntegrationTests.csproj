@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Onesign.Api\Onesign.Api.csproj" />
+    <ProjectReference Include="..\Onesign.Data\Onesign.Data.csproj" />
   </ItemGroup>
 
 </Project>

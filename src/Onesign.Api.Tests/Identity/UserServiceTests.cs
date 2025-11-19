@@ -1,7 +1,7 @@
 using Xunit;
 using Moq;
 using Microsoft.EntityFrameworkCore;
-using Onesign.Api.Data;
+using Onesign.Data.Contexts;
 using Onesign.Modules.Identity.Domain.Entities;
 using Onesign.Modules.Identity.Domain.Enums;
 using Onesign.Modules.Identity.Infrastructure.EfCore.Repositories;

@@ -1,6 +1,6 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Onesign.Api.Data;
+using Onesign.Data.Contexts;
 using Onesign.Modules.Federation.Domain.Entities;
 using Onesign.Modules.Federation.Domain.Enums;
 using Onesign.Modules.Federation.Infrastructure.EfCore.Repositories;

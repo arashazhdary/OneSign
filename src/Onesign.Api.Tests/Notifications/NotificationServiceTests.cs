@@ -1,7 +1,7 @@
 using Xunit;
 using Moq;
 using Microsoft.EntityFrameworkCore;
-using Onesign.Api.Data;
+using Onesign.Data.Contexts;
 using Onesign.Modules.NotificationCenter.Domain.Entities;
 using Onesign.Modules.NotificationCenter.Domain.Enums;
 using Onesign.Modules.NotificationCenter.Infrastructure.EfCore.Repositories;

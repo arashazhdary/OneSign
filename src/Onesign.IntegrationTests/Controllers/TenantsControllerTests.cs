@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
-using Onesign.Api.Data;
+using Onesign.Data.Contexts;
 using Onesign.IntegrationTests.Fixtures;
 using Onesign.Modules.Tenants.Application.DTOs;
 using Onesign.Modules.Tenants.Domain.Enums;

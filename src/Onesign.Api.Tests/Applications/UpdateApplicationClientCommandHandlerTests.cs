@@ -2,7 +2,7 @@ using FluentAssertions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using Onesign.Api.Data;
+using Onesign.Data.Contexts;
 using Onesign.Modules.Applications.Application.Commands;
 using Onesign.Modules.Applications.Application.DTOs;
 using Onesign.Modules.Applications.Domain.Entities;

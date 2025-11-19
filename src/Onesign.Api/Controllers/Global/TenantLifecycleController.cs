@@ -2,7 +2,7 @@ using System.Text.Json;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Onesign.Api.Data;
+using Onesign.Data.Contexts;
 using Onesign.Modules.Tenants.Domain.Enums;
 using Onesign.Modules.Tenants.Domain.Repositories;
 

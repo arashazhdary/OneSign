@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MediatR" Version="13.1.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Onesign.Shared\Onesign.Shared.csproj" />
+    <ProjectReference Include="..\..\Security\Onesign.Modules.Identity\Onesign.Modules.Identity.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Applications\Onesign.Modules.Applications.csproj" />
+    <ProjectReference Include="..\..\Governance\Onesign.Modules.Federation\Onesign.Modules.Federation.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Organization\Onesign.Modules.Organization.csproj" />
+  </ItemGroup>
+
+</Project>
