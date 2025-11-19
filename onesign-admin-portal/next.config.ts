@@ -4,7 +4,10 @@ const withNextIntl = createNextIntlPlugin('./i18n.ts');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Your Next.js config here
+  // Use Webpack instead of Turbopack to avoid build issues
+  webpack: (config) => {
+    return config;
+  },
 };
 
 export default withNextIntl(nextConfig);

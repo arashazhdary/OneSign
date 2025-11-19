@@ -8,11 +8,11 @@ public class AppsCommand : Command
 {
     public AppsCommand() : base("apps", "Manage applications")
     {
-        AddCommand(new ListAppsCommand());
-        AddCommand(new GetAppCommand());
-        AddCommand(new CreateAppCommand());
-        AddCommand(new DeleteAppCommand());
-        AddCommand(new RegenerateSecretCommand());
+        Add(new ListAppsCommand());
+        Add(new GetAppCommand());
+        Add(new CreateAppCommand());
+        Add(new DeleteAppCommand());
+        Add(new RegenerateSecretCommand());
     }
 }
 
@@ -219,7 +219,10 @@ public class DeleteAppCommand : Command
 {
     public DeleteAppCommand() : base("delete", "Delete an application")
     {
-        var idArgument = new Argument<string>("id", "Application ID");
+        var idArgument = new Argument<string>("id")
+        {
+            Description = "Application ID"
+        };
         var forceOption = new Option<bool>(
             aliases: new[] { "--force", "-f" },
             description: "Skip confirmation");
@@ -262,7 +265,10 @@ public class RegenerateSecretCommand : Command
 {
     public RegenerateSecretCommand() : base("regenerate-secret", "Regenerate client secret for an application")
     {
-        var idArgument = new Argument<string>("id", "Application ID");
+        var idArgument = new Argument<string>("id")
+        {
+            Description = "Application ID"
+        };
 
         AddArgument(idArgument);
 

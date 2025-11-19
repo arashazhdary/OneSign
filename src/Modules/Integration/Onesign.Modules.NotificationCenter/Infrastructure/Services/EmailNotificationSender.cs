@@ -27,7 +27,7 @@ public class EmailNotificationSender : INotificationSender
 
         try
         {
-            await _emailService.SendAsync(
+            await _emailService.SendEmailAsync(
                 item.RecipientAddress,
                 item.Subject,
                 item.Body,

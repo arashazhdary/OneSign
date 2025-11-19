@@ -17,7 +17,7 @@ public class IncidentRepository : IIncidentRepository
 
     public async Task<Incident?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
-        var entity = await _dbContext.Set<IncidentEntity>()
+        var entity = await _dbContext.Set<Infrastructure.EfCore.Entities.IncidentEntity>()
             .FirstOrDefaultAsync(x => x.Id == id, ct);
         return entity == null ? null : MapToDomain(entity);
     }
@@ -119,7 +119,7 @@ public class IncidentRepository : IIncidentRepository
 
     public async Task UpdateAsync(Incident incident, CancellationToken ct = default)
     {
-        var entity = await _dbContext.Set<IncidentEntity>()
+        var entity = await _dbContext.Set<Infrastructure.EfCore.Entities.IncidentEntity>()
             .FirstOrDefaultAsync(x => x.Id == incident.Id, ct);
         if (entity != null)
         {
@@ -147,16 +147,16 @@ public class IncidentRepository : IIncidentRepository
 
     public async Task DeleteAsync(Guid id, CancellationToken ct = default)
     {
-        var entity = await _dbContext.Set<IncidentEntity>()
+        var entity = await _dbContext.Set<Infrastructure.EfCore.Entities.IncidentEntity>()
             .FirstOrDefaultAsync(x => x.Id == id, ct);
         if (entity != null)
         {
-            _dbContext.Set<IncidentEntity>().Remove(entity);
+            _dbContext.Set<Infrastructure.EfCore.Entities.IncidentEntity>().Remove(entity);
             await _dbContext.SaveChangesAsync(ct);
         }
     }
 
-    private static Incident MapToDomain(IncidentEntity entity) => new()
+    private static Incident MapToDomain(Infrastructure.EfCore.Entities.IncidentEntity entity) => new()
     {
         Id = entity.Id,
         TenantId = entity.TenantId,
@@ -182,7 +182,7 @@ public class IncidentRepository : IIncidentRepository
         UpdatedAt = entity.UpdatedAt
     };
 
-    private static IncidentEntity MapToEntity(Incident incident) => new()
+    private static Infrastructure.EfCore.Entities.IncidentEntity MapToEntity(Incident incident) => new()
     {
         Id = incident.Id,
         TenantId = incident.TenantId,

@@ -7,8 +7,9 @@
   <ItemGroup>
     <PackageReference Include="MediatR" Version="13.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Onesign.Shared\Onesign.Shared.csproj" />
+    <ProjectReference Include="..\..\..\Onesign.Shared\Onesign.Shared.csproj" />
   </ItemGroup>
 </Project>

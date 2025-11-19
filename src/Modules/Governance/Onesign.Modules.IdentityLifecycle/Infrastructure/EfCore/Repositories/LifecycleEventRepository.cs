@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Onesign.Data.Contexts;
+using Microsoft.EntityFrameworkCore;
 using Onesign.Modules.IdentityLifecycle.Domain.Entities;
 using Onesign.Modules.IdentityLifecycle.Domain.Enums;
 using Onesign.Modules.IdentityLifecycle.Domain.Repositories;
@@ -9,9 +9,9 @@ namespace Onesign.Modules.IdentityLifecycle.Infrastructure.EfCore.Repositories;
 
 public class LifecycleEventRepository : ILifecycleEventRepository
 {
-    private readonly OnesignDbContext _dbContext;
+    private readonly DbContext _dbContext;
 
-    public LifecycleEventRepository(OnesignDbContext dbContext)
+    public LifecycleEventRepository(DbContext dbContext)
     {
         _dbContext = dbContext;
     }

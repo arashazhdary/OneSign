@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Onesign.Shared\Onesign.Shared.csproj" />
+    <ProjectReference Include="..\..\..\Onesign.Shared\Onesign.Shared.csproj" />
     <ProjectReference Include="..\..\Security\Onesign.Modules.Identity\Onesign.Modules.Identity.csproj" />
     <ProjectReference Include="..\Onesign.Modules.Applications\Onesign.Modules.Applications.csproj" />
     <ProjectReference Include="..\..\Governance\Onesign.Modules.Federation\Onesign.Modules.Federation.csproj" />

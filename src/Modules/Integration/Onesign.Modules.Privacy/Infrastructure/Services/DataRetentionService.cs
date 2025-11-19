@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Onesign.Data.Contexts;
+using Microsoft.EntityFrameworkCore;
 using Onesign.Modules.Privacy.Domain.Entities;
 using Onesign.Modules.Privacy.Domain.Enums;
 using Onesign.Modules.Privacy.Domain.Repositories;
@@ -45,7 +45,7 @@ public class DataRetentionService : IDataRetentionService
             tenantId, policies.Count());
 
         using var scope = _serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<OnesignDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
         foreach (var policy in policies)
         {
@@ -73,7 +73,7 @@ public class DataRetentionService : IDataRetentionService
     }
 
     private async Task<int> ExecutePolicyCleanupAsync(
-        OnesignDbContext dbContext,
+        DbContext dbContext,
         DataRetentionPolicy policy,
         DateTime cutoffDate,
         CancellationToken cancellationToken)
@@ -90,7 +90,7 @@ public class DataRetentionService : IDataRetentionService
     }
 
     private async Task<int> CleanupAuditLogsAsync(
-        OnesignDbContext dbContext,
+        DbContext dbContext,
         DataRetentionPolicy policy,
         DateTime cutoffDate,
         CancellationToken cancellationToken)
@@ -120,7 +120,7 @@ public class DataRetentionService : IDataRetentionService
     }
 
     private async Task<int> CleanupLoginHistoryAsync(
-        OnesignDbContext dbContext,
+        DbContext dbContext,
         DataRetentionPolicy policy,
         DateTime cutoffDate,
         CancellationToken cancellationToken)
@@ -141,7 +141,7 @@ public class DataRetentionService : IDataRetentionService
     }
 
     private async Task<int> CleanupSessionsAsync(
-        OnesignDbContext dbContext,
+        DbContext dbContext,
         DataRetentionPolicy policy,
         DateTime cutoffDate,
         CancellationToken cancellationToken)
@@ -166,7 +166,7 @@ public class DataRetentionService : IDataRetentionService
     }
 
     private async Task<int> CleanupNotificationsAsync(
-        OnesignDbContext dbContext,
+        DbContext dbContext,
         DataRetentionPolicy policy,
         DateTime cutoffDate,
         CancellationToken cancellationToken)
@@ -186,7 +186,7 @@ public class DataRetentionService : IDataRetentionService
     }
 
     private async Task<int> CleanupWebhookLogsAsync(
-        OnesignDbContext dbContext,
+        DbContext dbContext,
         DataRetentionPolicy policy,
         DateTime cutoffDate,
         CancellationToken cancellationToken)
@@ -206,7 +206,7 @@ public class DataRetentionService : IDataRetentionService
     }
 
     private static async Task LogRetentionActionAsync(
-        OnesignDbContext dbContext,
+        DbContext dbContext,
         Guid tenantId,
         DataRetentionPolicy policy,
         int deletedCount,

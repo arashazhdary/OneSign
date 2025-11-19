@@ -14,15 +14,3 @@ public class JitGrantDto
     public string Justification { get; set; } = string.Empty;
 }
 
-public class PrivilegedSessionDto
-{
-    public Guid Id { get; set; }
-    public Guid UserId { get; set; }
-    public string UserDisplayName { get; set; } = string.Empty;
-    public string PrivilegedRolesJson { get; set; } = "[]";
-    public DateTime StartedAt { get; set; }
-    public DateTime? LastActivityAt { get; set; }
-    public DateTime? EndedAt { get; set; }
-    public string? IpAddress { get; set; }
-    public bool IsActive { get; set; }
-}

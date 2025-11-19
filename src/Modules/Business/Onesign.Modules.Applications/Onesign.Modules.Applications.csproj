@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Onesign.Shared\Onesign.Shared.csproj" />
+    <ProjectReference Include="..\..\..\Onesign.Shared\Onesign.Shared.csproj" />
     <ProjectReference Include="..\..\Integration\Onesign.Modules.Audit\Onesign.Modules.Audit.csproj" />
     <ProjectReference Include="..\..\Platform\Onesign.Modules.Tenants\Onesign.Modules.Tenants.csproj" />
   </ItemGroup>

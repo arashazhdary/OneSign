@@ -23,7 +23,7 @@ public class DataRetentionPolicyRepository : IDataRetentionPolicyRepository
         return entity != null ? MapToDomain(entity) : null;
     }
 
-    public async Task<IReadOnlyList<DataRetentionPolicy>> GetByTenantIdAsync(Guid tenantId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<DataRetentionPolicy>> GetByTenantIdAsync(Guid tenantId, CancellationToken cancellationToken = default)
     {
         var entities = await _dbContext.Set<DataRetentionPolicyEntity>()
             .Where(x => x.TenantId == tenantId)
@@ -41,10 +41,25 @@ public class DataRetentionPolicyRepository : IDataRetentionPolicyRepository
         return entity != null ? MapToDomain(entity) : null;
     }
 
-    public async Task<IReadOnlyList<DataRetentionPolicy>> GetEnabledAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<DataRetentionPolicy>> GetEnabledAsync(CancellationToken cancellationToken = default)
     {
         var entities = await _dbContext.Set<DataRetentionPolicyEntity>()
             .Where(x => x.Enabled)
+            .ToListAsync(cancellationToken);
+
+        return entities.Select(MapToDomain).ToList();
+    }
+
+    public async Task<DataRetentionPolicy?> GetByCategoryAsync(Guid tenantId, DataCategory category, CancellationToken cancellationToken = default)
+    {
+        return await GetByTenantAndCategoryAsync(tenantId, category, cancellationToken);
+    }
+
+    public async Task<IEnumerable<DataRetentionPolicy>> GetEnabledPoliciesAsync(Guid tenantId, CancellationToken cancellationToken = default)
+    {
+        var entities = await _dbContext.Set<DataRetentionPolicyEntity>()
+            .Where(x => x.TenantId == tenantId && x.Enabled)
+            .OrderBy(x => x.DataCategory)
             .ToListAsync(cancellationToken);
 
         return entities.Select(MapToDomain).ToList();

@@ -25,6 +25,16 @@ public class TenantsService
             ?? throw new OnesignException("Failed to deserialize tenant");
     }
 
+    public async Task<Tenant> GetTenantAsync(Guid tenantId, CancellationToken cancellationToken = default)
+    {
+        var request = await CreateAuthorizedRequestAsync(HttpMethod.Get, $"/api/tenants/{tenantId}", cancellationToken);
+        var response = await _httpClient.SendAsync(request, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+
+        return await response.Content.ReadFromJsonAsync<Tenant>(cancellationToken)
+            ?? throw new OnesignException("Failed to deserialize tenant");
+    }
+
     public async Task<Tenant> GetCurrentTenantAsync(CancellationToken cancellationToken = default)
     {
         var request = await CreateAuthorizedRequestAsync(HttpMethod.Get, "/api/tenants/current", cancellationToken);
@@ -57,6 +67,13 @@ public class TenantsService
             ?? throw new OnesignException("Failed to deserialize tenant settings");
     }
 
+    public async Task<List<Tenant>> GetTenantsAsync(int page = 1, int pageSize = 20, CancellationToken cancellationToken = default)
+    {
+        var pagination = new PaginationRequest { PageNumber = page, PageSize = pageSize };
+        var result = await ListTenantsAsync(pagination, cancellationToken);
+        return result.Items;
+    }
+
     public async Task<PaginatedResult<Tenant>> ListTenantsAsync(PaginationRequest? pagination = null, CancellationToken cancellationToken = default)
     {
         pagination ??= new PaginationRequest();
@@ -69,6 +86,53 @@ public class TenantsService
 
         return await response.Content.ReadFromJsonAsync<PaginatedResult<Tenant>>(cancellationToken)
             ?? throw new OnesignException("Failed to deserialize tenants list");
+    }
+
+    public async Task<Tenant> CreateTenantAsync(CreateTenantRequest createRequest, CancellationToken cancellationToken = default)
+    {
+        var request = await CreateAuthorizedRequestAsync(HttpMethod.Post, "/api/admin/tenants", cancellationToken);
+        request.Content = JsonContent.Create(createRequest);
+
+        var response = await _httpClient.SendAsync(request, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+
+        return await response.Content.ReadFromJsonAsync<Tenant>(cancellationToken)
+            ?? throw new OnesignException("Failed to deserialize created tenant");
+    }
+
+    public async Task<Tenant> UpdateTenantAsync(Guid tenantId, UpdateTenantRequest updateRequest, CancellationToken cancellationToken = default)
+    {
+        var request = await CreateAuthorizedRequestAsync(HttpMethod.Put, $"/api/admin/tenants/{tenantId}", cancellationToken);
+        request.Content = JsonContent.Create(updateRequest);
+
+        var response = await _httpClient.SendAsync(request, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+
+        return await response.Content.ReadFromJsonAsync<Tenant>(cancellationToken)
+            ?? throw new OnesignException("Failed to deserialize updated tenant");
+    }
+
+    public async Task DeleteTenantAsync(Guid tenantId, CancellationToken cancellationToken = default)
+    {
+        var request = await CreateAuthorizedRequestAsync(HttpMethod.Delete, $"/api/admin/tenants/{tenantId}", cancellationToken);
+        var response = await _httpClient.SendAsync(request, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+    }
+
+    public async Task<List<User>> GetTenantUsersAsync(Guid tenantId, int page = 1, int pageSize = 20, CancellationToken cancellationToken = default)
+    {
+        var pagination = new PaginationRequest { PageNumber = page, PageSize = pageSize };
+        var queryParams = pagination.ToQueryParameters();
+        var queryString = string.Join("&", queryParams.Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value)}"));
+
+        var request = await CreateAuthorizedRequestAsync(HttpMethod.Get, $"/api/tenant/users?{queryString}", cancellationToken);
+        var response = await _httpClient.SendAsync(request, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+
+        var result = await response.Content.ReadFromJsonAsync<PaginatedResult<User>>(cancellationToken)
+            ?? throw new OnesignException("Failed to deserialize users list");
+
+        return result.Items;
     }
 
     private async Task<HttpRequestMessage> CreateAuthorizedRequestAsync(HttpMethod method, string url, CancellationToken cancellationToken)

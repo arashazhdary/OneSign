@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Onesign.Data.Contexts;
+using Microsoft.EntityFrameworkCore;
 using Onesign.Modules.NotificationCenter.Domain.Entities;
 using Onesign.Modules.NotificationCenter.Domain.Enums;
 using Onesign.Modules.NotificationCenter.Domain.Repositories;
@@ -9,9 +9,9 @@ namespace Onesign.Modules.NotificationCenter.Infrastructure.EfCore.Repositories;
 
 public class NotificationOutboxRepository : INotificationOutboxRepository
 {
-    private readonly OnesignDbContext _dbContext;
+    private readonly DbContext _dbContext;
 
-    public NotificationOutboxRepository(OnesignDbContext dbContext)
+    public NotificationOutboxRepository(DbContext dbContext)
     {
         _dbContext = dbContext;
     }

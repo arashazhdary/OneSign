@@ -18,7 +18,10 @@ public class SetServerCommand : Command
 {
     public SetServerCommand() : base("set-server", "Set the OneSign server URL")
     {
-        var urlArgument = new Argument<string>("url", "Server URL (e.g., https://auth.example.com)");
+        var urlArgument = new Argument<string>("url")
+        {
+            Description = "Server URL (e.g., https://auth.example.com)"
+        };
 
         AddArgument(urlArgument);
 

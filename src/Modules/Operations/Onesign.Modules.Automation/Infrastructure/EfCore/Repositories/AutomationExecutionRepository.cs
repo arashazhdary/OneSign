@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Onesign.Data.Contexts;
+using Microsoft.EntityFrameworkCore;
 using Onesign.Modules.Automation.Domain.Entities;
 using Onesign.Modules.Automation.Domain.Enums;
 using Onesign.Modules.Automation.Domain.Repositories;
@@ -9,9 +9,9 @@ namespace Onesign.Modules.Automation.Infrastructure.EfCore.Repositories;
 
 public class AutomationExecutionRepository : IAutomationExecutionRepository
 {
-    private readonly OnesignDbContext _dbContext;
+    private readonly DbContext _dbContext;
 
-    public AutomationExecutionRepository(OnesignDbContext dbContext)
+    public AutomationExecutionRepository(DbContext dbContext)
     {
         _dbContext = dbContext;
     }

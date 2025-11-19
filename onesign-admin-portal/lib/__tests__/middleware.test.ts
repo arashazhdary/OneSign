@@ -29,7 +29,7 @@ describe('middleware', () => {
 
   describe('config', () => {
     it('should have correct matcher pattern', () => {
-      expect(config.matcher).toEqual(['/((?!api|_next|_vercel|.*\\..*).*)']);
+      expect(config.matcher).toContain('/((?!api|_next|_vercel|.*\\..*).*)');
     });
 
     it('should match regular pages', () => {

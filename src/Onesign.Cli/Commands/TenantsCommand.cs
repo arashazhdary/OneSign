@@ -81,7 +81,10 @@ public class GetTenantCommand : Command
 {
     public GetTenantCommand() : base("get", "Get tenant details")
     {
-        var idArgument = new Argument<string>("id", "Tenant ID");
+        var idArgument = new Argument<string>("id")
+        {
+            Description = "Tenant ID"
+        };
         AddArgument(idArgument);
 
         this.SetHandler(HandleAsync, idArgument);
@@ -100,7 +103,7 @@ public class GetTenantCommand : Command
                 return;
             }
 
-            var tenant = await client.Tenants.GetTenantAsync(tenantId);
+            var tenant = await client.Tenants.GetTenantAsync(tenantId.ToString());
 
             if (tenant == null)
             {
@@ -162,7 +165,7 @@ public class CreateTenantCommand : Command
             var config = CliConfig.Load();
             using var client = config.CreateClient();
 
-            var request = new Sdk.DotNet.Models.CreateTenantRequest
+            var request = new Onesign.Sdk.DotNet.Models.CreateTenantRequest
             {
                 Name = name,
                 Plan = plan,
@@ -187,7 +190,10 @@ public class UpdateTenantCommand : Command
 {
     public UpdateTenantCommand() : base("update", "Update a tenant")
     {
-        var idArgument = new Argument<string>("id", "Tenant ID");
+        var idArgument = new Argument<string>("id")
+        {
+            Description = "Tenant ID"
+        };
         var nameOption = new Option<string?>(
             aliases: new[] { "--name", "-n" },
             description: "New tenant name");
@@ -221,7 +227,7 @@ public class UpdateTenantCommand : Command
                 return;
             }
 
-            var request = new Sdk.DotNet.Models.UpdateTenantRequest
+            var request = new Onesign.Sdk.DotNet.Models.UpdateTenantRequest
             {
                 Name = name,
                 Plan = plan,
@@ -246,7 +252,10 @@ public class DeleteTenantCommand : Command
 {
     public DeleteTenantCommand() : base("delete", "Delete a tenant")
     {
-        var idArgument = new Argument<string>("id", "Tenant ID");
+        var idArgument = new Argument<string>("id")
+        {
+            Description = "Tenant ID"
+        };
         var forceOption = new Option<bool>(
             aliases: new[] { "--force", "-f" },
             description: "Force deletion without confirmation");
@@ -295,7 +304,10 @@ public class TenantUsersCommand : Command
 {
     public TenantUsersCommand() : base("users", "List users in a tenant")
     {
-        var idArgument = new Argument<string>("id", "Tenant ID");
+        var idArgument = new Argument<string>("id")
+        {
+            Description = "Tenant ID"
+        };
         var pageOption = new Option<int>(
             aliases: new[] { "--page", "-p" },
             description: "Page number",
@@ -359,7 +371,10 @@ public class GetTenantConfigCommand : Command
 {
     public GetTenantConfigCommand() : base("get", "Get tenant configuration")
     {
-        var idArgument = new Argument<string>("id", "Tenant ID");
+        var idArgument = new Argument<string>("id")
+        {
+            Description = "Tenant ID"
+        };
         var keyOption = new Option<string?>(
             aliases: new[] { "--key", "-k" },
             description: "Specific configuration key to retrieve");
@@ -383,7 +398,7 @@ public class GetTenantConfigCommand : Command
                 return;
             }
 
-            var tenant = await client.Tenants.GetTenantAsync(tenantId);
+            var tenant = await client.Tenants.GetTenantAsync(tenantId.ToString());
 
             if (tenant == null)
             {
@@ -428,9 +443,18 @@ public class SetTenantConfigCommand : Command
 {
     public SetTenantConfigCommand() : base("set", "Set tenant configuration value")
     {
-        var idArgument = new Argument<string>("id", "Tenant ID");
-        var keyArgument = new Argument<string>("key", "Configuration key");
-        var valueArgument = new Argument<string>("value", "Configuration value");
+        var idArgument = new Argument<string>("id")
+        {
+            Description = "Tenant ID"
+        };
+        var keyArgument = new Argument<string>("key")
+        {
+            Description = "Configuration key"
+        };
+        var valueArgument = new Argument<string>("value")
+        {
+            Description = "Configuration value"
+        };
 
         AddArgument(idArgument);
         AddArgument(keyArgument);
@@ -452,7 +476,7 @@ public class SetTenantConfigCommand : Command
                 return;
             }
 
-            var tenant = await client.Tenants.GetTenantAsync(tenantId);
+            var tenant = await client.Tenants.GetTenantAsync(tenantId.ToString());
 
             if (tenant == null)
             {
@@ -463,7 +487,7 @@ public class SetTenantConfigCommand : Command
             var settings = tenant.Settings ?? new Dictionary<string, string>();
             settings[key] = value;
 
-            var updateRequest = new Sdk.DotNet.Models.UpdateTenantRequest
+            var updateRequest = new Onesign.Sdk.DotNet.Models.UpdateTenantRequest
             {
                 Settings = settings
             };

@@ -31,7 +31,7 @@ public class KeyRotationPolicyRepository : IKeyRotationPolicyRepository
         return entity != null ? MapToDomain(entity) : null;
     }
 
-    public async Task<IReadOnlyList<KeyRotationPolicy>> GetEnabledAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<KeyRotationPolicy>> GetEnabledAsync(CancellationToken cancellationToken = default)
     {
         var entities = await _dbContext.Set<KeyRotationPolicyEntity>()
             .Where(x => x.Enabled)
@@ -40,13 +40,26 @@ public class KeyRotationPolicyRepository : IKeyRotationPolicyRepository
         return entities.Select(MapToDomain).ToList();
     }
 
-    public async Task<IReadOnlyList<KeyRotationPolicy>> GetByScopeAsync(KeyScopeType scopeType, string scopeId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<KeyRotationPolicy>> GetByScopeAsync(KeyScopeType scopeType, string scopeId, CancellationToken cancellationToken = default)
     {
         var entities = await _dbContext.Set<KeyRotationPolicyEntity>()
             .Where(x => x.ScopeType == (int)scopeType && x.ScopeId == scopeId)
             .ToListAsync(cancellationToken);
 
         return entities.Select(MapToDomain).ToList();
+    }
+
+    public async Task<KeyRotationPolicy?> GetByKeySetIdAsync(Guid keySetId, CancellationToken cancellationToken = default)
+    {
+        var entity = await _dbContext.Set<KeyRotationPolicyEntity>()
+            .FirstOrDefaultAsync(x => x.ScopeId == keySetId.ToString(), cancellationToken);
+
+        return entity != null ? MapToDomain(entity) : null;
+    }
+
+    public async Task<IEnumerable<KeyRotationPolicy>> GetEnabledPoliciesAsync(CancellationToken cancellationToken = default)
+    {
+        return await GetEnabledAsync(cancellationToken);
     }
 
     public async Task AddAsync(KeyRotationPolicy policy, CancellationToken cancellationToken = default)

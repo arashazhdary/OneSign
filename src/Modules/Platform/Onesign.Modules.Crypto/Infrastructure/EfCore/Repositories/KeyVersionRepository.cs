@@ -31,7 +31,7 @@ public class KeyVersionRepository : IKeyVersionRepository
         return entity != null ? MapToDomain(entity) : null;
     }
 
-    public async Task<IReadOnlyList<KeyVersion>> GetByKeySetIdAsync(Guid keySetId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<KeyVersion>> GetByKeySetIdAsync(Guid keySetId, CancellationToken cancellationToken = default)
     {
         var entities = await _dbContext.Set<KeyVersionEntity>()
             .Where(x => x.KeySetId == keySetId)
@@ -49,10 +49,41 @@ public class KeyVersionRepository : IKeyVersionRepository
         return entity != null ? MapToDomain(entity) : null;
     }
 
-    public async Task<IReadOnlyList<KeyVersion>> GetByStateAsync(KeyVersionState state, CancellationToken cancellationToken = default)
+    public async Task<KeyVersion?> GetActiveKeyAsync(Guid keySetId, CancellationToken cancellationToken = default)
+    {
+        return await GetActiveByKeySetIdAsync(keySetId, cancellationToken);
+    }
+
+    public async Task<IEnumerable<KeyVersion>> GetByStateAsync(KeyVersionState state, CancellationToken cancellationToken = default)
     {
         var entities = await _dbContext.Set<KeyVersionEntity>()
             .Where(x => x.State == (int)state)
+            .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+        return entities.Select(MapToDomain).ToList();
+    }
+
+    public async Task<IEnumerable<KeyVersion>> GetActiveKeysAsync(CancellationToken cancellationToken = default)
+    {
+        return await GetByStateAsync(KeyVersionState.Active, cancellationToken);
+    }
+
+    public async Task<IEnumerable<KeyVersion>> GetExpiredKeysAsync(CancellationToken cancellationToken = default)
+    {
+        var entities = await _dbContext.Set<KeyVersionEntity>()
+            .Where(x => x.ExpiredAt.HasValue && x.ExpiredAt.Value < DateTime.UtcNow)
+            .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+        return entities.Select(MapToDomain).ToList();
+    }
+
+    public async Task<IEnumerable<KeyVersion>> GetRecentlyRetiredKeysAsync(TimeSpan gracePeriod, CancellationToken cancellationToken = default)
+    {
+        var cutoffDate = DateTime.UtcNow - gracePeriod;
+        var entities = await _dbContext.Set<KeyVersionEntity>()
+            .Where(x => x.State == (int)KeyVersionState.Retired && x.ExpiredAt.HasValue && x.ExpiredAt.Value >= cutoffDate)
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync(cancellationToken);
 

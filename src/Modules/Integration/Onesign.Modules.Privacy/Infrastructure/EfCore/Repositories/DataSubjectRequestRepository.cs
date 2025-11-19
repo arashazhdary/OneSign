@@ -23,7 +23,7 @@ public class DataSubjectRequestRepository : IDataSubjectRequestRepository
         return entity != null ? MapToDomain(entity) : null;
     }
 
-    public async Task<IReadOnlyList<DataSubjectRequest>> GetByTenantIdAsync(Guid tenantId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<DataSubjectRequest>> GetByTenantIdAsync(Guid tenantId, CancellationToken cancellationToken = default)
     {
         var entities = await _dbContext.Set<DataSubjectRequestEntity>()
             .Where(x => x.TenantId == tenantId)
@@ -33,7 +33,7 @@ public class DataSubjectRequestRepository : IDataSubjectRequestRepository
         return entities.Select(MapToDomain).ToList();
     }
 
-    public async Task<IReadOnlyList<DataSubjectRequest>> GetBySubjectIdAsync(Guid subjectId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<DataSubjectRequest>> GetBySubjectIdAsync(Guid subjectId, CancellationToken cancellationToken = default)
     {
         var entities = await _dbContext.Set<DataSubjectRequestEntity>()
             .Where(x => x.SubjectId == subjectId)
@@ -43,7 +43,7 @@ public class DataSubjectRequestRepository : IDataSubjectRequestRepository
         return entities.Select(MapToDomain).ToList();
     }
 
-    public async Task<IReadOnlyList<DataSubjectRequest>> GetByStatusAsync(DataSubjectRequestStatus status, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<DataSubjectRequest>> GetByStatusAsync(DataSubjectRequestStatus status, CancellationToken cancellationToken = default)
     {
         var entities = await _dbContext.Set<DataSubjectRequestEntity>()
             .Where(x => x.Status == (int)status)
@@ -53,7 +53,7 @@ public class DataSubjectRequestRepository : IDataSubjectRequestRepository
         return entities.Select(MapToDomain).ToList();
     }
 
-    public async Task<IReadOnlyList<DataSubjectRequest>> GetByTypeAsync(DataSubjectRequestType type, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<DataSubjectRequest>> GetByTypeAsync(DataSubjectRequestType type, CancellationToken cancellationToken = default)
     {
         var entities = await _dbContext.Set<DataSubjectRequestEntity>()
             .Where(x => x.Type == (int)type)
@@ -75,6 +75,24 @@ public class DataSubjectRequestRepository : IDataSubjectRequestRepository
 
         var entities = await _dbContext.Set<DataSubjectRequestEntity>()
             .Where(x => pendingStatuses.Contains(x.Status))
+            .OrderBy(x => x.RequestedAt)
+            .ToListAsync(cancellationToken);
+
+        return entities.Select(MapToDomain).ToList();
+    }
+
+    public async Task<IEnumerable<DataSubjectRequest>> GetPendingRequestsAsync(Guid tenantId, CancellationToken cancellationToken = default)
+    {
+        var pendingStatuses = new[]
+        {
+            (int)DataSubjectRequestStatus.Requested,
+            (int)DataSubjectRequestStatus.InReview,
+            (int)DataSubjectRequestStatus.Approved,
+            (int)DataSubjectRequestStatus.Processing
+        };
+
+        var entities = await _dbContext.Set<DataSubjectRequestEntity>()
+            .Where(x => x.TenantId == tenantId && pendingStatuses.Contains(x.Status))
             .OrderBy(x => x.RequestedAt)
             .ToListAsync(cancellationToken);
 

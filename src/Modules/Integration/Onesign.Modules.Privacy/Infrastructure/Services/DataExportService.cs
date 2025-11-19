@@ -3,7 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Onesign.Data.Contexts;
+using Microsoft.EntityFrameworkCore;
 using Onesign.Modules.Privacy.Domain.Services;
 
 namespace Onesign.Modules.Privacy.Infrastructure.Services;
@@ -40,7 +40,7 @@ public class DataExportService : IDataExportService
         _logger.LogInformation("Starting data export for user {UserId} in tenant {TenantId}", userId, tenantId);
 
         using var scope = _serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<OnesignDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
         var exportData = new UserDataExport
         {
@@ -93,7 +93,7 @@ public class DataExportService : IDataExportService
     }
 
     private async Task<DataCategoryExport?> ExportUserProfileAsync(
-        OnesignDbContext dbContext,
+        DbContext dbContext,
         Guid tenantId,
         Guid userId,
         CancellationToken cancellationToken)
@@ -126,7 +126,7 @@ public class DataExportService : IDataExportService
     }
 
     private async Task<DataCategoryExport?> ExportSessionsAsync(
-        OnesignDbContext dbContext,
+        DbContext dbContext,
         Guid userId,
         CancellationToken cancellationToken)
     {
@@ -155,7 +155,7 @@ public class DataExportService : IDataExportService
     }
 
     private async Task<DataCategoryExport?> ExportAuditLogsAsync(
-        OnesignDbContext dbContext,
+        DbContext dbContext,
         Guid tenantId,
         Guid userId,
         CancellationToken cancellationToken)
@@ -186,7 +186,7 @@ public class DataExportService : IDataExportService
     }
 
     private async Task<DataCategoryExport?> ExportMfaDataAsync(
-        OnesignDbContext dbContext,
+        DbContext dbContext,
         Guid userId,
         CancellationToken cancellationToken)
     {
@@ -213,7 +213,7 @@ public class DataExportService : IDataExportService
     }
 
     private async Task<DataCategoryExport?> ExportDevicesAsync(
-        OnesignDbContext dbContext,
+        DbContext dbContext,
         Guid userId,
         CancellationToken cancellationToken)
     {
@@ -297,7 +297,7 @@ public class DataExportService : IDataExportService
     }
 
     private static async Task LogExportEventAsync(
-        OnesignDbContext dbContext,
+        DbContext dbContext,
         Guid tenantId,
         Guid userId,
         UserDataExport exportData,

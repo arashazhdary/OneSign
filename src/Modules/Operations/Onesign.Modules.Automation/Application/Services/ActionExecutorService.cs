@@ -2,7 +2,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Onesign.Data.Contexts;
+using Microsoft.EntityFrameworkCore;
 using Onesign.Modules.Automation.Domain.Entities;
 using Onesign.Modules.Automation.Domain.Enums;
 using Onesign.Modules.Automation.Domain.Services;
@@ -16,13 +16,13 @@ namespace Onesign.Modules.Automation.Application.Services;
 
 public class ActionExecutorService : IActionExecutor
 {
-    private readonly OnesignDbContext _dbContext;
+    private readonly DbContext _dbContext;
     private readonly INotificationOutboxRepository _notificationOutboxRepository;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<ActionExecutorService> _logger;
 
     public ActionExecutorService(
-        OnesignDbContext dbContext,
+        DbContext dbContext,
         INotificationOutboxRepository notificationOutboxRepository,
         IHttpClientFactory httpClientFactory,
         ILogger<ActionExecutorService> logger)

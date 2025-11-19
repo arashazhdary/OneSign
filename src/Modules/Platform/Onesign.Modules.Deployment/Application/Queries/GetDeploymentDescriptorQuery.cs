@@ -21,7 +21,7 @@ public class GetDeploymentDescriptorQueryHandler : IRequestHandler<GetDeployment
 
     public async Task<Result<DeploymentDescriptor>> Handle(GetDeploymentDescriptorQuery request, CancellationToken cancellationToken)
     {
-        var environment = await _environmentRepository.GetByIdAsync(request.EnvironmentId, cancellationToken);
+        var environment = await _environmentRepository.GetByIdAsync(request.EnvironmentId.ToString(), cancellationToken);
 
         if (environment == null)
         {

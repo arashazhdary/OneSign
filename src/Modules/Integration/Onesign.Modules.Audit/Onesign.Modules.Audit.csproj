@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Onesign.Shared\Onesign.Shared.csproj" />
+    <ProjectReference Include="..\..\..\Onesign.Shared\Onesign.Shared.csproj" />
   </ItemGroup>
 
 </Project>

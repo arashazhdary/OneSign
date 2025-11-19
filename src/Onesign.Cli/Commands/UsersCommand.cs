@@ -90,7 +90,10 @@ public class GetUserCommand : Command
 {
     public GetUserCommand() : base("get", "Get user details")
     {
-        var idArgument = new Argument<string>("id", "User ID or email");
+        var idArgument = new Argument<string>("id")
+        {
+            Description = "User ID or email"
+        };
         var jsonOption = new Option<bool>(
             aliases: new[] { "--json" },
             description: "Output as JSON");
@@ -222,7 +225,10 @@ public class DeleteUserCommand : Command
 {
     public DeleteUserCommand() : base("delete", "Delete a user")
     {
-        var idArgument = new Argument<string>("id", "User ID");
+        var idArgument = new Argument<string>("id")
+        {
+            Description = "User ID"
+        };
         var forceOption = new Option<bool>(
             aliases: new[] { "--force", "-f" },
             description: "Skip confirmation");

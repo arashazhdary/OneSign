@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Onesign.Data.Contexts;
+using Microsoft.EntityFrameworkCore;
 using Onesign.Modules.Privacy.Domain.Entities;
 using Onesign.Modules.Privacy.Domain.Enums;
 using Onesign.Modules.Privacy.Domain.Repositories;
@@ -139,7 +139,7 @@ public class DataSubjectRequestProcessor : IDataSubjectRequestProcessor
         var result = new DsrValidationResult { IsValid = true };
 
         using var scope = _serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<OnesignDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
         var subject = await dbContext.TenantUsers
             .FirstOrDefaultAsync(u => u.Id == request.SubjectId && u.TenantId == request.TenantId, cancellationToken);
@@ -319,7 +319,7 @@ public class DataSubjectRequestProcessor : IDataSubjectRequestProcessor
         CancellationToken cancellationToken)
     {
         using var scope = _serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<OnesignDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
         var user = await dbContext.TenantUsers
             .FirstOrDefaultAsync(u => u.Id == request.SubjectId && u.TenantId == request.TenantId, cancellationToken);
@@ -340,7 +340,7 @@ public class DataSubjectRequestProcessor : IDataSubjectRequestProcessor
     }
 
     private static async Task<bool> IsAdminUserAsync(
-        OnesignDbContext dbContext,
+        DbContext dbContext,
         Guid tenantId,
         Guid userId,
         CancellationToken cancellationToken)

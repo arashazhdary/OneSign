@@ -7,14 +7,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="12.1.0" />
     <PackageReference Include="MediatR" Version="13.1.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
-    <PackageReference Include="System.Text.Json" Version="10.0.0" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
+	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+	  <PackageReference Include="System.Text.Json" Version="10.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Onesign.Shared\Onesign.Shared.csproj" />
+    <ProjectReference Include="..\..\..\Onesign.Shared\Onesign.Shared.csproj" />
+    <ProjectReference Include="..\..\Operations\Onesign.Modules.Automation\Onesign.Modules.Automation.csproj" />
+    <ProjectReference Include="..\..\Operations\Onesign.Modules.ChangeManagement\Onesign.Modules.ChangeManagement.csproj" />
+    <ProjectReference Include="..\..\Operations\Onesign.Modules.Hunting\Onesign.Modules.Hunting.csproj" />
+    <ProjectReference Include="..\..\Operations\Onesign.Modules.Incidents\Onesign.Modules.Incidents.csproj" />
+    <ProjectReference Include="..\..\Operations\Onesign.Modules.Insights\Onesign.Modules.Insights.csproj" />
+    <ProjectReference Include="..\..\Governance\Onesign.Modules.Governance\Onesign.Modules.Governance.csproj" />
   </ItemGroup>
 
 </Project>

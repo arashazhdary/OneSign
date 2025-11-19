@@ -38,7 +38,7 @@ public class JwksKeyProvider : IKeyProvider
 
     public async Task<KeyVersion> GetSigningKeyAsync(Guid? tenantId = null, CancellationToken cancellationToken = default)
     {
-        var keySets = await _keySetRepository.GetByPurposeAsync(KeyPurpose.Signing, cancellationToken);
+        var keySets = await _keySetRepository.GetByPurposeAsync(KeyPurpose.OidcSigning, cancellationToken);
         var targetKeySet = tenantId.HasValue
             ? keySets.FirstOrDefault(k => k.TenantId == tenantId.Value)
             : keySets.FirstOrDefault(k => k.TenantId == null);

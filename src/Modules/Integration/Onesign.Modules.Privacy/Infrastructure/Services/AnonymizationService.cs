@@ -3,7 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Onesign.Data.Contexts;
+using Microsoft.EntityFrameworkCore;
 using Onesign.Modules.Privacy.Domain.Enums;
 using Onesign.Modules.Privacy.Domain.Services;
 
@@ -36,7 +36,7 @@ public class AnonymizationService : IAnonymizationService
         try
         {
             using var scope = _serviceProvider.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<OnesignDbContext>();
+            var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
             var user = await dbContext.TenantUsers.FirstOrDefaultAsync(
                 u => u.Id == userId && u.TenantId == tenantId,
@@ -126,7 +126,7 @@ public class AnonymizationService : IAnonymizationService
         try
         {
             using var scope = _serviceProvider.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<OnesignDbContext>();
+            var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
             switch (category)
             {
@@ -224,7 +224,7 @@ public class AnonymizationService : IAnonymizationService
     }
 
     private async Task<AnonymizationResult> AnonymizeAuditLogsAsync(
-        OnesignDbContext dbContext,
+        DbContext dbContext,
         Guid tenantId,
         DateTime olderThan,
         CancellationToken cancellationToken)
@@ -251,7 +251,7 @@ public class AnonymizationService : IAnonymizationService
     }
 
     private async Task<AnonymizationResult> AnonymizeLoginHistoryAsync(
-        OnesignDbContext dbContext,
+        DbContext dbContext,
         Guid tenantId,
         DateTime olderThan,
         CancellationToken cancellationToken)
@@ -280,7 +280,7 @@ public class AnonymizationService : IAnonymizationService
     }
 
     private async Task<AnonymizationResult> AnonymizeSessionsAsync(
-        OnesignDbContext dbContext,
+        DbContext dbContext,
         Guid tenantId,
         DateTime olderThan,
         CancellationToken cancellationToken)
@@ -319,7 +319,7 @@ public class AnonymizationService : IAnonymizationService
     }
 
     private static async Task LogAnonymizationEventAsync(
-        OnesignDbContext dbContext,
+        DbContext dbContext,
         Guid tenantId,
         Guid userId,
         AnonymizationResult result,

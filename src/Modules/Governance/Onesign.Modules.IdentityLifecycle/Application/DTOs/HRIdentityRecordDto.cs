@@ -16,15 +16,3 @@ public class HRIdentityRecordDto
     public DateTime LastSyncedAt { get; set; }
 }
 
-public class LifecycleEventDto
-{
-    public Guid Id { get; set; }
-    public Guid HRRecordId { get; set; }
-    public string EventType { get; set; } = string.Empty;
-    public string OldSnapshotJson { get; set; } = "{}";
-    public string NewSnapshotJson { get; set; } = "{}";
-    public string Status { get; set; } = string.Empty;
-    public string? ErrorMessage { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime? ProcessedAt { get; set; }
-}

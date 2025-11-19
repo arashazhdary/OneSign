@@ -25,8 +25,17 @@ public class Tenant
     [JsonPropertyName("enabled")]
     public bool Enabled { get; set; } = true;
 
+    [JsonPropertyName("status")]
+    public string? Status { get; set; }
+
+    [JsonPropertyName("plan")]
+    public string? Plan { get; set; }
+
+    [JsonPropertyName("region")]
+    public string? Region { get; set; }
+
     [JsonPropertyName("settings")]
-    public TenantSettings Settings { get; set; } = new();
+    public Dictionary<string, string>? Settings { get; set; }
 
     [JsonPropertyName("createdAt")]
     public DateTimeOffset CreatedAt { get; set; }
@@ -72,6 +81,33 @@ public class PasswordPolicy
 
     [JsonPropertyName("requireNonAlphanumeric")]
     public bool RequireNonAlphanumeric { get; set; } = false;
+}
+
+public class CreateTenantRequest
+{
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("plan")]
+    public string? Plan { get; set; }
+
+    [JsonPropertyName("region")]
+    public string? Region { get; set; }
+}
+
+public class UpdateTenantRequest
+{
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
+
+    [JsonPropertyName("plan")]
+    public string? Plan { get; set; }
+
+    [JsonPropertyName("status")]
+    public string? Status { get; set; }
+
+    [JsonPropertyName("settings")]
+    public Dictionary<string, string>? Settings { get; set; }
 }
 
 public class UpdateTenantSettingsRequest

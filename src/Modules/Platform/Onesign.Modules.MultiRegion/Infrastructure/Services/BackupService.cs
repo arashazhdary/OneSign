@@ -91,12 +91,12 @@ public class BackupService : IBackupService
         };
     }
 
-    public async Task<BackupStatus> GetBackupStatusAsync(Guid backupId, CancellationToken cancellationToken = default)
+    public async Task<Domain.Services.BackupStatus> GetBackupStatusAsync(Guid backupId, CancellationToken cancellationToken = default)
     {
         var backup = await _backupRepository.GetByIdAsync(backupId, cancellationToken);
         if (backup == null)
         {
-            return new BackupStatus
+            return new Domain.Services.BackupStatus
             {
                 BackupId = backupId,
                 Status = "NotFound",
@@ -104,14 +104,14 @@ public class BackupService : IBackupService
             };
         }
 
-        var progressPercent = backup.Status switch
+        var progressPercent = (backup.Status as Domain.Enums.BackupStatus?) switch
         {
             Domain.Enums.BackupStatus.Completed => 100,
             Domain.Enums.BackupStatus.Failed => 0,
             _ => new Random().Next(10, 90)
         };
 
-        return new BackupStatus
+        return new Domain.Services.BackupStatus
         {
             BackupId = backup.Id,
             Status = backup.Status.ToString(),

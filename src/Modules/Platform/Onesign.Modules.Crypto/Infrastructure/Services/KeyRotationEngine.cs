@@ -54,7 +54,7 @@ public class KeyRotationEngine : IKeyRotationEngine
                 _logger.LogError(ex, "Error processing rotation for policy {PolicyId}", policy.Id);
                 results.Add(new KeyRotationResult
                 {
-                    KeySetId = policy.ScopeId,
+                    KeySetId = Guid.TryParse(policy.ScopeId, out var keySetId) ? keySetId : Guid.Empty,
                     Success = false,
                     ErrorMessage = ex.Message,
                     RotatedAt = DateTime.UtcNow,
@@ -173,7 +173,12 @@ public class KeyRotationEngine : IKeyRotationEngine
         KeyRotationPolicy policy,
         CancellationToken cancellationToken)
     {
-        var activeKey = await _keyVersionRepository.GetActiveKeyAsync(policy.ScopeId, cancellationToken);
+        if (!Guid.TryParse(policy.ScopeId, out var keySetId))
+        {
+            return false;
+        }
+
+        var activeKey = await _keyVersionRepository.GetActiveKeyAsync(keySetId, cancellationToken);
         if (activeKey == null)
         {
             return true;
@@ -188,12 +193,24 @@ public class KeyRotationEngine : IKeyRotationEngine
         string reason,
         CancellationToken cancellationToken)
     {
-        var keySet = await _keySetRepository.GetByIdAsync(policy.ScopeId, cancellationToken);
+        if (!Guid.TryParse(policy.ScopeId, out var keySetId))
+        {
+            return new KeyRotationResult
+            {
+                KeySetId = Guid.Empty,
+                Success = false,
+                ErrorMessage = "Invalid KeySet ID format",
+                RotatedAt = DateTime.UtcNow,
+                Reason = reason
+            };
+        }
+
+        var keySet = await _keySetRepository.GetByIdAsync(keySetId, cancellationToken);
         if (keySet == null)
         {
             return new KeyRotationResult
             {
-                KeySetId = policy.ScopeId,
+                KeySetId = keySetId,
                 Success = false,
                 ErrorMessage = "KeySet not found",
                 RotatedAt = DateTime.UtcNow,
@@ -201,10 +218,10 @@ public class KeyRotationEngine : IKeyRotationEngine
             };
         }
 
-        var activeKey = await _keyVersionRepository.GetActiveKeyAsync(policy.ScopeId, cancellationToken);
+        var activeKey = await _keyVersionRepository.GetActiveKeyAsync(keySetId, cancellationToken);
 
         var algorithm = activeKey?.Algorithm ?? GetDefaultAlgorithm(policy.Purpose);
-        var newKey = await _keyGenerator.GenerateAsync(policy.ScopeId, policy.Purpose, algorithm, cancellationToken);
+        var newKey = await _keyGenerator.GenerateAsync(keySetId, policy.Purpose, algorithm, cancellationToken);
 
         DateTime? oldKeyRetirementDate = null;
 
@@ -230,15 +247,15 @@ public class KeyRotationEngine : IKeyRotationEngine
             }
         }
 
-        _scheduledRotations.Remove(policy.ScopeId);
+        _scheduledRotations.Remove(keySetId);
 
         _logger.LogInformation(
             "Key rotation completed for KeySet {KeySetId}. New key: {NewKeyId} ({NewKid})",
-            policy.ScopeId, newKey.Id, newKey.Kid);
+            keySetId, newKey.Id, newKey.Kid);
 
         return new KeyRotationResult
         {
-            KeySetId = policy.ScopeId,
+            KeySetId = keySetId,
             Success = true,
             NewKeyVersionId = newKey.Id,
             PreviousKeyVersionId = activeKey?.Id,

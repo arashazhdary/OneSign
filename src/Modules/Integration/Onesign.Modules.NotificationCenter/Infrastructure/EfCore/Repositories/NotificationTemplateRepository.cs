@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Onesign.Data.Contexts;
+using Microsoft.EntityFrameworkCore;
 using Onesign.Modules.NotificationCenter.Domain.Entities;
 using Onesign.Modules.NotificationCenter.Domain.Enums;
 using Onesign.Modules.NotificationCenter.Domain.Repositories;
@@ -9,9 +9,9 @@ namespace Onesign.Modules.NotificationCenter.Infrastructure.EfCore.Repositories;
 
 public class NotificationTemplateRepository : INotificationTemplateRepository
 {
-    private readonly OnesignDbContext _dbContext;
+    private readonly DbContext _dbContext;
 
-    public NotificationTemplateRepository(OnesignDbContext dbContext)
+    public NotificationTemplateRepository(DbContext dbContext)
     {
         _dbContext = dbContext;
     }

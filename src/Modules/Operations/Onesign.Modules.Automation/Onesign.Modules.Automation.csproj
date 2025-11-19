@@ -11,6 +11,8 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Onesign.Shared\Onesign.Shared.csproj" />
+    <ProjectReference Include="..\..\..\Onesign.Shared\Onesign.Shared.csproj" />
+    <ProjectReference Include="..\..\Security\Onesign.Modules.Identity\Onesign.Modules.Identity.csproj" />
+    <ProjectReference Include="..\..\Integration\Onesign.Modules.NotificationCenter\Onesign.Modules.NotificationCenter.csproj" />
   </ItemGroup>
 </Project>

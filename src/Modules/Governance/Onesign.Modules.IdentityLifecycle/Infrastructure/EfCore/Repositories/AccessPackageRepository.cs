@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Onesign.Data.Contexts;
+using Microsoft.EntityFrameworkCore;
 using Onesign.Modules.IdentityLifecycle.Domain.Entities;
 using Onesign.Modules.IdentityLifecycle.Domain.Repositories;
 using Onesign.Modules.IdentityLifecycle.Infrastructure.EfCore.Entities;
@@ -8,9 +8,9 @@ namespace Onesign.Modules.IdentityLifecycle.Infrastructure.EfCore.Repositories;
 
 public class AccessPackageRepository : IAccessPackageRepository
 {
-    private readonly OnesignDbContext _dbContext;
+    private readonly DbContext _dbContext;
 
-    public AccessPackageRepository(OnesignDbContext dbContext)
+    public AccessPackageRepository(DbContext dbContext)
     {
         _dbContext = dbContext;
     }
