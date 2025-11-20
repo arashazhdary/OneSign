@@ -5,6 +5,8 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getTenantId, setTenantId } from '@/lib/tenant-context';
 import { getTenantBranding, TenantBranding } from '@/lib/tenant-branding';
+import LoadingOverlay from '@/app/components/LoadingOverlay';
+import LoadingSpinner from '@/app/components/LoadingSpinner';
 
 declare global {
   interface Window {
@@ -210,28 +212,29 @@ export default function LoginPage() {
   const logoUrl = branding.logoUrl;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
-      <div className="max-w-md w-full">
-        {/* Modern Card with Glass Effect */}
-        <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-8 space-y-6 border border-white/20">
-          {/* Logo and Title Section */}
-          <div className="text-center">
-            {logoUrl && (
+    <>
+      <LoadingOverlay isLoading={loading} message="Signing you in..." />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
+        <div className="max-w-md w-full">
+          {/* Modern Card with Glass Effect */}
+          <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-8 space-y-6 border border-white/20">
+            {/* Logo and Title Section */}
+            <div className="text-center">
               <div className="flex justify-center mb-6">
-                <div className="p-3 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl shadow-lg">
-                  <img src={logoUrl} alt="Logo" className="h-12 w-auto" />
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur-xl opacity-30"></div>
+                  <img src={logoUrl || "/logo.svg"} alt="OneSign Logo" className="h-20 w-20 relative" />
                 </div>
               </div>
-            )}
-            <h1
-              className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2"
-            >
-              {t('login.title')}
-            </h1>
-            <p className="text-gray-600 text-sm">
-              Welcome back! Please enter your credentials
-            </p>
-          </div>
+              <h1
+                className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2"
+              >
+                {t('login.title')}
+              </h1>
+              <p className="text-gray-600 text-sm">
+                Welcome back! Please enter your credentials
+              </p>
+            </div>
 
           {/* Error Alert */}
           {error && (
@@ -361,6 +364,7 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+    </>
   );
 }
 
