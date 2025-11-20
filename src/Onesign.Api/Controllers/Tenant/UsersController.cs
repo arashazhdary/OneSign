@@ -24,7 +24,7 @@ public class UsersController : Onesign.Api.Controllers.TenantControllerBase
         _localizationService = localizationService;
     }
 
-    private new string GetCulture()
+    private string GetCultureString()
     {
         return HttpContext.Items["Culture"]?.ToString() ?? "en";
     }
@@ -60,7 +60,7 @@ public class UsersController : Onesign.Api.Controllers.TenantControllerBase
         
         if (result.IsFailure)
         {
-            var culture = GetCulture();
+            var culture = GetCultureString();
             var localizedMessage = _localizationService.GetString(result.ErrorCode ?? "UNKNOWN_ERROR", culture);
             return BadRequest(new { errorCode = result.ErrorCode, errorMessage = localizedMessage });
         }
@@ -99,7 +99,7 @@ public class UsersController : Onesign.Api.Controllers.TenantControllerBase
         
         if (result.IsFailure)
         {
-            var culture = GetCulture();
+            var culture = GetCultureString();
             var localizedMessage = _localizationService.GetString(result.ErrorCode ?? "UNKNOWN_ERROR", culture);
             return BadRequest(new { errorCode = result.ErrorCode, errorMessage = localizedMessage });
         }
@@ -115,7 +115,7 @@ public class UsersController : Onesign.Api.Controllers.TenantControllerBase
 
         if (result.IsFailure)
         {
-            var culture = GetCulture();
+            var culture = GetCultureString();
             var localizedMessage = _localizationService.GetString(result.ErrorCode ?? "UNKNOWN_ERROR", culture);
             return BadRequest(new { errorCode = result.ErrorCode, errorMessage = localizedMessage });
         }
@@ -139,7 +139,7 @@ public class UsersController : Onesign.Api.Controllers.TenantControllerBase
 
         if (result.IsFailure)
         {
-            var culture = GetCulture();
+            var culture = GetCultureString();
             var localizedMessage = _localizationService.GetString(result.ErrorCode ?? "UNKNOWN_ERROR", culture);
             return BadRequest(new { errorCode = result.ErrorCode, errorMessage = localizedMessage });
         }
@@ -162,7 +162,7 @@ public class UsersController : Onesign.Api.Controllers.TenantControllerBase
 
         if (result.IsFailure)
         {
-            var culture = GetCulture();
+            var culture = GetCultureString();
             var localizedMessage = _localizationService.GetString(result.ErrorCode ?? "UNKNOWN_ERROR", culture);
             return BadRequest(new { errorCode = result.ErrorCode, errorMessage = localizedMessage });
         }

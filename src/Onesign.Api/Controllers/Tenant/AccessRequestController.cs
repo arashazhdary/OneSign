@@ -25,14 +25,14 @@ public class AccessRequestController : TenantControllerBase
             RequesterId = requesterId,
             ApproverId = approverId
         });
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
     }
 
     [HttpPost]
     public async Task<ActionResult<AccessRequestDto>> CreateRequest([FromBody] CreateAccessRequestCommand command)
     {
         var result = await _mediator.Send(command);
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
     }
 
     [HttpPost("{requestId}/approve")]
@@ -40,6 +40,6 @@ public class AccessRequestController : TenantControllerBase
     {
         command.RequestId = requestId;
         var result = await _mediator.Send(command);
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
     }
 }

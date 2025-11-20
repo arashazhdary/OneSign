@@ -15,7 +15,7 @@ public class PrivilegedAccessController : TenantControllerBase
     public async Task<ActionResult<Guid>> RequestJitAccess([FromBody] RequestJitAccessCommand command)
     {
         var result = await _mediator.Send(command);
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
     }
 
     [HttpGet("jit/grants")]
@@ -41,7 +41,7 @@ public class PrivilegedAccessController : TenantControllerBase
     {
         command.SessionId = sessionId;
         var result = await _mediator.Send(command);
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
     }
 
     [HttpGet("breakglass-accounts")]

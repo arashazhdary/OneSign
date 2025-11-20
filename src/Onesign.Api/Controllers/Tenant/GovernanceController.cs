@@ -17,13 +17,13 @@ public class GovernanceController : TenantControllerBase
     public async Task<ActionResult<List<CampaignDto>>> GetCampaigns([FromQuery] Guid tenantId)
     {
         var result = await _mediator.Send(new GetCampaignsQuery { TenantId = tenantId });
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
     }
 
     [HttpPost("campaigns")]
     public async Task<ActionResult<CampaignDto>> CreateCampaign([FromBody] CreateAccessReviewCampaignCommand command)
     {
         var result = await _mediator.Send(command);
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
     }
 }

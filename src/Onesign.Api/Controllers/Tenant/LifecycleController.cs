@@ -15,7 +15,7 @@ public class LifecycleController : TenantControllerBase
     public async Task<ActionResult<int>> SyncHRData([FromBody] SyncHRDataCommand command)
     {
         var result = await _mediator.Send(command);
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
     }
 
     [HttpGet("access-packages")]

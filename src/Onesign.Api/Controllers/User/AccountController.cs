@@ -17,7 +17,7 @@ public class AccountController : ControllerBase
     public async Task<ActionResult<UserProfileDto>> UpdateProfile([FromBody] UpdateUserProfileCommand command)
     {
         var result = await _mediator.Send(command);
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
     }
 
     [HttpGet("activities")]
@@ -26,6 +26,6 @@ public class AccountController : ControllerBase
     {
         var query = new GetUserActivitiesQuery { UserId = userId, From = from, To = to };
         var result = await _mediator.Send(query);
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
     }
 }

@@ -25,7 +25,7 @@ public class FederationScimController : TenantControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 
     [HttpPost("tokens")]
@@ -46,7 +46,7 @@ public class FederationScimController : TenantControllerBase
             return BadRequest(result.ErrorMessage);
 
         // Return the token with plainToken (only on creation!)
-        return CreatedAtAction(nameof(GetTokens), new { tenantId }, result.Data);
+        return CreatedAtAction(nameof(GetTokens), new { tenantId }, result.Value);
     }
 }
 

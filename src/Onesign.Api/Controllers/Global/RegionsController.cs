@@ -24,14 +24,14 @@ public class RegionsController : ControllerBase
     public async Task<ActionResult<List<RegionHealthDto>>> GetRegionsHealth()
     {
         var result = await _mediator.Send(new GetRegionsHealthQuery());
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
     }
 
     [HttpPost]
     public async Task<ActionResult<string>> CreateRegion([FromBody] CreateRegionCommand command)
     {
         var result = await _mediator.Send(command);
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
     }
 
     [HttpPut("{id}")]
@@ -87,7 +87,7 @@ public class RegionsController : ControllerBase
     {
         command.TenantId = tenantId;
         var result = await _mediator.Send(command);
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
     }
 
     [HttpPost("tenants/{tenantId}/restore")]
