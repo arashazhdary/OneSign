@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.Text.Json;
 using Onesign.Sdk.DotNet;
 
@@ -9,21 +10,21 @@ public class LoginCommand : Command
     public LoginCommand() : base("login", "Authenticate with OneSign")
     {
         var emailOption = new Option<string>(
-            aliases: new[] { "--email", "-e" },
-            description: "Email address for authentication");
+            new[] { "--email", "-e" },
+            "Email address for authentication");
 
         var passwordOption = new Option<string>(
-            aliases: new[] { "--password", "-p" },
-            description: "Password for authentication");
+            new[] { "--password", "-p" },
+            "Password for authentication");
 
         var interactiveOption = new Option<bool>(
-            aliases: new[] { "--interactive", "-i" },
-            description: "Use interactive login prompts",
-            getDefaultValue: () => true);
+            new[] { "--interactive", "-i" },
+            () => true,
+            "Use interactive login prompts");
 
-        AddOption(emailOption);
-        AddOption(passwordOption);
-        AddOption(interactiveOption);
+        Add(emailOption);
+        Add(passwordOption);
+        Add(interactiveOption);
 
         this.SetHandler(HandleLoginAsync, emailOption, passwordOption, interactiveOption);
     }

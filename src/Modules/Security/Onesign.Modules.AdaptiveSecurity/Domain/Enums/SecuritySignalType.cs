@@ -6,5 +6,6 @@ public enum SecuritySignalType
     GeoAnomaly = 2,
     DeviceAnomaly = 3,
     BehaviorAnomaly = 4,
-    ThreatIntelligence = 5
+    ThreatIntelligence = 5,
+    AnomalyDetected = 6
 }

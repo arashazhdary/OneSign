@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.Text.Json;
 using Onesign.Sdk.DotNet;
 
@@ -8,13 +9,13 @@ public class TenantsCommand : Command
 {
     public TenantsCommand() : base("tenants", "Manage tenants")
     {
-        AddCommand(new ListTenantsCommand());
-        AddCommand(new GetTenantCommand());
-        AddCommand(new CreateTenantCommand());
-        AddCommand(new UpdateTenantCommand());
-        AddCommand(new DeleteTenantCommand());
-        AddCommand(new TenantUsersCommand());
-        AddCommand(new TenantConfigCommand());
+        Add(new ListTenantsCommand());
+        Add(new GetTenantCommand());
+        Add(new CreateTenantCommand());
+        Add(new UpdateTenantCommand());
+        Add(new DeleteTenantCommand());
+        Add(new TenantUsersCommand());
+        Add(new TenantConfigCommand());
     }
 }
 
@@ -23,23 +24,23 @@ public class ListTenantsCommand : Command
     public ListTenantsCommand() : base("list", "List all tenants")
     {
         var pageOption = new Option<int>(
-            aliases: new[] { "--page", "-p" },
-            description: "Page number",
-            getDefaultValue: () => 1);
+            new[] { "--page", "-p" },
+            () => 1,
+            "Page number");
 
         var pageSizeOption = new Option<int>(
-            aliases: new[] { "--page-size", "-s" },
-            description: "Number of items per page",
-            getDefaultValue: () => 20);
+            new[] { "--page-size", "-s" },
+            () => 20,
+            "Number of items per page");
 
         var formatOption = new Option<string>(
-            aliases: new[] { "--format", "-f" },
-            description: "Output format (json, table)",
-            getDefaultValue: () => "table");
+            new[] { "--format", "-f" },
+            () => "table",
+            "Output format (json, table)");
 
-        AddOption(pageOption);
-        AddOption(pageSizeOption);
-        AddOption(formatOption);
+        Add(pageOption);
+        Add(pageSizeOption);
+        Add(formatOption);
 
         this.SetHandler(HandleAsync, pageOption, pageSizeOption, formatOption);
     }
@@ -81,11 +82,8 @@ public class GetTenantCommand : Command
 {
     public GetTenantCommand() : base("get", "Get tenant details")
     {
-        var idArgument = new Argument<string>("id")
-        {
-            Description = "Tenant ID"
-        };
-        AddArgument(idArgument);
+        var idArgument = new Argument<string>("id", "Tenant ID");
+        Add(idArgument);
 
         this.SetHandler(HandleAsync, idArgument);
     }
@@ -140,20 +138,21 @@ public class CreateTenantCommand : Command
     public CreateTenantCommand() : base("create", "Create a new tenant")
     {
         var nameOption = new Option<string>(
-            aliases: new[] { "--name", "-n" },
-            description: "Tenant name") { IsRequired = true };
+            new[] { "--name", "-n" },
+            "Tenant name");
+        nameOption.IsRequired = true;
 
         var planOption = new Option<string>(
-            aliases: new[] { "--plan", "-p" },
-            description: "Subscription plan");
+            new[] { "--plan", "-p" },
+            "Subscription plan");
 
         var regionOption = new Option<string>(
-            aliases: new[] { "--region", "-r" },
-            description: "Deployment region");
+            new[] { "--region", "-r" },
+            "Deployment region");
 
-        AddOption(nameOption);
-        AddOption(planOption);
-        AddOption(regionOption);
+        Add(nameOption);
+        Add(planOption);
+        Add(regionOption);
 
         this.SetHandler(HandleAsync, nameOption, planOption, regionOption);
     }
@@ -190,26 +189,23 @@ public class UpdateTenantCommand : Command
 {
     public UpdateTenantCommand() : base("update", "Update a tenant")
     {
-        var idArgument = new Argument<string>("id")
-        {
-            Description = "Tenant ID"
-        };
+        var idArgument = new Argument<string>("id", "Tenant ID");
         var nameOption = new Option<string?>(
-            aliases: new[] { "--name", "-n" },
-            description: "New tenant name");
+            new[] { "--name", "-n" },
+            "New tenant name");
 
         var planOption = new Option<string?>(
-            aliases: new[] { "--plan", "-p" },
-            description: "New subscription plan");
+            new[] { "--plan", "-p" },
+            "New subscription plan");
 
         var statusOption = new Option<string?>(
-            aliases: new[] { "--status", "-s" },
-            description: "New tenant status (Active, Suspended, Deleted)");
+            new[] { "--status", "-s" },
+            "New tenant status (Active, Suspended, Deleted)");
 
-        AddArgument(idArgument);
-        AddOption(nameOption);
-        AddOption(planOption);
-        AddOption(statusOption);
+        Add(idArgument);
+        Add(nameOption);
+        Add(planOption);
+        Add(statusOption);
 
         this.SetHandler(HandleAsync, idArgument, nameOption, planOption, statusOption);
     }
@@ -252,16 +248,13 @@ public class DeleteTenantCommand : Command
 {
     public DeleteTenantCommand() : base("delete", "Delete a tenant")
     {
-        var idArgument = new Argument<string>("id")
-        {
-            Description = "Tenant ID"
-        };
+        var idArgument = new Argument<string>("id", "Tenant ID");
         var forceOption = new Option<bool>(
-            aliases: new[] { "--force", "-f" },
-            description: "Force deletion without confirmation");
+            new[] { "--force", "-f" },
+            "Force deletion without confirmation");
 
-        AddArgument(idArgument);
-        AddOption(forceOption);
+        Add(idArgument);
+        Add(forceOption);
 
         this.SetHandler(HandleAsync, idArgument, forceOption);
     }
@@ -304,23 +297,20 @@ public class TenantUsersCommand : Command
 {
     public TenantUsersCommand() : base("users", "List users in a tenant")
     {
-        var idArgument = new Argument<string>("id")
-        {
-            Description = "Tenant ID"
-        };
+        var idArgument = new Argument<string>("id", "Tenant ID");
         var pageOption = new Option<int>(
-            aliases: new[] { "--page", "-p" },
-            description: "Page number",
-            getDefaultValue: () => 1);
+            new[] { "--page", "-p" },
+            () => 1,
+            "Page number");
 
         var pageSizeOption = new Option<int>(
-            aliases: new[] { "--page-size", "-s" },
-            description: "Number of items per page",
-            getDefaultValue: () => 20);
+            new[] { "--page-size", "-s" },
+            () => 20,
+            "Number of items per page");
 
-        AddArgument(idArgument);
-        AddOption(pageOption);
-        AddOption(pageSizeOption);
+        Add(idArgument);
+        Add(pageOption);
+        Add(pageSizeOption);
 
         this.SetHandler(HandleAsync, idArgument, pageOption, pageSizeOption);
     }
@@ -362,8 +352,8 @@ public class TenantConfigCommand : Command
 {
     public TenantConfigCommand() : base("config", "Manage tenant configuration")
     {
-        AddCommand(new GetTenantConfigCommand());
-        AddCommand(new SetTenantConfigCommand());
+        Add(new GetTenantConfigCommand());
+        Add(new SetTenantConfigCommand());
     }
 }
 
@@ -371,16 +361,13 @@ public class GetTenantConfigCommand : Command
 {
     public GetTenantConfigCommand() : base("get", "Get tenant configuration")
     {
-        var idArgument = new Argument<string>("id")
-        {
-            Description = "Tenant ID"
-        };
+        var idArgument = new Argument<string>("id", "Tenant ID");
         var keyOption = new Option<string?>(
-            aliases: new[] { "--key", "-k" },
-            description: "Specific configuration key to retrieve");
+            new[] { "--key", "-k" },
+            "Specific configuration key to retrieve");
 
-        AddArgument(idArgument);
-        AddOption(keyOption);
+        Add(idArgument);
+        Add(keyOption);
 
         this.SetHandler(HandleAsync, idArgument, keyOption);
     }
@@ -443,22 +430,13 @@ public class SetTenantConfigCommand : Command
 {
     public SetTenantConfigCommand() : base("set", "Set tenant configuration value")
     {
-        var idArgument = new Argument<string>("id")
-        {
-            Description = "Tenant ID"
-        };
-        var keyArgument = new Argument<string>("key")
-        {
-            Description = "Configuration key"
-        };
-        var valueArgument = new Argument<string>("value")
-        {
-            Description = "Configuration value"
-        };
+        var idArgument = new Argument<string>("id", "Tenant ID");
+        var keyArgument = new Argument<string>("key", "Configuration key");
+        var valueArgument = new Argument<string>("value", "Configuration value");
 
-        AddArgument(idArgument);
-        AddArgument(keyArgument);
-        AddArgument(valueArgument);
+        Add(idArgument);
+        Add(keyArgument);
+        Add(valueArgument);
 
         this.SetHandler(HandleAsync, idArgument, keyArgument, valueArgument);
     }

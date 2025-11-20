@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.Text.Json;
 using Onesign.Sdk.DotNet.Models;
 
@@ -8,10 +9,10 @@ public class UsersCommand : Command
 {
     public UsersCommand() : base("users", "Manage users")
     {
-        AddCommand(new ListUsersCommand());
-        AddCommand(new GetUserCommand());
-        AddCommand(new CreateUserCommand());
-        AddCommand(new DeleteUserCommand());
+        Add(new ListUsersCommand());
+        Add(new GetUserCommand());
+        Add(new CreateUserCommand());
+        Add(new DeleteUserCommand());
     }
 }
 
@@ -20,27 +21,27 @@ public class ListUsersCommand : Command
     public ListUsersCommand() : base("list", "List all users")
     {
         var pageOption = new Option<int>(
-            aliases: new[] { "--page", "-p" },
-            description: "Page number",
-            getDefaultValue: () => 1);
+            new[] { "--page", "-p" },
+            () => 1,
+            "Page number");
 
         var pageSizeOption = new Option<int>(
-            aliases: new[] { "--size", "-s" },
-            description: "Page size",
-            getDefaultValue: () => 20);
+            new[] { "--size", "-s" },
+            () => 20,
+            "Page size");
 
         var searchOption = new Option<string?>(
-            aliases: new[] { "--search", "-q" },
-            description: "Search term");
+            new[] { "--search", "-q" },
+            "Search term");
 
         var jsonOption = new Option<bool>(
-            aliases: new[] { "--json" },
-            description: "Output as JSON");
+            new[] { "--json" },
+            "Output as JSON");
 
-        AddOption(pageOption);
-        AddOption(pageSizeOption);
-        AddOption(searchOption);
-        AddOption(jsonOption);
+        Add(pageOption);
+        Add(pageSizeOption);
+        Add(searchOption);
+        Add(jsonOption);
 
         this.SetHandler(HandleListUsersAsync, pageOption, pageSizeOption, searchOption, jsonOption);
     }
@@ -90,16 +91,13 @@ public class GetUserCommand : Command
 {
     public GetUserCommand() : base("get", "Get user details")
     {
-        var idArgument = new Argument<string>("id")
-        {
-            Description = "User ID or email"
-        };
+        var idArgument = new Argument<string>("id", "User ID or email");
         var jsonOption = new Option<bool>(
-            aliases: new[] { "--json" },
-            description: "Output as JSON");
+            new[] { "--json" },
+            "Output as JSON");
 
-        AddArgument(idArgument);
-        AddOption(jsonOption);
+        Add(idArgument);
+        Add(jsonOption);
 
         this.SetHandler(HandleGetUserAsync, idArgument, jsonOption);
     }
@@ -150,37 +148,37 @@ public class CreateUserCommand : Command
     public CreateUserCommand() : base("create", "Create a new user")
     {
         var emailOption = new Option<string>(
-            aliases: new[] { "--email", "-e" },
-            description: "User email")
-        { IsRequired = true };
+            new[] { "--email", "-e" },
+            "User email");
+        emailOption.IsRequired = true;
 
         var passwordOption = new Option<string>(
-            aliases: new[] { "--password", "-p" },
-            description: "User password")
-        { IsRequired = true };
+            new[] { "--password", "-p" },
+            "User password");
+        passwordOption.IsRequired = true;
 
         var firstNameOption = new Option<string?>(
-            aliases: new[] { "--first-name", "-f" },
-            description: "First name");
+            new[] { "--first-name", "-f" },
+            "First name");
 
         var lastNameOption = new Option<string?>(
-            aliases: new[] { "--last-name", "-l" },
-            description: "Last name");
+            new[] { "--last-name", "-l" },
+            "Last name");
 
         var rolesOption = new Option<string[]?>(
-            aliases: new[] { "--roles", "-r" },
-            description: "User roles");
+            new[] { "--roles", "-r" },
+            "User roles");
 
         var jsonOption = new Option<bool>(
-            aliases: new[] { "--json" },
-            description: "Output as JSON");
+            new[] { "--json" },
+            "Output as JSON");
 
-        AddOption(emailOption);
-        AddOption(passwordOption);
-        AddOption(firstNameOption);
-        AddOption(lastNameOption);
-        AddOption(rolesOption);
-        AddOption(jsonOption);
+        Add(emailOption);
+        Add(passwordOption);
+        Add(firstNameOption);
+        Add(lastNameOption);
+        Add(rolesOption);
+        Add(jsonOption);
 
         this.SetHandler(HandleCreateUserAsync, emailOption, passwordOption, firstNameOption, lastNameOption, rolesOption, jsonOption);
     }
@@ -225,16 +223,13 @@ public class DeleteUserCommand : Command
 {
     public DeleteUserCommand() : base("delete", "Delete a user")
     {
-        var idArgument = new Argument<string>("id")
-        {
-            Description = "User ID"
-        };
+        var idArgument = new Argument<string>("id", "User ID");
         var forceOption = new Option<bool>(
-            aliases: new[] { "--force", "-f" },
-            description: "Skip confirmation");
+            new[] { "--force", "-f" },
+            "Skip confirmation");
 
-        AddArgument(idArgument);
-        AddOption(forceOption);
+        Add(idArgument);
+        Add(forceOption);
 
         this.SetHandler(HandleDeleteUserAsync, idArgument, forceOption);
     }

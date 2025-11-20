@@ -3,5 +3,6 @@ namespace Onesign.Modules.Crypto.Domain.Enums;
 public enum KeyScopeType
 {
     Environment = 1,
-    Tenant = 2
+    Tenant = 2,
+    Application = 3
 }
