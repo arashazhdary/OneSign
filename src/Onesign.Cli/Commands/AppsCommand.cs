@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.Text.Json;
 using Onesign.Sdk.DotNet.Models;
 
@@ -21,22 +22,22 @@ public class ListAppsCommand : Command
     public ListAppsCommand() : base("list", "List all applications")
     {
         var pageOption = new Option<int>(
-            aliases: new[] { "--page", "-p" },
-            description: "Page number",
-            getDefaultValue: () => 1);
+            new[] { "--page", "-p" },
+            () => 1,
+            "Page number");
 
         var pageSizeOption = new Option<int>(
-            aliases: new[] { "--size", "-s" },
-            description: "Page size",
-            getDefaultValue: () => 20);
+            new[] { "--size", "-s" },
+            () => 20,
+            "Page size");
 
         var jsonOption = new Option<bool>(
-            aliases: new[] { "--json" },
-            description: "Output as JSON");
+            new[] { "--json" },
+            "Output as JSON");
 
-        AddOption(pageOption);
-        AddOption(pageSizeOption);
-        AddOption(jsonOption);
+        Add(pageOption);
+        Add(pageSizeOption);
+        Add(jsonOption);
 
         this.SetHandler(HandleListAppsAsync, pageOption, pageSizeOption, jsonOption);
     }
@@ -86,11 +87,11 @@ public class GetAppCommand : Command
     {
         var idArgument = new Argument<string>("id", "Application ID or Client ID");
         var jsonOption = new Option<bool>(
-            aliases: new[] { "--json" },
-            description: "Output as JSON");
+            new[] { "--json" },
+            "Output as JSON");
 
-        AddArgument(idArgument);
-        AddOption(jsonOption);
+        Add(idArgument);
+        Add(jsonOption);
 
         this.SetHandler(HandleGetAppAsync, idArgument, jsonOption);
     }
@@ -149,32 +150,32 @@ public class CreateAppCommand : Command
     public CreateAppCommand() : base("create", "Create a new application")
     {
         var nameOption = new Option<string>(
-            aliases: new[] { "--name", "-n" },
-            description: "Application display name")
-        { IsRequired = true };
+            new[] { "--name", "-n" },
+            "Application display name");
+        nameOption.IsRequired = true;
 
         var typeOption = new Option<string>(
-            aliases: new[] { "--type", "-t" },
-            description: "Application type (web, spa, native, machine)",
-            getDefaultValue: () => "web");
+            new[] { "--type", "-t" },
+            () => "web",
+            "Application type (web, spa, native, machine)");
 
         var redirectUrisOption = new Option<string[]?>(
-            aliases: new[] { "--redirect-uri", "-r" },
-            description: "Redirect URIs");
+            new[] { "--redirect-uri", "-r" },
+            "Redirect URIs");
 
         var descriptionOption = new Option<string?>(
-            aliases: new[] { "--description", "-d" },
-            description: "Application description");
+            new[] { "--description", "-d" },
+            "Application description");
 
         var jsonOption = new Option<bool>(
-            aliases: new[] { "--json" },
-            description: "Output as JSON");
+            new[] { "--json" },
+            "Output as JSON");
 
-        AddOption(nameOption);
-        AddOption(typeOption);
-        AddOption(redirectUrisOption);
-        AddOption(descriptionOption);
-        AddOption(jsonOption);
+        Add(nameOption);
+        Add(typeOption);
+        Add(redirectUrisOption);
+        Add(descriptionOption);
+        Add(jsonOption);
 
         this.SetHandler(HandleCreateAppAsync, nameOption, typeOption, redirectUrisOption, descriptionOption, jsonOption);
     }
@@ -219,16 +220,13 @@ public class DeleteAppCommand : Command
 {
     public DeleteAppCommand() : base("delete", "Delete an application")
     {
-        var idArgument = new Argument<string>("id")
-        {
-            Description = "Application ID"
-        };
+        var idArgument = new Argument<string>("id", "Application ID");
         var forceOption = new Option<bool>(
-            aliases: new[] { "--force", "-f" },
-            description: "Skip confirmation");
+            new[] { "--force", "-f" },
+            "Skip confirmation");
 
-        AddArgument(idArgument);
-        AddOption(forceOption);
+        Add(idArgument);
+        Add(forceOption);
 
         this.SetHandler(HandleDeleteAppAsync, idArgument, forceOption);
     }
@@ -265,12 +263,9 @@ public class RegenerateSecretCommand : Command
 {
     public RegenerateSecretCommand() : base("regenerate-secret", "Regenerate client secret for an application")
     {
-        var idArgument = new Argument<string>("id")
-        {
-            Description = "Application ID"
-        };
+        var idArgument = new Argument<string>("id", "Application ID");
 
-        AddArgument(idArgument);
+        Add(idArgument);
 
         this.SetHandler(HandleRegenerateSecretAsync, idArgument);
     }

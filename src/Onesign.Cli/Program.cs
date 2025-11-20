@@ -7,23 +7,20 @@ class Program
 {
     static async Task<int> Main(string[] args)
     {
-        var rootCommand = new RootCommand("OneSign CLI - Command-line interface for OneSign Identity Platform")
-        {
-            Name = "onesign"
-        };
+        var rootCommand = new RootCommand("OneSign CLI - Command-line interface for OneSign Identity Platform");
 
         // Add commands
-        rootCommand.AddCommand(new LoginCommand());
-        rootCommand.AddCommand(new LogoutCommand());
-        rootCommand.AddCommand(new UsersCommand());
-        rootCommand.AddCommand(new AppsCommand());
-        rootCommand.AddCommand(new TenantsCommand());
-        rootCommand.AddCommand(new ConfigCommand());
+        rootCommand.Add(new LoginCommand());
+        rootCommand.Add(new LogoutCommand());
+        rootCommand.Add(new UsersCommand());
+        rootCommand.Add(new AppsCommand());
+        rootCommand.Add(new TenantsCommand());
+        rootCommand.Add(new ConfigCommand());
 
         // Add version option
         rootCommand.AddGlobalOption(new Option<bool>(
-            aliases: new[] { "--version", "-v" },
-            description: "Show version information"));
+            new[] { "--version", "-v" },
+            "Show version information"));
 
         return await rootCommand.InvokeAsync(args);
     }

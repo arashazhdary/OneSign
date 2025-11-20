@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.Text.Json;
 
 namespace Onesign.Cli.Commands;
@@ -7,10 +8,10 @@ public class ConfigCommand : Command
 {
     public ConfigCommand() : base("config", "Manage CLI configuration")
     {
-        AddCommand(new SetServerCommand());
-        AddCommand(new SetClientCommand());
-        AddCommand(new ShowConfigCommand());
-        AddCommand(new ClearConfigCommand());
+        Add(new SetServerCommand());
+        Add(new SetClientCommand());
+        Add(new ShowConfigCommand());
+        Add(new ClearConfigCommand());
     }
 }
 
@@ -18,12 +19,9 @@ public class SetServerCommand : Command
 {
     public SetServerCommand() : base("set-server", "Set the OneSign server URL")
     {
-        var urlArgument = new Argument<string>("url")
-        {
-            Description = "Server URL (e.g., https://auth.example.com)"
-        };
+        var urlArgument = new Argument<string>("url", "Server URL (e.g., https://auth.example.com)");
 
-        AddArgument(urlArgument);
+        Add(urlArgument);
 
         this.SetHandler(HandleSetServer, urlArgument);
     }
@@ -56,17 +54,17 @@ public class SetClientCommand : Command
     public SetClientCommand() : base("set-client", "Set client credentials")
     {
         var clientIdOption = new Option<string>(
-            aliases: new[] { "--client-id", "-i" },
-            description: "Client ID")
-        { IsRequired = true };
+            new[] { "--client-id", "-i" },
+            "Client ID");
+        clientIdOption.IsRequired = true;
 
         var clientSecretOption = new Option<string>(
-            aliases: new[] { "--client-secret", "-s" },
-            description: "Client Secret")
-        { IsRequired = true };
+            new[] { "--client-secret", "-s" },
+            "Client Secret");
+        clientSecretOption.IsRequired = true;
 
-        AddOption(clientIdOption);
-        AddOption(clientSecretOption);
+        Add(clientIdOption);
+        Add(clientSecretOption);
 
         this.SetHandler(HandleSetClient, clientIdOption, clientSecretOption);
     }
@@ -94,10 +92,10 @@ public class ShowConfigCommand : Command
     public ShowConfigCommand() : base("show", "Show current configuration")
     {
         var showSecretsOption = new Option<bool>(
-            aliases: new[] { "--show-secrets" },
-            description: "Show secret values");
+            new[] { "--show-secrets" },
+            "Show secret values");
 
-        AddOption(showSecretsOption);
+        Add(showSecretsOption);
 
         this.SetHandler(HandleShowConfig, showSecretsOption);
     }
@@ -150,10 +148,10 @@ public class ClearConfigCommand : Command
     public ClearConfigCommand() : base("clear", "Clear all configuration")
     {
         var forceOption = new Option<bool>(
-            aliases: new[] { "--force", "-f" },
-            description: "Skip confirmation");
+            new[] { "--force", "-f" },
+            "Skip confirmation");
 
-        AddOption(forceOption);
+        Add(forceOption);
 
         this.SetHandler(HandleClearConfig, forceOption);
     }

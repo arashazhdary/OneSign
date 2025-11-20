@@ -6,5 +6,6 @@ public enum AdaptiveActionType
     BlockTemporary = 2,
     BlockPermanent = 3,
     RequireApproval = 4,
-    NotifyAdmin = 5
+    NotifyAdmin = 5,
+    ApproveRequest = 6
 }
