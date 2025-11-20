@@ -1,6 +1,5 @@
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
-import { notFound } from 'next/navigation';
 import { locales } from '../../i18n';
 
 export function generateStaticParams() {
@@ -16,19 +15,17 @@ export default async function LocaleLayout({
 }) {
   const { locale } = await params;
   
-  if (!locales.includes(locale as any)) {
-    notFound();
-  }
+  // Locale validation is handled by middleware (proxy.ts)
+  // We don't use notFound() here to avoid issues with root layout
 
-  const messages = await getMessages();
+  // Pass locale explicitly to getMessages
+  const messages = await getMessages({ locale });
 
+  // Nested layouts should not have html/body tags
+  // Root layout already has them
   return (
-    <html lang={locale} dir={locale === 'fa' ? 'rtl' : 'ltr'}>
-      <body>
-        <NextIntlClientProvider messages={messages}>
-          {children}
-        </NextIntlClientProvider>
-      </body>
-    </html>
+    <NextIntlClientProvider messages={messages} locale={locale}>
+      {children}
+    </NextIntlClientProvider>
   );
 }

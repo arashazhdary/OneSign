@@ -1,5 +1,7 @@
 using System.CommandLine;
+using System.CommandLine.Binding;
 using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 using System.Text.Json;
 
 namespace Onesign.Cli.Commands;
@@ -19,11 +21,18 @@ public class SetServerCommand : Command
 {
     public SetServerCommand() : base("set-server", "Set the OneSign server URL")
     {
-        var urlArgument = new Argument<string>("url", "Server URL (e.g., https://auth.example.com)");
+        var urlArgument = new Argument<string>("url")
+        {
+            Description = "Server URL (e.g., https://auth.example.com)"
+        };
 
         Add(urlArgument);
 
-        this.SetHandler(HandleSetServer, urlArgument);
+        this.SetAction((ParseResult parseResult) =>
+        {
+            var url = parseResult.GetValue(urlArgument);
+            HandleSetServer(url!);
+        });
     }
 
     private void HandleSetServer(string url)
@@ -53,20 +62,27 @@ public class SetClientCommand : Command
 {
     public SetClientCommand() : base("set-client", "Set client credentials")
     {
-        var clientIdOption = new Option<string>(
-            new[] { "--client-id", "-i" },
-            "Client ID");
-        clientIdOption.IsRequired = true;
+        var clientIdOption = new Option<string>("--client-id", "-i")
+        {
+            Description = "Client ID",
+            Arity = ArgumentArity.ExactlyOne
+        };
 
-        var clientSecretOption = new Option<string>(
-            new[] { "--client-secret", "-s" },
-            "Client Secret");
-        clientSecretOption.IsRequired = true;
+        var clientSecretOption = new Option<string>("--client-secret", "-s")
+        {
+            Description = "Client Secret",
+            Arity = ArgumentArity.ExactlyOne
+        };
 
         Add(clientIdOption);
         Add(clientSecretOption);
 
-        this.SetHandler(HandleSetClient, clientIdOption, clientSecretOption);
+        this.SetAction((ParseResult parseResult) =>
+        {
+            var clientId = parseResult.GetValue(clientIdOption);
+            var clientSecret = parseResult.GetValue(clientSecretOption);
+            HandleSetClient(clientId!, clientSecret!);
+        });
     }
 
     private void HandleSetClient(string clientId, string clientSecret)
@@ -91,13 +107,18 @@ public class ShowConfigCommand : Command
 {
     public ShowConfigCommand() : base("show", "Show current configuration")
     {
-        var showSecretsOption = new Option<bool>(
-            new[] { "--show-secrets" },
-            "Show secret values");
+        var showSecretsOption = new Option<bool>("--show-secrets")
+        {
+            Description = "Show secret values"
+        };
 
         Add(showSecretsOption);
 
-        this.SetHandler(HandleShowConfig, showSecretsOption);
+        this.SetAction((ParseResult parseResult) =>
+        {
+            var showSecrets = parseResult.GetValue(showSecretsOption);
+            HandleShowConfig(showSecrets);
+        });
     }
 
     private void HandleShowConfig(bool showSecrets)
@@ -147,13 +168,18 @@ public class ClearConfigCommand : Command
 {
     public ClearConfigCommand() : base("clear", "Clear all configuration")
     {
-        var forceOption = new Option<bool>(
-            new[] { "--force", "-f" },
-            "Skip confirmation");
+        var forceOption = new Option<bool>("--force", "-f")
+        {
+            Description = "Skip confirmation"
+        };
 
         Add(forceOption);
 
-        this.SetHandler(HandleClearConfig, forceOption);
+        this.SetAction((ParseResult parseResult) =>
+        {
+            var force = parseResult.GetValue(forceOption);
+            HandleClearConfig(force);
+        });
     }
 
     private void HandleClearConfig(bool force)

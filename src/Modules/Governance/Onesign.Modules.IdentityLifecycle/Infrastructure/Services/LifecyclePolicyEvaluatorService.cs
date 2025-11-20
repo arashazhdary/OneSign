@@ -31,8 +31,8 @@ public class LifecyclePolicyEvaluatorService : ILifecyclePolicyEvaluator
             tenantId,
             hrRecord.OrgUnitCode,
             hrRecord.JobRole,
-            hrRecord.Location,
-            hrRecord.EmploymentType,
+            null, // Location not available in HRIdentityRecord
+            null, // EmploymentType not available in HRIdentityRecord
             cancellationToken);
 
         if (!matchingPolicies.Any())
@@ -57,7 +57,7 @@ public class LifecyclePolicyEvaluatorService : ILifecyclePolicyEvaluator
         string? employmentType,
         CancellationToken cancellationToken = default)
     {
-        var allPolicies = await _policyRepository.GetByTenantIdAsync(tenantId, cancellationToken);
+        var allPolicies = await _policyRepository.GetByTenantAsync(tenantId, cancellationToken);
 
         var matchingPolicies = allPolicies
             .Where(p => p.IsEnabled)

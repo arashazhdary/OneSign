@@ -47,15 +47,12 @@ public class RiskCalculator : IRiskCalculator
     {
         return signalType switch
         {
-            SecuritySignalType.ImpossibleTravel => 1.5,
-            SecuritySignalType.SuspiciousActivity => 1.3,
-            SecuritySignalType.PrivilegeEscalation => 1.2,
-            SecuritySignalType.MfaDisabled => 1.2,
-            SecuritySignalType.FailedLogin => 0.5,
-            SecuritySignalType.NewDevice => 0.3,
-            SecuritySignalType.NewLocation => 0.3,
-            SecuritySignalType.SuccessfulLogin => 0.1,
-            SecuritySignalType.PasswordChange => 0.2,
+            SecuritySignalType.GeoAnomaly => 1.5, // Maps to ImpossibleTravel
+            SecuritySignalType.BehaviorAnomaly => 1.3, // Maps to SuspiciousActivity
+            SecuritySignalType.ThreatIntelligence => 1.2, // Maps to PrivilegeEscalation
+            SecuritySignalType.LoginAnomaly => 0.5, // Maps to FailedLogin
+            SecuritySignalType.DeviceAnomaly => 0.3, // Maps to NewDevice
+            SecuritySignalType.AnomalyDetected => 0.1, // Maps to SuccessfulLogin (low risk)
             _ => 1.0
         };
     }
@@ -82,7 +79,7 @@ public class RiskCalculator : IRiskCalculator
 
         // Multiple failed logins in short period
         var recentFailedLogins = signals
-            .Where(s => s.SignalType == SecuritySignalType.FailedLogin &&
+            .Where(s => s.SignalType == SecuritySignalType.LoginAnomaly &&
                        s.DetectedAt > DateTime.UtcNow.AddHours(-1))
             .Count();
 
@@ -92,7 +89,7 @@ public class RiskCalculator : IRiskCalculator
             patternRisk += 15;
 
         // Impossible travel detected
-        if (signals.Any(s => s.SignalType == SecuritySignalType.ImpossibleTravel &&
+        if (signals.Any(s => s.SignalType == SecuritySignalType.GeoAnomaly &&
                             s.DetectedAt > DateTime.UtcNow.AddHours(-24)))
         {
             patternRisk += 25;
@@ -100,15 +97,15 @@ public class RiskCalculator : IRiskCalculator
 
         // Multiple new devices in short period
         var newDevices = signals
-            .Where(s => s.SignalType == SecuritySignalType.NewDevice &&
+            .Where(s => s.SignalType == SecuritySignalType.DeviceAnomaly &&
                        s.DetectedAt > DateTime.UtcNow.AddDays(-7))
             .Count();
 
         if (newDevices >= 3)
             patternRisk += 20;
 
-        // MFA disabled recently
-        if (signals.Any(s => s.SignalType == SecuritySignalType.MfaDisabled &&
+        // MFA disabled recently (BehaviorAnomaly)
+        if (signals.Any(s => s.SignalType == SecuritySignalType.BehaviorAnomaly &&
                             s.DetectedAt > DateTime.UtcNow.AddDays(-1)))
         {
             patternRisk += 15;

@@ -79,15 +79,12 @@ public class SecuritySignalProcessor : ISecuritySignalProcessor
     {
         return signal.SignalType switch
         {
-            SecuritySignalType.FailedLogin => await ProcessFailedLoginAsync(signal, context, cancellationToken),
-            SecuritySignalType.SuccessfulLogin => await ProcessSuccessfulLoginAsync(signal, context, cancellationToken),
-            SecuritySignalType.NewDevice => await ProcessNewDeviceAsync(signal, context, cancellationToken),
-            SecuritySignalType.NewLocation => await ProcessNewLocationAsync(signal, context, cancellationToken),
-            SecuritySignalType.ImpossibleTravel => await ProcessImpossibleTravelAsync(signal, context, cancellationToken),
-            SecuritySignalType.SuspiciousActivity => await ProcessSuspiciousActivityAsync(signal, context, cancellationToken),
-            SecuritySignalType.PasswordChange => await ProcessPasswordChangeAsync(signal, context, cancellationToken),
-            SecuritySignalType.MfaDisabled => await ProcessMfaDisabledAsync(signal, context, cancellationToken),
-            SecuritySignalType.PrivilegeEscalation => await ProcessPrivilegeEscalationAsync(signal, context, cancellationToken),
+            SecuritySignalType.LoginAnomaly => await ProcessFailedLoginAsync(signal, context, cancellationToken),
+            SecuritySignalType.AnomalyDetected => await ProcessSuccessfulLoginAsync(signal, context, cancellationToken),
+            SecuritySignalType.DeviceAnomaly => await ProcessNewDeviceAsync(signal, context, cancellationToken),
+            SecuritySignalType.GeoAnomaly => await ProcessGeoAnomalyAsync(signal, context, cancellationToken),
+            SecuritySignalType.BehaviorAnomaly => await ProcessBehaviorAnomalyAsync(signal, context, cancellationToken),
+            SecuritySignalType.ThreatIntelligence => await ProcessPrivilegeEscalationAsync(signal, context, cancellationToken),
             _ => "Logged"
         };
     }
@@ -134,8 +131,16 @@ public class SecuritySignalProcessor : ISecuritySignalProcessor
         return Task.FromResult("Device registered");
     }
 
-    private Task<string> ProcessNewLocationAsync(SecuritySignal signal, UserSecurityContext context, CancellationToken cancellationToken)
+    private async Task<string> ProcessGeoAnomalyAsync(SecuritySignal signal, UserSecurityContext context, CancellationToken cancellationToken)
     {
+        // Check if this is an impossible travel scenario (high risk score indicates travel anomaly)
+        if (signal.RiskScore >= 40)
+        {
+            context.ImpossibleTravelDetected = true;
+            return "Travel anomaly flagged";
+        }
+        
+        // Otherwise treat as new location
         try
         {
             var details = JsonSerializer.Deserialize<LocationDetails>(signal.DetailsJson);
@@ -149,29 +154,35 @@ public class SecuritySignalProcessor : ISecuritySignalProcessor
             // Ignore deserialization errors
         }
 
-        return Task.FromResult("Location noted");
+        return "Location noted";
     }
 
-    private Task<string> ProcessImpossibleTravelAsync(SecuritySignal signal, UserSecurityContext context, CancellationToken cancellationToken)
+    private Task<string> ProcessBehaviorAnomalyAsync(SecuritySignal signal, UserSecurityContext context, CancellationToken cancellationToken)
     {
-        context.ImpossibleTravelDetected = true;
-        return Task.FromResult("Travel anomaly flagged");
-    }
-
-    private Task<string> ProcessSuspiciousActivityAsync(SecuritySignal signal, UserSecurityContext context, CancellationToken cancellationToken)
-    {
+        // Check signal details to determine specific behavior type
+        try
+        {
+            var detailsJson = signal.DetailsJson;
+            if (detailsJson.Contains("MfaDisabled", StringComparison.OrdinalIgnoreCase) || 
+                detailsJson.Contains("mfa", StringComparison.OrdinalIgnoreCase))
+            {
+                context.MfaEnabled = false;
+                return Task.FromResult("MFA status updated");
+            }
+            
+            if (detailsJson.Contains("PasswordChange", StringComparison.OrdinalIgnoreCase) ||
+                detailsJson.Contains("password", StringComparison.OrdinalIgnoreCase))
+            {
+                return Task.FromResult("Password change recorded");
+            }
+        }
+        catch
+        {
+            // Ignore parsing errors
+        }
+        
+        // Default to suspicious activity
         return Task.FromResult("Activity logged for investigation");
-    }
-
-    private Task<string> ProcessPasswordChangeAsync(SecuritySignal signal, UserSecurityContext context, CancellationToken cancellationToken)
-    {
-        return Task.FromResult("Password change recorded");
-    }
-
-    private Task<string> ProcessMfaDisabledAsync(SecuritySignal signal, UserSecurityContext context, CancellationToken cancellationToken)
-    {
-        context.MfaEnabled = false;
-        return Task.FromResult("MFA status updated");
     }
 
     private Task<string> ProcessPrivilegeEscalationAsync(SecuritySignal signal, UserSecurityContext context, CancellationToken cancellationToken)

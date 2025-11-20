@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore;
+using Onesign.Modules.Audit.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Privacy.Domain.Entities;
 using Onesign.Modules.Privacy.Domain.Enums;
 using Onesign.Modules.Privacy.Domain.Repositories;
@@ -81,10 +82,9 @@ public class DataRetentionService : IDataRetentionService
         return policy.Category switch
         {
             DataCategory.AuditLogs => await CleanupAuditLogsAsync(dbContext, policy, cutoffDate, cancellationToken),
-            DataCategory.LoginHistory => await CleanupLoginHistoryAsync(dbContext, policy, cutoffDate, cancellationToken),
-            DataCategory.Sessions => await CleanupSessionsAsync(dbContext, policy, cutoffDate, cancellationToken),
-            DataCategory.Notifications => await CleanupNotificationsAsync(dbContext, policy, cutoffDate, cancellationToken),
-            DataCategory.WebhookLogs => await CleanupWebhookLogsAsync(dbContext, policy, cutoffDate, cancellationToken),
+            // DataCategory.LoginHistory and DataCategory.Sessions not available in enum
+            // DataCategory.Notifications not available in enum
+            // DataCategory.WebhookLogs not available in enum
             _ => 0
         };
     }
@@ -95,7 +95,7 @@ public class DataRetentionService : IDataRetentionService
         DateTime cutoffDate,
         CancellationToken cancellationToken)
     {
-        var oldEvents = await dbContext.AuditEvents
+        var oldEvents = await dbContext.Set<AuditEventEntity>()
             .Where(a => a.TenantId == policy.TenantId && a.CreatedAt < cutoffDate)
             .ToListAsync(cancellationToken);
 
@@ -103,7 +103,7 @@ public class DataRetentionService : IDataRetentionService
 
         if (policy.HardDeleteAfter)
         {
-            dbContext.AuditEvents.RemoveRange(oldEvents);
+            dbContext.Set<AuditEventEntity>().RemoveRange(oldEvents);
         }
         else
         {

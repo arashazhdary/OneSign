@@ -1,5 +1,7 @@
 using System.CommandLine;
+using System.CommandLine.Binding;
 using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 using System.Text.Json;
 using Onesign.Sdk.DotNet;
 
@@ -9,24 +11,33 @@ public class LoginCommand : Command
 {
     public LoginCommand() : base("login", "Authenticate with OneSign")
     {
-        var emailOption = new Option<string>(
-            new[] { "--email", "-e" },
-            "Email address for authentication");
+        var emailOption = new Option<string>("--email", "-e")
+        {
+            Description = "Email address for authentication"
+        };
 
-        var passwordOption = new Option<string>(
-            new[] { "--password", "-p" },
-            "Password for authentication");
+        var passwordOption = new Option<string>("--password", "-p")
+        {
+            Description = "Password for authentication"
+        };
 
-        var interactiveOption = new Option<bool>(
-            new[] { "--interactive", "-i" },
-            () => true,
-            "Use interactive login prompts");
+        var interactiveOption = new Option<bool>("--interactive", "-i")
+        {
+            Description = "Use interactive login prompts",
+            DefaultValueFactory = (ArgumentResult result) => true
+        };
 
         Add(emailOption);
         Add(passwordOption);
         Add(interactiveOption);
 
-        this.SetHandler(HandleLoginAsync, emailOption, passwordOption, interactiveOption);
+        this.SetAction(async (ParseResult parseResult) =>
+        {
+            var email = parseResult.GetValue(emailOption);
+            var password = parseResult.GetValue(passwordOption);
+            var interactive = parseResult.GetValue(interactiveOption);
+            await HandleLoginAsync(email, password, interactive);
+        });
     }
 
     private async Task HandleLoginAsync(string? email, string? password, bool interactive)
@@ -107,7 +118,10 @@ public class LogoutCommand : Command
 {
     public LogoutCommand() : base("logout", "Clear saved credentials")
     {
-        this.SetHandler(HandleLogout);
+        this.SetAction((ParseResult parseResult) =>
+        {
+            HandleLogout();
+        });
     }
 
     private void HandleLogout()

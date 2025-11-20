@@ -63,19 +63,19 @@ public class AdaptivePolicyEngine : IAdaptivePolicyEngine
                 requiredActions.AddRange(policy.Actions);
 
                 // Apply risk-based MFA enforcement
-                if (policy.Actions.Contains(AdaptiveActionType.RequireMfa))
+                if (policy.Actions.Contains(AdaptiveActionType.AllowWithMfa))
                 {
                     reasons.Add("MFA required due to elevated risk");
                 }
 
                 // Apply session lifetime adjustment
-                if (policy.Actions.Contains(AdaptiveActionType.ShortenSession))
+                if (policy.Actions.Contains(AdaptiveActionType.BlockTemporary))
                 {
                     reasons.Add("Session lifetime reduced due to risk level");
                 }
 
                 // Check for login anomaly detection
-                if (policy.Actions.Contains(AdaptiveActionType.BlockAccess))
+                if (policy.Actions.Contains(AdaptiveActionType.BlockPermanent))
                 {
                     reasons.Add("Access blocked due to suspicious activity");
                 }
@@ -89,7 +89,7 @@ public class AdaptivePolicyEngine : IAdaptivePolicyEngine
         // Remove duplicate actions
         requiredActions = requiredActions.Distinct().ToList();
 
-        var isAllowed = !requiredActions.Contains(AdaptiveActionType.BlockAccess);
+        var isAllowed = !requiredActions.Contains(AdaptiveActionType.BlockPermanent);
 
         var decision = new AdaptiveDecision
         {
@@ -161,7 +161,7 @@ public class AdaptivePolicyEngine : IAdaptivePolicyEngine
             if (conditions.MinFailedAttempts.HasValue)
             {
                 var failedLoginSignals = signals.Count(s =>
-                    s.SignalType == SecuritySignalType.FailedLogin);
+                    s.SignalType == SecuritySignalType.LoginAnomaly);
                 if (failedLoginSignals < conditions.MinFailedAttempts.Value)
                     return false;
             }

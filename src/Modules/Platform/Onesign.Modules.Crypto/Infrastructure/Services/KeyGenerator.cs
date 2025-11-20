@@ -19,7 +19,7 @@ public class KeyGenerator : IKeyGenerator
     private static readonly Dictionary<KeyPurpose, HashSet<string>> SupportedAlgorithms = new()
     {
         {
-            KeyPurpose.Signing, new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            KeyPurpose.OidcSigning, new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 "RS256", "RS384", "RS512",
                 "ES256", "ES384", "ES512",
@@ -35,7 +35,7 @@ public class KeyGenerator : IKeyGenerator
             }
         },
         {
-            KeyPurpose.TokenEncryption, new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            KeyPurpose.Encryption, new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 "A256GCM", "RSA-OAEP-256", "A128CBC-HS256"
             }
@@ -71,8 +71,8 @@ public class KeyGenerator : IKeyGenerator
 
         var keyMaterial = purpose switch
         {
-            KeyPurpose.Signing => GenerateSigningKey(algorithm),
-            KeyPurpose.Encryption or KeyPurpose.TokenEncryption => GenerateEncryptionKey(algorithm),
+            KeyPurpose.OidcSigning or KeyPurpose.SamlSigning => GenerateSigningKey(algorithm),
+            KeyPurpose.Encryption or KeyPurpose.Wrapping => GenerateEncryptionKey(algorithm),
             _ => throw new ArgumentException($"Unknown key purpose: {purpose}")
         };
 

@@ -25,14 +25,16 @@ public class GetLifecycleEventsQueryHandler : IRequestHandler<GetLifecycleEvents
         var dtos = events.Select(e => new LifecycleEventDto
         {
             Id = e.Id,
-            HRRecordId = e.HRRecordId,
+            TenantId = e.TenantId,
+            UserId = Guid.Empty, // HRRecord does not have UserId property
             EventType = e.EventType.ToString(),
-            OldSnapshotJson = e.OldSnapshotJson,
-            NewSnapshotJson = e.NewSnapshotJson,
             Status = e.Status.ToString(),
-            ErrorMessage = e.ErrorMessage,
+            PreviousState = e.OldSnapshotJson,
+            NewState = e.NewSnapshotJson,
+            EffectiveDate = e.CreatedAt,
             CreatedAt = e.CreatedAt,
-            ProcessedAt = e.ProcessedAt
+            ProcessedAt = e.ProcessedAt,
+            ErrorMessage = e.ErrorMessage
         }).ToList();
 
         return Result.Success(dtos);

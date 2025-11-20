@@ -1,5 +1,7 @@
 using System.CommandLine;
+using System.CommandLine.Binding;
 using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 using System.Text.Json;
 using Onesign.Sdk.DotNet.Models;
 
@@ -20,30 +22,41 @@ public class ListUsersCommand : Command
 {
     public ListUsersCommand() : base("list", "List all users")
     {
-        var pageOption = new Option<int>(
-            new[] { "--page", "-p" },
-            () => 1,
-            "Page number");
+        var pageOption = new Option<int>("--page", "-p")
+        {
+            Description = "Page number",
+            DefaultValueFactory = (ArgumentResult result) => 1
+        };
 
-        var pageSizeOption = new Option<int>(
-            new[] { "--size", "-s" },
-            () => 20,
-            "Page size");
+        var pageSizeOption = new Option<int>("--size", "-s")
+        {
+            Description = "Page size",
+            DefaultValueFactory = (ArgumentResult result) => 20
+        };
 
-        var searchOption = new Option<string?>(
-            new[] { "--search", "-q" },
-            "Search term");
+        var searchOption = new Option<string?>("--search", "-q")
+        {
+            Description = "Search term"
+        };
 
-        var jsonOption = new Option<bool>(
-            new[] { "--json" },
-            "Output as JSON");
+        var jsonOption = new Option<bool>("--json")
+        {
+            Description = "Output as JSON"
+        };
 
         Add(pageOption);
         Add(pageSizeOption);
         Add(searchOption);
         Add(jsonOption);
 
-        this.SetHandler(HandleListUsersAsync, pageOption, pageSizeOption, searchOption, jsonOption);
+        this.SetAction(async (ParseResult parseResult) =>
+        {
+            var page = parseResult.GetValue(pageOption);
+            var pageSize = parseResult.GetValue(pageSizeOption);
+            var search = parseResult.GetValue(searchOption);
+            var json = parseResult.GetValue(jsonOption);
+            await HandleListUsersAsync(page, pageSize, search, json);
+        });
     }
 
     private async Task HandleListUsersAsync(int page, int pageSize, string? search, bool json)
@@ -91,15 +104,24 @@ public class GetUserCommand : Command
 {
     public GetUserCommand() : base("get", "Get user details")
     {
-        var idArgument = new Argument<string>("id", "User ID or email");
-        var jsonOption = new Option<bool>(
-            new[] { "--json" },
-            "Output as JSON");
+        var idArgument = new Argument<string>("id")
+        {
+            Description = "User ID or email"
+        };
+        var jsonOption = new Option<bool>("--json")
+        {
+            Description = "Output as JSON"
+        };
 
         Add(idArgument);
         Add(jsonOption);
 
-        this.SetHandler(HandleGetUserAsync, idArgument, jsonOption);
+        this.SetAction(async (ParseResult parseResult) =>
+        {
+            var id = parseResult.GetValue(idArgument);
+            var json = parseResult.GetValue(jsonOption);
+            await HandleGetUserAsync(id!, json);
+        });
     }
 
     private async Task HandleGetUserAsync(string id, bool json)
@@ -147,31 +169,37 @@ public class CreateUserCommand : Command
 {
     public CreateUserCommand() : base("create", "Create a new user")
     {
-        var emailOption = new Option<string>(
-            new[] { "--email", "-e" },
-            "User email");
-        emailOption.IsRequired = true;
+        var emailOption = new Option<string>("--email", "-e")
+        {
+            Description = "User email",
+            Arity = ArgumentArity.ExactlyOne
+        };
 
-        var passwordOption = new Option<string>(
-            new[] { "--password", "-p" },
-            "User password");
-        passwordOption.IsRequired = true;
+        var passwordOption = new Option<string>("--password", "-p")
+        {
+            Description = "User password",
+            Arity = ArgumentArity.ExactlyOne
+        };
 
-        var firstNameOption = new Option<string?>(
-            new[] { "--first-name", "-f" },
-            "First name");
+        var firstNameOption = new Option<string?>("--first-name", "-f")
+        {
+            Description = "First name"
+        };
 
-        var lastNameOption = new Option<string?>(
-            new[] { "--last-name", "-l" },
-            "Last name");
+        var lastNameOption = new Option<string?>("--last-name", "-l")
+        {
+            Description = "Last name"
+        };
 
-        var rolesOption = new Option<string[]?>(
-            new[] { "--roles", "-r" },
-            "User roles");
+        var rolesOption = new Option<string[]?>("--roles", "-r")
+        {
+            Description = "User roles"
+        };
 
-        var jsonOption = new Option<bool>(
-            new[] { "--json" },
-            "Output as JSON");
+        var jsonOption = new Option<bool>("--json")
+        {
+            Description = "Output as JSON"
+        };
 
         Add(emailOption);
         Add(passwordOption);
@@ -180,7 +208,16 @@ public class CreateUserCommand : Command
         Add(rolesOption);
         Add(jsonOption);
 
-        this.SetHandler(HandleCreateUserAsync, emailOption, passwordOption, firstNameOption, lastNameOption, rolesOption, jsonOption);
+        this.SetAction(async (ParseResult parseResult) =>
+        {
+            var email = parseResult.GetValue(emailOption);
+            var password = parseResult.GetValue(passwordOption);
+            var firstName = parseResult.GetValue(firstNameOption);
+            var lastName = parseResult.GetValue(lastNameOption);
+            var roles = parseResult.GetValue(rolesOption);
+            var json = parseResult.GetValue(jsonOption);
+            await HandleCreateUserAsync(email!, password!, firstName, lastName, roles, json);
+        });
     }
 
     private async Task HandleCreateUserAsync(string email, string password, string? firstName, string? lastName, string[]? roles, bool json)
@@ -223,15 +260,24 @@ public class DeleteUserCommand : Command
 {
     public DeleteUserCommand() : base("delete", "Delete a user")
     {
-        var idArgument = new Argument<string>("id", "User ID");
-        var forceOption = new Option<bool>(
-            new[] { "--force", "-f" },
-            "Skip confirmation");
+        var idArgument = new Argument<string>("id")
+        {
+            Description = "User ID"
+        };
+        var forceOption = new Option<bool>("--force", "-f")
+        {
+            Description = "Skip confirmation"
+        };
 
         Add(idArgument);
         Add(forceOption);
 
-        this.SetHandler(HandleDeleteUserAsync, idArgument, forceOption);
+        this.SetAction(async (ParseResult parseResult) =>
+        {
+            var id = parseResult.GetValue(idArgument);
+            var force = parseResult.GetValue(forceOption);
+            await HandleDeleteUserAsync(id!, force);
+        });
     }
 
     private async Task HandleDeleteUserAsync(string id, bool force)

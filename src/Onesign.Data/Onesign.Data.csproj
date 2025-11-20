@@ -14,7 +14,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Modules\Business\Onesign.Modules.Billing\Onesign.Modules.Billing.csproj" />
-    <ProjectReference Include="..\Modules\Integration\Onesign.Modules.Copilot\Onesign.Modules.Copilot.csproj" />
     <ProjectReference Include="..\Modules\Integration\Onesign.Modules.Extensibility\Onesign.Modules.Extensibility.csproj" />
     <ProjectReference Include="..\Modules\Integration\Onesign.Modules.Privacy\Onesign.Modules.Privacy.csproj" />
     <ProjectReference Include="..\Onesign.Shared\Onesign.Shared.csproj" />
@@ -24,6 +23,8 @@
     <!-- Governance Modules -->
     <!-- Operations Modules -->
     <!-- Integration Modules -->
+    <!-- Note: Copilot is not referenced here to avoid circular dependency (Data->Copilot->ChangeManagement->Data) -->
+    <!-- Copilot entities will be registered via reflection or in API project -->
   </ItemGroup>
 
 </Project>

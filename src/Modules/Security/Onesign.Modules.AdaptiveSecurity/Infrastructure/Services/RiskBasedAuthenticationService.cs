@@ -132,7 +132,7 @@ public class RiskBasedAuthenticationService : IRiskBasedAuthenticationService
                 Id = Guid.NewGuid(),
                 TenantId = tenantId,
                 UserId = userId,
-                SignalType = SecuritySignalType.NewDevice,
+                SignalType = SecuritySignalType.DeviceAnomaly,
                 RiskScore = 15,
                 DetailsJson = System.Text.Json.JsonSerializer.Serialize(new { authContext.DeviceId, authContext.UserAgent }),
                 DetectedAt = DateTime.UtcNow
@@ -147,7 +147,7 @@ public class RiskBasedAuthenticationService : IRiskBasedAuthenticationService
                 Id = Guid.NewGuid(),
                 TenantId = tenantId,
                 UserId = userId,
-                SignalType = SecuritySignalType.NewLocation,
+                SignalType = SecuritySignalType.GeoAnomaly,
                 RiskScore = 20,
                 DetailsJson = System.Text.Json.JsonSerializer.Serialize(new { authContext.GeoLocation, authContext.IpAddress }),
                 DetectedAt = DateTime.UtcNow
@@ -163,7 +163,7 @@ public class RiskBasedAuthenticationService : IRiskBasedAuthenticationService
                 Id = Guid.NewGuid(),
                 TenantId = tenantId,
                 UserId = userId,
-                SignalType = SecuritySignalType.FailedLogin,
+                SignalType = SecuritySignalType.LoginAnomaly,
                 RiskScore = riskScore,
                 DetailsJson = System.Text.Json.JsonSerializer.Serialize(new { Count = authContext.FailedAttempts }),
                 DetectedAt = DateTime.UtcNow
@@ -181,7 +181,7 @@ public class RiskBasedAuthenticationService : IRiskBasedAuthenticationService
                 Id = Guid.NewGuid(),
                 TenantId = tenantId,
                 UserId = userId,
-                SignalType = SecuritySignalType.ImpossibleTravel,
+                SignalType = SecuritySignalType.GeoAnomaly,
                 RiskScore = 50,
                 DetailsJson = System.Text.Json.JsonSerializer.Serialize(new
                 {

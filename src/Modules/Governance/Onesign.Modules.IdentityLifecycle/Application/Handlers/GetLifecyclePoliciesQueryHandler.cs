@@ -18,7 +18,7 @@ public class GetLifecyclePoliciesQueryHandler : IRequestHandler<GetLifecyclePoli
 
     public async Task<Result<List<LifecyclePolicyDto>>> Handle(GetLifecyclePoliciesQuery request, CancellationToken cancellationToken)
     {
-        var policies = await _repository.GetByTenantIdAsync(request.TenantId, cancellationToken);
+        var policies = await _repository.GetByTenantAsync(request.TenantId, cancellationToken);
 
         var dtos = policies.Select(p => new LifecyclePolicyDto
         {

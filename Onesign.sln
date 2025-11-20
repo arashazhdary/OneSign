@@ -1,10 +1,7 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11205.157 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
-
-# Solution Folders
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Modules", "Modules", "{B2C3D4E5-F678-90AB-CDEF-123456789012}"
@@ -23,8 +20,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Security", "Security", "{89
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{90123456-3456-7890-1234-56789ABCDEF0}"
 EndProject
-
-# Core Projects
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Shared", "src\Onesign.Shared\Onesign.Shared.csproj", "{11111111-1111-1111-1111-111111111111}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Data", "src\Onesign.Data\Onesign.Data.csproj", "{22222222-2222-2222-2222-222222222222}"
@@ -35,14 +30,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Cli", "src\Onesign.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Sdk.DotNet", "src\Onesign.Sdk.DotNet\Onesign.Sdk.DotNet.csproj", "{55555555-5555-5555-5555-555555555555}"
 EndProject
-
-# Test Projects
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Api.Tests", "src\Onesign.Api.Tests\Onesign.Api.Tests.csproj", "{66666666-6666-6666-6666-666666666666}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.IntegrationTests", "src\Onesign.IntegrationTests\Onesign.IntegrationTests.csproj", "{77777777-7777-7777-7777-777777777777}"
 EndProject
-
-# Business Modules
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.AccountCenter", "src\Modules\Business\Onesign.Modules.AccountCenter\Onesign.Modules.AccountCenter.csproj", "{A1A1A1A1-A1A1-A1A1-A1A1-A1A1A1A1A1A1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.Applications", "src\Modules\Business\Onesign.Modules.Applications\Onesign.Modules.Applications.csproj", "{A2A2A2A2-A2A2-A2A2-A2A2-A2A2A2A2A2A2}"
@@ -51,8 +42,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.Billing", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.Organization", "src\Modules\Business\Onesign.Modules.Organization\Onesign.Modules.Organization.csproj", "{A4A4A4A4-A4A4-A4A4-A4A4-A4A4A4A4A4A4}"
 EndProject
-
-# Governance Modules
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.Federation", "src\Modules\Governance\Onesign.Modules.Federation\Onesign.Modules.Federation.csproj", "{B1B1B1B1-B1B1-B1B1-B1B1-B1B1B1B1B1B1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.Governance", "src\Modules\Governance\Onesign.Modules.Governance\Onesign.Modules.Governance.csproj", "{B2B2B2B2-B2B2-B2B2-B2B2-B2B2B2B2B2B2}"
@@ -61,8 +50,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.IdentityIns
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.IdentityLifecycle", "src\Modules\Governance\Onesign.Modules.IdentityLifecycle\Onesign.Modules.IdentityLifecycle.csproj", "{B4B4B4B4-B4B4-B4B4-B4B4-B4B4B4B4B4B4}"
 EndProject
-
-# Integration Modules
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.Audit", "src\Modules\Integration\Onesign.Modules.Audit\Onesign.Modules.Audit.csproj", "{C1C1C1C1-C1C1-C1C1-C1C1-C1C1C1C1C1C1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.Copilot", "src\Modules\Integration\Onesign.Modules.Copilot\Onesign.Modules.Copilot.csproj", "{C2C2C2C2-C2C2-C2C2-C2C2-C2C2C2C2C2C2}"
@@ -75,8 +62,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.Notificatio
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.Privacy", "src\Modules\Integration\Onesign.Modules.Privacy\Onesign.Modules.Privacy.csproj", "{C6C6C6C6-C6C6-C6C6-C6C6-C6C6C6C6C6C6}"
 EndProject
-
-# Operations Modules
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.Automation", "src\Modules\Operations\Onesign.Modules.Automation\Onesign.Modules.Automation.csproj", "{D1D1D1D1-D1D1-D1D1-D1D1-D1D1D1D1D1D1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.ChangeManagement", "src\Modules\Operations\Onesign.Modules.ChangeManagement\Onesign.Modules.ChangeManagement.csproj", "{D2D2D2D2-D2D2-D2D2-D2D2-D2D2D2D2D2D2}"
@@ -89,8 +74,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.Insights", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.Observability", "src\Modules\Operations\Onesign.Modules.Observability\Onesign.Modules.Observability.csproj", "{D6D6D6D6-D6D6-D6D6-D6D6-D6D6D6D6D6D6}"
 EndProject
-
-# Platform Modules
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.Crypto", "src\Modules\Platform\Onesign.Modules.Crypto\Onesign.Modules.Crypto.csproj", "{E1E1E1E1-E1E1-E1E1-E1E1-E1E1E1E1E1E1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.Deployment", "src\Modules\Platform\Onesign.Modules.Deployment\Onesign.Modules.Deployment.csproj", "{E2E2E2E2-E2E2-E2E2-E2E2-E2E2E2E2E2E2}"
@@ -101,8 +84,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.Platform", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.Tenants", "src\Modules\Platform\Onesign.Modules.Tenants\Onesign.Modules.Tenants.csproj", "{E5E5E5E5-E5E5-E5E5-E5E5-E5E5E5E5E5E5}"
 EndProject
-
-# Security Modules
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.AccessRequests", "src\Modules\Security\Onesign.Modules.AccessRequests\Onesign.Modules.AccessRequests.csproj", "{F1F1F1F1-F1F1-F1F1-F1F1-F1F1F1F1F1F1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.AdaptiveSecurity", "src\Modules\Security\Onesign.Modules.AdaptiveSecurity\Onesign.Modules.AdaptiveSecurity.csproj", "{F2F2F2F2-F2F2-F2F2-F2F2-F2F2F2F2F2F2}"
@@ -115,7 +96,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.PrivilegedA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Onesign.Modules.Security", "src\Modules\Security\Onesign.Modules.Security\Onesign.Modules.Security.csproj", "{F6F6F6F6-F6F6-F6F6-F6F6-F6F6F6F6F6F6}"
 EndProject
-
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -280,7 +260,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{B2C3D4E5-F678-90AB-CDEF-123456789012} = {A1B2C3D4-E5F6-7890-ABCD-EF1234567890}
-		{90123456-3456-7890-1234-56789ABCDEF0} = {A1B2C3D4-E5F6-7890-ABCD-EF1234567890}
 		{C3D4E5F6-7890-ABCD-EF12-345678901234} = {B2C3D4E5-F678-90AB-CDEF-123456789012}
 		{D4E5F678-90AB-CDEF-1234-567890123456} = {B2C3D4E5-F678-90AB-CDEF-123456789012}
 		{E5F67890-ABCD-EF12-3456-789012345678} = {B2C3D4E5-F678-90AB-CDEF-123456789012}

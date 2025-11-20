@@ -61,7 +61,7 @@ public class ExecuteDataSubjectRequestCommandHandler : IRequestHandler<ExecuteDa
                 RequestedAt = updatedRequest.RequestedAt,
                 RequestedBy = updatedRequest.RequestedBy,
                 CompletedAt = updatedRequest.CompletedAt,
-                ResultUrl = updatedRequest.ResultUrl,
+                ResultLocation = updatedRequest.ResultUrl,
                 Reason = updatedRequest.Reason
             };
 

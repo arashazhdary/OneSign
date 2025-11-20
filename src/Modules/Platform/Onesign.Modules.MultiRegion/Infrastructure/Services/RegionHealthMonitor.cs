@@ -38,7 +38,7 @@ public class RegionHealthMonitor : IRegionHealthMonitor
         var status = new RegionHealthStatus
         {
             RegionId = region.Id,
-            RegionName = region.Name,
+            RegionName = region.DisplayName,
             CheckedAt = DateTime.UtcNow,
             Services = new Dictionary<string, ServiceHealthStatus>()
         };
@@ -47,7 +47,7 @@ public class RegionHealthMonitor : IRegionHealthMonitor
 
         try
         {
-            var healthEndpoint = $"{region.EndpointUrl}/health";
+            var healthEndpoint = $"{region.EndpointBaseUrl}/health";
             var response = await _httpClient.GetAsync(healthEndpoint, cancellationToken);
 
             status.ResponseTimeMs = (int)(DateTime.UtcNow - startTime).TotalMilliseconds;
@@ -61,7 +61,7 @@ public class RegionHealthMonitor : IRegionHealthMonitor
                 ResponseTimeMs = status.ResponseTimeMs
             };
 
-            var dbHealthy = await CheckDatabaseHealthAsync(region.DatabaseConnectionRef, cancellationToken);
+            var dbHealthy = await CheckDatabaseHealthAsync(region.DbClusterRef, cancellationToken);
             status.Services["database"] = new ServiceHealthStatus
             {
                 ServiceName = "Database",
@@ -111,8 +111,8 @@ public class RegionHealthMonitor : IRegionHealthMonitor
 
         region.LastHealthCheckAt = status.CheckedAt;
         region.Status = status.IsHealthy
-            ? Domain.Enums.RegionStatus.Active
-            : Domain.Enums.RegionStatus.Unhealthy;
+            ? Domain.Enums.RegionStatus.Healthy
+            : Domain.Enums.RegionStatus.Down;
 
         await _regionRepository.UpdateAsync(region, cancellationToken);
 

@@ -1,4 +1,6 @@
 using System.CommandLine;
+using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 using Onesign.Cli.Commands;
 
 namespace Onesign.Cli;
@@ -18,9 +20,11 @@ class Program
         rootCommand.Add(new ConfigCommand());
 
         // Add version option
-        rootCommand.AddGlobalOption(new Option<bool>(
-            new[] { "--version", "-v" },
-            "Show version information"));
+        var versionOption = new Option<bool>("--version", "-v")
+        {
+            Description = "Show version information"
+        };
+        rootCommand.Add(versionOption);
 
         return await rootCommand.InvokeAsync(args);
     }

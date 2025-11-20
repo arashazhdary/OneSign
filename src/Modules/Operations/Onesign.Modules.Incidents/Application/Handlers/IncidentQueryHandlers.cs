@@ -336,13 +336,13 @@ public class GetIncidentStatisticsQueryHandler : IRequestHandler<GetIncidentStat
             .OrderByDescending(c => c.Count)
             .ToList();
 
-        stats.DailyTrend = new List<IncidentTrendDto>();
+        stats.DailyTrend = new List<Application.DTOs.IncidentTrendDto>();
         for (var date = DateOnly.FromDateTime(from); date <= DateOnly.FromDateTime(to); date = date.AddDays(1))
         {
             var dayStart = date.ToDateTime(TimeOnly.MinValue);
             var dayEnd = date.ToDateTime(TimeOnly.MaxValue);
 
-            stats.DailyTrend.Add(new IncidentTrendDto
+            stats.DailyTrend.Add(new Application.DTOs.IncidentTrendDto
             {
                 Date = date,
                 Created = incidents.Count(i => i.DetectedAt >= dayStart && i.DetectedAt <= dayEnd),
@@ -444,7 +444,7 @@ public class GetIncidentDashboardQueryHandler : IRequestHandler<GetIncidentDashb
             ResolvedIncidents = resolvedIncidents,
             CriticalIncidents = criticalIncidents.Count,
             AverageResolutionTimeHours = 0,
-            Trends = new List<IncidentTrendDto>()
+            Trends = new List<Application.Queries.IncidentTrendDto>()
         };
     }
 }

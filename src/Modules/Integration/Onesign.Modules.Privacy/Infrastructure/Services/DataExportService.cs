@@ -2,8 +2,8 @@ using System.IO.Compression;
 using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore;
 using Onesign.Modules.Privacy.Domain.Services;
 
 namespace Onesign.Modules.Privacy.Infrastructure.Services;
@@ -98,7 +98,7 @@ public class DataExportService : IDataExportService
         Guid userId,
         CancellationToken cancellationToken)
     {
-        var user = await dbContext.TenantUsers
+        var user = await dbContext.Set<TenantUserEntity>()
             .FirstOrDefaultAsync(u => u.Id == userId && u.TenantId == tenantId, cancellationToken);
 
         if (user == null) return null;

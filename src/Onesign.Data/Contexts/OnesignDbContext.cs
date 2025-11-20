@@ -73,8 +73,9 @@ using Onesign.Modules.Incidents.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Hunting.Infrastructure.EfCore.Configurations;
 using Onesign.Modules.Hunting.Infrastructure.EfCore.Entities;
 // Phase 30 - Copilot
-using Onesign.Modules.Copilot.Infrastructure.EfCore.Configurations;
-using Onesign.Modules.Copilot.Infrastructure.EfCore.Entities;
+// Note: Copilot references are commented out to avoid circular dependency
+// using Onesign.Modules.Copilot.Infrastructure.EfCore.Configurations;
+// using Onesign.Modules.Copilot.Infrastructure.EfCore.Entities;
 
 namespace Onesign.Data.Contexts;
 
@@ -215,8 +216,9 @@ public class OnesignDbContext : DbContext
     public DbSet<HuntSampleRowEntity> HuntSampleRows => Set<HuntSampleRowEntity>();
 
     // Copilot
-    public DbSet<CopilotConversationEntity> CopilotConversations => Set<CopilotConversationEntity>();
-    public DbSet<CopilotMessageEntity> CopilotMessages => Set<CopilotMessageEntity>();
+    // Note: Copilot DbSets are commented out to avoid circular dependency
+    // public DbSet<CopilotConversationEntity> CopilotConversations => Set<CopilotConversationEntity>();
+    // public DbSet<CopilotMessageEntity> CopilotMessages => Set<CopilotMessageEntity>();
 
     // Federation
     public DbSet<SamlProviderEntity> SamlProviders => Set<SamlProviderEntity>();
@@ -415,8 +417,9 @@ public class OnesignDbContext : DbContext
         modelBuilder.ApplyConfiguration(new HuntSampleRowEntityTypeConfiguration());
 
         // Copilot
-        modelBuilder.ApplyConfiguration(new CopilotConversationEntityTypeConfiguration());
-        modelBuilder.ApplyConfiguration(new CopilotMessageEntityTypeConfiguration());
+        // Note: Copilot configurations are commented out to avoid circular dependency
+        // modelBuilder.ApplyConfiguration(new CopilotConversationEntityTypeConfiguration());
+        // modelBuilder.ApplyConfiguration(new CopilotMessageEntityTypeConfiguration());
     }
 }
 

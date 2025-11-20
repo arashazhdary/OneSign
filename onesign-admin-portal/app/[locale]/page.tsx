@@ -7,6 +7,7 @@ export default async function HomePage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  // With localePrefix: 'always', all locales need prefix
   redirect(`/${locale}/tenant/dashboard`);
 }
 

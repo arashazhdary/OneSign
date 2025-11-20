@@ -56,9 +56,9 @@ public class NotificationDeliveryLogRepository : INotificationDeliveryLogReposit
         var query = _dbSet.Where(x => x.TenantId == tenantId);
 
         if (channel.HasValue)
-            query = query.Where(x => x.Channel == channel.Value);
+            query = query.Where(x => x.Channel == (int)channel.Value);
         if (status.HasValue)
-            query = query.Where(x => x.Status == status.Value);
+            query = query.Where(x => x.Status == (int)status.Value);
         if (fromDate.HasValue)
             query = query.Where(x => x.Timestamp >= fromDate.Value);
         if (toDate.HasValue)
@@ -84,9 +84,9 @@ public class NotificationDeliveryLogRepository : INotificationDeliveryLogReposit
         var query = _dbSet.Where(x => x.TenantId == tenantId);
 
         if (channel.HasValue)
-            query = query.Where(x => x.Channel == channel.Value);
+            query = query.Where(x => x.Channel == (int)channel.Value);
         if (status.HasValue)
-            query = query.Where(x => x.Status == status.Value);
+            query = query.Where(x => x.Status == (int)status.Value);
         if (fromDate.HasValue)
             query = query.Where(x => x.Timestamp >= fromDate.Value);
         if (toDate.HasValue)
@@ -107,8 +107,8 @@ public class NotificationDeliveryLogRepository : INotificationDeliveryLogReposit
         Id = entity.Id,
         TenantId = entity.TenantId,
         OutboxItemId = entity.OutboxItemId,
-        Channel = entity.Channel,
-        Status = entity.Status,
+        Channel = (NotificationChannel)entity.Channel,
+        Status = (DeliveryStatus)entity.Status,
         ProviderMessageId = entity.ProviderMessageId,
         ErrorDetails = entity.ErrorDetails,
         Timestamp = entity.Timestamp
@@ -119,8 +119,8 @@ public class NotificationDeliveryLogRepository : INotificationDeliveryLogReposit
         Id = domain.Id,
         TenantId = domain.TenantId,
         OutboxItemId = domain.OutboxItemId,
-        Channel = domain.Channel,
-        Status = domain.Status,
+        Channel = (int)domain.Channel,
+        Status = (int)domain.Status,
         ProviderMessageId = domain.ProviderMessageId,
         ErrorDetails = domain.ErrorDetails,
         Timestamp = domain.Timestamp

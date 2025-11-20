@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore;
 using Onesign.Modules.Privacy.Domain.Entities;
 using Onesign.Modules.Privacy.Domain.Enums;
 using Onesign.Modules.Privacy.Domain.Repositories;
@@ -61,7 +61,7 @@ public class DataSubjectRequestProcessor : IDataSubjectRequestProcessor
             return result;
         }
 
-        request.Status = DataSubjectRequestStatus.InProgress;
+        request.Status = DataSubjectRequestStatus.Processing;
         await _requestRepository.UpdateAsync(request, cancellationToken);
 
         _logger.LogInformation(
@@ -72,11 +72,8 @@ public class DataSubjectRequestProcessor : IDataSubjectRequestProcessor
         {
             result = request.Type switch
             {
-                DataSubjectRequestType.Access => await ProcessAccessRequestAsync(request, cancellationToken),
                 DataSubjectRequestType.Export => await ProcessExportRequestAsync(request, cancellationToken),
-                DataSubjectRequestType.Deletion => await ProcessDeletionRequestAsync(request, cancellationToken),
-                DataSubjectRequestType.Rectification => await ProcessRectificationRequestAsync(request, cancellationToken),
-                DataSubjectRequestType.Restriction => await ProcessRestrictionRequestAsync(request, cancellationToken),
+                DataSubjectRequestType.Delete => await ProcessDeletionRequestAsync(request, cancellationToken),
                 _ => new DsrProcessingResult
                 {
                     RequestId = requestId,
@@ -85,7 +82,7 @@ public class DataSubjectRequestProcessor : IDataSubjectRequestProcessor
                 }
             };
 
-            request.Status = result.Success ? DataSubjectRequestStatus.Completed : DataSubjectRequestStatus.Failed;
+            request.Status = result.Success ? DataSubjectRequestStatus.Completed : DataSubjectRequestStatus.Rejected;
             request.CompletedAt = DateTime.UtcNow;
             request.ResultUrl = result.DownloadUrl;
             await _requestRepository.UpdateAsync(request, cancellationToken);
@@ -102,11 +99,11 @@ public class DataSubjectRequestProcessor : IDataSubjectRequestProcessor
         {
             stopwatch.Stop();
 
-            request.Status = DataSubjectRequestStatus.Failed;
+            request.Status = DataSubjectRequestStatus.Rejected;
             await _requestRepository.UpdateAsync(request, cancellationToken);
 
             result.Success = false;
-            result.Status = DataSubjectRequestStatus.Failed;
+            result.Status = DataSubjectRequestStatus.Rejected;
             result.ErrorMessage = ex.Message;
             result.DurationMs = stopwatch.ElapsedMilliseconds;
 
@@ -141,7 +138,7 @@ public class DataSubjectRequestProcessor : IDataSubjectRequestProcessor
         using var scope = _serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-        var subject = await dbContext.TenantUsers
+        var subject = await dbContext.Set<Onesign.Modules.Identity.Infrastructure.EfCore.Entities.TenantUserEntity>()
             .FirstOrDefaultAsync(u => u.Id == request.SubjectId && u.TenantId == request.TenantId, cancellationToken);
 
         result.SubjectExists = subject != null;
@@ -154,7 +151,7 @@ public class DataSubjectRequestProcessor : IDataSubjectRequestProcessor
 
         if (request.RequestedBy != Guid.Empty)
         {
-            var requester = await dbContext.TenantUsers
+            var requester = await dbContext.Set<Onesign.Modules.Identity.Infrastructure.EfCore.Entities.TenantUserEntity>()
                 .FirstOrDefaultAsync(u => u.Id == request.RequestedBy && u.TenantId == request.TenantId, cancellationToken);
 
             result.RequesterAuthorized = requester != null &&
@@ -177,7 +174,7 @@ public class DataSubjectRequestProcessor : IDataSubjectRequestProcessor
             result.Errors.Add("Request has already been completed");
         }
 
-        if (request.Status == DataSubjectRequestStatus.Cancelled)
+        if (request.Status == DataSubjectRequestStatus.Rejected)
         {
             result.IsValid = false;
             result.Errors.Add("Request has been cancelled");
@@ -192,11 +189,8 @@ public class DataSubjectRequestProcessor : IDataSubjectRequestProcessor
     {
         var estimate = request.Type switch
         {
-            DataSubjectRequestType.Access => TimeSpan.FromMinutes(5),
             DataSubjectRequestType.Export => TimeSpan.FromMinutes(30),
-            DataSubjectRequestType.Deletion => TimeSpan.FromMinutes(15),
-            DataSubjectRequestType.Rectification => TimeSpan.FromMinutes(5),
-            DataSubjectRequestType.Restriction => TimeSpan.FromMinutes(5),
+            DataSubjectRequestType.Delete => TimeSpan.FromMinutes(15),
             _ => TimeSpan.FromMinutes(30)
         };
 
@@ -219,7 +213,7 @@ public class DataSubjectRequestProcessor : IDataSubjectRequestProcessor
             throw new InvalidOperationException("Cannot cancel a completed request");
         }
 
-        request.Status = DataSubjectRequestStatus.Cancelled;
+            request.Status = DataSubjectRequestStatus.Rejected;
         await _requestRepository.UpdateAsync(request, cancellationToken);
 
         _logger.LogInformation("DSR {RequestId} cancelled. Reason: {Reason}", requestId, reason);
@@ -288,7 +282,7 @@ public class DataSubjectRequestProcessor : IDataSubjectRequestProcessor
         {
             RequestId = request.Id,
             Success = anonymizationResult.Success,
-            Status = anonymizationResult.Success ? DataSubjectRequestStatus.Completed : DataSubjectRequestStatus.Failed,
+            Status = anonymizationResult.Success ? DataSubjectRequestStatus.Completed : DataSubjectRequestStatus.Rejected,
             ErrorMessage = anonymizationResult.ErrorMessage,
             Stats = new DsrProcessingStats
             {
@@ -321,7 +315,7 @@ public class DataSubjectRequestProcessor : IDataSubjectRequestProcessor
         using var scope = _serviceProvider.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-        var user = await dbContext.TenantUsers
+        var user = await dbContext.Set<Onesign.Modules.Identity.Infrastructure.EfCore.Entities.TenantUserEntity>()
             .FirstOrDefaultAsync(u => u.Id == request.SubjectId && u.TenantId == request.TenantId, cancellationToken);
 
         if (user != null)

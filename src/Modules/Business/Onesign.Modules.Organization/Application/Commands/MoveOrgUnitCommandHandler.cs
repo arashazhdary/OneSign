@@ -42,7 +42,7 @@ public class MoveOrgUnitCommandHandler : IRequestHandler<MoveOrgUnitCommand, Res
             return Result.Failure("UNAUTHORIZED", "You are not authorized to move this organizational unit");
         }
 
-        var canManageNewParent = await _orgAuthorizationService.CanManageOrgUnitAsync(request.ActorId, request.NewParentId, cancellationToken);
+        var canManageNewParent = await _orgAuthorizationService.CanManageOrgUnitAsync(request.ActorId, request.NewParentId ?? Guid.Empty, cancellationToken);
         if (!canManageNewParent)
         {
             _logger.LogWarning("User {ActorId} is not authorized to manage new parent OrgUnit {NewParentId}", request.ActorId, request.NewParentId);

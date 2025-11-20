@@ -210,7 +210,7 @@ public class FailoverService : IFailoverService
         {
             new() { Name = "Source Region Available", Passed = sourceRegion != null, Message = sourceRegion != null ? "OK" : "Region not found" },
             new() { Name = "Target Region Available", Passed = targetRegion != null, Message = targetRegion != null ? "OK" : "Region not found" },
-            new() { Name = "Target Region Healthy", Passed = targetRegion?.Status == Domain.Enums.RegionStatus.Active, Message = targetRegion?.Status.ToString() ?? "Unknown" },
+            new() { Name = "Target Region Healthy", Passed = targetRegion?.Status == Domain.Enums.RegionStatus.Healthy, Message = targetRegion?.Status.ToString() ?? "Unknown" },
             new() { Name = "Network Connectivity", Passed = true, Message = "OK" },
             new() { Name = "Storage Capacity", Passed = true, Message = "Sufficient capacity available" },
             new() { Name = "Database Replication", Passed = true, Message = "Replication lag within limits" }

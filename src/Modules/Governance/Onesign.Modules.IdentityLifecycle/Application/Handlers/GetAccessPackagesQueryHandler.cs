@@ -18,7 +18,7 @@ public class GetAccessPackagesQueryHandler : IRequestHandler<GetAccessPackagesQu
 
     public async Task<Result<List<AccessPackageDto>>> Handle(GetAccessPackagesQuery request, CancellationToken cancellationToken)
     {
-        var packages = await _repository.GetByTenantIdAsync(request.TenantId, cancellationToken);
+        var packages = await _repository.GetByTenantAsync(request.TenantId, cancellationToken);
 
         var dtos = packages.Select(p => new AccessPackageDto
         {

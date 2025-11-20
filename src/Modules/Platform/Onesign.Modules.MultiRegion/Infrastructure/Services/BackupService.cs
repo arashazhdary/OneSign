@@ -49,7 +49,7 @@ public class BackupService : IBackupService
             TenantId = request.TenantId,
             RegionId = region.Id,
             BackupType = request.BackupType,
-            Status = BackupStatus.InProgress,
+            Status = Domain.Enums.BackupStatus.InProgress,
             CreatedAt = DateTime.UtcNow,
             StorageLocation = $"{region.StorageClusterRef}/backups/{request.TenantId}/{timestamp}",
             SizeBytes = 0
@@ -63,7 +63,7 @@ public class BackupService : IBackupService
             {
                 await Task.Delay(5000);
 
-                backup.Status = BackupStatus.Completed;
+                backup.Status = Domain.Enums.BackupStatus.Completed;
                 backup.SizeBytes = new Random().Next(1000000, 100000000);
                 backup.CompletedAt = DateTime.UtcNow;
 
@@ -74,7 +74,7 @@ public class BackupService : IBackupService
             }
             catch (Exception ex)
             {
-                backup.Status = BackupStatus.Failed;
+                backup.Status = Domain.Enums.BackupStatus.Failed;
                 backup.CompletedAt = DateTime.UtcNow;
                 await _backupRepository.UpdateAsync(backup, CancellationToken.None);
 
@@ -135,7 +135,7 @@ public class BackupService : IBackupService
             return false;
         }
 
-        await _backupRepository.DeleteAsync(backup, cancellationToken);
+        await _backupRepository.DeleteAsync(backup.Id, cancellationToken);
 
         _logger.LogInformation("Deleted backup {BackupId}", backupId);
         return true;
@@ -150,7 +150,7 @@ public class BackupService : IBackupService
 
         foreach (var backup in oldBackups)
         {
-            await _backupRepository.DeleteAsync(backup, cancellationToken);
+            await _backupRepository.DeleteAsync(backup.Id, cancellationToken);
             _logger.LogInformation("Deleted old backup {BackupId} due to retention policy", backup.Id);
         }
 

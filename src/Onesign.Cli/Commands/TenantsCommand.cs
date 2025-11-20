@@ -1,5 +1,7 @@
 using System.CommandLine;
+using System.CommandLine.Binding;
 using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 using System.Text.Json;
 using Onesign.Sdk.DotNet;
 
@@ -23,26 +25,35 @@ public class ListTenantsCommand : Command
 {
     public ListTenantsCommand() : base("list", "List all tenants")
     {
-        var pageOption = new Option<int>(
-            new[] { "--page", "-p" },
-            () => 1,
-            "Page number");
+        var pageOption = new Option<int>("--page", "-p")
+        {
+            Description = "Page number",
+            DefaultValueFactory = (ArgumentResult result) => 1
+        };
 
-        var pageSizeOption = new Option<int>(
-            new[] { "--page-size", "-s" },
-            () => 20,
-            "Number of items per page");
+        var pageSizeOption = new Option<int>("--page-size", "-s")
+        {
+            Description = "Number of items per page",
+            DefaultValueFactory = (ArgumentResult result) => 20
+        };
 
-        var formatOption = new Option<string>(
-            new[] { "--format", "-f" },
-            () => "table",
-            "Output format (json, table)");
+        var formatOption = new Option<string>("--format", "-f")
+        {
+            Description = "Output format (json, table)",
+            DefaultValueFactory = (ArgumentResult result) => "table"
+        };
 
         Add(pageOption);
         Add(pageSizeOption);
         Add(formatOption);
 
-        this.SetHandler(HandleAsync, pageOption, pageSizeOption, formatOption);
+        this.SetAction(async (ParseResult parseResult) =>
+        {
+            var page = parseResult.GetValue(pageOption);
+            var pageSize = parseResult.GetValue(pageSizeOption);
+            var format = parseResult.GetValue(formatOption);
+            await HandleAsync(page, pageSize, format!);
+        });
     }
 
     private async Task HandleAsync(int page, int pageSize, string format)
@@ -82,10 +93,17 @@ public class GetTenantCommand : Command
 {
     public GetTenantCommand() : base("get", "Get tenant details")
     {
-        var idArgument = new Argument<string>("id", "Tenant ID");
+        var idArgument = new Argument<string>("id")
+        {
+            Description = "Tenant ID"
+        };
         Add(idArgument);
 
-        this.SetHandler(HandleAsync, idArgument);
+        this.SetAction(async (ParseResult parseResult) =>
+        {
+            var id = parseResult.GetValue(idArgument);
+            await HandleAsync(id!);
+        });
     }
 
     private async Task HandleAsync(string id)
@@ -137,24 +155,33 @@ public class CreateTenantCommand : Command
 {
     public CreateTenantCommand() : base("create", "Create a new tenant")
     {
-        var nameOption = new Option<string>(
-            new[] { "--name", "-n" },
-            "Tenant name");
-        nameOption.IsRequired = true;
+        var nameOption = new Option<string>("--name", "-n")
+        {
+            Description = "Tenant name",
+            Arity = ArgumentArity.ExactlyOne
+        };
 
-        var planOption = new Option<string>(
-            new[] { "--plan", "-p" },
-            "Subscription plan");
+        var planOption = new Option<string>("--plan", "-p")
+        {
+            Description = "Subscription plan"
+        };
 
-        var regionOption = new Option<string>(
-            new[] { "--region", "-r" },
-            "Deployment region");
+        var regionOption = new Option<string>("--region", "-r")
+        {
+            Description = "Deployment region"
+        };
 
         Add(nameOption);
         Add(planOption);
         Add(regionOption);
 
-        this.SetHandler(HandleAsync, nameOption, planOption, regionOption);
+        this.SetAction(async (ParseResult parseResult) =>
+        {
+            var name = parseResult.GetValue(nameOption);
+            var plan = parseResult.GetValue(planOption);
+            var region = parseResult.GetValue(regionOption);
+            await HandleAsync(name!, plan, region);
+        });
     }
 
     private async Task HandleAsync(string name, string? plan, string? region)
@@ -189,25 +216,38 @@ public class UpdateTenantCommand : Command
 {
     public UpdateTenantCommand() : base("update", "Update a tenant")
     {
-        var idArgument = new Argument<string>("id", "Tenant ID");
-        var nameOption = new Option<string?>(
-            new[] { "--name", "-n" },
-            "New tenant name");
+        var idArgument = new Argument<string>("id")
+        {
+            Description = "Tenant ID"
+        };
+        var nameOption = new Option<string?>("--name", "-n")
+        {
+            Description = "New tenant name"
+        };
 
-        var planOption = new Option<string?>(
-            new[] { "--plan", "-p" },
-            "New subscription plan");
+        var planOption = new Option<string?>("--plan", "-p")
+        {
+            Description = "New subscription plan"
+        };
 
-        var statusOption = new Option<string?>(
-            new[] { "--status", "-s" },
-            "New tenant status (Active, Suspended, Deleted)");
+        var statusOption = new Option<string?>("--status", "-s")
+        {
+            Description = "New tenant status (Active, Suspended, Deleted)"
+        };
 
         Add(idArgument);
         Add(nameOption);
         Add(planOption);
         Add(statusOption);
 
-        this.SetHandler(HandleAsync, idArgument, nameOption, planOption, statusOption);
+        this.SetAction(async (ParseResult parseResult) =>
+        {
+            var id = parseResult.GetValue(idArgument);
+            var name = parseResult.GetValue(nameOption);
+            var plan = parseResult.GetValue(planOption);
+            var status = parseResult.GetValue(statusOption);
+            await HandleAsync(id!, name, plan, status);
+        });
     }
 
     private async Task HandleAsync(string id, string? name, string? plan, string? status)
@@ -248,15 +288,24 @@ public class DeleteTenantCommand : Command
 {
     public DeleteTenantCommand() : base("delete", "Delete a tenant")
     {
-        var idArgument = new Argument<string>("id", "Tenant ID");
-        var forceOption = new Option<bool>(
-            new[] { "--force", "-f" },
-            "Force deletion without confirmation");
+        var idArgument = new Argument<string>("id")
+        {
+            Description = "Tenant ID"
+        };
+        var forceOption = new Option<bool>("--force", "-f")
+        {
+            Description = "Force deletion without confirmation"
+        };
 
         Add(idArgument);
         Add(forceOption);
 
-        this.SetHandler(HandleAsync, idArgument, forceOption);
+        this.SetAction(async (ParseResult parseResult) =>
+        {
+            var id = parseResult.GetValue(idArgument);
+            var force = parseResult.GetValue(forceOption);
+            await HandleAsync(id!, force);
+        });
     }
 
     private async Task HandleAsync(string id, bool force)
@@ -297,22 +346,33 @@ public class TenantUsersCommand : Command
 {
     public TenantUsersCommand() : base("users", "List users in a tenant")
     {
-        var idArgument = new Argument<string>("id", "Tenant ID");
-        var pageOption = new Option<int>(
-            new[] { "--page", "-p" },
-            () => 1,
-            "Page number");
+        var idArgument = new Argument<string>("id")
+        {
+            Description = "Tenant ID"
+        };
+        var pageOption = new Option<int>("--page", "-p")
+        {
+            Description = "Page number",
+            DefaultValueFactory = (ArgumentResult result) => 1
+        };
 
-        var pageSizeOption = new Option<int>(
-            new[] { "--page-size", "-s" },
-            () => 20,
-            "Number of items per page");
+        var pageSizeOption = new Option<int>("--page-size", "-s")
+        {
+            Description = "Number of items per page",
+            DefaultValueFactory = (ArgumentResult result) => 20
+        };
 
         Add(idArgument);
         Add(pageOption);
         Add(pageSizeOption);
 
-        this.SetHandler(HandleAsync, idArgument, pageOption, pageSizeOption);
+        this.SetAction(async (ParseResult parseResult) =>
+        {
+            var id = parseResult.GetValue(idArgument);
+            var page = parseResult.GetValue(pageOption);
+            var pageSize = parseResult.GetValue(pageSizeOption);
+            await HandleAsync(id!, page, pageSize);
+        });
     }
 
     private async Task HandleAsync(string id, int page, int pageSize)
@@ -361,15 +421,24 @@ public class GetTenantConfigCommand : Command
 {
     public GetTenantConfigCommand() : base("get", "Get tenant configuration")
     {
-        var idArgument = new Argument<string>("id", "Tenant ID");
-        var keyOption = new Option<string?>(
-            new[] { "--key", "-k" },
-            "Specific configuration key to retrieve");
+        var idArgument = new Argument<string>("id")
+        {
+            Description = "Tenant ID"
+        };
+        var keyOption = new Option<string?>("--key", "-k")
+        {
+            Description = "Specific configuration key to retrieve"
+        };
 
         Add(idArgument);
         Add(keyOption);
 
-        this.SetHandler(HandleAsync, idArgument, keyOption);
+        this.SetAction(async (ParseResult parseResult) =>
+        {
+            var id = parseResult.GetValue(idArgument);
+            var key = parseResult.GetValue(keyOption);
+            await HandleAsync(id!, key);
+        });
     }
 
     private async Task HandleAsync(string id, string? key)
@@ -430,15 +499,30 @@ public class SetTenantConfigCommand : Command
 {
     public SetTenantConfigCommand() : base("set", "Set tenant configuration value")
     {
-        var idArgument = new Argument<string>("id", "Tenant ID");
-        var keyArgument = new Argument<string>("key", "Configuration key");
-        var valueArgument = new Argument<string>("value", "Configuration value");
+        var idArgument = new Argument<string>("id")
+        {
+            Description = "Tenant ID"
+        };
+        var keyArgument = new Argument<string>("key")
+        {
+            Description = "Configuration key"
+        };
+        var valueArgument = new Argument<string>("value")
+        {
+            Description = "Configuration value"
+        };
 
         Add(idArgument);
         Add(keyArgument);
         Add(valueArgument);
 
-        this.SetHandler(HandleAsync, idArgument, keyArgument, valueArgument);
+        this.SetAction(async (ParseResult parseResult) =>
+        {
+            var id = parseResult.GetValue(idArgument);
+            var key = parseResult.GetValue(keyArgument);
+            var value = parseResult.GetValue(valueArgument);
+            await HandleAsync(id!, key!, value!);
+        });
     }
 
     private async Task HandleAsync(string id, string key, string value)

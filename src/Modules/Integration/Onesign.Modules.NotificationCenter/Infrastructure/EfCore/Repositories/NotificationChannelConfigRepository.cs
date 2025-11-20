@@ -25,7 +25,7 @@ public class NotificationChannelConfigRepository : INotificationChannelConfigRep
 
     public async Task<NotificationChannelConfig?> GetByChannelAsync(Guid tenantId, NotificationChannel channel, CancellationToken cancellationToken = default)
     {
-        var entity = await _dbSet.FirstOrDefaultAsync(x => x.TenantId == tenantId && x.Channel == channel, cancellationToken);
+        var entity = await _dbSet.FirstOrDefaultAsync(x => x.TenantId == tenantId && x.Channel == (int)channel, cancellationToken);
         return entity == null ? null : MapToDomain(entity);
     }
 
@@ -68,7 +68,7 @@ public class NotificationChannelConfigRepository : INotificationChannelConfigRep
     {
         Id = entity.Id,
         TenantId = entity.TenantId,
-        Channel = entity.Channel,
+        Channel = (NotificationChannel)entity.Channel,
         IsEnabled = entity.IsEnabled,
         ConfigurationJson = entity.ConfigurationJson,
         CreatedAt = entity.CreatedAt,
@@ -79,7 +79,7 @@ public class NotificationChannelConfigRepository : INotificationChannelConfigRep
     {
         Id = domain.Id,
         TenantId = domain.TenantId,
-        Channel = domain.Channel,
+        Channel = (int)domain.Channel,
         IsEnabled = domain.IsEnabled,
         ConfigurationJson = domain.ConfigurationJson,
         CreatedAt = domain.CreatedAt,

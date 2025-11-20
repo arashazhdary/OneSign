@@ -22,6 +22,8 @@
     <ProjectReference Include="..\..\Operations\Onesign.Modules.Incidents\Onesign.Modules.Incidents.csproj" />
     <ProjectReference Include="..\..\Operations\Onesign.Modules.Insights\Onesign.Modules.Insights.csproj" />
     <ProjectReference Include="..\..\Governance\Onesign.Modules.Governance\Onesign.Modules.Governance.csproj" />
+    <!-- Note: Onesign.Data is NOT referenced here to avoid circular dependency -->
+    <!-- The repository uses DbContext (base class) instead of OnesignDbContext -->
   </ItemGroup>
 
 </Project>

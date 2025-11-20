@@ -67,7 +67,7 @@ public class ActionExecutorService : IActionExecutor
             return Result.Failure("MissingUserId", "User ID is required for RevokeSessions action");
 
         var sessions = await _dbContext.Set<UserLoginSessionEntity>()
-            .Where(s => s.TenantId == tenantId && s.UserId == userId.Value && s.IsActive)
+            .Where(s => s.TenantUserId == userId.Value)
             .ToListAsync(cancellationToken);
 
         foreach (var session in sessions)

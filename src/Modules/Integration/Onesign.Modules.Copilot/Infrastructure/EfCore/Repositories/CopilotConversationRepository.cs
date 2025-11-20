@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Onesign.Data.Contexts;
 using Onesign.Modules.Copilot.Domain.Entities;
 using Onesign.Modules.Copilot.Domain.Enums;
 using Onesign.Modules.Copilot.Domain.Repositories;
@@ -9,9 +8,9 @@ namespace Onesign.Modules.Copilot.Infrastructure.EfCore.Repositories;
 
 public class CopilotConversationRepository : ICopilotConversationRepository
 {
-    private readonly OnesignDbContext _dbContext;
+    private readonly DbContext _dbContext;
 
-    public CopilotConversationRepository(OnesignDbContext dbContext)
+    public CopilotConversationRepository(DbContext dbContext)
     {
         _dbContext = dbContext;
     }

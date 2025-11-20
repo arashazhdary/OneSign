@@ -28,15 +28,15 @@ public class LifecycleProcessorService : ILifecycleProcessor
 
     public async Task ProcessJoinerAsync(LifecycleEvent lifecycleEvent, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Processing Joiner event {EventId} for user {UserId}",
-            lifecycleEvent.Id, lifecycleEvent.UserId);
+        _logger.LogInformation("Processing Joiner event {EventId} for HR record {HRRecordId}",
+            lifecycleEvent.Id, lifecycleEvent.HRRecordId);
 
         try
         {
-            var hrRecord = await _hrRepository.GetByUserIdAsync(lifecycleEvent.TenantId, lifecycleEvent.UserId, cancellationToken);
+            var hrRecord = await _hrRepository.GetByIdAsync(lifecycleEvent.HRRecordId, cancellationToken);
             if (hrRecord == null)
             {
-                throw new InvalidOperationException($"HR record not found for user {lifecycleEvent.UserId}");
+                throw new InvalidOperationException($"HR record not found: {lifecycleEvent.HRRecordId}");
             }
 
             // Evaluate policies to determine access packages
@@ -52,8 +52,8 @@ public class LifecycleProcessorService : ILifecycleProcessor
                 var appIds = JsonSerializer.Deserialize<List<Guid>>(package.ApplicationIdsJson) ?? new();
 
                 _logger.LogInformation(
-                    "Provisioning package {PackageName}: {RoleCount} roles, {AppCount} applications for user {UserId}",
-                    package.Name, roleIds.Count, appIds.Count, lifecycleEvent.UserId);
+                    "Provisioning package {PackageName}: {RoleCount} roles, {AppCount} applications for HR record {HRRecordId}",
+                    package.Name, roleIds.Count, appIds.Count, lifecycleEvent.HRRecordId);
 
                 // In a real implementation, this would call the actual provisioning systems
                 // to grant roles, add to groups, create application accounts, etc.
@@ -77,15 +77,15 @@ public class LifecycleProcessorService : ILifecycleProcessor
 
     public async Task ProcessMoverAsync(LifecycleEvent lifecycleEvent, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Processing Mover event {EventId} for user {UserId}",
-            lifecycleEvent.Id, lifecycleEvent.UserId);
+        _logger.LogInformation("Processing Mover event {EventId} for HR record {HRRecordId}",
+            lifecycleEvent.Id, lifecycleEvent.HRRecordId);
 
         try
         {
-            var hrRecord = await _hrRepository.GetByUserIdAsync(lifecycleEvent.TenantId, lifecycleEvent.UserId, cancellationToken);
+            var hrRecord = await _hrRepository.GetByIdAsync(lifecycleEvent.HRRecordId, cancellationToken);
             if (hrRecord == null)
             {
-                throw new InvalidOperationException($"HR record not found for user {lifecycleEvent.UserId}");
+                throw new InvalidOperationException($"HR record not found: {lifecycleEvent.HRRecordId}");
             }
 
             // Get old packages (based on previous state) to revoke
@@ -96,10 +96,8 @@ public class LifecycleProcessorService : ILifecycleProcessor
                 cancellationToken);
 
             _logger.LogInformation(
-                "Mover event: transitioning user {UserId} from {OldState} to {NewState}, granting {PackageCount} new packages",
-                lifecycleEvent.UserId,
-                lifecycleEvent.PreviousState,
-                lifecycleEvent.NewState,
+                "Mover event: transitioning HR record {HRRecordId} from old snapshot to new snapshot, granting {PackageCount} new packages",
+                lifecycleEvent.HRRecordId,
                 newPackages.Count);
 
             // In a real implementation:
@@ -109,8 +107,8 @@ public class LifecycleProcessorService : ILifecycleProcessor
 
             foreach (var package in newPackages)
             {
-                _logger.LogInformation("Provisioning package {PackageName} for moved user {UserId}",
-                    package.Name, lifecycleEvent.UserId);
+                _logger.LogInformation("Provisioning package {PackageName} for moved HR record {HRRecordId}",
+                    package.Name, lifecycleEvent.HRRecordId);
             }
 
             lifecycleEvent.Status = ProcessingStatus.Completed;
@@ -131,8 +129,8 @@ public class LifecycleProcessorService : ILifecycleProcessor
 
     public async Task ProcessLeaverAsync(LifecycleEvent lifecycleEvent, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Processing Leaver event {EventId} for user {UserId}",
-            lifecycleEvent.Id, lifecycleEvent.UserId);
+        _logger.LogInformation("Processing Leaver event {EventId} for HR record {HRRecordId}",
+            lifecycleEvent.Id, lifecycleEvent.HRRecordId);
 
         try
         {
@@ -145,7 +143,7 @@ public class LifecycleProcessorService : ILifecycleProcessor
             // 5. Revoke any JIT grants
             // 6. Transfer ownership of resources
 
-            _logger.LogInformation("Revoking all access for leaving user {UserId}", lifecycleEvent.UserId);
+            _logger.LogInformation("Revoking all access for leaving HR record {HRRecordId}", lifecycleEvent.HRRecordId);
 
             lifecycleEvent.Status = ProcessingStatus.Completed;
             lifecycleEvent.ProcessedAt = DateTime.UtcNow;

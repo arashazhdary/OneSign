@@ -18,7 +18,7 @@ public class GetProcessingStatusQueryHandler : IRequestHandler<GetProcessingStat
 
     public async Task<Result<ProcessingStatusDto>> Handle(GetProcessingStatusQuery request, CancellationToken cancellationToken)
     {
-        var events = await _repository.GetByTenantIdAsync(request.TenantId, cancellationToken);
+        var events = await _repository.GetPendingEventsAsync(request.TenantId, 1000, cancellationToken);
 
         var status = new ProcessingStatusDto
         {
@@ -38,7 +38,7 @@ public class GetProcessingStatusQueryHandler : IRequestHandler<GetProcessingStat
                 {
                     EventId = e.Id,
                     EventType = e.EventType.ToString(),
-                    UserId = e.UserId,
+                    UserId = e.HRRecordId,
                     Status = e.Status.ToString(),
                     CreatedAt = e.CreatedAt,
                     ProcessedAt = e.ProcessedAt

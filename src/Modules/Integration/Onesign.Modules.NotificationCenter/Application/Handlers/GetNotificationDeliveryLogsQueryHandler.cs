@@ -69,7 +69,13 @@ public class GetNotificationDeliveryLogsQueryHandler : IRequestHandler<GetNotifi
             });
         }
 
-        var pagedResult = new PagedResult<NotificationDeliveryLogDto>(dtos, totalCount, request.Page, request.PageSize);
+        var pagedResult = new PagedResult<NotificationDeliveryLogDto>
+        {
+            Items = dtos,
+            TotalCount = totalCount,
+            PageNumber = request.Page,
+            PageSize = request.PageSize
+        };
         return Result.Success(pagedResult);
     }
 }

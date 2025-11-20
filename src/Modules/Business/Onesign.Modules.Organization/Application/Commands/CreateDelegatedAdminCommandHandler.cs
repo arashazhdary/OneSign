@@ -6,6 +6,7 @@ using Onesign.Modules.Identity.Domain.Repositories;
 using Onesign.Modules.Organization.Application.DTOs;
 using Onesign.Modules.Organization.Domain.Entities;
 using Onesign.Modules.Organization.Domain.Repositories;
+using Onesign.Modules.Organization.Domain.Services;
 using Onesign.Shared.Result;
 
 namespace Onesign.Modules.Organization.Application.Commands;

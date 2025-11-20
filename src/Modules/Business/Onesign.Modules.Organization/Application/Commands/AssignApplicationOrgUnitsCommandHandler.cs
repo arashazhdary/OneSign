@@ -4,6 +4,7 @@ using Onesign.Modules.Audit.Application.Commands;
 using Onesign.Modules.Audit.Domain.Enums;
 using Onesign.Modules.Organization.Domain.Entities;
 using Onesign.Modules.Organization.Domain.Repositories;
+using Onesign.Modules.Organization.Domain.Services;
 using Onesign.Shared.Result;
 
 namespace Onesign.Modules.Organization.Application.Commands;

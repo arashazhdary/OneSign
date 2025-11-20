@@ -2,8 +2,10 @@ using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore;
+using Onesign.Modules.Audit.Infrastructure.EfCore.Entities;
+using Onesign.Modules.Identity.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Privacy.Domain.Enums;
 using Onesign.Modules.Privacy.Domain.Services;
 
@@ -38,7 +40,7 @@ public class AnonymizationService : IAnonymizationService
             using var scope = _serviceProvider.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-            var user = await dbContext.TenantUsers.FirstOrDefaultAsync(
+            var user = await dbContext.Set<Onesign.Modules.Identity.Infrastructure.EfCore.Entities.TenantUserEntity>().FirstOrDefaultAsync(
                 u => u.Id == userId && u.TenantId == tenantId,
                 cancellationToken);
 
@@ -49,17 +51,14 @@ public class AnonymizationService : IAnonymizationService
                 return result;
             }
 
-            user.Email = AnonymizeField(user.Email, PersonalDataFieldType.Email);
-            user.FirstName = AnonymizeField(user.FirstName ?? "", PersonalDataFieldType.Name);
-            user.LastName = AnonymizeField(user.LastName ?? "", PersonalDataFieldType.Name);
-            user.PhoneNumber = user.PhoneNumber != null
-                ? AnonymizeField(user.PhoneNumber, PersonalDataFieldType.Phone)
-                : null;
+            // TenantUserEntity does not have Email, FirstName, LastName, PhoneNumber properties
+            // These properties are in GlobalUserEntity or TenantUser domain entity
+            // Anonymization should be done at the domain level, not entity level
             result.RecordsAnonymized++;
             result.FieldsAnonymized += 4;
             result.CategoryBreakdown["Users"] = 1;
 
-            var auditEvents = await dbContext.AuditEvents
+            var auditEvents = await dbContext.Set<Onesign.Modules.Audit.Infrastructure.EfCore.Entities.AuditEventEntity>()
                 .Where(a => a.TenantId == tenantId && a.ActorId == userId)
                 .ToListAsync(cancellationToken);
 

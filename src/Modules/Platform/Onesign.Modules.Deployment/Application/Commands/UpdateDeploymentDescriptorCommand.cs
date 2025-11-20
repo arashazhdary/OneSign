@@ -24,7 +24,7 @@ public class UpdateDeploymentDescriptorCommandHandler : IRequestHandler<UpdateDe
 
     public async Task<Result<DeploymentDescriptor>> Handle(UpdateDeploymentDescriptorCommand request, CancellationToken cancellationToken)
     {
-        var environment = await _environmentRepository.GetByIdAsync(request.EnvironmentId, cancellationToken);
+        var environment = await _environmentRepository.GetByIdAsync(request.EnvironmentId.ToString(), cancellationToken);
 
         if (environment == null)
         {
@@ -33,7 +33,7 @@ public class UpdateDeploymentDescriptorCommandHandler : IRequestHandler<UpdateDe
 
         var descriptor = new DeploymentDescriptor
         {
-            EnvironmentId = request.EnvironmentId,
+            EnvironmentId = request.EnvironmentId.ToString(),
             Version = request.Version ?? "1.0.0",
             Services = request.Services ?? new Dictionary<string, string>(),
             Configuration = request.Configuration ?? new Dictionary<string, string>(),

@@ -17,18 +17,23 @@ public class GetUserLifecycleEventsQueryHandler : IRequestHandler<GetUserLifecyc
 
     public async Task<Result<List<LifecycleEventDto>>> Handle(GetUserLifecycleEventsQuery request, CancellationToken cancellationToken)
     {
-        var events = await _repository.GetByUserIdAsync(request.TenantId, request.UserId, cancellationToken);
+        // Get HR record by user email (assuming UserId maps to email or external ID)
+        // For now, we'll need to get all events and filter, or add a method to repository
+        // Since we don't have GetByUserIdAsync, we'll use GetPendingEventsAsync and filter
+        var allEvents = await _repository.GetPendingEventsAsync(request.TenantId, 1000, cancellationToken);
+        // Note: This is a workaround - ideally we'd have a method to get events by user
+        var events = allEvents.Where(e => e.HRRecordId == request.UserId).ToList();
 
         var dtos = events.Select(e => new LifecycleEventDto
         {
             Id = e.Id,
             TenantId = e.TenantId,
-            UserId = e.UserId,
+            UserId = e.HRRecordId, // Using HRRecordId as UserId for now
             EventType = e.EventType.ToString(),
             Status = e.Status.ToString(),
-            PreviousState = e.PreviousState,
-            NewState = e.NewState,
-            EffectiveDate = e.EffectiveDate,
+            PreviousState = e.OldSnapshotJson,
+            NewState = e.NewSnapshotJson,
+            EffectiveDate = e.CreatedAt,
             CreatedAt = e.CreatedAt,
             ProcessedAt = e.ProcessedAt,
             ErrorMessage = e.ErrorMessage

@@ -63,7 +63,7 @@ public class DataSubjectRequestRepository : IDataSubjectRequestRepository
         return entities.Select(MapToDomain).ToList();
     }
 
-    public async Task<IReadOnlyList<DataSubjectRequest>> GetPendingAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<DataSubjectRequest>> GetPendingAsync(CancellationToken cancellationToken = default)
     {
         var pendingStatuses = new[]
         {

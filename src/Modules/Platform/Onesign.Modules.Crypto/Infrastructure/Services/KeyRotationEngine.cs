@@ -108,8 +108,8 @@ public class KeyRotationEngine : IKeyRotationEngine
             policy = new KeyRotationPolicy
             {
                 Id = Guid.NewGuid(),
-                ScopeId = keySetId,
-                ScopeType = KeyScopeType.KeySet,
+                ScopeId = keySetId.ToString(),
+                ScopeType = KeyScopeType.Tenant, // KeySets are tenant-scoped
                 Purpose = keySet.Purpose,
                 RotationPeriodDays = 90,
                 OverlapPeriodDays = 7,
@@ -270,9 +270,9 @@ public class KeyRotationEngine : IKeyRotationEngine
     {
         return purpose switch
         {
-            KeyPurpose.Signing => "RS256",
+            KeyPurpose.OidcSigning or KeyPurpose.SamlSigning => "RS256",
             KeyPurpose.Encryption => "A256GCM",
-            KeyPurpose.TokenEncryption => "RSA-OAEP-256",
+            KeyPurpose.Wrapping => "RSA-OAEP-256",
             _ => "RS256"
         };
     }

@@ -16,4 +16,8 @@ public class DeploymentDescriptor
     public int SmtpPort { get; set; }
     public string ObservabilityEndpoint { get; set; } = string.Empty;
     public string FeaturesJson { get; set; } = "{}";
+    public string Version { get; set; } = "1.0.0";
+    public Dictionary<string, string> Services { get; set; } = new();
+    public Dictionary<string, string> Configuration { get; set; } = new();
+    public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;
 }

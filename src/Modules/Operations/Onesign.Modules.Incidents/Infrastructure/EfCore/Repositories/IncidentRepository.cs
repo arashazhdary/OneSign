@@ -24,7 +24,7 @@ public class IncidentRepository : IIncidentRepository
 
     public async Task<IReadOnlyList<Incident>> GetByTenantAsync(Guid tenantId, int skip, int take, CancellationToken ct = default)
     {
-        var entities = await _dbContext.Set<IncidentEntity>()
+        var entities = await _dbContext.Set<Infrastructure.EfCore.Entities.IncidentEntity>()
             .Where(x => x.TenantId == tenantId)
             .OrderByDescending(x => x.DetectedAt)
             .Skip(skip)
@@ -35,7 +35,7 @@ public class IncidentRepository : IIncidentRepository
 
     public async Task<IReadOnlyList<Incident>> GetByStatusAsync(Guid tenantId, IncidentStatus status, CancellationToken ct = default)
     {
-        var entities = await _dbContext.Set<IncidentEntity>()
+        var entities = await _dbContext.Set<Infrastructure.EfCore.Entities.IncidentEntity>()
             .Where(x => x.TenantId == tenantId && x.Status == (int)status)
             .OrderByDescending(x => x.DetectedAt)
             .ToListAsync(ct);
@@ -44,7 +44,7 @@ public class IncidentRepository : IIncidentRepository
 
     public async Task<IReadOnlyList<Incident>> GetBySeverityAsync(Guid tenantId, IncidentSeverity severity, CancellationToken ct = default)
     {
-        var entities = await _dbContext.Set<IncidentEntity>()
+        var entities = await _dbContext.Set<Infrastructure.EfCore.Entities.IncidentEntity>()
             .Where(x => x.TenantId == tenantId && x.Severity == (int)severity)
             .OrderByDescending(x => x.DetectedAt)
             .ToListAsync(ct);
@@ -53,7 +53,7 @@ public class IncidentRepository : IIncidentRepository
 
     public async Task<IReadOnlyList<Incident>> GetByCategoryAsync(Guid tenantId, IncidentCategory category, CancellationToken ct = default)
     {
-        var entities = await _dbContext.Set<IncidentEntity>()
+        var entities = await _dbContext.Set<Infrastructure.EfCore.Entities.IncidentEntity>()
             .Where(x => x.TenantId == tenantId && x.Category == (int)category)
             .OrderByDescending(x => x.DetectedAt)
             .ToListAsync(ct);
@@ -62,7 +62,7 @@ public class IncidentRepository : IIncidentRepository
 
     public async Task<IReadOnlyList<Incident>> GetByUserAsync(Guid tenantId, Guid userId, CancellationToken ct = default)
     {
-        var entities = await _dbContext.Set<IncidentEntity>()
+        var entities = await _dbContext.Set<Infrastructure.EfCore.Entities.IncidentEntity>()
             .Where(x => x.TenantId == tenantId && x.PrimaryUserId == userId)
             .OrderByDescending(x => x.DetectedAt)
             .ToListAsync(ct);
@@ -71,7 +71,7 @@ public class IncidentRepository : IIncidentRepository
 
     public async Task<IReadOnlyList<Incident>> GetByApplicationAsync(Guid tenantId, Guid appId, CancellationToken ct = default)
     {
-        var entities = await _dbContext.Set<IncidentEntity>()
+        var entities = await _dbContext.Set<Infrastructure.EfCore.Entities.IncidentEntity>()
             .Where(x => x.TenantId == tenantId && x.PrimaryAppId == appId)
             .OrderByDescending(x => x.DetectedAt)
             .ToListAsync(ct);
@@ -80,7 +80,7 @@ public class IncidentRepository : IIncidentRepository
 
     public async Task<IReadOnlyList<Incident>> GetByDateRangeAsync(Guid tenantId, DateTime from, DateTime to, CancellationToken ct = default)
     {
-        var entities = await _dbContext.Set<IncidentEntity>()
+        var entities = await _dbContext.Set<Infrastructure.EfCore.Entities.IncidentEntity>()
             .Where(x => x.TenantId == tenantId && x.DetectedAt >= from && x.DetectedAt <= to)
             .OrderByDescending(x => x.DetectedAt)
             .ToListAsync(ct);
@@ -90,7 +90,7 @@ public class IncidentRepository : IIncidentRepository
     public async Task<IReadOnlyList<Incident>> GetActiveIncidentsAsync(Guid tenantId, CancellationToken ct = default)
     {
         var closedStatuses = new[] { (int)IncidentStatus.Resolved, (int)IncidentStatus.Closed };
-        var entities = await _dbContext.Set<IncidentEntity>()
+        var entities = await _dbContext.Set<Infrastructure.EfCore.Entities.IncidentEntity>()
             .Where(x => x.TenantId == tenantId && !closedStatuses.Contains(x.Status))
             .OrderByDescending(x => x.Severity)
             .ThenByDescending(x => x.DetectedAt)
@@ -100,20 +100,20 @@ public class IncidentRepository : IIncidentRepository
 
     public async Task<int> GetCountByTenantAsync(Guid tenantId, CancellationToken ct = default)
     {
-        return await _dbContext.Set<IncidentEntity>()
+        return await _dbContext.Set<Infrastructure.EfCore.Entities.IncidentEntity>()
             .CountAsync(x => x.TenantId == tenantId, ct);
     }
 
     public async Task<int> GetCountByStatusAsync(Guid tenantId, IncidentStatus status, CancellationToken ct = default)
     {
-        return await _dbContext.Set<IncidentEntity>()
+        return await _dbContext.Set<Infrastructure.EfCore.Entities.IncidentEntity>()
             .CountAsync(x => x.TenantId == tenantId && x.Status == (int)status, ct);
     }
 
     public async Task AddAsync(Incident incident, CancellationToken ct = default)
     {
         var entity = MapToEntity(incident);
-        await _dbContext.Set<IncidentEntity>().AddAsync(entity, ct);
+        await _dbContext.Set<Infrastructure.EfCore.Entities.IncidentEntity>().AddAsync(entity, ct);
         await _dbContext.SaveChangesAsync(ct);
     }
 

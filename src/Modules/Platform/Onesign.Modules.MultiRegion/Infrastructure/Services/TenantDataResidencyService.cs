@@ -38,8 +38,8 @@ public class TenantDataResidencyService : ITenantDataResidencyService
 
         if (existing != null)
         {
-            existing.PrimaryRegionId = request.PrimaryRegionId;
-            existing.AllowedRegions = request.AllowedRegions != null ? string.Join(",", request.AllowedRegions) : null;
+            existing.DataRegionId = request.PrimaryRegionId;
+            existing.BackupRegionId = request.AllowedRegions?.FirstOrDefault();
             existing.UpdatedAt = DateTime.UtcNow;
 
             await _dataResidencyRepository.UpdateAsync(existing, cancellationToken);
@@ -54,8 +54,8 @@ public class TenantDataResidencyService : ITenantDataResidencyService
         {
             Id = Guid.NewGuid(),
             TenantId = request.TenantId,
-            PrimaryRegionId = request.PrimaryRegionId,
-            AllowedRegions = request.AllowedRegions != null ? string.Join(",", request.AllowedRegions) : null,
+            DataRegionId = request.PrimaryRegionId,
+            BackupRegionId = request.AllowedRegions?.FirstOrDefault(),
             CreatedAt = DateTime.UtcNow
         };
 
@@ -85,13 +85,13 @@ public class TenantDataResidencyService : ITenantDataResidencyService
         }
 
         _logger.LogInformation("Initiating migration {MigrationId} for tenant {TenantId} from {Source} to {Target}",
-            migrationId, request.TenantId, currentResidency.PrimaryRegionId, request.TargetRegionId);
+            migrationId, request.TenantId, currentResidency.DataRegionId, request.TargetRegionId);
 
         return new DataResidencyMigrationResult
         {
             MigrationId = migrationId,
             TenantId = request.TenantId,
-            SourceRegionId = currentResidency.PrimaryRegionId,
+            SourceRegionId = currentResidency.DataRegionId,
             TargetRegionId = request.TargetRegionId,
             Status = "InProgress",
             InitiatedAt = DateTime.UtcNow
