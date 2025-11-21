@@ -11,6 +11,7 @@ interface Application {
   clientId: string;
   applicationType: string;
   redirectUris: Array<{ id: string; uri: string }>;
+  clientSecrets?: Array<{ id: string; description: string; createdAt: string }>;
 }
 
 interface OrgUnitTreeNode {
@@ -45,6 +46,9 @@ export default function TenantAppsPage() {
   const [showRedirectUrisModal, setShowRedirectUrisModal] = useState(false);
   const [selectedAppForRedirectUris, setSelectedAppForRedirectUris] = useState<Application | null>(null);
   const [newRedirectUri, setNewRedirectUri] = useState('');
+  const [showSecretsModal, setShowSecretsModal] = useState(false);
+  const [selectedAppForSecrets, setSelectedAppForSecrets] = useState<Application | null>(null);
+  const [newSecretDescription, setNewSecretDescription] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [userScope, setUserScope] = useState<CurrentUserScopeDto | null>(null);
@@ -105,12 +109,16 @@ export default function TenantAppsPage() {
               const detailResponse = await fetch(`http://localhost:7000/api/tenant/applications/${app.id}?tenantId=${tenantId}`);
               if (detailResponse.ok) {
                 const detailData = await detailResponse.json();
-                return { ...app, redirectUris: detailData.redirectUris || [] };
+                return {
+                  ...app,
+                  redirectUris: detailData.redirectUris || [],
+                  clientSecrets: detailData.clientSecrets || []
+                };
               }
             } catch (error) {
               console.error(`Error fetching details for app ${app.id}:`, error);
             }
-            return { ...app, redirectUris: [] };
+            return { ...app, redirectUris: [], clientSecrets: [] };
           })
         );
         setApplications(appsWithDetails);
@@ -119,6 +127,12 @@ export default function TenantAppsPage() {
           const updatedApp = appsWithDetails.find(a => a.id === selectedAppForRedirectUris.id);
           if (updatedApp) {
             setSelectedAppForRedirectUris(updatedApp);
+          }
+        }
+        if (selectedAppForSecrets) {
+          const updatedApp = appsWithDetails.find(a => a.id === selectedAppForSecrets.id);
+          if (updatedApp) {
+            setSelectedAppForSecrets(updatedApp);
           }
         }
       }
@@ -355,12 +369,13 @@ export default function TenantAppsPage() {
     }
   };
 
+  // DELETE /api/tenant/applications/redirect-uris/{redirectUriId} - حذف redirect URI
   const handleRemoveRedirectUri = async (redirectUriId: string) => {
     if (!confirm(t('tenant.applications.confirmRemoveRedirectUri'))) return;
     setError('');
     setSuccess('');
     if (!tenantId) return;
-    
+
     try {
       const response = await fetch(`http://localhost:7000/api/tenant/applications/redirect-uris/${redirectUriId}?tenantId=${tenantId}`, {
         method: 'DELETE'
@@ -377,6 +392,64 @@ export default function TenantAppsPage() {
     } catch (error) {
       setError(t('common.error'));
       console.error('Error removing redirect URI:', error);
+    }
+  };
+
+  const handleManageSecrets = (app: Application) => {
+    setSelectedAppForSecrets(app);
+    setShowSecretsModal(true);
+    setNewSecretDescription('');
+  };
+
+  const handleAddSecret = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    if (!tenantId || !selectedAppForSecrets) return;
+
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/applications/${selectedAppForSecrets.id}/secrets?tenantId=${tenantId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description: newSecretDescription })
+      });
+
+      if (response.ok) {
+        setNewSecretDescription('');
+        setSuccess('Client secret added successfully');
+        await fetchApplications();
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (error) {
+      setError(t('common.error'));
+      console.error('Error adding client secret:', error);
+    }
+  };
+
+  // DELETE /api/tenant/applications/secrets/{secretId} - حذف client secret
+  const handleRemoveSecret = async (secretId: string) => {
+    if (!confirm('Are you sure you want to delete this client secret? Applications using this secret will stop working.')) return;
+    setError('');
+    setSuccess('');
+    if (!tenantId) return;
+
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/applications/secrets/${secretId}?tenantId=${tenantId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        setSuccess('Client secret deleted successfully');
+        await fetchApplications();
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (error) {
+      setError(t('common.error'));
+      console.error('Error removing client secret:', error);
     }
   };
 
@@ -611,6 +684,83 @@ export default function TenantAppsPage() {
         </div>
       )}
 
+      {/* Manage Secrets Modal */}
+      {showSecretsModal && selectedAppForSecrets && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4">Manage Client Secrets - {selectedAppForSecrets.name}</h2>
+
+            {error && (
+              <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                {error}
+              </div>
+            )}
+
+            {success && (
+              <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+                {success}
+              </div>
+            )}
+
+            <form onSubmit={handleAddSecret} className="mb-6">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  required
+                  className="flex-1 px-3 py-2 border rounded"
+                  placeholder="Secret description (e.g., Production, Development)"
+                  value={newSecretDescription}
+                  onChange={(e) => setNewSecretDescription(e.target.value)}
+                />
+                <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded">
+                  Add Secret
+                </button>
+              </div>
+            </form>
+
+            <div className="mb-4">
+              <h3 className="font-semibold mb-2">Client Secrets</h3>
+              {selectedAppForSecrets.clientSecrets && selectedAppForSecrets.clientSecrets.length > 0 ? (
+                <ul className="space-y-2">
+                  {selectedAppForSecrets.clientSecrets.map((secret) => (
+                    <li key={secret.id} className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                      <div>
+                        <span className="text-sm font-medium">{secret.description}</span>
+                        <span className="text-xs text-gray-500 ml-2">
+                          (Created: {new Date(secret.createdAt).toLocaleDateString()})
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => handleRemoveSecret(secret.id)}
+                        className="text-red-600 hover:text-red-900 text-sm"
+                      >
+                        {t('common.delete')}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-500 text-sm">No client secrets. Add one to enable authentication.</p>
+              )}
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                onClick={() => {
+                  setShowSecretsModal(false);
+                  setSelectedAppForSecrets(null);
+                  setError('');
+                  setSuccess('');
+                }}
+                className="bg-gray-300 px-4 py-2 rounded"
+              >
+                {t('common.close')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Assign OrgUnits Modal */}
       {showAssignOrgUnitsModal && selectedAppForOrgUnits && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -707,6 +857,12 @@ export default function TenantAppsPage() {
                       className="text-blue-600 hover:text-blue-900"
                     >
                       {t('tenant.applications.manageRedirectUris')}
+                    </button>
+                    <button
+                      onClick={() => handleManageSecrets(app)}
+                      className="text-purple-600 hover:text-purple-900"
+                    >
+                      Manage Secrets
                     </button>
                     <button
                       onClick={() => handleDeleteApplication(app.id)}

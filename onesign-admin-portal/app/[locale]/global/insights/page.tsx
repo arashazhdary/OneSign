@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 
-type Tab = 'platform-overview' | 'high-risk-users' | 'system-health';
+type Tab = 'platform-overview' | 'high-risk-users' | 'risky-tenants' | 'system-health' | 'report-subscriptions';
 
 interface PlatformOverviewStats {
   totalTenants: number;
@@ -58,6 +58,25 @@ interface SystemAlert {
   acknowledged: boolean;
 }
 
+interface RiskyTenant {
+  tenantId: string;
+  tenantName: string;
+  riskScore: number;
+  riskLevel: 'High' | 'Critical';
+  issues: string[];
+  lastAssessed: string;
+}
+
+interface ReportSubscription {
+  id: string;
+  name: string;
+  reportType: string;
+  frequency: 'Daily' | 'Weekly' | 'Monthly';
+  recipients: string[];
+  isActive: boolean;
+  createdAt: string;
+}
+
 export default function GlobalInsightsPage() {
   const t = useTranslations();
   const [activeTab, setActiveTab] = useState<Tab>('platform-overview');
@@ -90,6 +109,21 @@ export default function GlobalInsightsPage() {
   // System Health state
   const [healthMetrics, setHealthMetrics] = useState<SystemHealthMetric[]>([]);
   const [systemAlerts, setSystemAlerts] = useState<SystemAlert[]>([]);
+
+  // Risky Tenants state
+  const [riskyTenants, setRiskyTenants] = useState<RiskyTenant[]>([]);
+
+  // Report Subscriptions state
+  const [reportSubscriptions, setReportSubscriptions] = useState<ReportSubscription[]>([]);
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+  const [editingSubscription, setEditingSubscription] = useState<ReportSubscription | null>(null);
+  const [subscriptionForm, setSubscriptionForm] = useState({
+    name: '',
+    reportType: 'Platform Overview',
+    frequency: 'Weekly' as 'Daily' | 'Weekly' | 'Monthly',
+    recipients: [] as string[],
+    isActive: true,
+  });
 
   useEffect(() => {
     fetchData();
@@ -204,6 +238,122 @@ export default function GlobalInsightsPage() {
     setRiskPageNumber(1);
   };
 
+  const fetchTenantsOverview = async () => {
+    try {
+      const response = await fetch('http://localhost:7000/api/global/insights/tenants/overview');
+      if (response.ok) {
+        const data = await response.json();
+        return data;
+      }
+    } catch (err) {
+      console.error('Error fetching tenants overview:', err);
+    }
+  };
+
+  const fetchRiskyTenants = async () => {
+    try {
+      const response = await fetch('http://localhost:7000/api/global/insights/tenants/risky');
+      if (response.ok) {
+        const data = await response.json();
+        setRiskyTenants(data.items || []);
+      }
+    } catch (err) {
+      console.error('Error fetching risky tenants:', err);
+    }
+  };
+
+  const handleExportTenants = async () => {
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      const response = await fetch('http://localhost:7000/api/global/insights/export/tenants');
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `tenants-export-${new Date().toISOString()}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        setSuccess('Tenants exported successfully');
+      } else {
+        throw new Error('Failed to export tenants');
+      }
+    } catch (err) {
+      setError('Failed to export tenants');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchReportSubscriptions = async () => {
+    try {
+      const response = await fetch('http://localhost:7000/api/global/insights/report-subscriptions');
+      if (response.ok) {
+        const data = await response.json();
+        setReportSubscriptions(data.items || []);
+      }
+    } catch (err) {
+      console.error('Error fetching report subscriptions:', err);
+    }
+  };
+
+  const handleCreateSubscription = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    try {
+      const url = editingSubscription
+        ? `http://localhost:7000/api/global/insights/report-subscriptions/${editingSubscription.id}`
+        : `http://localhost:7000/api/global/insights/report-subscriptions`;
+      const method = editingSubscription ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(subscriptionForm),
+      });
+
+      if (response.ok) {
+        setSuccess(editingSubscription ? 'Subscription updated successfully' : 'Subscription created successfully');
+        setShowSubscriptionModal(false);
+        setEditingSubscription(null);
+        setSubscriptionForm({
+          name: '',
+          reportType: 'Platform Overview',
+          frequency: 'Weekly',
+          recipients: [],
+          isActive: true,
+        });
+        fetchReportSubscriptions();
+      } else {
+        throw new Error('Failed to save subscription');
+      }
+    } catch (err) {
+      setError('Failed to save subscription');
+    }
+  };
+
+  const handleDeleteSubscription = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this subscription?')) return;
+    try {
+      const response = await fetch(`http://localhost:7000/api/global/insights/report-subscriptions/${id}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        setSuccess('Subscription deleted successfully');
+        fetchReportSubscriptions();
+      } else {
+        throw new Error('Failed to delete subscription');
+      }
+    } catch (err) {
+      setError('Failed to delete subscription');
+    }
+  };
+
   const getRiskLevelColor = (level: string) => {
     switch (level) {
       case 'Critical':
@@ -262,15 +412,17 @@ export default function GlobalInsightsPage() {
 
       {/* Tabs */}
       <div className="mb-6 border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
-          {(['platform-overview', 'high-risk-users', 'system-health'] as Tab[]).map((tab) => (
+        <nav className="-mb-px flex space-x-8 overflow-x-auto">
+          {(['platform-overview', 'high-risk-users', 'risky-tenants', 'system-health', 'report-subscriptions'] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => {
                 setActiveTab(tab);
                 setRiskPageNumber(1);
+                if (tab === 'risky-tenants') fetchRiskyTenants();
+                if (tab === 'report-subscriptions') fetchReportSubscriptions();
               }}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                 activeTab === tab
                   ? 'border-indigo-500 text-indigo-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -280,6 +432,10 @@ export default function GlobalInsightsPage() {
                 ? 'Platform Overview'
                 : tab === 'high-risk-users'
                 ? 'High Risk Users'
+                : tab === 'risky-tenants'
+                ? 'Risky Tenants'
+                : tab === 'report-subscriptions'
+                ? 'Report Subscriptions'
                 : 'System Health'}
             </button>
           ))}
@@ -623,6 +779,270 @@ export default function GlobalInsightsPage() {
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Risky Tenants Tab */}
+      {activeTab === 'risky-tenants' && (
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Risky Tenants</h3>
+            <button
+              onClick={handleExportTenants}
+              disabled={loading}
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
+            >
+              Export to Excel
+            </button>
+          </div>
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Tenant
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Risk Level
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Risk Score
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Issues
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Last Assessed
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {riskyTenants.map((tenant) => (
+                <tr key={tenant.tenantId}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {tenant.tenantName}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 py-1 rounded text-xs ${getRiskLevelColor(tenant.riskLevel)}`}>
+                      {tenant.riskLevel}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {tenant.riskScore}
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    <div className="flex flex-wrap gap-1">
+                      {tenant.issues.slice(0, 3).map((issue, index) => (
+                        <span
+                          key={index}
+                          className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs"
+                        >
+                          {issue}
+                        </span>
+                      ))}
+                      {tenant.issues.length > 3 && (
+                        <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
+                          +{tenant.issues.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {new Date(tenant.lastAssessed).toLocaleDateString()}
+                  </td>
+                </tr>
+              ))}
+              {riskyTenants.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                    No risky tenants found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Report Subscriptions Tab */}
+      {activeTab === 'report-subscriptions' && (
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Report Subscriptions</h3>
+            <button
+              onClick={() => {
+                setEditingSubscription(null);
+                setSubscriptionForm({
+                  name: '',
+                  reportType: 'Platform Overview',
+                  frequency: 'Weekly',
+                  recipients: [],
+                  isActive: true,
+                });
+                setShowSubscriptionModal(true);
+              }}
+              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+            >
+              Create Subscription
+            </button>
+          </div>
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Report Type</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Frequency</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Recipients</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {reportSubscriptions.map((subscription) => (
+                <tr key={subscription.id}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {subscription.name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {subscription.reportType}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-800">
+                      {subscription.frequency}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    {subscription.recipients.length} recipient(s)
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 py-1 rounded text-xs ${subscription.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                      {subscription.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          setEditingSubscription(subscription);
+                          setSubscriptionForm({
+                            name: subscription.name,
+                            reportType: subscription.reportType,
+                            frequency: subscription.frequency,
+                            recipients: subscription.recipients,
+                            isActive: subscription.isActive,
+                          });
+                          setShowSubscriptionModal(true);
+                        }}
+                        className="text-indigo-600 hover:text-indigo-900"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteSubscription(subscription.id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {reportSubscriptions.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                    No report subscriptions. Create one to receive automated reports.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Report Subscription Modal */}
+      {showSubscriptionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4">
+              {editingSubscription ? 'Edit Report Subscription' : 'Create Report Subscription'}
+            </h2>
+            <form onSubmit={handleCreateSubscription}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Name</label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-3 py-2 border rounded"
+                  value={subscriptionForm.name}
+                  onChange={(e) => setSubscriptionForm({ ...subscriptionForm, name: e.target.value })}
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Report Type</label>
+                <select
+                  className="w-full px-3 py-2 border rounded"
+                  value={subscriptionForm.reportType}
+                  onChange={(e) => setSubscriptionForm({ ...subscriptionForm, reportType: e.target.value })}
+                >
+                  <option value="Platform Overview">Platform Overview</option>
+                  <option value="High Risk Users">High Risk Users</option>
+                  <option value="Risky Tenants">Risky Tenants</option>
+                  <option value="System Health">System Health</option>
+                </select>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Frequency</label>
+                <select
+                  className="w-full px-3 py-2 border rounded"
+                  value={subscriptionForm.frequency}
+                  onChange={(e) => setSubscriptionForm({ ...subscriptionForm, frequency: e.target.value as 'Daily' | 'Weekly' | 'Monthly' })}
+                >
+                  <option value="Daily">Daily</option>
+                  <option value="Weekly">Weekly</option>
+                  <option value="Monthly">Monthly</option>
+                </select>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Recipients (one email per line)</label>
+                <textarea
+                  required
+                  className="w-full px-3 py-2 border rounded"
+                  rows={4}
+                  value={subscriptionForm.recipients.join('\n')}
+                  onChange={(e) => setSubscriptionForm({ ...subscriptionForm, recipients: e.target.value.split('\n').filter(email => email.trim()) })}
+                  placeholder="admin@example.com"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    className="mr-2"
+                    checked={subscriptionForm.isActive}
+                    onChange={(e) => setSubscriptionForm({ ...subscriptionForm, isActive: e.target.checked })}
+                  />
+                  Active
+                </label>
+              </div>
+              <div className="flex gap-2 justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowSubscriptionModal(false);
+                    setEditingSubscription(null);
+                  }}
+                  className="px-4 py-2 border rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                >
+                  {editingSubscription ? 'Update' : 'Create'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

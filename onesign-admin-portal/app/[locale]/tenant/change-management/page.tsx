@@ -433,14 +433,14 @@ export default function TenantChangeManagementPage() {
     }
   };
 
-  // 4. POST /api/tenant/changesets/{id}/schedule - زمان‌بندی اجرا
+  // POST /api/tenant/change-sets/{id}/schedule - زمان‌بندی change set
   const handleSchedule = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedChangeSet) return;
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/changesets/${selectedChangeSet.id}/schedule`, {
+      const response = await fetch(`http://localhost:7000/api/tenant/change-sets/${selectedChangeSet.id}/schedule`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -488,13 +488,13 @@ export default function TenantChangeManagementPage() {
     }
   };
 
-  // 6. POST /api/tenant/changesets/{id}/rollback - بازگشت تغییرات
+  // POST /api/tenant/change-sets/{id}/rollback - بازگردانی change set
   const handleRollback = async () => {
     if (!selectedChangeSet) return;
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/changesets/${selectedChangeSet.id}/rollback`, {
+      const response = await fetch(`http://localhost:7000/api/tenant/change-sets/${selectedChangeSet.id}/rollback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tenantId, userId }),
@@ -513,13 +513,13 @@ export default function TenantChangeManagementPage() {
     }
   };
 
-  // 7. POST /api/tenant/changesets/{id}/approve - تایید تغییرات
+  // POST /api/tenant/change-sets/{id}/approve - تایید change set
   const handleApproveChangeSet = async () => {
     if (!selectedChangeSet) return;
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/changesets/${selectedChangeSet.id}/approve`, {
+      const response = await fetch(`http://localhost:7000/api/tenant/change-sets/${selectedChangeSet.id}/approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tenantId, userId, comment: approvalComment }),
@@ -539,7 +539,7 @@ export default function TenantChangeManagementPage() {
     }
   };
 
-  // 8. POST /api/tenant/changesets/{id}/reject - رد تغییرات
+  // POST /api/tenant/change-sets/{id}/reject - رد change set
   const handleRejectChangeSet = async () => {
     if (!selectedChangeSet || !rejectReason.trim()) {
       setError('Please provide a reason for rejection');
@@ -548,7 +548,7 @@ export default function TenantChangeManagementPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/changesets/${selectedChangeSet.id}/reject`, {
+      const response = await fetch(`http://localhost:7000/api/tenant/change-sets/${selectedChangeSet.id}/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tenantId, userId, reason: rejectReason }),
@@ -747,9 +747,10 @@ export default function TenantChangeManagementPage() {
     }
   };
 
+  // POST /api/tenant/change-sets/{id}/submit - ارسال change set
   const handleSubmitForReview = async (changeSet: ChangeSet) => {
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/change-management/change-sets/${changeSet.id}/submit`, {
+      const response = await fetch(`http://localhost:7000/api/tenant/change-sets/${changeSet.id}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tenantId, userId }),
@@ -804,11 +805,12 @@ export default function TenantChangeManagementPage() {
     }
   };
 
+  // POST /api/tenant/change-sets/{id}/apply - اعمال change set
   const handleApplyChangeSet = async (changeSet: ChangeSet) => {
     if (!confirm('Are you sure you want to apply this change set? This action cannot be undone.')) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/change-management/change-sets/${changeSet.id}/apply`, {
+      const response = await fetch(`http://localhost:7000/api/tenant/change-sets/${changeSet.id}/apply`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tenantId, userId }),

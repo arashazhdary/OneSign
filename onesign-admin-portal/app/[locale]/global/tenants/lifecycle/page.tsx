@@ -51,6 +51,9 @@ export default function TenantLifecyclePage() {
   const [tenantMetrics, setTenantMetrics] = useState<TenantMetric[]>([]);
   const [migrationStatus, setMigrationStatus] = useState<MigrationStatus | null>(null);
   const [exportJobs, setExportJobs] = useState<ExportJob[]>([]);
+  const [migrationId, setMigrationId] = useState('');
+  const [exportId, setExportId] = useState('');
+  const [exportStatus, setExportStatus] = useState<ExportJob | null>(null);
 
   const fetchTenantHealth = async () => {
     if (!tenantId) return;
@@ -83,6 +86,54 @@ export default function TenantLifecyclePage() {
       if (response.ok) {
         const data = await response.json();
         setTenantMetrics(data.metrics || []);
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (err) {
+      setError(t('common.error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getMigrationStatus = async () => {
+    if (!tenantId || !migrationId) {
+      setError('Please enter both Tenant ID and Migration ID');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetch(`http://localhost:7000/api/global/tenants/${tenantId}/migrations/${migrationId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setMigrationStatus(data);
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (err) {
+      setError(t('common.error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getExportStatus = async () => {
+    if (!tenantId || !exportId) {
+      setError('Please enter both Tenant ID and Export ID');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetch(`http://localhost:7000/api/global/tenants/${tenantId}/exports/${exportId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setExportStatus(data);
       } else {
         const data = await response.json();
         setError(data.errorMessage || t('common.error'));

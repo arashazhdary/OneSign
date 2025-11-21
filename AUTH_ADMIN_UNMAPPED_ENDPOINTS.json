@@ -1,0 +1,85 @@
+[
+  {
+    "controllerName": "AuthController",
+    "controllerPath": "/home/user/OneSign/src/Onesign.Api/Controllers/Auth/AuthController.cs",
+    "totalEndpoints": 5,
+    "mappedEndpoints": 3,
+    "unmappedEndpoints": [
+      {
+        "method": "POST",
+        "route": "/api/auth/google-login",
+        "action": "GoogleLogin",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Auth/AuthController.cs",
+        "lineNumber": 186,
+        "description": "Authenticates user with Google OAuth2 ID token"
+      },
+      {
+        "method": "POST",
+        "route": "/api/auth/complete-first-login",
+        "action": "CompleteFirstLogin",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Auth/AuthController.cs",
+        "lineNumber": 241,
+        "description": "Completes first login by setting user password"
+      }
+    ],
+    "mappedEndpointsDetails": [
+      {
+        "method": "POST",
+        "route": "/api/auth/login",
+        "action": "Login",
+        "usedIn": [
+          "/home/user/OneSign/onesign-admin-portal/app/contexts/AuthContext.tsx"
+        ]
+      },
+      {
+        "method": "POST",
+        "route": "/api/auth/forgot-password",
+        "action": "ForgotPassword",
+        "usedIn": [
+          "/home/user/OneSign/onesign-admin-portal/lib/api/services/auth.service.ts"
+        ]
+      },
+      {
+        "method": "POST",
+        "route": "/api/auth/reset-password",
+        "action": "ResetPassword",
+        "usedIn": [
+          "/home/user/OneSign/onesign-admin-portal/lib/api/services/auth.service.ts"
+        ]
+      }
+    ]
+  },
+  {
+    "controllerName": "TenantsController",
+    "controllerPath": "/home/user/OneSign/src/Onesign.Api/Controllers/Admin/TenantsController.cs",
+    "totalEndpoints": 3,
+    "mappedEndpoints": 3,
+    "unmappedEndpoints": [],
+    "mappedEndpointsDetails": [
+      {
+        "method": "GET",
+        "route": "/api/admin/tenants",
+        "action": "GetTenants",
+        "usedIn": [
+          "/home/user/OneSign/onesign-admin-portal/app/[locale]/admin/tenants/page.tsx"
+        ]
+      },
+      {
+        "method": "POST",
+        "route": "/api/admin/tenants",
+        "action": "CreateTenant",
+        "usedIn": [
+          "/home/user/OneSign/onesign-admin-portal/app/[locale]/admin/tenants/page.tsx"
+        ]
+      },
+      {
+        "method": "PATCH",
+        "route": "/api/admin/tenants/{tenantId}/status",
+        "action": "UpdateTenantStatus",
+        "usedIn": [
+          "/home/user/OneSign/onesign-admin-portal/app/[locale]/admin/tenants/page.tsx"
+        ]
+      }
+    ]
+  }
+]

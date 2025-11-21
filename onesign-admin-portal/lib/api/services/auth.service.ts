@@ -19,6 +19,10 @@ import {
   OAuth2AuthorizeRequest,
   OAuth2CallbackRequest,
   SamlConfigRequest,
+  GoogleLoginRequest,
+  GoogleLoginResponse,
+  CompleteFirstLoginRequest,
+  CompleteFirstLoginResponse,
 } from '../types/auth';
 
 /**
@@ -214,6 +218,37 @@ export class AuthService {
    */
   async getSamlMetadata(tenantId: string): Promise<string> {
     const response = await this.client.get<string>('/api/auth/saml/metadata', { tenantId });
+    return response.data;
+  }
+
+  // Google OAuth2 Login
+
+  /**
+   * Get Google OAuth2 authorization URL
+   */
+  async getGoogleAuthUrl(redirectUri: string): Promise<{ authUrl: string }> {
+    const response = await this.client.post<{ authUrl: string }>('/api/auth/google/auth-url', {
+      redirectUri,
+    });
+    return response.data;
+  }
+
+  /**
+   * Login with Google OAuth2 code
+   */
+  async googleLogin(data: GoogleLoginRequest): Promise<GoogleLoginResponse> {
+    const response = await this.client.post<GoogleLoginResponse>('/api/auth/google-login', data);
+    return response.data;
+  }
+
+  /**
+   * Complete first login by setting password
+   */
+  async completeFirstLogin(data: CompleteFirstLoginRequest): Promise<CompleteFirstLoginResponse> {
+    const response = await this.client.post<CompleteFirstLoginResponse>(
+      '/api/auth/complete-first-login',
+      data
+    );
     return response.data;
   }
 

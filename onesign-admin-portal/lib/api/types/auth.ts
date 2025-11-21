@@ -136,3 +136,29 @@ export interface SamlConfigRequest {
   ssoUrl: string;
   certificate: string;
 }
+
+export interface GoogleLoginRequest {
+  code: string;
+  redirectUri: string;
+}
+
+export interface GoogleLoginResponse {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  tokenType: string;
+  user: AuthUser;
+  requiresPasswordSetup?: boolean;
+  setupToken?: string;
+}
+
+export interface CompleteFirstLoginRequest {
+  setupToken: string;
+  password: string;
+  confirmPassword: string;
+}
+
+export interface CompleteFirstLoginResponse {
+  success: boolean;
+  message: string;
+}

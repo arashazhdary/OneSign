@@ -116,6 +116,24 @@ export default function MFAManagementPage() {
     }
   };
 
+  const handleDeleteMethod = async (methodId: string) => {
+    if (!tenantId || !confirm('Are you sure you want to delete this MFA method?')) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/mfa/methods/${methodId}?tenantId=${tenantId}`, {
+        method: 'DELETE'
+      });
+      if (response.ok) {
+        setSuccess('MFA method deleted successfully');
+        fetchMFAMethods();
+      }
+    } catch (err) {
+      setError('Failed to delete MFA method');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleRevokeTrust = async (deviceId: string) => {
     if (!tenantId || !confirm('Are you sure you want to revoke trust for this device?')) return;
     setLoading(true);
@@ -186,12 +204,20 @@ export default function MFAManagementPage() {
           data={mfaMethods}
           columns={mfaColumns}
           actions={(method) => (
-            <button
-              onClick={() => handleDisableMFA(method.userId)}
-              className="text-red-600 hover:text-red-800 font-medium"
-            >
-              Disable
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleDisableMFA(method.userId)}
+                className="text-orange-600 hover:text-orange-800 font-medium"
+              >
+                Disable All
+              </button>
+              <button
+                onClick={() => handleDeleteMethod(method.id)}
+                className="text-red-600 hover:text-red-800 font-medium"
+              >
+                Delete
+              </button>
+            </div>
           )}
         />
       )}

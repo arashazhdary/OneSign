@@ -52,7 +52,7 @@ export default function LifecyclePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [activeTab, setActiveTab] = useState<'packages' | 'policies' | 'hr-sync' | 'timeline'>('packages');
+  const [activeTab, setActiveTab] = useState<'packages' | 'policies' | 'hr-sync' | 'timeline' | 'events'>('packages');
 
   // Access Packages
   const [accessPackages, setAccessPackages] = useState<AccessPackage[]>([]);
@@ -79,6 +79,9 @@ export default function LifecyclePage() {
   const [selectedUserId, setSelectedUserId] = useState('');
   const [userTimeline, setUserTimeline] = useState<UserTimelineEvent[]>([]);
 
+  // Lifecycle Events
+  const [lifecycleEvents, setLifecycleEvents] = useState<LifecycleEvent[]>([]);
+
   useEffect(() => {
     const contextTenantId = getTenantId();
     setTenantIdState(contextTenantId || '00000000-0000-0000-0000-000000000000');
@@ -90,7 +93,8 @@ export default function LifecyclePage() {
       Promise.all([
         fetchAccessPackages(),
         fetchLifecyclePolicies(),
-        fetchHRSyncStatus()
+        fetchHRSyncStatus(),
+        fetchLifecycleEvents()
       ]).finally(() => setLoading(false));
     }
   }, [tenantId]);
@@ -148,6 +152,20 @@ export default function LifecyclePage() {
       }
     } catch (error) {
       console.error('Error fetching user timeline:', error);
+    }
+  };
+
+  const fetchLifecycleEvents = async () => {
+    if (!tenantId) return;
+
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/lifecycle/events?tenantId=${tenantId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setLifecycleEvents(Array.isArray(data) ? data : []);
+      }
+    } catch (error) {
+      console.error('Error fetching lifecycle events:', error);
     }
   };
 
@@ -305,6 +323,16 @@ export default function LifecyclePage() {
             }`}
           >
             {t('tenant.lifecycle.userTimeline') || 'User Timeline'}
+          </button>
+          <button
+            onClick={() => setActiveTab('events')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'events'
+                ? 'border-indigo-500 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            {t('tenant.lifecycle.events') || 'Lifecycle Events'}
           </button>
         </nav>
       </div>
@@ -515,6 +543,45 @@ export default function LifecyclePage() {
               {t('tenant.lifecycle.noEvents') || 'No timeline events found'}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Lifecycle Events Tab */}
+      {activeTab === 'events' && (
+        <div>
+          <h2 className="text-xl font-semibold mb-4">{t('tenant.lifecycle.events') || 'Lifecycle Events'}</h2>
+
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.lifecycle.eventType') || 'Event Type'}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.lifecycle.userId') || 'User ID'}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.lifecycle.timestamp') || 'Timestamp'}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.lifecycle.details') || 'Details'}</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {lifecycleEvents.map((event) => (
+                  <tr key={event.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{event.eventType}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{event.userId}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(event.timestamp).toLocaleString(locale)}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {typeof event.details === 'object' ? JSON.stringify(event.details) : event.details}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {lifecycleEvents.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                {t('tenant.lifecycle.noEvents') || 'No lifecycle events found'}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

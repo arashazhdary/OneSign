@@ -24,6 +24,8 @@ export default function GlobalAutomationPage() {
   const [success, setSuccess] = useState('');
 
   const [templates, setTemplates] = useState<AutomationWorkflowDto[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState('');
+  const [templateDetail, setTemplateDetail] = useState<AutomationWorkflowDto | null>(null);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newTemplate, setNewTemplate] = useState({
@@ -52,6 +54,22 @@ export default function GlobalAutomationPage() {
       console.error('Error fetching templates:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getTemplate = async () => {
+    if (!selectedTemplateId) return;
+    setError('');
+    try {
+      const response = await fetch(`http://localhost:7000/api/global/automation/templates/${selectedTemplateId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setTemplateDetail(data);
+      } else {
+        setError('Template not found');
+      }
+    } catch (err) {
+      setError(t('common.error'));
     }
   };
 

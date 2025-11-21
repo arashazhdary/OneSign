@@ -27,7 +27,7 @@ interface RotationPolicy {
   lastUpdated: string;
 }
 
-type Tab = 'keysets' | 'policies';
+type Tab = 'keysets' | 'policies' | 'versions';
 
 export default function CryptographyManagementPage() {
   const t = useTranslations();
@@ -38,6 +38,7 @@ export default function CryptographyManagementPage() {
 
   const [keySets, setKeySets] = useState<KeySet[]>([]);
   const [rotationPolicies, setRotationPolicies] = useState<RotationPolicy[]>([]);
+  const [versionIdToRevoke, setVersionIdToRevoke] = useState('');
 
   const [showCreateKeySetModal, setShowCreateKeySetModal] = useState(false);
   const [newKeySet, setNewKeySet] = useState({
@@ -69,7 +70,7 @@ export default function CryptographyManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/crypto/key-sets');
+      const response = await fetch('http://localhost:7000/api/global/crypto/keysets');
       if (response.ok) {
         const data = await response.json();
         setKeySets(data.items || data || []);
@@ -81,6 +82,60 @@ export default function CryptographyManagementPage() {
       setError(t('common.error'));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getKeySet = async (id: string) => {
+    setError('');
+    try {
+      const response = await fetch(`http://localhost:7000/api/global/crypto/keysets/${id}`);
+      if (response.ok) {
+        const data = await response.json();
+        return data;
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (err) {
+      setError(t('common.error'));
+    }
+  };
+
+  const rolloverKeySet = async (id: string) => {
+    setError('');
+    setSuccess('');
+    try {
+      const response = await fetch(`http://localhost:7000/api/global/crypto/keysets/${id}/rollover`, {
+        method: 'POST',
+      });
+      if (response.ok) {
+        setSuccess('Keyset rollover initiated successfully');
+        fetchKeySets();
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (err) {
+      setError(t('common.error'));
+    }
+  };
+
+  const revokeKeyVersion = async (versionId: string) => {
+    setError('');
+    setSuccess('');
+    try {
+      const response = await fetch(`http://localhost:7000/api/global/crypto/keyversions/${versionId}/revoke`, {
+        method: 'POST',
+      });
+      if (response.ok) {
+        setSuccess('Key version revoked successfully');
+        fetchKeySets();
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (err) {
+      setError(t('common.error'));
     }
   };
 
@@ -233,7 +288,7 @@ export default function CryptographyManagementPage() {
 
       <div className="mb-6 border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
-          {(['keysets', 'policies'] as Tab[]).map((tab) => (
+          {(['keysets', 'versions', 'policies'] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -243,7 +298,7 @@ export default function CryptographyManagementPage() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              {tab === 'keysets' ? 'Key Sets' : 'Rotation Policies'}
+              {tab === 'keysets' ? 'Key Sets' : tab === 'versions' ? 'Key Versions' : 'Rotation Policies'}
             </button>
           ))}
         </nav>
@@ -381,14 +436,33 @@ export default function CryptographyManagementPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {keySet.status === 'Active' && (
-                          <button
-                            onClick={() => handleRotateKey(keySet.id)}
-                            className="text-indigo-600 hover:text-indigo-900"
-                          >
-                            Rotate
-                          </button>
-                        )}
+                        <div className="flex gap-2">
+                          {keySet.status === 'Active' && (
+                            <>
+                              <button
+                                onClick={() => handleRotateKey(keySet.id)}
+                                className="text-indigo-600 hover:text-indigo-900"
+                              >
+                                Rotate
+                              </button>
+                              <button
+                                onClick={() => rolloverKeySet(keySet.id)}
+                                className="text-purple-600 hover:text-purple-900"
+                              >
+                                Rollover
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  const detail = await getKeySet(keySet.id);
+                                  if (detail) alert(JSON.stringify(detail, null, 2));
+                                }}
+                                className="text-gray-600 hover:text-gray-900"
+                              >
+                                View
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -402,6 +476,53 @@ export default function CryptographyManagementPage() {
                 )}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'versions' && (
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold mb-6">Key Version Management</h2>
+          <div className="flex gap-4 items-end mb-6">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Key Version ID to Revoke
+              </label>
+              <input
+                type="text"
+                value={versionIdToRevoke}
+                onChange={(e) => setVersionIdToRevoke(e.target.value)}
+                placeholder="Enter key version ID"
+                className="w-full px-3 py-2 border border-gray-300 rounded"
+              />
+            </div>
+            <button
+              onClick={() => {
+                if (versionIdToRevoke) {
+                  revokeKeyVersion(versionIdToRevoke);
+                  setVersionIdToRevoke('');
+                }
+              }}
+              disabled={!versionIdToRevoke}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
+            >
+              Revoke Version
+            </button>
+          </div>
+
+          <div className="border-t pt-6">
+            <p className="text-sm text-gray-600 mb-4">
+              Revoking a key version will immediately invalidate it. This action cannot be undone.
+            </p>
+            <div className="bg-yellow-50 border border-yellow-200 rounded p-4">
+              <h3 className="text-sm font-semibold text-yellow-800 mb-2">Important Notes:</h3>
+              <ul className="text-sm text-yellow-700 space-y-1 list-disc list-inside">
+                <li>Ensure the key version ID is correct before revoking</li>
+                <li>Revoked versions cannot be used for any cryptographic operations</li>
+                <li>Active sessions using the revoked version will be terminated</li>
+                <li>Consider the grace period defined in your rotation policies</li>
+              </ul>
+            </div>
           </div>
         </div>
       )}

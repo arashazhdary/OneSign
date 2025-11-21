@@ -1,0 +1,565 @@
+[
+  {
+    "controllerName": "AdaptiveSecurityController",
+    "unmappedEndpoints": [
+      {
+        "method": "PUT",
+        "route": "api/tenant/adaptive-security/policies/{id}",
+        "action": "UpdatePolicy",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/AdaptiveSecurityController.cs"
+      },
+      {
+        "method": "DELETE",
+        "route": "api/tenant/adaptive-security/policies/{id}",
+        "action": "DeletePolicy",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/AdaptiveSecurityController.cs"
+      },
+      {
+        "method": "POST",
+        "route": "api/tenant/adaptive-security/policies/{id}/enable",
+        "action": "EnablePolicy",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/AdaptiveSecurityController.cs"
+      },
+      {
+        "method": "POST",
+        "route": "api/tenant/adaptive-security/policies/{id}/disable",
+        "action": "DisablePolicy",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/AdaptiveSecurityController.cs"
+      },
+      {
+        "method": "GET",
+        "route": "api/tenant/adaptive-security/users/{userId}/risk-score",
+        "action": "GetUserRiskScore",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/AdaptiveSecurityController.cs"
+      },
+      {
+        "method": "GET",
+        "route": "api/tenant/adaptive-security/high-risk-users",
+        "action": "GetHighRiskUsers",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/AdaptiveSecurityController.cs"
+      },
+      {
+        "method": "POST",
+        "route": "api/tenant/adaptive-security/evaluate",
+        "action": "EvaluateUser",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/AdaptiveSecurityController.cs"
+      },
+      {
+        "method": "GET",
+        "route": "api/tenant/adaptive-security/dashboard",
+        "action": "GetDashboard",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/AdaptiveSecurityController.cs"
+      },
+      {
+        "method": "GET",
+        "route": "api/tenant/adaptive-security/policies",
+        "action": "GetPolicies",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/AdaptiveSecurityController.cs"
+      },
+      {
+        "method": "POST",
+        "route": "api/tenant/adaptive-security/policies",
+        "action": "CreatePolicy",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/AdaptiveSecurityController.cs"
+      },
+      {
+        "method": "PUT",
+        "route": "api/tenant/adaptive-security/policies/{policyId:guid}",
+        "action": "UpdatePolicy",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/AdaptiveSecurityController.cs"
+      },
+      {
+        "method": "DELETE",
+        "route": "api/tenant/adaptive-security/policies/{policyId:guid}",
+        "action": "DeletePolicy",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/AdaptiveSecurityController.cs"
+      },
+      {
+        "method": "GET",
+        "route": "api/tenant/adaptive-security/signals",
+        "action": "GetSecuritySignals",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/AdaptiveSecurityController.cs"
+      },
+      {
+        "method": "POST",
+        "route": "api/tenant/adaptive-security/signals",
+        "action": "ProcessSecuritySignal",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/AdaptiveSecurityController.cs"
+      },
+      {
+        "method": "GET",
+        "route": "api/tenant/adaptive-security/users/{userId:guid}/context",
+        "action": "GetUserSecurityContext",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/AdaptiveSecurityController.cs"
+      },
+      {
+        "method": "PUT",
+        "route": "api/tenant/adaptive-security/users/{userId:guid}/context",
+        "action": "UpdateUserSecurityContext",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/AdaptiveSecurityController.cs"
+      }
+    ]
+  },
+  {
+    "controllerName": "ApiKeyController",
+    "unmappedEndpoints": [
+      {
+        "method": "POST",
+        "route": "api/tenant/api-keys/{id}/revoke",
+        "action": "RevokeApiKey",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/ApiKeyController.cs"
+      }
+    ]
+  },
+  {
+    "controllerName": "ApplicationsController",
+    "unmappedEndpoints": [
+      {
+        "method": "DELETE",
+        "route": "api/tenant/applications/{id}",
+        "action": "DeleteApplication",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/ApplicationsController.cs"
+      },
+      {
+        "method": "DELETE",
+        "route": "api/tenant/applications/redirect-uris/{redirectUriId}",
+        "action": "RemoveRedirectUri",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/ApplicationsController.cs"
+      },
+      {
+        "method": "DELETE",
+        "route": "api/tenant/applications/secrets/{secretId}",
+        "action": "RemoveClientSecret",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/ApplicationsController.cs"
+      },
+      {
+        "method": "PUT",
+        "route": "api/tenant/applications/{applicationId}/org-units",
+        "action": "AssignApplicationOrgUnits",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/ApplicationsController.cs"
+      }
+    ]
+  },
+  {
+    "controllerName": "AutomationController",
+    "unmappedEndpoints": [
+      {
+        "method": "DELETE",
+        "route": "api/tenant/automation/workflows/{id}",
+        "action": "DeleteWorkflow",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/AutomationController.cs"
+      },
+      {
+        "method": "POST",
+        "route": "api/tenant/automation/workflows/{id}/enable",
+        "action": "EnableWorkflow",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/AutomationController.cs"
+      },
+      {
+        "method": "POST",
+        "route": "api/tenant/automation/workflows/{id}/disable",
+        "action": "DisableWorkflow",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/AutomationController.cs"
+      }
+    ]
+  },
+  {
+    "controllerName": "BillingController",
+    "unmappedEndpoints": [
+      {
+        "method": "POST",
+        "route": "api/tenant/billing/upgrade-requests",
+        "action": "RequestUpgrade",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/BillingController.cs"
+      }
+    ]
+  },
+  {
+    "controllerName": "ChangeSetsController",
+    "unmappedEndpoints": [
+      {
+        "method": "POST",
+        "route": "api/tenant/change-sets/{id}/submit",
+        "action": "SubmitChangeSet",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/ChangeSetsController.cs"
+      },
+      {
+        "method": "POST",
+        "route": "api/tenant/change-sets/{id}/approve",
+        "action": "ApproveChangeSet",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/ChangeSetsController.cs"
+      },
+      {
+        "method": "POST",
+        "route": "api/tenant/change-sets/{id}/reject",
+        "action": "RejectChangeSet",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/ChangeSetsController.cs"
+      },
+      {
+        "method": "POST",
+        "route": "api/tenant/change-sets/{id}/schedule",
+        "action": "ScheduleChangeSet",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/ChangeSetsController.cs"
+      },
+      {
+        "method": "POST",
+        "route": "api/tenant/change-sets/{id}/apply",
+        "action": "ApplyChangeSet",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/ChangeSetsController.cs"
+      },
+      {
+        "method": "POST",
+        "route": "api/tenant/change-sets/{id}/rollback",
+        "action": "RollbackChangeSet",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/ChangeSetsController.cs"
+      }
+    ]
+  },
+  {
+    "controllerName": "DelegatedAdminsController",
+    "unmappedEndpoints": [
+      {
+        "method": "DELETE",
+        "route": "api/tenant/delegated-admins/{id}",
+        "action": "Delete",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/DelegatedAdminsController.cs"
+      }
+    ]
+  },
+  {
+    "controllerName": "ExtensibilityController",
+    "unmappedEndpoints": [
+      {
+        "method": "GET",
+        "route": "api/tenant/extensibility/webhooks",
+        "action": "GetWebhooks",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/ExtensibilityController.cs"
+      },
+      {
+        "method": "POST",
+        "route": "api/tenant/extensibility/webhooks",
+        "action": "UpdateWebhook",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/ExtensibilityController.cs"
+      },
+      {
+        "method": "PUT",
+        "route": "api/tenant/extensibility/webhooks/{id}",
+        "action": "UpdateWebhook",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/ExtensibilityController.cs"
+      },
+      {
+        "method": "DELETE",
+        "route": "api/tenant/extensibility/webhooks/{id}",
+        "action": "DeleteWebhook",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/ExtensibilityController.cs"
+      },
+      {
+        "method": "GET",
+        "route": "api/tenant/extensibility/login-hooks",
+        "action": "GetLoginHooks",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/ExtensibilityController.cs"
+      },
+      {
+        "method": "POST",
+        "route": "api/tenant/extensibility/login-hooks",
+        "action": "UpdateLoginHook",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/ExtensibilityController.cs"
+      },
+      {
+        "method": "PUT",
+        "route": "api/tenant/extensibility/login-hooks/{id}",
+        "action": "UpdateLoginHook",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/ExtensibilityController.cs"
+      },
+      {
+        "method": "DELETE",
+        "route": "api/tenant/extensibility/login-hooks/{id}",
+        "action": "DeleteLoginHook",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/ExtensibilityController.cs"
+      },
+      {
+        "method": "GET",
+        "route": "api/tenant/extensibility/token-rules",
+        "action": "GetTokenRules",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/ExtensibilityController.cs"
+      },
+      {
+        "method": "POST",
+        "route": "api/tenant/extensibility/token-rules",
+        "action": "CreateTokenRule",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/ExtensibilityController.cs"
+      },
+      {
+        "method": "PUT",
+        "route": "api/tenant/extensibility/token-rules/{id}",
+        "action": "UpdateTokenRule",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/ExtensibilityController.cs"
+      },
+      {
+        "method": "DELETE",
+        "route": "api/tenant/extensibility/token-rules/{id}",
+        "action": "DeleteTokenRule",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/ExtensibilityController.cs"
+      }
+    ]
+  },
+  {
+    "controllerName": "HuntingController",
+    "unmappedEndpoints": [
+      {
+        "method": "DELETE",
+        "route": "api/tenant/hunting/saved-queries/{id}",
+        "action": "DeleteSavedQuery",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/HuntingController.cs"
+      },
+      {
+        "method": "DELETE",
+        "route": "api/tenant/hunting/scheduled-hunts/{id}",
+        "action": "DeleteScheduledHunt",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/HuntingController.cs"
+      }
+    ]
+  },
+  {
+    "controllerName": "InsightsController",
+    "unmappedEndpoints": [
+      {
+        "method": "GET",
+        "route": "api/tenant/insights/export/overview",
+        "action": "ExportOverview",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/InsightsController.cs"
+      },
+      {
+        "method": "GET",
+        "route": "api/tenant/insights/export/users",
+        "action": "ExportUserSecurityPosture",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/InsightsController.cs"
+      },
+      {
+        "method": "DELETE",
+        "route": "api/tenant/insights/report-subscriptions/{id}",
+        "action": "DeleteReportSubscription",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/InsightsController.cs"
+      }
+    ]
+  },
+  {
+    "controllerName": "LifecycleController",
+    "unmappedEndpoints": [
+      {
+        "method": "POST",
+        "route": "api/tenant/lifecycle/hr/sync",
+        "action": "GetAccessPackages",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/LifecycleController.cs"
+      },
+      {
+        "method": "GET",
+        "route": "api/tenant/lifecycle/access-packages",
+        "action": "GetAccessPackages",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/LifecycleController.cs"
+      },
+      {
+        "method": "POST",
+        "route": "api/tenant/lifecycle/access-packages",
+        "action": "CreateAccessPackage",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/LifecycleController.cs"
+      },
+      {
+        "method": "GET",
+        "route": "api/tenant/lifecycle/policies",
+        "action": "GetLifecyclePolicies",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/LifecycleController.cs"
+      },
+      {
+        "method": "POST",
+        "route": "api/tenant/lifecycle/policies",
+        "action": "CreateLifecyclePolicy",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/LifecycleController.cs"
+      },
+      {
+        "method": "GET",
+        "route": "api/tenant/lifecycle/events",
+        "action": "GetLifecycleEvents",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/LifecycleController.cs"
+      },
+      {
+        "method": "GET",
+        "route": "api/tenant/lifecycle/users/{userId}/timeline",
+        "action": "GetUserLifecycleTimeline",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/LifecycleController.cs"
+      },
+      {
+        "method": "GET",
+        "route": "api/tenant/lifecycle/processing-status",
+        "action": "GetProcessingStatus",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/LifecycleController.cs"
+      }
+    ]
+  },
+  {
+    "controllerName": "MfaController",
+    "unmappedEndpoints": [
+      {
+        "method": "DELETE",
+        "route": "api/tenant/mfa/methods/{methodId}",
+        "action": "DisableMethod",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/MfaController.cs"
+      }
+    ]
+  },
+  {
+    "controllerName": "OrgUnitsController",
+    "unmappedEndpoints": [
+      {
+        "method": "POST",
+        "route": "api/tenant/org-units/{orgUnitId}/move",
+        "action": "Move",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/OrgUnitsController.cs"
+      },
+      {
+        "method": "DELETE",
+        "route": "api/tenant/org-units/{orgUnitId}",
+        "action": "Delete",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/OrgUnitsController.cs"
+      }
+    ]
+  },
+  {
+    "controllerName": "PolicyController",
+    "unmappedEndpoints": [
+      {
+        "method": "DELETE",
+        "route": "api/tenant/policies/{id}",
+        "action": "DeletePolicy",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/PolicyController.cs"
+      }
+    ]
+  },
+  {
+    "controllerName": "PrivacyController",
+    "unmappedEndpoints": [
+      {
+        "method": "GET",
+        "route": "api/tenant/privacy/retention-policies",
+        "action": "GetRetentionPolicies",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/PrivacyController.cs"
+      },
+      {
+        "method": "PUT",
+        "route": "api/tenant/privacy/retention-policies/{category}",
+        "action": "UpdateRetentionPolicy",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/PrivacyController.cs"
+      },
+      {
+        "method": "GET",
+        "route": "api/tenant/privacy/data-requests",
+        "action": "GetDataRequests",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/PrivacyController.cs"
+      },
+      {
+        "method": "POST",
+        "route": "api/tenant/privacy/data-requests",
+        "action": "CreateDataRequest",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/PrivacyController.cs"
+      },
+      {
+        "method": "POST",
+        "route": "api/tenant/privacy/data-requests/{id:guid}/execute",
+        "action": "ExecuteDataRequest",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/PrivacyController.cs"
+      }
+    ]
+  },
+  {
+    "controllerName": "PrivilegedAccessController",
+    "unmappedEndpoints": [
+      {
+        "method": "POST",
+        "route": "api/tenant/privileged-access/jit/request",
+        "action": "GetActiveJitGrants",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/PrivilegedAccessController.cs"
+      },
+      {
+        "method": "GET",
+        "route": "api/tenant/privileged-access/jit/grants",
+        "action": "GetActiveJitGrants",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/PrivilegedAccessController.cs"
+      },
+      {
+        "method": "POST",
+        "route": "api/tenant/privileged-access/jit/grants/{grantId}/revoke",
+        "action": "RevokeJitGrant",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/PrivilegedAccessController.cs"
+      },
+      {
+        "method": "GET",
+        "route": "api/tenant/privileged-access/sessions",
+        "action": "GetPrivilegedSessions",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/PrivilegedAccessController.cs"
+      },
+      {
+        "method": "POST",
+        "route": "api/tenant/privileged-access/sessions/{sessionId}/revoke",
+        "action": "GetBreakGlassAccounts",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/PrivilegedAccessController.cs"
+      },
+      {
+        "method": "GET",
+        "route": "api/tenant/privileged-access/breakglass-accounts",
+        "action": "GetBreakGlassAccounts",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/PrivilegedAccessController.cs"
+      },
+      {
+        "method": "POST",
+        "route": "api/tenant/privileged-access/breakglass-accounts",
+        "action": "CreateBreakGlassAccount",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/PrivilegedAccessController.cs"
+      },
+      {
+        "method": "GET",
+        "route": "api/tenant/privileged-access/dashboard",
+        "action": "GetPrivilegedAccessDashboard",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/PrivilegedAccessController.cs"
+      }
+    ]
+  },
+  {
+    "controllerName": "RiskEventsController",
+    "unmappedEndpoints": [
+      {
+        "method": "POST",
+        "route": "api/tenant/risk-events",
+        "action": "RecordEvent",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/RiskEventsController.cs"
+      }
+    ]
+  },
+  {
+    "controllerName": "SecurityPolicyController",
+    "unmappedEndpoints": [
+      {
+        "method": "GET",
+        "route": "api/tenant/security/policy/org-unit-rules",
+        "action": "UpdateOrgUnitRules",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/SecurityPolicyController.cs"
+      },
+      {
+        "method": "PUT",
+        "route": "api/tenant/security/policy/org-unit-rules",
+        "action": "UpdateOrgUnitRules",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/SecurityPolicyController.cs"
+      }
+    ]
+  },
+  {
+    "controllerName": "UsersController",
+    "unmappedEndpoints": [
+      {
+        "method": "PUT",
+        "route": "api/tenant/users/{tenantUserId}/org-units",
+        "action": "AssignUserOrgUnits",
+        "inController": "/home/user/OneSign/src/Onesign.Api/Controllers/Tenant/UsersController.cs"
+      }
+    ]
+  }
+]

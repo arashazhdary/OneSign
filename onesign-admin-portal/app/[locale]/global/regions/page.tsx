@@ -51,7 +51,26 @@ interface DRStatus {
   status: 'Active' | 'Standby' | 'Failover';
 }
 
-type Tab = 'regions' | 'backups' | 'residency' | 'dr';
+interface TenantDataResidency {
+  tenantId: string;
+  tenantName: string;
+  region: string;
+  dataTypes: string[];
+  restrictions: string;
+  lastUpdated: string;
+}
+
+interface TenantBackup {
+  id: string;
+  tenantId: string;
+  tenantName: string;
+  size: number;
+  status: 'Pending' | 'InProgress' | 'Completed' | 'Failed';
+  createdAt: string;
+  completedAt?: string;
+}
+
+type Tab = 'regions' | 'backups' | 'residency' | 'dr' | 'tenant-backups' | 'tenant-residency';
 
 export default function MultiRegionManagementPage() {
   const t = useTranslations();
@@ -66,8 +85,19 @@ export default function MultiRegionManagementPage() {
   const [backups, setBackups] = useState<Backup[]>([]);
   const [residencyRules, setResidencyRules] = useState<DataResidencyRule[]>([]);
   const [drStatus, setDRStatus] = useState<DRStatus | null>(null);
+  const [tenantBackups, setTenantBackups] = useState<TenantBackup[]>([]);
+  const [tenantDataResidency, setTenantDataResidency] = useState<TenantDataResidency[]>([]);
+  const [selectedTenant, setSelectedTenant] = useState<string>('');
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showUpdateRegionModal, setShowUpdateRegionModal] = useState(false);
+  const [updateRegionData, setUpdateRegionData] = useState({
+    id: '',
+    name: '',
+    code: '',
+    location: '',
+    dataCenter: '',
+  });
   const [newRegion, setNewRegion] = useState({
     name: '',
     code: '',
@@ -84,8 +114,12 @@ export default function MultiRegionManagementPage() {
       fetchResidencyRules();
     } else if (activeTab === 'dr') {
       fetchDRStatus();
+    } else if (activeTab === 'tenant-backups') {
+      if (selectedTenant) fetchTenantBackups();
+    } else if (activeTab === 'tenant-residency') {
+      fetchTenantDataResidency();
     }
-  }, [activeTab]);
+  }, [activeTab, selectedTenant]);
 
   const fetchRegions = async () => {
     setLoading(true);
@@ -325,6 +359,184 @@ export default function MultiRegionManagementPage() {
     }
   };
 
+  const handleUpdateRegion = async () => {
+    if (!updateRegionData.id || !updateRegionData.name) {
+      setError('Please fill all required fields');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      const response = await fetch(`http://localhost:7000/api/global/regions/${updateRegionData.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: updateRegionData.name,
+          code: updateRegionData.code,
+          location: updateRegionData.location,
+          dataCenter: updateRegionData.dataCenter,
+        }),
+      });
+      if (response.ok) {
+        setSuccess('Region updated successfully');
+        setShowUpdateRegionModal(false);
+        setUpdateRegionData({ id: '', name: '', code: '', location: '', dataCenter: '' });
+        fetchRegions();
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (err) {
+      setError(t('common.error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchRegionBackups = async (regionId: string) => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetch(`http://localhost:7000/api/global/regions/${regionId}/backups`);
+      if (response.ok) {
+        const data = await response.json();
+        setBackups(data.items || data || []);
+      }
+    } catch (err) {
+      setError(t('common.error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateRegionBackup = async (regionId: string) => {
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      const response = await fetch(`http://localhost:7000/api/global/regions/${regionId}/backups`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (response.ok) {
+        setSuccess('Region backup created successfully');
+        fetchRegionBackups(regionId);
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (err) {
+      setError(t('common.error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTenantDataResidency = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetch(`http://localhost:7000/api/global/regions/tenants/data-residency`);
+      if (response.ok) {
+        const data = await response.json();
+        setTenantDataResidency(data.items || data || []);
+      }
+    } catch (err) {
+      setError(t('common.error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchTenantBackups = async () => {
+    if (!selectedTenant) return;
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetch(`http://localhost:7000/api/global/regions/tenants/${selectedTenant}/backups`);
+      if (response.ok) {
+        const data = await response.json();
+        setTenantBackups(data.items || data || []);
+      }
+    } catch (err) {
+      setError(t('common.error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateTenantBackup = async () => {
+    if (!selectedTenant) {
+      setError('Please select a tenant');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      const response = await fetch(`http://localhost:7000/api/global/regions/tenants/${selectedTenant}/backups`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (response.ok) {
+        setSuccess('Tenant backup created successfully');
+        fetchTenantBackups();
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (err) {
+      setError(t('common.error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRestoreTenant = async (tenantId: string) => {
+    if (!confirm('Are you sure you want to restore this tenant?')) {
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      const response = await fetch(`http://localhost:7000/api/global/regions/tenants/${tenantId}/restore`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (response.ok) {
+        setSuccess('Tenant restore started successfully');
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (err) {
+      setError(t('common.error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchDRDashboard = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetch('http://localhost:7000/api/global/regions/dr-dashboard');
+      if (response.ok) {
+        const data = await response.json();
+        setDRStatus(data);
+      }
+    } catch (err) {
+      setError(t('common.error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Active':
@@ -361,20 +573,22 @@ export default function MultiRegionManagementPage() {
       )}
 
       <div className="mb-6 border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
-          {(['regions', 'backups', 'residency', 'dr'] as Tab[]).map((tab) => (
+        <nav className="-mb-px flex space-x-8 overflow-x-auto">
+          {(['regions', 'backups', 'tenant-backups', 'residency', 'tenant-residency', 'dr'] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                 activeTab === tab
                   ? 'border-indigo-500 text-indigo-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
               {tab === 'regions' ? 'Regions' :
-               tab === 'backups' ? 'Backups' :
+               tab === 'backups' ? 'Region Backups' :
+               tab === 'tenant-backups' ? 'Tenant Backups' :
                tab === 'residency' ? 'Data Residency' :
+               tab === 'tenant-residency' ? 'Tenant Residency' :
                'DR Dashboard'}
             </button>
           ))}
@@ -774,6 +988,141 @@ export default function MultiRegionManagementPage() {
               {loading ? 'Loading DR status...' : 'No DR configuration found'}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Tenant Backups Tab */}
+      {activeTab === 'tenant-backups' && (
+        <div className="space-y-4">
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="flex items-center space-x-4">
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Select Tenant</label>
+                <input
+                  type="text"
+                  value={selectedTenant}
+                  onChange={(e) => setSelectedTenant(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  placeholder="Enter tenant ID"
+                />
+              </div>
+              <div className="pt-6">
+                <button
+                  onClick={handleCreateTenantBackup}
+                  disabled={loading || !selectedTenant}
+                  className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
+                >
+                  Create Backup
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {selectedTenant && (
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Backup ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tenant</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Size</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {tenantBackups.map((backup) => (
+                    <tr key={backup.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{backup.id}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{backup.tenantName}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{backup.size} MB</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 rounded text-xs ${getStatusColor(backup.status)}`}>
+                          {backup.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(backup.createdAt).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {backup.status === 'Completed' && (
+                          <button
+                            onClick={() => handleRestoreTenant(backup.tenantId)}
+                            className="text-indigo-600 hover:text-indigo-900"
+                          >
+                            Restore
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  {tenantBackups.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                        No backups found for this tenant
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Tenant Data Residency Tab */}
+      {activeTab === 'tenant-residency' && (
+        <div className="space-y-4">
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="p-6">
+              <h2 className="text-xl font-semibold mb-4">Tenant Data Residency</h2>
+              <p className="text-sm text-gray-500 mb-6">
+                View and manage data residency settings for all tenants.
+              </p>
+            </div>
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tenant</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Region</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data Types</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Restrictions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Updated</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {tenantDataResidency.map((residency, index) => (
+                  <tr key={index}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {residency.tenantName || residency.tenantId}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{residency.region}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      <div className="flex flex-wrap gap-1">
+                        {residency.dataTypes.map((type, i) => (
+                          <span key={i} className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
+                            {type}
+                          </span>
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500">{residency.restrictions}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(residency.lastUpdated).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))}
+                {tenantDataResidency.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                      No tenant residency data configured
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

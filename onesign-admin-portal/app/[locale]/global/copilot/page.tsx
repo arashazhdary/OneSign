@@ -63,7 +63,42 @@ interface Alert {
   acknowledged: boolean;
 }
 
-type Tab = 'settings' | 'analytics' | 'history' | 'insights' | 'recommendations' | 'alerts';
+interface QueryResponse {
+  response: string;
+  confidence: number;
+  sources: string[];
+  executionTime: number;
+}
+
+interface ConversationDetail {
+  id: string;
+  messages: {
+    id: string;
+    role: 'user' | 'assistant';
+    content: string;
+    timestamp: string;
+  }[];
+  tenantId: string;
+  tenantName: string;
+  userId: string;
+  userEmail: string;
+}
+
+interface ActionResult {
+  success: boolean;
+  message: string;
+  data?: any;
+}
+
+interface KnowledgeBaseStatus {
+  isHealthy: boolean;
+  totalDocuments: number;
+  lastUpdated: string;
+  indexSize: string;
+  queryLatency: number;
+}
+
+type Tab = 'settings' | 'analytics' | 'history' | 'insights' | 'recommendations' | 'alerts' | 'query' | 'knowledge';
 
 export default function GlobalCopilotPage() {
   const t = useTranslations();
@@ -99,6 +134,16 @@ export default function GlobalCopilotPage() {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [analyzingTenants, setAnalyzingTenants] = useState(false);
+
+  const [queryText, setQueryText] = useState('');
+  const [queryResponse, setQueryResponse] = useState<QueryResponse | null>(null);
+  const [queryLoading, setQueryLoading] = useState(false);
+  const [selectedConversationId, setSelectedConversationId] = useState('');
+  const [conversationDetail, setConversationDetail] = useState<ConversationDetail | null>(null);
+  const [actionCommand, setActionCommand] = useState('');
+  const [actionResult, setActionResult] = useState<ActionResult | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [knowledgeBaseStatus, setKnowledgeBaseStatus] = useState<KnowledgeBaseStatus | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -145,6 +190,12 @@ export default function GlobalCopilotPage() {
           const data = await response.json();
           setAlerts(data.items || []);
         }
+      } else if (activeTab === 'knowledge') {
+        const response = await fetch('http://localhost:7000/api/global/copilot/knowledge-base/status');
+        if (response.ok) {
+          const data = await response.json();
+          setKnowledgeBaseStatus(data);
+        }
       }
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -190,6 +241,73 @@ export default function GlobalCopilotPage() {
       }
     } catch (err) {
       setError(t('common.error'));
+    }
+  };
+
+  const handleQuery = async () => {
+    if (!queryText.trim()) return;
+    setQueryLoading(true);
+    setError('');
+    setQueryResponse(null);
+    try {
+      const response = await fetch('http://localhost:7000/api/global/copilot/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: queryText }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setQueryResponse(data);
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (err) {
+      setError(t('common.error'));
+    } finally {
+      setQueryLoading(false);
+    }
+  };
+
+  const handleGetConversation = async () => {
+    if (!selectedConversationId.trim()) return;
+    setError('');
+    try {
+      const response = await fetch(`http://localhost:7000/api/global/copilot/conversations/${selectedConversationId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setConversationDetail(data);
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (err) {
+      setError(t('common.error'));
+    }
+  };
+
+  const handleExecuteAction = async () => {
+    if (!actionCommand.trim()) return;
+    setActionLoading(true);
+    setError('');
+    setActionResult(null);
+    try {
+      const response = await fetch('http://localhost:7000/api/global/copilot/actions/execute', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: actionCommand }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setActionResult(data);
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (err) {
+      setError(t('common.error'));
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -277,7 +395,7 @@ export default function GlobalCopilotPage() {
 
       <div className="mb-6 border-b border-gray-200">
         <nav className="-mb-px flex space-x-8 overflow-x-auto">
-          {(['settings', 'analytics', 'insights', 'recommendations', 'alerts', 'history'] as Tab[]).map((tab) => (
+          {(['settings', 'query', 'analytics', 'insights', 'recommendations', 'alerts', 'history', 'knowledge'] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -288,11 +406,13 @@ export default function GlobalCopilotPage() {
               }`}
             >
               {tab === 'settings' ? 'Settings' :
+               tab === 'query' ? 'AI Query' :
                tab === 'analytics' ? 'Analytics' :
                tab === 'insights' ? 'Platform Insights' :
                tab === 'recommendations' ? 'Recommendations' :
                tab === 'alerts' ? 'Smart Alerts' :
-               'Conversation History'}
+               tab === 'history' ? 'Conversation History' :
+               'Knowledge Base'}
             </button>
           ))}
         </nav>
@@ -586,71 +706,290 @@ export default function GlobalCopilotPage() {
       )}
 
       {activeTab === 'history' && (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tenant</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Context</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Messages</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Activity</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {conversations.map((conv) => (
-                <tr key={conv.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {conv.tenantName || conv.tenantId}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {conv.userEmail || conv.userId}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-800">
-                      {conv.contextType}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {conv.messageCount}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(conv.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(conv.lastMessageAt).toLocaleString()}
-                  </td>
-                </tr>
-              ))}
-              {conversations.length === 0 && (
+        <div>
+          <div className="mb-4 flex gap-2">
+            <input
+              type="text"
+              value={selectedConversationId}
+              onChange={(e) => setSelectedConversationId(e.target.value)}
+              placeholder="Enter conversation ID to view details"
+              className="flex-1 px-3 py-2 border border-gray-300 rounded"
+            />
+            <button
+              onClick={handleGetConversation}
+              disabled={!selectedConversationId}
+              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
+            >
+              View Conversation
+            </button>
+          </div>
+
+          {conversationDetail && (
+            <div className="mb-4 bg-white rounded-lg shadow p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold">Conversation Details</h3>
+                  <p className="text-sm text-gray-600">Tenant: {conversationDetail.tenantName}</p>
+                  <p className="text-sm text-gray-600">User: {conversationDetail.userEmail}</p>
+                </div>
+                <button
+                  onClick={() => setConversationDetail(null)}
+                  className="text-sm text-gray-600 hover:text-gray-900"
+                >
+                  Close
+                </button>
+              </div>
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {conversationDetail.messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`p-3 rounded ${
+                      msg.role === 'user' ? 'bg-blue-50 ml-8' : 'bg-gray-50 mr-8'
+                    }`}
+                  >
+                    <div className="flex justify-between mb-1">
+                      <span className="text-xs font-semibold text-gray-700">
+                        {msg.role === 'user' ? 'User' : 'Assistant'}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {new Date(msg.timestamp).toLocaleString()}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-800">{msg.content}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                    No conversations found
-                  </td>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tenant</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Context</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Messages</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Activity</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-          {totalConversations > pageSize && (
-            <div className="px-6 py-4 flex justify-between items-center border-t">
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {conversations.map((conv) => (
+                  <tr key={conv.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {conv.tenantName || conv.tenantId}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {conv.userEmail || conv.userId}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-800">
+                        {conv.contextType}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {conv.messageCount}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(conv.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(conv.lastMessageAt).toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <button
+                        onClick={() => {
+                          setSelectedConversationId(conv.id);
+                          handleGetConversation();
+                        }}
+                        className="text-indigo-600 hover:text-indigo-900"
+                      >
+                        View
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {conversations.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
+                      No conversations found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+            {totalConversations > pageSize && (
+              <div className="px-6 py-4 flex justify-between items-center border-t">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="px-3 py-1 border rounded disabled:opacity-50"
+                >
+                  {t('common.previous')}
+                </button>
+                <span className="text-sm text-gray-500">
+                  Page {page} / {Math.ceil(totalConversations / pageSize)}
+                </span>
+                <button
+                  onClick={() => setPage(p => p + 1)}
+                  disabled={page >= Math.ceil(totalConversations / pageSize)}
+                  className="px-3 py-1 border rounded disabled:opacity-50"
+                >
+                  {t('common.next')}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'query' && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-4">AI Query Interface</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Enter your query</label>
+                <textarea
+                  value={queryText}
+                  onChange={(e) => setQueryText(e.target.value)}
+                  placeholder="Ask anything about your platform, tenants, or data..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded h-32"
+                />
+              </div>
               <button
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="px-3 py-1 border rounded disabled:opacity-50"
+                onClick={handleQuery}
+                disabled={queryLoading || !queryText.trim()}
+                className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
               >
-                {t('common.previous')}
+                {queryLoading ? 'Processing...' : 'Execute Query'}
               </button>
-              <span className="text-sm text-gray-500">
-                Page {page} / {Math.ceil(totalConversations / pageSize)}
-              </span>
+            </div>
+          </div>
+
+          {queryResponse && (
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold mb-4">Query Response</h3>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-gray-800 whitespace-pre-wrap">{queryResponse.response}</p>
+                </div>
+                <div className="pt-4 border-t">
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <span className="text-sm text-gray-500">Confidence:</span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className="flex-1 bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-green-500 h-2 rounded-full"
+                            style={{ width: `${queryResponse.confidence * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-sm font-medium">{(queryResponse.confidence * 100).toFixed(0)}%</span>
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-500">Execution Time:</span>
+                      <p className="font-medium">{queryResponse.executionTime}ms</p>
+                    </div>
+                  </div>
+                  {queryResponse.sources.length > 0 && (
+                    <div>
+                      <span className="text-sm font-medium text-gray-700">Sources:</span>
+                      <ul className="mt-2 space-y-1">
+                        {queryResponse.sources.map((source, idx) => (
+                          <li key={idx} className="text-sm text-gray-600">
+                            - {source}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <h2 className="text-xl font-semibold mb-4">Execute Action</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Action Command</label>
+                <input
+                  type="text"
+                  value={actionCommand}
+                  onChange={(e) => setActionCommand(e.target.value)}
+                  placeholder="e.g., restart-service, clear-cache, etc."
+                  className="w-full px-3 py-2 border border-gray-300 rounded"
+                />
+              </div>
               <button
-                onClick={() => setPage(p => p + 1)}
-                disabled={page >= Math.ceil(totalConversations / pageSize)}
-                className="px-3 py-1 border rounded disabled:opacity-50"
+                onClick={handleExecuteAction}
+                disabled={actionLoading || !actionCommand.trim()}
+                className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 disabled:opacity-50"
               >
-                {t('common.next')}
+                {actionLoading ? 'Executing...' : 'Execute Action'}
               </button>
+            </div>
+
+            {actionResult && (
+              <div className={`mt-4 p-4 rounded ${
+                actionResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
+              }`}>
+                <p className={`font-medium ${actionResult.success ? 'text-green-800' : 'text-red-800'}`}>
+                  {actionResult.message}
+                </p>
+                {actionResult.data && (
+                  <pre className="mt-2 text-xs text-gray-700 overflow-auto">
+                    {JSON.stringify(actionResult.data, null, 2)}
+                  </pre>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'knowledge' && (
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold mb-6">Knowledge Base Status</h2>
+          {knowledgeBaseStatus ? (
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <div className={`w-4 h-4 rounded-full ${
+                  knowledgeBaseStatus.isHealthy ? 'bg-green-500' : 'bg-red-500'
+                }`} />
+                <h3 className="text-lg font-medium">
+                  {knowledgeBaseStatus.isHealthy ? 'Healthy' : 'Unhealthy'}
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="p-4 bg-gray-50 rounded">
+                  <h4 className="text-sm font-medium text-gray-700 mb-1">Total Documents</h4>
+                  <p className="text-2xl font-bold text-gray-900">{knowledgeBaseStatus.totalDocuments.toLocaleString()}</p>
+                </div>
+                <div className="p-4 bg-gray-50 rounded">
+                  <h4 className="text-sm font-medium text-gray-700 mb-1">Index Size</h4>
+                  <p className="text-2xl font-bold text-gray-900">{knowledgeBaseStatus.indexSize}</p>
+                </div>
+                <div className="p-4 bg-gray-50 rounded">
+                  <h4 className="text-sm font-medium text-gray-700 mb-1">Query Latency</h4>
+                  <p className="text-2xl font-bold text-gray-900">{knowledgeBaseStatus.queryLatency}ms</p>
+                </div>
+                <div className="p-4 bg-gray-50 rounded">
+                  <h4 className="text-sm font-medium text-gray-700 mb-1">Last Updated</h4>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {new Date(knowledgeBaseStatus.lastUpdated).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center text-gray-500 py-8">
+              No knowledge base status available
             </div>
           )}
         </div>

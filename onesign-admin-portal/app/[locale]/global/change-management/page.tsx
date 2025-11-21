@@ -264,7 +264,7 @@ export default function GlobalChangeManagementPage() {
 
   // Endpoint implementations (similar to tenant page)
   const fetchChangeSetDetails = async (id: string) => {
-    const url = `http://localhost:7000/api/global/changesets/${id}`;
+    const url = `http://localhost:7000/api/global/change-sets/${id}`;
     const response = await fetch(url);
     if (response.ok) {
       const data = await response.json();
@@ -296,7 +296,7 @@ export default function GlobalChangeManagementPage() {
   const handleSimulate = async (id: string) => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/global/changesets/${id}/simulate`, {
+      const response = await fetch(`http://localhost:7000/api/global/change-sets/${id}/simulate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId }),
@@ -328,7 +328,7 @@ export default function GlobalChangeManagementPage() {
   };
 
   const fetchExecutionLogs = async (id: string) => {
-    const url = `http://localhost:7000/api/global/changesets/${id}/execution-log`;
+    const url = `http://localhost:7000/api/global/change-sets/${id}/execution-log`;
     const response = await fetch(url);
     if (response.ok) {
       const data = await response.json();
@@ -354,7 +354,7 @@ export default function GlobalChangeManagementPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/global/changesets/${selectedChangeSet.id}/schedule`, {
+      const response = await fetch(`http://localhost:7000/api/global/change-sets/${selectedChangeSet.id}/schedule`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -381,20 +381,20 @@ export default function GlobalChangeManagementPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/global/changesets/${selectedChangeSet.id}/execute`, {
+      const response = await fetch(`http://localhost:7000/api/global/change-sets/${selectedChangeSet.id}/apply`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId }),
       });
       if (response.ok) {
-        setSuccess('Change set executed successfully');
+        setSuccess('Change set applied successfully');
         setShowExecuteModal(false);
         fetchData();
       } else {
-        throw new Error('Failed to execute');
+        throw new Error('Failed to apply');
       }
     } catch (err) {
-      setError('Failed to execute change set');
+      setError('Failed to apply change set');
     } finally {
       setLoading(false);
     }
@@ -405,7 +405,7 @@ export default function GlobalChangeManagementPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/global/changesets/${selectedChangeSet.id}/rollback`, {
+      const response = await fetch(`http://localhost:7000/api/global/change-sets/${selectedChangeSet.id}/rollback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId }),
@@ -429,7 +429,7 @@ export default function GlobalChangeManagementPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/global/changesets/${selectedChangeSet.id}/approve`, {
+      const response = await fetch(`http://localhost:7000/api/global/change-sets/${selectedChangeSet.id}/approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, comment: approvalComment }),
@@ -457,7 +457,7 @@ export default function GlobalChangeManagementPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/global/changesets/${selectedChangeSet.id}/reject`, {
+      const response = await fetch(`http://localhost:7000/api/global/change-sets/${selectedChangeSet.id}/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, reason: rejectReason }),
@@ -477,8 +477,31 @@ export default function GlobalChangeManagementPage() {
     }
   };
 
+  const handleSubmitChangeSet = async () => {
+    if (!selectedChangeSet) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(`http://localhost:7000/api/global/change-sets/${selectedChangeSet.id}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+      if (response.ok) {
+        setSuccess('Change set submitted for review');
+        fetchData();
+      } else {
+        throw new Error('Failed to submit');
+      }
+    } catch (err) {
+      setError('Failed to submit change set');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const fetchApprovals = async (id: string) => {
-    const url = `http://localhost:7000/api/global/changesets/${id}/approvals`;
+    const url = `http://localhost:7000/api/global/change-sets/${id}/approvals`;
     const response = await fetch(url);
     if (response.ok) {
       const data = await response.json();
@@ -501,7 +524,7 @@ export default function GlobalChangeManagementPage() {
   };
 
   const fetchImpactAnalysis = async (id: string) => {
-    const url = `http://localhost:7000/api/global/changesets/${id}/impact`;
+    const url = `http://localhost:7000/api/global/change-sets/${id}/impact`;
     const response = await fetch(url);
     if (response.ok) {
       const data = await response.json();

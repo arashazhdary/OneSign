@@ -39,14 +39,35 @@ interface AccessRequest {
   createdAt: string;
 }
 
+interface JITGrant {
+  id: string;
+  userId: string;
+  userEmail: string;
+  resourceType: string;
+  resourceId: string;
+  grantedAt: string;
+  expiresAt: string;
+  status: 'Active' | 'Expired' | 'Revoked';
+}
+
+interface PrivilegedAccessDashboard {
+  activeSessions: number;
+  activeGrants: number;
+  pendingRequests: number;
+  breakGlassActivations: number;
+  totalRequests: number;
+}
+
 export default function PrivilegedAccessPage() {
-  const [activeTab, setActiveTab] = useState<'sessions' | 'break-glass' | 'requests'>('sessions');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'sessions' | 'grants' | 'break-glass' | 'requests'>('dashboard');
   const [tenantId, setTenantIdState] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  const [dashboardData, setDashboardData] = useState<PrivilegedAccessDashboard | null>(null);
   const [sessions, setSessions] = useState<PrivilegedSession[]>([]);
+  const [jitGrants, setJitGrants] = useState<JITGrant[]>([]);
   const [breakGlassAccounts, setBreakGlassAccounts] = useState<BreakGlassAccount[]>([]);
   const [accessRequests, setAccessRequests] = useState<AccessRequest[]>([]);
   const [showRequestModal, setShowRequestModal] = useState(false);
@@ -64,7 +85,9 @@ export default function PrivilegedAccessPage() {
 
   useEffect(() => {
     if (tenantId) {
-      if (activeTab === 'sessions') fetchSessions();
+      if (activeTab === 'dashboard') fetchDashboard();
+      else if (activeTab === 'sessions') fetchSessions();
+      else if (activeTab === 'grants') fetchJITGrants();
       else if (activeTab === 'break-glass') fetchBreakGlassAccounts();
       else if (activeTab === 'requests') fetchAccessRequests();
     }
@@ -118,12 +141,44 @@ export default function PrivilegedAccessPage() {
     }
   };
 
+  const fetchDashboard = async () => {
+    if (!tenantId) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/privileged-access/dashboard?tenantId=${tenantId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setDashboardData(data);
+      }
+    } catch (err) {
+      console.error('Error fetching dashboard:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchJITGrants = async () => {
+    if (!tenantId) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/privileged-access/jit/grants?tenantId=${tenantId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setJitGrants(data || []);
+      }
+    } catch (err) {
+      console.error('Error fetching JIT grants:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleRequestJITAccess = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/privileged-access/request?tenantId=${tenantId}`, {
+      const response = await fetch(`http://localhost:7000/api/tenant/privileged-access/jit/request?tenantId=${tenantId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestForm)
@@ -136,6 +191,24 @@ export default function PrivilegedAccessPage() {
       }
     } catch (err) {
       setError('Failed to request JIT access');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRevokeGrant = async (grantId: string) => {
+    if (!tenantId || !confirm('Are you sure you want to revoke this grant?')) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/privileged-access/jit/grants/${grantId}/revoke?tenantId=${tenantId}`, {
+        method: 'POST'
+      });
+      if (response.ok) {
+        setSuccess('Grant revoked successfully');
+        fetchJITGrants();
+      }
+    } catch (err) {
+      setError('Failed to revoke grant');
     } finally {
       setLoading(false);
     }
@@ -215,6 +288,19 @@ export default function PrivilegedAccessPage() {
     { key: 'createdAt', label: 'Created', render: (r) => new Date(r.createdAt).toLocaleDateString() }
   ];
 
+  const grantColumns: Column<JITGrant>[] = [
+    { key: 'userEmail', label: 'User' },
+    { key: 'resourceType', label: 'Resource Type' },
+    { key: 'resourceId', label: 'Resource ID' },
+    { key: 'grantedAt', label: 'Granted', render: (g) => new Date(g.grantedAt).toLocaleString() },
+    { key: 'expiresAt', label: 'Expires', render: (g) => new Date(g.expiresAt).toLocaleString() },
+    {
+      key: 'status',
+      label: 'Status',
+      render: (g) => <StatusBadge status={g.status} variant={g.status === 'Active' ? 'success' : 'error'} />
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-6">
       <LoadingOverlay isLoading={loading} message="Processing..." />
@@ -230,7 +316,7 @@ export default function PrivilegedAccessPage() {
       {success && <div className="mb-4 p-4 bg-green-100 border border-green-300 text-green-800 rounded-lg">{success}</div>}
 
       <div className="mb-6 flex space-x-2 border-b border-gray-300">
-        {['sessions', 'break-glass', 'requests'].map((tab) => (
+        {['dashboard', 'sessions', 'grants', 'break-glass', 'requests'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab as any)}
@@ -238,10 +324,37 @@ export default function PrivilegedAccessPage() {
               activeTab === tab ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-600 hover:text-gray-800'
             }`}
           >
-            {tab.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+            {tab === 'grants' ? 'JIT Grants' : tab.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
           </button>
         ))}
       </div>
+
+      {activeTab === 'dashboard' && dashboardData && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-sm font-medium text-gray-500 mb-2">Active Sessions</h3>
+              <p className="text-3xl font-bold text-blue-600">{dashboardData.activeSessions}</p>
+            </div>
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-sm font-medium text-gray-500 mb-2">Active Grants</h3>
+              <p className="text-3xl font-bold text-green-600">{dashboardData.activeGrants}</p>
+            </div>
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-sm font-medium text-gray-500 mb-2">Pending Requests</h3>
+              <p className="text-3xl font-bold text-orange-600">{dashboardData.pendingRequests}</p>
+            </div>
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-sm font-medium text-gray-500 mb-2">Break-Glass Activations</h3>
+              <p className="text-3xl font-bold text-red-600">{dashboardData.breakGlassActivations}</p>
+            </div>
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-sm font-medium text-gray-500 mb-2">Total Requests</h3>
+              <p className="text-3xl font-bold text-purple-600">{dashboardData.totalRequests}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {activeTab === 'sessions' && (
         <DataTable
@@ -254,6 +367,23 @@ export default function PrivilegedAccessPage() {
             >
               Revoke
             </button>
+          )}
+        />
+      )}
+
+      {activeTab === 'grants' && (
+        <DataTable
+          data={jitGrants}
+          columns={grantColumns}
+          actions={(grant) => (
+            grant.status === 'Active' && (
+              <button
+                onClick={() => handleRevokeGrant(grant.id)}
+                className="text-red-600 hover:text-red-800 font-medium"
+              >
+                Revoke
+              </button>
+            )
           )}
         />
       )}

@@ -235,11 +235,12 @@ export default function TenantHuntingPage() {
     }
   };
 
+  // DELETE /api/tenant/hunting/saved-queries/{id} - حذف saved query
   const handleDeleteQuery = async (id: string) => {
     if (!confirm('Are you sure you want to delete this query?')) return;
     try {
       const response = await fetch(
-        `http://localhost:7000/api/tenant/hunting/queries/${id}?tenantId=${tenantId}`,
+        `http://localhost:7000/api/tenant/hunting/saved-queries/${id}?tenantId=${tenantId}`,
         { method: 'DELETE', credentials: 'include' }
       );
       if (!response.ok) throw new Error('Failed to delete query');
@@ -250,11 +251,12 @@ export default function TenantHuntingPage() {
     }
   };
 
+  // DELETE /api/tenant/hunting/scheduled-hunts/{id} - حذف scheduled hunt
   const handleDeleteSchedule = async (id: string) => {
     if (!confirm('Are you sure you want to delete this scheduled hunt?')) return;
     try {
       const response = await fetch(
-        `http://localhost:7000/api/tenant/hunting/scheduled/${id}?tenantId=${tenantId}`,
+        `http://localhost:7000/api/tenant/hunting/scheduled-hunts/${id}?tenantId=${tenantId}`,
         { method: 'DELETE', credentials: 'include' }
       );
       if (!response.ok) throw new Error('Failed to delete scheduled hunt');

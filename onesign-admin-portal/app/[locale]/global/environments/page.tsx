@@ -45,6 +45,8 @@ export default function EnvironmentManagementPage() {
   const [environments, setEnvironments] = useState<Environment[]>([]);
   const [selectedEnvironment, setSelectedEnvironment] = useState<string>('');
   const [heartbeat, setHeartbeat] = useState<EnvironmentHeartbeat | null>(null);
+  const [environmentDetail, setEnvironmentDetail] = useState<Environment | null>(null);
+  const [envIdToFetch, setEnvIdToFetch] = useState('');
 
   const [showBootstrapModal, setShowBootstrapModal] = useState(false);
   const [bootstrapConfig, setBootstrapConfig] = useState<BootstrapConfig>({

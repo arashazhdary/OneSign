@@ -54,6 +54,7 @@ export default function ExtensibilityPage() {
   // Webhooks
   const [webhooks, setWebhooks] = useState<Webhook[]>([]);
   const [showWebhookModal, setShowWebhookModal] = useState(false);
+  const [editingWebhook, setEditingWebhook] = useState<Webhook | null>(null);
   const [webhookForm, setWebhookForm] = useState({
     url: '',
     eventTypes: [] as string[],
@@ -63,6 +64,7 @@ export default function ExtensibilityPage() {
   // Login Hooks
   const [loginHooks, setLoginHooks] = useState<LoginHook[]>([]);
   const [showLoginHookModal, setShowLoginHookModal] = useState(false);
+  const [editingLoginHook, setEditingLoginHook] = useState<LoginHook | null>(null);
   const [loginHookForm, setLoginHookForm] = useState({
     name: '',
     hookType: 'PostLogin' as 'PreLogin' | 'PostLogin',
@@ -74,6 +76,7 @@ export default function ExtensibilityPage() {
   // Token Rules
   const [tokenRules, setTokenRules] = useState<TokenRule[]>([]);
   const [showTokenRuleModal, setShowTokenRuleModal] = useState(false);
+  const [editingTokenRule, setEditingTokenRule] = useState<TokenRule | null>(null);
   const [tokenRuleForm, setTokenRuleForm] = useState({
     name: '',
     ruleType: 'AddClaim',
@@ -186,6 +189,28 @@ export default function ExtensibilityPage() {
     }
   };
 
+  const handleUpdateWebhook = async (id: string, data: Partial<Webhook>) => {
+    if (!tenantId) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/webhooks/${id}?tenantId=${tenantId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (response.ok) {
+        setSuccess('Webhook updated successfully');
+        setEditingWebhook(null);
+        setShowWebhookModal(false);
+        fetchWebhooks();
+      }
+    } catch (err) {
+      setError('Failed to update webhook');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDeleteWebhook = async (id: string) => {
     if (!tenantId || !confirm('Are you sure you want to delete this webhook?')) return;
     setLoading(true);
@@ -243,6 +268,46 @@ export default function ExtensibilityPage() {
     }
   };
 
+  const handleUpdateLoginHook = async (id: string, data: Partial<LoginHook>) => {
+    if (!tenantId) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/login-hooks/${id}?tenantId=${tenantId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (response.ok) {
+        setSuccess('Login hook updated successfully');
+        setEditingLoginHook(null);
+        setShowLoginHookModal(false);
+        fetchLoginHooks();
+      }
+    } catch (err) {
+      setError('Failed to update login hook');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteLoginHook = async (id: string) => {
+    if (!tenantId || !confirm('Are you sure you want to delete this login hook?')) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/login-hooks/${id}?tenantId=${tenantId}`, {
+        method: 'DELETE'
+      });
+      if (response.ok) {
+        setSuccess('Login hook deleted successfully');
+        fetchLoginHooks();
+      }
+    } catch (err) {
+      setError('Failed to delete login hook');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCreateTokenRule = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!tenantId) return;
@@ -260,6 +325,46 @@ export default function ExtensibilityPage() {
       }
     } catch (err) {
       setError('Failed to create token rule');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateTokenRule = async (id: string, data: Partial<TokenRule>) => {
+    if (!tenantId) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/token-rules/${id}?tenantId=${tenantId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (response.ok) {
+        setSuccess('Token rule updated successfully');
+        setEditingTokenRule(null);
+        setShowTokenRuleModal(false);
+        fetchTokenRules();
+      }
+    } catch (err) {
+      setError('Failed to update token rule');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteTokenRule = async (id: string) => {
+    if (!tenantId || !confirm('Are you sure you want to delete this token rule?')) return;
+    setLoading(true);
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/token-rules/${id}?tenantId=${tenantId}`, {
+        method: 'DELETE'
+      });
+      if (response.ok) {
+        setSuccess('Token rule deleted successfully');
+        fetchTokenRules();
+      }
+    } catch (err) {
+      setError('Failed to delete token rule');
     } finally {
       setLoading(false);
     }
@@ -350,6 +455,16 @@ export default function ExtensibilityPage() {
             columns={webhookColumns}
             actions={(wh) => (
               <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setEditingWebhook(wh);
+                    setWebhookForm({ url: wh.url, eventTypes: wh.eventTypes, isEnabled: wh.isEnabled });
+                    setShowWebhookModal(true);
+                  }}
+                  className="text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  Edit
+                </button>
                 <button onClick={() => handleTestWebhook(wh.id)} className="text-green-600 hover:text-green-800 font-medium">
                   Test
                 </button>
@@ -367,7 +482,33 @@ export default function ExtensibilityPage() {
           <div className="flex justify-end">
             <ActionButton onClick={() => setShowLoginHookModal(true)}>Create Login Hook</ActionButton>
           </div>
-          <DataTable data={loginHooks} columns={loginHookColumns} />
+          <DataTable
+            data={loginHooks}
+            columns={loginHookColumns}
+            actions={(hook) => (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setEditingLoginHook(hook);
+                    setLoginHookForm({
+                      name: hook.name,
+                      hookType: hook.hookType,
+                      scriptUrl: hook.scriptUrl,
+                      isEnabled: hook.isEnabled,
+                      timeout: hook.timeout
+                    });
+                    setShowLoginHookModal(true);
+                  }}
+                  className="text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  Edit
+                </button>
+                <button onClick={() => handleDeleteLoginHook(hook.id)} className="text-red-600 hover:text-red-800 font-medium">
+                  Delete
+                </button>
+              </div>
+            )}
+          />
         </div>
       )}
 
@@ -376,7 +517,33 @@ export default function ExtensibilityPage() {
           <div className="flex justify-end">
             <ActionButton onClick={() => setShowTokenRuleModal(true)}>Create Token Rule</ActionButton>
           </div>
-          <DataTable data={tokenRules} columns={tokenRuleColumns} />
+          <DataTable
+            data={tokenRules}
+            columns={tokenRuleColumns}
+            actions={(rule) => (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setEditingTokenRule(rule);
+                    setTokenRuleForm({
+                      name: rule.name,
+                      ruleType: rule.ruleType,
+                      conditions: rule.conditions,
+                      claims: rule.claims,
+                      isEnabled: rule.isEnabled
+                    });
+                    setShowTokenRuleModal(true);
+                  }}
+                  className="text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  Edit
+                </button>
+                <button onClick={() => handleDeleteTokenRule(rule.id)} className="text-red-600 hover:text-red-800 font-medium">
+                  Delete
+                </button>
+              </div>
+            )}
+          />
         </div>
       )}
 
