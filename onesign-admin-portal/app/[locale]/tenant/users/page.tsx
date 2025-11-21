@@ -3,15 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { getTenantId, setTenantId } from '@/lib/tenant-context';
-import { getCurrentUserScope, CurrentUserScopeDto } from '@/lib/api/users';
+import { usersService } from '@/lib/api/services/users.service';
+import type { TenantUserDto, CurrentUserScopeDto } from '@/lib/api/types/users';
 
-interface TenantUser {
-  id: string;
-  email: string;
-  status: string;
-  isAdmin: boolean;
-  lastLoginAt?: string;
-}
+type TenantUser = TenantUserDto;
 
 interface OrgUnitTreeNode {
   id: string;
@@ -64,7 +59,7 @@ export default function TenantUsersPage() {
   const fetchUserScope = async (tid: string) => {
     try {
       setScopeLoading(true);
-      const scope = await getCurrentUserScope(tid);
+      const scope = await usersService.getCurrentUserScope(tid);
       setUserScope(scope);
 
       // Auto-select first rootOrgUnitId for delegated admins
@@ -87,14 +82,15 @@ export default function TenantUsersPage() {
 
   const fetchUsers = async () => {
     if (!tenantId) return;
-    
+
     try {
-      const url = `http://localhost:7000/api/tenant/users?tenantId=${tenantId}&pageNumber=1&pageSize=100${selectedOrgUnitId ? `&orgUnitId=${selectedOrgUnitId}` : ''}`;
-      const response = await fetch(url);
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(data.items || []);
-      }
+      const data = await usersService.getUsers({
+        tenantId,
+        orgUnitId: selectedOrgUnitId || undefined,
+        pageNumber: 1,
+        pageSize: 100,
+      });
+      setUsers(data.items || []);
     } catch (error) {
       console.error('Error fetching users:', error);
     } finally {
@@ -142,29 +138,21 @@ export default function TenantUsersPage() {
     setError('');
     setSuccess('');
     if (!tenantId) return;
-    
+
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/users/invite?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: inviteEmail,
-          isAdmin: inviteIsAdmin
-        })
+      await usersService.inviteUser({
+        tenantId,
+        email: inviteEmail,
+        isAdmin: inviteIsAdmin,
       });
 
-      if (response.ok) {
-        setShowInviteModal(false);
-        setInviteEmail('');
-        setInviteIsAdmin(false);
-        setSuccess(t('tenant.users.userInvited'));
-        fetchUsers();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (error) {
-      setError(t('common.error'));
+      setShowInviteModal(false);
+      setInviteEmail('');
+      setInviteIsAdmin(false);
+      setSuccess(t('tenant.users.userInvited'));
+      fetchUsers();
+    } catch (error: any) {
+      setError(error?.message || t('common.error'));
       console.error('Error inviting user:', error);
     }
   };

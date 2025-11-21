@@ -3,25 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { incidentsService } from '@/lib/api/services/incidents.service';
+import type { IncidentDto, IncidentStatsDto } from '@/lib/api/types/incidents';
 
-interface Incident {
-  id: string;
-  tenantId: string;
-  title: string;
-  description: string;
-  severity: number;
-  status: number;
-  category: string;
-  source: string;
-  detectedAt: string;
-  acknowledgedAt: string | null;
-  resolvedAt: string | null;
-  closedAt: string | null;
-  assignedToUserId: string | null;
-  assignedToUserName: string | null;
-  linkedEntities: LinkedEntity[];
-  notes: IncidentNote[];
-}
+type Incident = IncidentDto;
 
 interface LinkedEntity {
   id: string;
@@ -130,28 +115,20 @@ export default function IncidentsPage() {
   const fetchIncidents = async () => {
     setLoading(true);
     setError('');
+    if (!tenantId) return;
+
     try {
-      let url = `http://localhost:7000/api/tenant/incidents?tenantId=${tenantId}&pageNumber=${pageNumber}&pageSize=${pageSize}&sortField=${sortField}&sortDirection=${sortDirection}`;
-      if (severityFilter !== '') {
-        url += `&severity=${severityFilter}`;
-      }
-      if (statusFilter !== '') {
-        url += `&status=${statusFilter}`;
-      }
-      if (categoryFilter) {
-        url += `&category=${encodeURIComponent(categoryFilter)}`;
-      }
-
-      const response = await fetch(url, {
-        credentials: 'include',
+      const data = await incidentsService.getIncidents({
+        tenantId,
+        pageNumber,
+        pageSize,
+        sortField,
+        sortDirection,
+        severity: severityFilter !== '' ? severityFilter : undefined,
+        status: statusFilter !== '' ? statusFilter : undefined,
+        category: categoryFilter || undefined,
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch incidents');
-      }
-
-      const data = await response.json();
-      setIncidents(data);
+      setIncidents(data.items || []);
     } catch (err) {
       setError(t('common.error'));
     } finally {
@@ -160,30 +137,22 @@ export default function IncidentsPage() {
   };
 
   const fetchStats = async () => {
-    try {
-      const response = await fetch(`http://localhost:7000/api/tenant/incidents/stats?tenantId=${tenantId}`, {
-        credentials: 'include',
-      });
+    if (!tenantId) return;
 
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data);
-      }
+    try {
+      const data = await incidentsService.getIncidentStats(tenantId);
+      setStats(data);
     } catch (err) {
       console.error('Failed to fetch stats:', err);
     }
   };
 
   const fetchTimeline = async (incidentId: string) => {
-    try {
-      const response = await fetch(`http://localhost:7000/api/tenant/incidents/${incidentId}/timeline?tenantId=${tenantId}`, {
-        credentials: 'include',
-      });
+    if (!tenantId) return;
 
-      if (response.ok) {
-        const data = await response.json();
-        setTimeline(data);
-      }
+    try {
+      const data = await incidentsService.getIncidentTimeline(incidentId, tenantId);
+      setTimeline(data);
     } catch (err) {
       console.error('Failed to fetch timeline:', err);
     }
@@ -192,17 +161,15 @@ export default function IncidentsPage() {
   const fetchPlaybookRuns = async () => {
     setLoading(true);
     setError('');
+    if (!tenantId) return;
+
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/incidents/playbook-runs?tenantId=${tenantId}&pageNumber=${playbookPageNumber}&pageSize=${pageSize}`, {
-        credentials: 'include',
+      const data = await incidentsService.getPlaybookRuns({
+        tenantId,
+        pageNumber: playbookPageNumber,
+        pageSize,
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch playbook runs');
-      }
-
-      const data = await response.json();
-      setPlaybookRuns(data);
+      setPlaybookRuns(data.items || []);
     } catch (err) {
       setError(t('common.error'));
     } finally {
@@ -213,16 +180,10 @@ export default function IncidentsPage() {
   const handleAcknowledge = async (incidentId: string) => {
     setError('');
     setSuccess('');
+    if (!tenantId) return;
+
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/incidents/${incidentId}/acknowledge?tenantId=${tenantId}`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to acknowledge incident');
-      }
-
+      await incidentsService.acknowledgeIncident(incidentId, tenantId);
       setSuccess('Incident acknowledged successfully');
       fetchIncidents();
       if (selectedIncident?.id === incidentId) {
@@ -236,16 +197,10 @@ export default function IncidentsPage() {
   const handleResolve = async (incidentId: string) => {
     setError('');
     setSuccess('');
+    if (!tenantId) return;
+
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/incidents/${incidentId}/resolve?tenantId=${tenantId}`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to resolve incident');
-      }
-
+      await incidentsService.resolveIncident(incidentId, tenantId);
       setSuccess('Incident resolved successfully');
       fetchIncidents();
       if (selectedIncident?.id === incidentId) {
@@ -259,16 +214,10 @@ export default function IncidentsPage() {
   const handleClose = async (incidentId: string) => {
     setError('');
     setSuccess('');
+    if (!tenantId) return;
+
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/incidents/${incidentId}/close?tenantId=${tenantId}`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to close incident');
-      }
-
+      await incidentsService.closeIncident(incidentId, tenantId);
       setSuccess('Incident closed successfully');
       fetchIncidents();
       if (selectedIncident?.id === incidentId) {
@@ -280,36 +229,25 @@ export default function IncidentsPage() {
   };
 
   const fetchIncidentDetails = async (incidentId: string) => {
-    try {
-      const response = await fetch(`http://localhost:7000/api/tenant/incidents/${incidentId}?tenantId=${tenantId}`, {
-        credentials: 'include',
-      });
+    if (!tenantId) return;
 
-      if (response.ok) {
-        const data = await response.json();
-        setSelectedIncident(data);
-      }
+    try {
+      const data = await incidentsService.getIncidentById(incidentId, tenantId);
+      setSelectedIncident(data);
     } catch (err) {
       console.error('Failed to fetch incident details:', err);
     }
   };
 
   const handleAddNote = async () => {
-    if (!selectedIncident || !newNoteContent.trim()) return;
+    if (!selectedIncident || !newNoteContent.trim() || !tenantId) return;
 
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/incidents/${selectedIncident.id}/notes?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ content: newNoteContent }),
+      await incidentsService.addIncidentNote(selectedIncident.id, tenantId, {
+        content: newNoteContent,
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to add note');
-      }
 
       setSuccess('Note added successfully');
       setNewNoteContent('');

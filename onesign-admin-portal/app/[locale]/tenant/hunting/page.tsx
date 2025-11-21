@@ -3,18 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import * as HuntingAPI from '@/lib/api/hunting';
 
 // Types
-interface SavedQuery {
-  id: string;
-  name: string;
-  description: string;
-  oqlExpression: string;
-  datasetType: string;
-  createdAt: string;
-  lastModifiedAt: string;
-  createdByUserId: string;
-}
+type SavedQuery = HuntingAPI.SavedQueryDto;
+type ScheduledHunt = HuntingAPI.ScheduledHuntDto;
+type HuntRun = HuntingAPI.HuntRunDto;
 
 interface ScheduledHunt {
   id: string;
@@ -122,28 +116,22 @@ export default function TenantHuntingPage() {
     setError('');
     try {
       if (activeTab === 'queries') {
-        const response = await fetch(
-          `http://localhost:7000/api/tenant/hunting/queries?tenantId=${tenantId}`,
-          { credentials: 'include' }
-        );
-        if (!response.ok) throw new Error('Failed to fetch queries');
-        const data = await response.json();
-        setQueries(data);
+        const data = await HuntingAPI.getSavedQueries(tenantId, {
+          pageNumber: 1,
+          pageSize: 100,
+        });
+        setQueries(data.items || []);
       } else if (activeTab === 'scheduled') {
-        const response = await fetch(
-          `http://localhost:7000/api/tenant/hunting/scheduled?tenantId=${tenantId}`,
-          { credentials: 'include' }
-        );
-        if (!response.ok) throw new Error('Failed to fetch scheduled hunts');
-        const data = await response.json();
-        setScheduledHunts(data);
+        const data = await HuntingAPI.getScheduledHunts(tenantId, {
+          pageNumber: 1,
+          pageSize: 100,
+        });
+        setScheduledHunts(data.items || []);
       } else if (activeTab === 'runs') {
-        const response = await fetch(
-          `http://localhost:7000/api/tenant/hunting/runs?tenantId=${tenantId}&page=${runsPage}&pageSize=20`,
-          { credentials: 'include' }
-        );
-        if (!response.ok) throw new Error('Failed to fetch hunt runs');
-        const data = await response.json();
+        const data = await HuntingAPI.getHuntRuns(tenantId, {
+          pageNumber: runsPage,
+          pageSize: 20,
+        });
         setHuntRuns(data.items || []);
         setTotalRuns(data.totalCount || 0);
       }
@@ -160,25 +148,20 @@ export default function TenantHuntingPage() {
     setError('');
     setSuccess('');
     try {
-      const url = editingQuery
-        ? `http://localhost:7000/api/tenant/hunting/queries/${editingQuery.id}`
-        : `http://localhost:7000/api/tenant/hunting/queries`;
-      const method = editingQuery ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          tenantId,
+      if (editingQuery) {
+        await HuntingAPI.updateSavedQuery(editingQuery.id, tenantId, {
           userId,
           ...queryForm,
-        }),
-      });
+        });
+        setSuccess('Query updated successfully');
+      } else {
+        await HuntingAPI.createSavedQuery(tenantId, {
+          userId,
+          ...queryForm,
+        });
+        setSuccess('Query created successfully');
+      }
 
-      if (!response.ok) throw new Error('Failed to save query');
-
-      setSuccess(editingQuery ? 'Query updated successfully' : 'Query created successfully');
       setShowQueryModal(false);
       setEditingQuery(null);
       setQueryForm({
@@ -198,28 +181,22 @@ export default function TenantHuntingPage() {
     setError('');
     setSuccess('');
     try {
-      const url = editingSchedule
-        ? `http://localhost:7000/api/tenant/hunting/scheduled/${editingSchedule.id}`
-        : `http://localhost:7000/api/tenant/hunting/scheduled`;
-      const method = editingSchedule ? 'PUT' : 'POST';
+      const scheduleData = {
+        userId,
+        name: scheduleForm.name,
+        queryId: scheduleForm.queryId,
+        scheduleSpec: scheduleForm.scheduleSpec === 'Custom' ? scheduleForm.customCron : scheduleForm.scheduleSpec,
+        isEnabled: scheduleForm.isEnabled,
+      };
 
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          tenantId,
-          userId,
-          name: scheduleForm.name,
-          queryId: scheduleForm.queryId,
-          scheduleSpec: scheduleForm.scheduleSpec === 'Custom' ? scheduleForm.customCron : scheduleForm.scheduleSpec,
-          isEnabled: scheduleForm.isEnabled,
-        }),
-      });
+      if (editingSchedule) {
+        await HuntingAPI.updateScheduledHunt(editingSchedule.id, tenantId, scheduleData);
+        setSuccess('Schedule updated successfully');
+      } else {
+        await HuntingAPI.createScheduledHunt(tenantId, scheduleData);
+        setSuccess('Schedule created successfully');
+      }
 
-      if (!response.ok) throw new Error('Failed to save scheduled hunt');
-
-      setSuccess(editingSchedule ? 'Schedule updated successfully' : 'Schedule created successfully');
       setShowScheduleModal(false);
       setEditingSchedule(null);
       setScheduleForm({
@@ -239,11 +216,7 @@ export default function TenantHuntingPage() {
   const handleDeleteQuery = async (id: string) => {
     if (!confirm('Are you sure you want to delete this query?')) return;
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/hunting/saved-queries/${id}?tenantId=${tenantId}`,
-        { method: 'DELETE', credentials: 'include' }
-      );
-      if (!response.ok) throw new Error('Failed to delete query');
+      await HuntingAPI.deleteSavedQuery(id, tenantId);
       setSuccess('Query deleted successfully');
       fetchData();
     } catch (err) {
@@ -255,11 +228,7 @@ export default function TenantHuntingPage() {
   const handleDeleteSchedule = async (id: string) => {
     if (!confirm('Are you sure you want to delete this scheduled hunt?')) return;
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/hunting/scheduled-hunts/${id}?tenantId=${tenantId}`,
-        { method: 'DELETE', credentials: 'include' }
-      );
-      if (!response.ok) throw new Error('Failed to delete scheduled hunt');
+      await HuntingAPI.deleteScheduledHunt(id, tenantId);
       setSuccess('Scheduled hunt deleted successfully');
       fetchData();
     } catch (err) {
@@ -269,16 +238,11 @@ export default function TenantHuntingPage() {
 
   const handleToggleSchedule = async (hunt: ScheduledHunt) => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/hunting/scheduled/${hunt.id}/${hunt.isEnabled ? 'disable' : 'enable'}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ tenantId, userId }),
-        }
-      );
-      if (!response.ok) throw new Error('Failed to toggle schedule');
+      if (hunt.isEnabled) {
+        await HuntingAPI.disableScheduledHunt(hunt.id, tenantId, { userId });
+      } else {
+        await HuntingAPI.enableScheduledHunt(hunt.id, tenantId, { userId });
+      }
       fetchData();
     } catch (err) {
       setError(t('common.error'));
@@ -287,16 +251,7 @@ export default function TenantHuntingPage() {
 
   const handleRunNow = async (huntId: string) => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/hunting/scheduled/${huntId}/run`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ tenantId, userId }),
-        }
-      );
-      if (!response.ok) throw new Error('Failed to trigger run');
+      await HuntingAPI.runScheduledHunt(huntId, tenantId, { userId });
       setSuccess('Hunt run triggered successfully');
       setActiveTab('runs');
       fetchData();
