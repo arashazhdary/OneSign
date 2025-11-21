@@ -7,26 +7,9 @@ import LoadingOverlay from '@/app/components/LoadingOverlay';
 import Modal from '@/app/components/Modal';
 import StatusBadge from '@/app/components/StatusBadge';
 import DataTable, { Column } from '@/app/components/DataTable';
+import * as AccessRequestsAPI from '@/lib/api/access-requests';
 
-interface AccessRequest {
-  id: string;
-  tenantId: string;
-  requestedByUserId: string;
-  requestedByUserName: string;
-  requestedByUserEmail: string;
-  resourceType: string;
-  resourceId: string;
-  resourceName: string;
-  accessLevel: string;
-  justification: string;
-  status: string;
-  reviewedByUserId: string | null;
-  reviewedByUserName: string | null;
-  reviewerComment: string | null;
-  requestedAt: string;
-  reviewedAt: string | null;
-  expiresAt: string | null;
-}
+type AccessRequest = AccessRequestsAPI.AccessRequestDto;
 
 type Tab = 'pending' | 'approved' | 'rejected' | 'all';
 
@@ -66,22 +49,15 @@ export default function AccessRequestsPage() {
     setLoading(true);
     setError('');
     try {
-      let url = `http://localhost:7000/api/tenant/access-requests?tenantId=${tenantId}&pageNumber=${pageNumber}&pageSize=${pageSize}`;
+      const status = activeTab !== 'all' ? (activeTab.charAt(0).toUpperCase() + activeTab.slice(1)) as AccessRequestsAPI.AccessRequestStatus : undefined;
 
-      if (activeTab !== 'all') {
-        url += `&status=${activeTab}`;
-      }
-
-      const response = await fetch(url, {
-        credentials: 'include',
+      const result = await AccessRequestsAPI.getAccessRequests(tenantId, {
+        status,
+        page: pageNumber,
+        pageSize,
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch access requests');
-      }
-
-      const data = await response.json();
-      setRequests(data);
+      setRequests(result.items);
     } catch (err) {
       setError(t('common.error'));
     } finally {
@@ -99,25 +75,15 @@ export default function AccessRequestsPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/access-requests?tenantId=${tenantId}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            resourceType,
-            resourceId,
-            resourceName: resourceName || resourceId,
-            accessLevel,
-            justification,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to create access request');
-      }
+      await AccessRequestsAPI.createAccessRequest({
+        tenantId,
+        userId: 'current-user-id', // TODO: Get from auth context
+        requestType: 'ApplicationAccess',
+        targetResourceId: resourceId,
+        targetResourceType: resourceType,
+        requestedScopes: [accessLevel],
+        justification,
+      });
 
       setSuccess('Access request created successfully');
       setShowCreateModal(false);
@@ -137,21 +103,18 @@ export default function AccessRequestsPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/access-requests/${selectedRequest.id}/approve?tenantId=${tenantId}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            approved: approve,
-            comment: reviewerComment || null,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to ${approve ? 'approve' : 'reject'} access request`);
+      if (approve) {
+        await AccessRequestsAPI.approveAccessRequest(selectedRequest.id, {
+          tenantId,
+          userId: 'current-user-id', // TODO: Get from auth context
+          comments: reviewerComment || undefined,
+        });
+      } else {
+        await AccessRequestsAPI.rejectAccessRequest(selectedRequest.id, {
+          tenantId,
+          userId: 'current-user-id', // TODO: Get from auth context
+          comments: reviewerComment,
+        });
       }
 
       setSuccess(`Access request ${approve ? 'approved' : 'rejected'} successfully`);
@@ -182,33 +145,33 @@ export default function AccessRequestsPage() {
 
   const columns: Column<AccessRequest>[] = [
     {
-      key: 'requestedAt',
+      key: 'createdAt',
       label: 'Requested At',
-      render: (item) => formatDate(item.requestedAt),
+      render: (item) => formatDate(item.createdAt),
       sortable: true,
     },
     {
-      key: 'requestedByUserName',
+      key: 'requesterName',
       label: 'Requested By',
       render: (item) => (
         <div>
-          <div className="font-medium">{item.requestedByUserName}</div>
-          <div className="text-xs text-gray-500">{item.requestedByUserEmail}</div>
+          <div className="font-medium">{item.requesterName || 'N/A'}</div>
+          <div className="text-xs text-gray-500">{item.requesterEmail || 'N/A'}</div>
         </div>
       ),
     },
     {
-      key: 'resourceType',
+      key: 'targetResourceType',
       label: 'Resource Type',
       sortable: true,
     },
     {
-      key: 'resourceName',
+      key: 'targetResourceName',
       label: 'Resource',
       render: (item) => (
         <div>
-          <div className="font-medium">{item.resourceName}</div>
-          <div className="text-xs text-gray-500">{item.accessLevel}</div>
+          <div className="font-medium">{item.targetResourceName || item.targetResourceId}</div>
+          <div className="text-xs text-gray-500">{item.requestedScopes?.join(', ') || 'N/A'}</div>
         </div>
       ),
     },
@@ -514,25 +477,25 @@ export default function AccessRequestsPage() {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="text-gray-600">Requested By:</span>
-                  <div className="font-medium">{selectedRequest.requestedByUserName}</div>
-                  <div className="text-xs text-gray-500">{selectedRequest.requestedByUserEmail}</div>
+                  <div className="font-medium">{selectedRequest.requesterName || 'N/A'}</div>
+                  <div className="text-xs text-gray-500">{selectedRequest.requesterEmail || 'N/A'}</div>
                 </div>
                 <div>
                   <span className="text-gray-600">Requested At:</span>
-                  <div className="font-medium">{formatDate(selectedRequest.requestedAt)}</div>
+                  <div className="font-medium">{formatDate(selectedRequest.createdAt)}</div>
                 </div>
                 <div>
                   <span className="text-gray-600">Resource Type:</span>
-                  <div className="font-medium">{selectedRequest.resourceType}</div>
+                  <div className="font-medium">{selectedRequest.targetResourceType}</div>
                 </div>
                 <div>
-                  <span className="text-gray-600">Access Level:</span>
-                  <div className="font-medium">{selectedRequest.accessLevel}</div>
+                  <span className="text-gray-600">Requested Scopes:</span>
+                  <div className="font-medium">{selectedRequest.requestedScopes?.join(', ') || 'N/A'}</div>
                 </div>
               </div>
               <div className="mt-4">
                 <span className="text-gray-600">Resource:</span>
-                <div className="font-medium">{selectedRequest.resourceName}</div>
+                <div className="font-medium">{selectedRequest.targetResourceName || selectedRequest.targetResourceId}</div>
               </div>
               <div className="mt-4">
                 <span className="text-gray-600">Justification:</span>
