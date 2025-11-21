@@ -1,0 +1,387 @@
+import { ApiClient, apiClient } from '../api-client';
+import {
+  Tenant,
+  CreateTenantRequest,
+  UpdateTenantRequest,
+  Role,
+  OrgUnit,
+  Integration,
+  Webhook,
+  WebhookEvent,
+  ApiKey,
+  SystemHealth,
+  Permission,
+} from '../types/platform';
+
+/**
+ * Platform Service
+ * Handles all platform management operations
+ */
+export class PlatformService {
+  constructor(private client: ApiClient = apiClient) {}
+
+  // Tenant Management
+
+  /**
+   * Get all tenants (Global Admin only)
+   */
+  async getTenants(): Promise<Tenant[]> {
+    const response = await this.client.get<Tenant[]>('/api/global/tenants');
+    return response.data;
+  }
+
+  /**
+   * Get tenant by ID
+   */
+  async getTenantById(tenantId: string): Promise<Tenant> {
+    const response = await this.client.get<Tenant>(`/api/tenant/${tenantId}`);
+    return response.data;
+  }
+
+  /**
+   * Get current tenant
+   */
+  async getCurrentTenant(tenantId: string): Promise<Tenant> {
+    const response = await this.client.get<Tenant>('/api/tenant/current', { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Create tenant (Global Admin only)
+   */
+  async createTenant(data: CreateTenantRequest): Promise<Tenant> {
+    const response = await this.client.post<Tenant>('/api/global/tenants', data);
+    return response.data;
+  }
+
+  /**
+   * Update tenant
+   */
+  async updateTenant(tenantId: string, data: UpdateTenantRequest): Promise<Tenant> {
+    const response = await this.client.put<Tenant>(`/api/tenant/${tenantId}`, data);
+    return response.data;
+  }
+
+  /**
+   * Delete tenant (Global Admin only)
+   */
+  async deleteTenant(tenantId: string): Promise<void> {
+    await this.client.delete(`/api/global/tenants/${tenantId}`);
+  }
+
+  /**
+   * Suspend tenant
+   */
+  async suspendTenant(tenantId: string, reason?: string): Promise<void> {
+    await this.client.post(`/api/global/tenants/${tenantId}/suspend`, { reason });
+  }
+
+  /**
+   * Activate tenant
+   */
+  async activateTenant(tenantId: string): Promise<void> {
+    await this.client.post(`/api/global/tenants/${tenantId}/activate`);
+  }
+
+  // Roles & Permissions
+
+  /**
+   * Get roles
+   */
+  async getRoles(tenantId?: string): Promise<Role[]> {
+    const endpoint = tenantId ? '/api/tenant/roles' : '/api/global/roles';
+    const response = await this.client.get<Role[]>(endpoint, { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Get role by ID
+   */
+  async getRoleById(roleId: string, tenantId?: string): Promise<Role> {
+    const endpoint = tenantId ? `/api/tenant/roles/${roleId}` : `/api/global/roles/${roleId}`;
+    const response = await this.client.get<Role>(endpoint, { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Create role
+   */
+  async createRole(data: Partial<Role>): Promise<Role> {
+    const endpoint = data.tenantId ? '/api/tenant/roles' : '/api/global/roles';
+    const response = await this.client.post<Role>(endpoint, data);
+    return response.data;
+  }
+
+  /**
+   * Update role
+   */
+  async updateRole(roleId: string, data: Partial<Role>, tenantId?: string): Promise<Role> {
+    const endpoint = tenantId ? `/api/tenant/roles/${roleId}` : `/api/global/roles/${roleId}`;
+    const response = await this.client.put<Role>(endpoint, { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Delete role
+   */
+  async deleteRole(roleId: string, tenantId?: string): Promise<void> {
+    const endpoint = tenantId ? `/api/tenant/roles/${roleId}` : `/api/global/roles/${roleId}`;
+    await this.client.delete(endpoint, { params: { tenantId } });
+  }
+
+  /**
+   * Get available permissions
+   */
+  async getPermissions(): Promise<Permission[]> {
+    const response = await this.client.get<Permission[]>('/api/global/permissions');
+    return response.data;
+  }
+
+  // Organization Units
+
+  /**
+   * Get organization units
+   */
+  async getOrgUnits(tenantId: string): Promise<OrgUnit[]> {
+    const response = await this.client.get<OrgUnit[]>('/api/tenant/orgunits', { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Get org unit by ID
+   */
+  async getOrgUnitById(tenantId: string, orgUnitId: string): Promise<OrgUnit> {
+    const response = await this.client.get<OrgUnit>(`/api/tenant/orgunits/${orgUnitId}`, {
+      tenantId,
+    });
+    return response.data;
+  }
+
+  /**
+   * Create org unit
+   */
+  async createOrgUnit(data: Partial<OrgUnit>): Promise<OrgUnit> {
+    const response = await this.client.post<OrgUnit>('/api/tenant/orgunits', data);
+    return response.data;
+  }
+
+  /**
+   * Update org unit
+   */
+  async updateOrgUnit(tenantId: string, orgUnitId: string, data: Partial<OrgUnit>): Promise<OrgUnit> {
+    const response = await this.client.put<OrgUnit>(`/api/tenant/orgunits/${orgUnitId}`, {
+      ...data,
+      tenantId,
+    });
+    return response.data;
+  }
+
+  /**
+   * Delete org unit
+   */
+  async deleteOrgUnit(tenantId: string, orgUnitId: string): Promise<void> {
+    await this.client.delete(`/api/tenant/orgunits/${orgUnitId}`, {
+      params: { tenantId },
+    });
+  }
+
+  // Integrations
+
+  /**
+   * Get integrations
+   */
+  async getIntegrations(tenantId?: string): Promise<Integration[]> {
+    const endpoint = tenantId ? '/api/tenant/integrations' : '/api/global/integrations';
+    const response = await this.client.get<Integration[]>(endpoint, { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Get integration by ID
+   */
+  async getIntegrationById(integrationId: string, tenantId?: string): Promise<Integration> {
+    const endpoint = tenantId
+      ? `/api/tenant/integrations/${integrationId}`
+      : `/api/global/integrations/${integrationId}`;
+    const response = await this.client.get<Integration>(endpoint, { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Create integration
+   */
+  async createIntegration(data: Partial<Integration>): Promise<Integration> {
+    const endpoint = data.tenantId ? '/api/tenant/integrations' : '/api/global/integrations';
+    const response = await this.client.post<Integration>(endpoint, data);
+    return response.data;
+  }
+
+  /**
+   * Update integration
+   */
+  async updateIntegration(
+    integrationId: string,
+    data: Partial<Integration>,
+    tenantId?: string
+  ): Promise<Integration> {
+    const endpoint = tenantId
+      ? `/api/tenant/integrations/${integrationId}`
+      : `/api/global/integrations/${integrationId}`;
+    const response = await this.client.put<Integration>(endpoint, { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Delete integration
+   */
+  async deleteIntegration(integrationId: string, tenantId?: string): Promise<void> {
+    const endpoint = tenantId
+      ? `/api/tenant/integrations/${integrationId}`
+      : `/api/global/integrations/${integrationId}`;
+    await this.client.delete(endpoint, { params: { tenantId } });
+  }
+
+  /**
+   * Test integration
+   */
+  async testIntegration(
+    integrationId: string,
+    tenantId?: string
+  ): Promise<{ success: boolean; message?: string }> {
+    const endpoint = tenantId
+      ? `/api/tenant/integrations/${integrationId}/test`
+      : `/api/global/integrations/${integrationId}/test`;
+    const response = await this.client.post<{ success: boolean; message?: string }>(endpoint, {
+      tenantId,
+    });
+    return response.data;
+  }
+
+  /**
+   * Sync integration
+   */
+  async syncIntegration(integrationId: string, tenantId?: string): Promise<void> {
+    const endpoint = tenantId
+      ? `/api/tenant/integrations/${integrationId}/sync`
+      : `/api/global/integrations/${integrationId}/sync`;
+    await this.client.post(endpoint, { tenantId });
+  }
+
+  // Webhooks
+
+  /**
+   * Get webhooks
+   */
+  async getWebhooks(tenantId: string): Promise<Webhook[]> {
+    const response = await this.client.get<Webhook[]>('/api/tenant/webhooks', { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Create webhook
+   */
+  async createWebhook(data: Partial<Webhook>): Promise<Webhook> {
+    const response = await this.client.post<Webhook>('/api/tenant/webhooks', data);
+    return response.data;
+  }
+
+  /**
+   * Update webhook
+   */
+  async updateWebhook(tenantId: string, webhookId: string, data: Partial<Webhook>): Promise<Webhook> {
+    const response = await this.client.put<Webhook>(`/api/tenant/webhooks/${webhookId}`, {
+      ...data,
+      tenantId,
+    });
+    return response.data;
+  }
+
+  /**
+   * Delete webhook
+   */
+  async deleteWebhook(tenantId: string, webhookId: string): Promise<void> {
+    await this.client.delete(`/api/tenant/webhooks/${webhookId}`, {
+      params: { tenantId },
+    });
+  }
+
+  /**
+   * Test webhook
+   */
+  async testWebhook(tenantId: string, webhookId: string): Promise<{ success: boolean; message?: string }> {
+    const response = await this.client.post<{ success: boolean; message?: string }>(
+      `/api/tenant/webhooks/${webhookId}/test`,
+      { tenantId }
+    );
+    return response.data;
+  }
+
+  /**
+   * Get webhook events
+   */
+  async getWebhookEvents(tenantId: string, webhookId: string): Promise<WebhookEvent[]> {
+    const response = await this.client.get<WebhookEvent[]>(
+      `/api/tenant/webhooks/${webhookId}/events`,
+      { tenantId }
+    );
+    return response.data;
+  }
+
+  // API Keys
+
+  /**
+   * Get API keys
+   */
+  async getApiKeys(tenantId: string): Promise<ApiKey[]> {
+    const response = await this.client.get<ApiKey[]>('/api/tenant/api-keys', { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Create API key
+   */
+  async createApiKey(
+    tenantId: string,
+    name: string,
+    permissions: string[],
+    expiresAt?: string
+  ): Promise<ApiKey> {
+    const response = await this.client.post<ApiKey>('/api/tenant/api-keys', {
+      tenantId,
+      name,
+      permissions,
+      expiresAt,
+    });
+    return response.data;
+  }
+
+  /**
+   * Revoke API key
+   */
+  async revokeApiKey(tenantId: string, apiKeyId: string): Promise<void> {
+    await this.client.delete(`/api/tenant/api-keys/${apiKeyId}`, {
+      params: { tenantId },
+    });
+  }
+
+  // System Health
+
+  /**
+   * Get system health
+   */
+  async getSystemHealth(): Promise<SystemHealth> {
+    const response = await this.client.get<SystemHealth>('/api/health');
+    return response.data;
+  }
+
+  /**
+   * Get service health
+   */
+  async getServiceHealth(serviceName: string): Promise<any> {
+    const response = await this.client.get(`/api/health/${serviceName}`);
+    return response.data;
+  }
+}
+
+// Export singleton instance
+export const platformService = new PlatformService();
