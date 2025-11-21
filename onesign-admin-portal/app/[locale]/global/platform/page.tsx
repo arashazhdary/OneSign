@@ -37,7 +37,14 @@ interface SystemHealth {
   details?: string;
 }
 
-type Tab = 'version' | 'migrations' | 'tests' | 'health';
+interface DiagnosticInfo {
+  category: string;
+  key: string;
+  value: string;
+  description?: string;
+}
+
+type Tab = 'version' | 'health' | 'migrations' | 'diagnostics' | 'tests';
 
 export default function GlobalPlatformPage() {
   const t = useTranslations();
@@ -53,6 +60,7 @@ export default function GlobalPlatformPage() {
   const [totalTests, setTotalTests] = useState(0);
   const [testPage, setTestPage] = useState(1);
   const [systemHealth, setSystemHealth] = useState<SystemHealth[]>([]);
+  const [diagnostics, setDiagnostics] = useState<DiagnosticInfo[]>([]);
 
   const pageSize = 20;
 
@@ -89,6 +97,12 @@ export default function GlobalPlatformPage() {
         if (response.ok) {
           const data = await response.json();
           setSystemHealth(data.services || []);
+        }
+      } else if (activeTab === 'diagnostics') {
+        const response = await fetch('http://localhost:7000/api/global/platform/diagnostics');
+        if (response.ok) {
+          const data = await response.json();
+          setDiagnostics(data.diagnostics || []);
         }
       }
     } catch (err) {
@@ -167,7 +181,7 @@ export default function GlobalPlatformPage() {
 
       <div className="mb-6 border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
-          {(['version', 'migrations', 'tests', 'health'] as Tab[]).map((tab) => (
+          {(['version', 'health', 'migrations', 'diagnostics', 'tests'] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -177,7 +191,11 @@ export default function GlobalPlatformPage() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              {tab === 'version' ? 'Version Info' : tab === 'migrations' ? 'Migration History' : tab === 'tests' ? 'Integration Tests' : 'System Health'}
+              {tab === 'version' ? 'Version Info' :
+               tab === 'health' ? 'Health Status' :
+               tab === 'migrations' ? 'Migrations' :
+               tab === 'diagnostics' ? 'Diagnostics' :
+               'Tests'}
             </button>
           ))}
         </nav>
@@ -291,6 +309,45 @@ export default function GlobalPlatformPage() {
               </button>
             </div>
           )}
+        </div>
+      )}
+
+      {activeTab === 'diagnostics' && (
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="p-6">
+            <h2 className="text-xl font-semibold mb-4">System Diagnostics</h2>
+            <div className="space-y-6">
+              {diagnostics.reduce((acc, item) => {
+                if (!acc.find((group: any) => group.category === item.category)) {
+                  acc.push({
+                    category: item.category,
+                    items: diagnostics.filter(d => d.category === item.category)
+                  });
+                }
+                return acc;
+              }, [] as any[]).map((group) => (
+                <div key={group.category} className="border-b last:border-b-0 pb-4 last:pb-0">
+                  <h3 className="text-lg font-medium text-gray-900 mb-3">{group.category}</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {group.items.map((item: DiagnosticInfo) => (
+                      <div key={item.key} className="bg-gray-50 rounded p-3">
+                        <div className="text-sm font-medium text-gray-700">{item.key}</div>
+                        <div className="text-lg font-semibold text-gray-900 mt-1">{item.value}</div>
+                        {item.description && (
+                          <div className="text-xs text-gray-500 mt-1">{item.description}</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {diagnostics.length === 0 && (
+                <div className="text-center text-gray-500 py-8">
+                  No diagnostic information available
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
 

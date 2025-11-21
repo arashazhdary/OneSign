@@ -20,7 +20,36 @@ interface Conversation {
   lastMessageAt: string;
 }
 
+interface Suggestion {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  priority: string;
+}
+
+interface Insight {
+  id: string;
+  title: string;
+  description: string;
+  severity: string;
+  metrics: Record<string, any>;
+  recommendations: string[];
+}
+
+interface AnalysisResult {
+  summary: string;
+  findings: Array<{
+    category: string;
+    severity: string;
+    description: string;
+    recommendation: string;
+  }>;
+  score: number;
+}
+
 type ContextType = 'Dashboard' | 'User' | 'Application' | 'Incident' | 'Policy' | 'Hunt' | 'Generic';
+type SidebarTab = 'suggestions' | 'insights' | 'analysis';
 
 export default function TenantCopilotPage() {
   const t = useTranslations();
@@ -36,6 +65,13 @@ export default function TenantCopilotPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(true);
+  const [showSidebar, setShowSidebar] = useState(true);
+  const [sidebarTab, setSidebarTab] = useState<SidebarTab>('suggestions');
+
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [insights, setInsights] = useState<Insight[]>([]);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -49,6 +85,8 @@ export default function TenantCopilotPage() {
   useEffect(() => {
     if (tenantId) {
       fetchConversations();
+      fetchSuggestions();
+      fetchInsights();
     }
   }, [tenantId]);
 
@@ -160,6 +198,72 @@ export default function TenantCopilotPage() {
     setInputMessage(action);
   };
 
+  const fetchSuggestions = async () => {
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/copilot/suggestions?tenantId=${tenantId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setSuggestions(data.items || []);
+      }
+    } catch (err) {
+      console.error('Error fetching suggestions:', err);
+    }
+  };
+
+  const fetchInsights = async () => {
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/copilot/insights?tenantId=${tenantId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setInsights(data.items || []);
+      }
+    } catch (err) {
+      console.error('Error fetching insights:', err);
+    }
+  };
+
+  const handleAnalyze = async () => {
+    setAnalyzing(true);
+    setError('');
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/copilot/analyze?tenantId=${tenantId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contextType: selectedContext }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setAnalysisResult(data);
+        setSidebarTab('analysis');
+      } else {
+        const errorData = await response.json();
+        setError(errorData.errorMessage || t('common.error'));
+      }
+    } catch (err) {
+      setError(t('common.error'));
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'High': return 'bg-red-100 text-red-800';
+      case 'Medium': return 'bg-yellow-100 text-yellow-800';
+      case 'Low': return 'bg-blue-100 text-blue-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'Critical': return 'bg-red-100 text-red-800';
+      case 'Warning': return 'bg-yellow-100 text-yellow-800';
+      case 'Info': return 'bg-blue-100 text-blue-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
   const getContextIcon = (context: ContextType) => {
     switch (context) {
       case 'Dashboard': return '📊';
@@ -223,6 +327,7 @@ export default function TenantCopilotPage() {
             <button
               onClick={() => setShowHistory(!showHistory)}
               className="p-2 hover:bg-gray-100 rounded"
+              title="Toggle History"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -230,19 +335,30 @@ export default function TenantCopilotPage() {
             </button>
             <h1 className="text-xl font-bold">OneSign Copilot</h1>
           </div>
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600">Context:</label>
-            <select
-              value={selectedContext}
-              onChange={(e) => setSelectedContext(e.target.value as ContextType)}
-              className="px-3 py-1 border rounded text-sm"
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-600">Context:</label>
+              <select
+                value={selectedContext}
+                onChange={(e) => setSelectedContext(e.target.value as ContextType)}
+                className="px-3 py-1 border rounded text-sm"
+              >
+                {contextTypes.map((ctx) => (
+                  <option key={ctx} value={ctx}>
+                    {ctx}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              onClick={() => setShowSidebar(!showSidebar)}
+              className="p-2 hover:bg-gray-100 rounded"
+              title="Toggle Insights Sidebar"
             >
-              {contextTypes.map((ctx) => (
-                <option key={ctx} value={ctx}>
-                  {ctx}
-                </option>
-              ))}
-            </select>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -345,6 +461,183 @@ export default function TenantCopilotPage() {
           </form>
         </div>
       </div>
+
+      {/* Right Sidebar - Suggestions & Insights */}
+      {showSidebar && (
+        <div className="w-96 border-l bg-gray-50 flex flex-col">
+          <div className="p-4 border-b bg-white">
+            <div className="flex gap-2 mb-3">
+              <button
+                onClick={() => setSidebarTab('suggestions')}
+                className={`flex-1 py-2 px-3 text-sm rounded ${
+                  sidebarTab === 'suggestions'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Suggestions
+              </button>
+              <button
+                onClick={() => setSidebarTab('insights')}
+                className={`flex-1 py-2 px-3 text-sm rounded ${
+                  sidebarTab === 'insights'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Insights
+              </button>
+              <button
+                onClick={() => setSidebarTab('analysis')}
+                className={`flex-1 py-2 px-3 text-sm rounded ${
+                  sidebarTab === 'analysis'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Analysis
+              </button>
+            </div>
+            <button
+              onClick={handleAnalyze}
+              disabled={analyzing}
+              className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
+            >
+              {analyzing ? 'Analyzing...' : 'Analyze Security Posture'}
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4">
+            {sidebarTab === 'suggestions' && (
+              <div className="space-y-3">
+                {suggestions.map((suggestion) => (
+                  <div key={suggestion.id} className="bg-white rounded-lg p-4 shadow-sm">
+                    <div className="flex items-start justify-between mb-2">
+                      <h4 className="text-sm font-semibold text-gray-900">{suggestion.title}</h4>
+                      <span className={`px-2 py-1 rounded text-xs ${getPriorityColor(suggestion.priority)}`}>
+                        {suggestion.priority}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-600 mb-2">{suggestion.description}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">{suggestion.category}</span>
+                      <button
+                        onClick={() => setInputMessage(suggestion.title)}
+                        className="text-xs text-indigo-600 hover:text-indigo-800"
+                      >
+                        Ask Copilot
+                      </button>
+                    </div>
+                  </div>
+                ))}
+                {suggestions.length === 0 && (
+                  <p className="text-sm text-gray-500 text-center py-8">No suggestions available</p>
+                )}
+              </div>
+            )}
+
+            {sidebarTab === 'insights' && (
+              <div className="space-y-3">
+                {insights.map((insight) => (
+                  <div key={insight.id} className="bg-white rounded-lg p-4 shadow-sm">
+                    <div className="flex items-start justify-between mb-2">
+                      <h4 className="text-sm font-semibold text-gray-900">{insight.title}</h4>
+                      <span className={`px-2 py-1 rounded text-xs ${getSeverityColor(insight.severity)}`}>
+                        {insight.severity}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-600 mb-3">{insight.description}</p>
+                    {Object.keys(insight.metrics).length > 0 && (
+                      <div className="mb-3 p-2 bg-gray-50 rounded">
+                        <p className="text-xs font-medium text-gray-700 mb-1">Metrics:</p>
+                        {Object.entries(insight.metrics).map(([key, value]) => (
+                          <div key={key} className="text-xs text-gray-600 flex justify-between">
+                            <span>{key}:</span>
+                            <span className="font-medium">{String(value)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {insight.recommendations.length > 0 && (
+                      <div>
+                        <p className="text-xs font-medium text-gray-700 mb-1">Recommendations:</p>
+                        <ul className="text-xs text-gray-600 space-y-1">
+                          {insight.recommendations.map((rec, idx) => (
+                            <li key={idx} className="flex items-start">
+                              <span className="mr-1">•</span>
+                              <span>{rec}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {insights.length === 0 && (
+                  <p className="text-sm text-gray-500 text-center py-8">No insights available</p>
+                )}
+              </div>
+            )}
+
+            {sidebarTab === 'analysis' && (
+              <div>
+                {analysisResult ? (
+                  <div className="space-y-4">
+                    <div className="bg-white rounded-lg p-4 shadow-sm">
+                      <h4 className="text-sm font-semibold text-gray-900 mb-2">Security Score</h4>
+                      <div className="flex items-center">
+                        <div className="flex-1">
+                          <div className="bg-gray-200 rounded-full h-4">
+                            <div
+                              className={`h-4 rounded-full ${
+                                analysisResult.score >= 80
+                                  ? 'bg-green-600'
+                                  : analysisResult.score >= 60
+                                  ? 'bg-yellow-600'
+                                  : 'bg-red-600'
+                              }`}
+                              style={{ width: `${analysisResult.score}%` }}
+                            />
+                          </div>
+                        </div>
+                        <span className="ml-3 text-lg font-bold text-gray-900">{analysisResult.score}</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-white rounded-lg p-4 shadow-sm">
+                      <h4 className="text-sm font-semibold text-gray-900 mb-2">Summary</h4>
+                      <p className="text-xs text-gray-600">{analysisResult.summary}</p>
+                    </div>
+
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-semibold text-gray-900">Findings</h4>
+                      {analysisResult.findings.map((finding, idx) => (
+                        <div key={idx} className="bg-white rounded-lg p-4 shadow-sm">
+                          <div className="flex items-start justify-between mb-2">
+                            <span className="text-xs font-medium text-gray-900">{finding.category}</span>
+                            <span className={`px-2 py-1 rounded text-xs ${getSeverityColor(finding.severity)}`}>
+                              {finding.severity}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-600 mb-2">{finding.description}</p>
+                          <div className="text-xs text-indigo-600">
+                            <span className="font-medium">Recommendation:</span> {finding.recommendation}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-gray-500 mb-4">No analysis results yet</p>
+                    <p className="text-xs text-gray-400">Click "Analyze Security Posture" to start</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
