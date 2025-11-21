@@ -34,7 +34,7 @@ public class HuntingController : TenantControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 
     #endregion
@@ -66,7 +66,7 @@ public class HuntingController : TenantControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 
     [HttpGet("saved-queries/{id}")]
@@ -84,7 +84,7 @@ public class HuntingController : TenantControllerBase
         if (!result.IsSuccess)
             return NotFound(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 
     [HttpPost("saved-queries")]
@@ -108,7 +108,7 @@ public class HuntingController : TenantControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return CreatedAtAction(nameof(GetSavedQuery), new { id = result.Data!.Id }, result.Data);
+        return CreatedAtAction(nameof(GetSavedQuery), new { id = result.Value!.Id }, result.Value);
     }
 
     [HttpPut("saved-queries/{id}")]
@@ -133,7 +133,7 @@ public class HuntingController : TenantControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 
     [HttpDelete("saved-queries/{id}")]
@@ -183,7 +183,7 @@ public class HuntingController : TenantControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 
     [HttpGet("scheduled-hunts/{id}")]
@@ -202,7 +202,7 @@ public class HuntingController : TenantControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        var hunt = result.Data?.Items.FirstOrDefault(h => h.Id == id);
+        var hunt = result.Value?.Items.FirstOrDefault(h => h.Id == id);
         if (hunt == null)
             return NotFound();
 
@@ -233,7 +233,7 @@ public class HuntingController : TenantControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return CreatedAtAction(nameof(GetScheduledHunt), new { id = result.Data!.Id }, result.Data);
+        return CreatedAtAction(nameof(GetScheduledHunt), new { id = result.Value!.Id }, result.Value);
     }
 
     [HttpPut("scheduled-hunts/{id}")]
@@ -261,7 +261,7 @@ public class HuntingController : TenantControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 
     [HttpDelete("scheduled-hunts/{id}")]
@@ -309,7 +309,7 @@ public class HuntingController : TenantControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 
     #endregion
@@ -331,7 +331,7 @@ public class HuntingController : TenantControllerBase
         if (!result.IsSuccess)
             return NotFound(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 
     #endregion

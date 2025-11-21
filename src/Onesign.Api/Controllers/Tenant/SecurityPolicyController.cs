@@ -19,7 +19,7 @@ public class SecurityPolicyController : Onesign.Api.Controllers.TenantController
         _localizationService = localizationService;
     }
 
-    private new string GetCulture()
+    private string GetCultureString()
     {
         return HttpContext.Items["Culture"]?.ToString() ?? "en";
     }

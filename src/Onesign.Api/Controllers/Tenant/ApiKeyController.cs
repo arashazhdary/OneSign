@@ -32,7 +32,7 @@ public class ApiKeyController : TenantControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 
     [HttpPost]
@@ -43,7 +43,7 @@ public class ApiKeyController : TenantControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 
     [HttpPost("{id}/revoke")]

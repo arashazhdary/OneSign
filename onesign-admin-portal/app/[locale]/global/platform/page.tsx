@@ -37,7 +37,24 @@ interface SystemHealth {
   details?: string;
 }
 
-type Tab = 'version' | 'migrations' | 'tests' | 'health';
+interface DiagnosticInfo {
+  category: string;
+  key: string;
+  value: string;
+  description?: string;
+}
+
+interface OpenAPISpec {
+  openapi: string;
+  info: {
+    title: string;
+    version: string;
+    description: string;
+  };
+  paths: Record<string, any>;
+}
+
+type Tab = 'version' | 'health' | 'migrations' | 'diagnostics' | 'tests' | 'docs';
 
 export default function GlobalPlatformPage() {
   const t = useTranslations();
@@ -53,6 +70,12 @@ export default function GlobalPlatformPage() {
   const [totalTests, setTotalTests] = useState(0);
   const [testPage, setTestPage] = useState(1);
   const [systemHealth, setSystemHealth] = useState<SystemHealth[]>([]);
+  const [diagnostics, setDiagnostics] = useState<DiagnosticInfo[]>([]);
+  const [openApiSpec, setOpenApiSpec] = useState<OpenAPISpec | null>(null);
+  const [selectedTestId, setSelectedTestId] = useState<string>('');
+  const [singleTestResult, setSingleTestResult] = useState<TestResult | null>(null);
+  const [applyingMigration, setApplyingMigration] = useState(false);
+  const [generatingDocs, setGeneratingDocs] = useState(false);
 
   const pageSize = 20;
 
@@ -90,6 +113,18 @@ export default function GlobalPlatformPage() {
           const data = await response.json();
           setSystemHealth(data.services || []);
         }
+      } else if (activeTab === 'diagnostics') {
+        const response = await fetch('http://localhost:7000/api/global/platform/diagnostics');
+        if (response.ok) {
+          const data = await response.json();
+          setDiagnostics(data.diagnostics || []);
+        }
+      } else if (activeTab === 'docs') {
+        const response = await fetch('http://localhost:7000/api/global/platform/docs/openapi');
+        if (response.ok) {
+          const data = await response.json();
+          setOpenApiSpec(data);
+        }
       }
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -113,6 +148,81 @@ export default function GlobalPlatformPage() {
       }
     } catch (err) {
       setError(t('common.error'));
+    }
+  };
+
+  const applyMigration = async (migrationId: string) => {
+    setError('');
+    setApplyingMigration(true);
+    try {
+      const response = await fetch('http://localhost:7000/api/global/platform/migrations/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ migrationId }),
+      });
+      if (response.ok) {
+        fetchData();
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (err) {
+      setError(t('common.error'));
+    } finally {
+      setApplyingMigration(false);
+    }
+  };
+
+  const getTestResult = async (testId: string) => {
+    setError('');
+    try {
+      const response = await fetch(`http://localhost:7000/api/global/platform/tests/${testId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setSingleTestResult(data);
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (err) {
+      setError(t('common.error'));
+    }
+  };
+
+  const getTestResults = async () => {
+    setError('');
+    try {
+      const response = await fetch('http://localhost:7000/api/global/platform/tests/results');
+      if (response.ok) {
+        const data = await response.json();
+        setTestResults(data.items || []);
+        setTotalTests(data.totalCount || 0);
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (err) {
+      setError(t('common.error'));
+    }
+  };
+
+  const generateDocs = async () => {
+    setError('');
+    setGeneratingDocs(true);
+    try {
+      const response = await fetch('http://localhost:7000/api/global/platform/docs/generate', {
+        method: 'POST',
+      });
+      if (response.ok) {
+        fetchData();
+      } else {
+        const data = await response.json();
+        setError(data.errorMessage || t('common.error'));
+      }
+    } catch (err) {
+      setError(t('common.error'));
+    } finally {
+      setGeneratingDocs(false);
     }
   };
 
@@ -167,7 +277,7 @@ export default function GlobalPlatformPage() {
 
       <div className="mb-6 border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
-          {(['version', 'migrations', 'tests', 'health'] as Tab[]).map((tab) => (
+          {(['version', 'health', 'migrations', 'diagnostics', 'tests', 'docs'] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -177,7 +287,12 @@ export default function GlobalPlatformPage() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              {tab === 'version' ? 'Version Info' : tab === 'migrations' ? 'Migration History' : tab === 'tests' ? 'Integration Tests' : 'System Health'}
+              {tab === 'version' ? 'Version Info' :
+               tab === 'health' ? 'Health Status' :
+               tab === 'migrations' ? 'Migrations' :
+               tab === 'diagnostics' ? 'Diagnostics' :
+               tab === 'tests' ? 'Tests' :
+               'Documentation'}
             </button>
           ))}
         </nav>
@@ -236,6 +351,7 @@ export default function GlobalPlatformPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Applied At</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Execution Time</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -259,11 +375,22 @@ export default function GlobalPlatformPage() {
                       {migration.status}
                     </span>
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    {migration.status === 'Pending' && (
+                      <button
+                        onClick={() => applyMigration(migration.id)}
+                        disabled={applyingMigration}
+                        className="text-indigo-600 hover:text-indigo-900 disabled:opacity-50"
+                      >
+                        Apply
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
               {migrations.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
                     No migrations found
                   </td>
                 </tr>
@@ -294,16 +421,117 @@ export default function GlobalPlatformPage() {
         </div>
       )}
 
+      {activeTab === 'diagnostics' && (
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="p-6">
+            <h2 className="text-xl font-semibold mb-4">System Diagnostics</h2>
+            <div className="space-y-6">
+              {diagnostics.reduce((acc, item) => {
+                if (!acc.find((group: any) => group.category === item.category)) {
+                  acc.push({
+                    category: item.category,
+                    items: diagnostics.filter(d => d.category === item.category)
+                  });
+                }
+                return acc;
+              }, [] as any[]).map((group) => (
+                <div key={group.category} className="border-b last:border-b-0 pb-4 last:pb-0">
+                  <h3 className="text-lg font-medium text-gray-900 mb-3">{group.category}</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {group.items.map((item: DiagnosticInfo) => (
+                      <div key={item.key} className="bg-gray-50 rounded p-3">
+                        <div className="text-sm font-medium text-gray-700">{item.key}</div>
+                        <div className="text-lg font-semibold text-gray-900 mt-1">{item.value}</div>
+                        {item.description && (
+                          <div className="text-xs text-gray-500 mt-1">{item.description}</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {diagnostics.length === 0 && (
+                <div className="text-center text-gray-500 py-8">
+                  No diagnostic information available
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {activeTab === 'tests' && (
         <div>
-          <div className="mb-4 flex justify-end">
-            <button
-              onClick={runTests}
-              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-            >
-              Run All Tests
-            </button>
+          <div className="mb-4 flex justify-between items-center gap-4">
+            <div className="flex gap-2 flex-1">
+              <input
+                type="text"
+                value={selectedTestId}
+                onChange={(e) => setSelectedTestId(e.target.value)}
+                placeholder="Enter test ID to view details"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded"
+              />
+              <button
+                onClick={() => selectedTestId && getTestResult(selectedTestId)}
+                disabled={!selectedTestId}
+                className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 disabled:opacity-50"
+              >
+                Get Test Result
+              </button>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={getTestResults}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                Get All Results
+              </button>
+              <button
+                onClick={runTests}
+                className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+              >
+                Run All Tests
+              </button>
+            </div>
           </div>
+
+          {singleTestResult && (
+            <div className="mb-4 bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold mb-4">Test Result Details</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="text-sm text-gray-500">Test Name:</span>
+                  <p className="font-medium">{singleTestResult.testName}</p>
+                </div>
+                <div>
+                  <span className="text-sm text-gray-500">Category:</span>
+                  <p className="font-medium">{singleTestResult.category}</p>
+                </div>
+                <div>
+                  <span className="text-sm text-gray-500">Status:</span>
+                  <span className={`px-2 py-1 rounded text-xs ${getTestStatusColor(singleTestResult.status)}`}>
+                    {singleTestResult.status}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-sm text-gray-500">Duration:</span>
+                  <p className="font-medium">{singleTestResult.duration}ms</p>
+                </div>
+                {singleTestResult.message && (
+                  <div className="col-span-2">
+                    <span className="text-sm text-gray-500">Message:</span>
+                    <p className="font-medium">{singleTestResult.message}</p>
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => setSingleTestResult(null)}
+                className="mt-4 text-sm text-gray-600 hover:text-gray-900"
+              >
+                Clear
+              </button>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-white p-4 rounded-lg shadow">
@@ -440,6 +668,69 @@ export default function GlobalPlatformPage() {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {activeTab === 'docs' && (
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold">API Documentation</h2>
+            <button
+              onClick={generateDocs}
+              disabled={generatingDocs}
+              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
+            >
+              {generatingDocs ? 'Generating...' : 'Regenerate Docs'}
+            </button>
+          </div>
+
+          {openApiSpec ? (
+            <div className="space-y-6">
+              <div className="border-b pb-4">
+                <h3 className="text-xl font-semibold">{openApiSpec.info.title}</h3>
+                <p className="text-gray-600 mt-1">Version: {openApiSpec.info.version}</p>
+                <p className="text-gray-500 mt-2">{openApiSpec.info.description}</p>
+              </div>
+
+              <div>
+                <h4 className="text-lg font-semibold mb-3">Available Endpoints</h4>
+                <div className="space-y-2">
+                  {Object.entries(openApiSpec.paths).map(([path, methods]: [string, any]) => (
+                    <div key={path} className="border rounded-lg p-4">
+                      <div className="font-mono text-sm font-medium text-gray-700 mb-2">{path}</div>
+                      <div className="flex flex-wrap gap-2">
+                        {Object.keys(methods).map((method) => (
+                          <span
+                            key={method}
+                            className={`px-2 py-1 rounded text-xs font-semibold uppercase ${
+                              method === 'get' ? 'bg-blue-100 text-blue-800' :
+                              method === 'post' ? 'bg-green-100 text-green-800' :
+                              method === 'put' ? 'bg-yellow-100 text-yellow-800' :
+                              method === 'delete' ? 'bg-red-100 text-red-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}
+                          >
+                            {method}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-4 border-t">
+                <h4 className="text-lg font-semibold mb-3">OpenAPI Specification</h4>
+                <pre className="bg-gray-50 p-4 rounded-lg overflow-auto max-h-96 text-xs">
+                  {JSON.stringify(openApiSpec, null, 2)}
+                </pre>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center text-gray-500 py-8">
+              No API documentation available
+            </div>
+          )}
         </div>
       )}
     </div>

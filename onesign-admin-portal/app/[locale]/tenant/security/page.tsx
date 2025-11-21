@@ -29,14 +29,25 @@ interface TrustedDevice {
   lastUsedAt: string | null;
 }
 
+interface OrgUnitRule {
+  id: string;
+  orgUnitId: string;
+  orgUnitName: string;
+  mfaRequired: boolean;
+  allowedAuthMethods: string[];
+  sessionTimeoutMinutes: number;
+}
+
 export default function SecurityCenterPage() {
   const t = useTranslations();
   const [policy, setPolicy] = useState<SecurityPolicy | null>(null);
   const [mfaMethods, setMfaMethods] = useState<UserMfaMethod[]>([]);
   const [trustedDevices, setTrustedDevices] = useState<TrustedDevice[]>([]);
+  const [orgUnitRules, setOrgUnitRules] = useState<OrgUnitRule[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showOrgUnitRulesModal, setShowOrgUnitRulesModal] = useState(false);
 
   // Policy form state
   const [mfaRequirement, setMfaRequirement] = useState(0);
@@ -72,6 +83,15 @@ export default function SecurityCenterPage() {
         setTrustedDeviceExpireDays(policyData.trustedDeviceExpireDays);
         setSessionTimeoutMinutes(policyData.sessionTimeoutMinutes);
         setMaxFailedLoginAttempts(policyData.maxFailedLoginAttempts);
+      }
+
+      // Fetch org unit rules
+      const rulesRes = await fetch(`http://localhost:7000/api/tenant/security/policy/org-unit-rules?tenantId=${tenantId}`, {
+        credentials: 'include',
+      });
+      if (rulesRes.ok) {
+        const rulesData = await rulesRes.json();
+        setOrgUnitRules(rulesData || []);
       }
 
       // Fetch MFA methods (would need userId - skip for now)
@@ -162,6 +182,29 @@ export default function SecurityCenterPage() {
       setTotpCode('');
     } catch (err) {
       setError(t('security.invalidTotpCode'));
+    }
+  };
+
+  const handleUpdateOrgUnitRules = async () => {
+    setError('');
+    setSuccess('');
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/security/policy/org-unit-rules?tenantId=${tenantId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(orgUnitRules),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update org unit rules');
+      }
+
+      setSuccess(t('security.orgUnitRulesUpdated') || 'Org unit rules updated successfully');
+      setShowOrgUnitRulesModal(false);
+      await fetchSecurityData();
+    } catch (err) {
+      setError(t('common.error'));
     }
   };
 
@@ -325,6 +368,69 @@ export default function SecurityCenterPage() {
           </div>
         )}
       </div>
+
+      {/* Org Unit Rules Section */}
+      <div className="bg-white shadow rounded-lg p-6 mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">{t('security.orgUnitRules') || 'Org Unit Security Rules'}</h2>
+          <button
+            onClick={() => setShowOrgUnitRulesModal(true)}
+            className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+          >
+            {t('security.manageRules') || 'Manage Rules'}
+          </button>
+        </div>
+        {orgUnitRules.length === 0 ? (
+          <p className="text-gray-600">{t('security.noOrgUnitRules') || 'No org unit-specific rules configured'}</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('security.orgUnit') || 'Org Unit'}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('security.mfaRequired') || 'MFA Required'}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('security.sessionTimeout') || 'Session Timeout'}</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {orgUnitRules.map((rule) => (
+                  <tr key={rule.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{rule.orgUnitName}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{rule.mfaRequired ? 'Yes' : 'No'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{rule.sessionTimeoutMinutes} min</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Org Unit Rules Modal */}
+      {showOrgUnitRulesModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4">{t('security.manageOrgUnitRules') || 'Manage Org Unit Security Rules'}</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              {t('security.orgUnitRulesDescription') || 'Configure security policies for specific organizational units'}
+            </p>
+            <div className="flex gap-2 mt-6">
+              <button
+                onClick={handleUpdateOrgUnitRules}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+              >
+                {t('common.save')}
+              </button>
+              <button
+                onClick={() => setShowOrgUnitRulesModal(false)}
+                className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
+              >
+                {t('common.cancel')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

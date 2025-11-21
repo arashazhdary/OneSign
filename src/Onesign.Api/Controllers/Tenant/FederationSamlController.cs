@@ -26,7 +26,7 @@ public class FederationSamlController : TenantControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 
     [HttpPost]
@@ -51,7 +51,7 @@ public class FederationSamlController : TenantControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return CreatedAtAction(nameof(GetProviders), new { tenantId }, result.Data);
+        return CreatedAtAction(nameof(GetProviders), new { tenantId }, result.Value);
     }
 }
 

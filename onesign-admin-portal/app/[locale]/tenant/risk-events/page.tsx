@@ -21,12 +21,23 @@ export default function RiskEventsPage() {
   const [events, setEvents] = useState<RiskEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Filters
   const [eventTypeFilter, setEventTypeFilter] = useState<number | ''>('');
   const [riskLevelFilter, setRiskLevelFilter] = useState<number | ''>('');
   const [pageNumber, setPageNumber] = useState(1);
   const pageSize = 20;
+
+  // Create form
+  const [newEventUserId, setNewEventUserId] = useState('');
+  const [newEventType, setNewEventType] = useState<number>(1);
+  const [newRiskLevel, setNewRiskLevel] = useState<number>(0);
+  const [newIpAddress, setNewIpAddress] = useState('');
+  const [newUserAgent, setNewUserAgent] = useState('');
+  const [newLocation, setNewLocation] = useState('');
+  const [newDetails, setNewDetails] = useState('');
 
   const tenantId = getTenantId();
 
@@ -93,13 +104,66 @@ export default function RiskEventsPage() {
     return date.toLocaleString();
   };
 
+  const handleCreateRiskEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    try {
+      const response = await fetch(`http://localhost:7000/api/tenant/risk-events?tenantId=${tenantId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          userId: newEventUserId,
+          eventType: newEventType,
+          riskLevel: newRiskLevel,
+          ipAddress: newIpAddress || null,
+          userAgent: newUserAgent || null,
+          location: newLocation || null,
+          details: newDetails || null,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create risk event');
+      }
+
+      setSuccess(t('riskEvents.eventCreated') || 'Risk event created successfully');
+      setShowCreateModal(false);
+      setNewEventUserId('');
+      setNewEventType(1);
+      setNewRiskLevel(0);
+      setNewIpAddress('');
+      setNewUserAgent('');
+      setNewLocation('');
+      setNewDetails('');
+      fetchRiskEvents();
+    } catch (err) {
+      setError(t('common.error'));
+    }
+  };
+
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">{t('riskEvents.title')}</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-gray-900">{t('riskEvents.title')}</h1>
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+        >
+          {t('riskEvents.createEvent') || 'Create Risk Event'}
+        </button>
+      </div>
 
       {error && (
         <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
           {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+          {success}
         </div>
       )}
 
@@ -224,6 +288,125 @@ export default function RiskEventsPage() {
           </div>
         )}
       </div>
+
+      {/* Create Risk Event Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg max-w-2xl w-full">
+            <h2 className="text-xl font-bold mb-4">{t('riskEvents.createEvent') || 'Create Risk Event'}</h2>
+            <form onSubmit={handleCreateRiskEvent}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t('riskEvents.userId') || 'User ID'}
+                </label>
+                <input
+                  type="text"
+                  required
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  value={newEventUserId}
+                  onChange={(e) => setNewEventUserId(e.target.value)}
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t('riskEvents.eventType')}
+                </label>
+                <select
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  value={newEventType}
+                  onChange={(e) => setNewEventType(Number(e.target.value))}
+                >
+                  <option value={1}>{t('riskEvents.newDeviceLogin')}</option>
+                  <option value={2}>{t('riskEvents.geoAnomaly')}</option>
+                  <option value={3}>{t('riskEvents.multipleFailedLogins')}</option>
+                  <option value={4}>{t('riskEvents.suspiciousActivity')}</option>
+                  <option value={5}>{t('riskEvents.accountLockout')}</option>
+                </select>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t('riskEvents.riskLevel')}
+                </label>
+                <select
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  value={newRiskLevel}
+                  onChange={(e) => setNewRiskLevel(Number(e.target.value))}
+                >
+                  <option value={0}>{t('riskEvents.low')}</option>
+                  <option value={1}>{t('riskEvents.medium')}</option>
+                  <option value={2}>{t('riskEvents.high')}</option>
+                </select>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t('riskEvents.ipAddress')} ({t('common.optional') || 'Optional'})
+                </label>
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  value={newIpAddress}
+                  onChange={(e) => setNewIpAddress(e.target.value)}
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t('riskEvents.userAgent') || 'User Agent'} ({t('common.optional') || 'Optional'})
+                </label>
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  value={newUserAgent}
+                  onChange={(e) => setNewUserAgent(e.target.value)}
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t('riskEvents.location')} ({t('common.optional') || 'Optional'})
+                </label>
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  value={newLocation}
+                  onChange={(e) => setNewLocation(e.target.value)}
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t('riskEvents.details')} ({t('common.optional') || 'Optional'})
+                </label>
+                <textarea
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  rows={3}
+                  value={newDetails}
+                  onChange={(e) => setNewDetails(e.target.value)}
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+                >
+                  {t('common.create')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
+                >
+                  {t('common.cancel')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -25,7 +25,7 @@ public class ServiceAccountController : TenantControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 
     [HttpPost]
@@ -36,6 +36,6 @@ public class ServiceAccountController : TenantControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 }

@@ -46,6 +46,28 @@ interface GlobalHuntResult {
   datasetType: string;
 }
 
+interface SavedQuery {
+  id: string;
+  name: string;
+  description: string;
+  oqlExpression: string;
+  datasetType: string;
+  createdAt: string;
+  lastUsedAt: string | null;
+  usageCount: number;
+}
+
+interface HuntRun {
+  id: string;
+  scheduledHuntId: string;
+  status: 'Running' | 'Succeeded' | 'Failed' | 'Cancelled';
+  startedAt: string;
+  completedAt: string | null;
+  totalTenants: number;
+  completedTenants: number;
+  totalMatches: number;
+}
+
 // Constants
 const DATASET_TYPES = [
   'SignInLogs',
@@ -72,7 +94,7 @@ const SCHEDULE_SPECS = [
   { value: 'Custom', label: 'Custom' },
 ];
 
-type Tab = 'templates' | 'scheduled' | 'results';
+type Tab = 'templates' | 'scheduled' | 'results' | 'saved-queries' | 'hunt-runs' | 'query-executor';
 
 export default function GlobalHuntingPage() {
   const t = useTranslations();
@@ -88,6 +110,9 @@ export default function GlobalHuntingPage() {
   const [results, setResults] = useState<GlobalHuntResult[]>([]);
   const [totalResults, setTotalResults] = useState(0);
   const [resultsPage, setResultsPage] = useState(1);
+  const [savedQueries, setSavedQueries] = useState<SavedQuery[]>([]);
+  const [huntRuns, setHuntRuns] = useState<HuntRun[]>([]);
+  const [selectedScheduledHunt, setSelectedScheduledHunt] = useState<string>('');
 
   // Filter states
   const [statusFilter, setStatusFilter] = useState<string>('');
@@ -96,8 +121,11 @@ export default function GlobalHuntingPage() {
   // Modal states
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [showSavedQueryModal, setShowSavedQueryModal] = useState(false);
+  const [showQueryExecutorModal, setShowQueryExecutorModal] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<GlobalQueryTemplate | null>(null);
   const [editingSchedule, setEditingSchedule] = useState<CrossTenantScheduledHunt | null>(null);
+  const [editingSavedQuery, setEditingSavedQuery] = useState<SavedQuery | null>(null);
 
   // Template form state
   const [templateForm, setTemplateForm] = useState({
@@ -120,6 +148,24 @@ export default function GlobalHuntingPage() {
     isEnabled: true,
   });
 
+  // Saved Query form state
+  const [savedQueryForm, setSavedQueryForm] = useState({
+    name: '',
+    description: '',
+    oqlExpression: '',
+    datasetType: DATASET_TYPES[0],
+  });
+
+  // Query Executor form state
+  const [queryExecutorForm, setQueryExecutorForm] = useState({
+    oqlExpression: '',
+    datasetType: DATASET_TYPES[0],
+    tenantIds: [] as string[],
+    targetAllTenants: true,
+  });
+
+  const [queryResults, setQueryResults] = useState<any>(null);
+
   useEffect(() => {
     fetchData();
   }, [activeTab, resultsPage, statusFilter]);
@@ -138,7 +184,7 @@ export default function GlobalHuntingPage() {
         setTemplates(data);
       } else if (activeTab === 'scheduled') {
         const response = await fetch(
-          `http://localhost:7000/api/global/hunting/scheduled`,
+          `http://localhost:7000/api/global/hunting/scheduled-hunts`,
           { credentials: 'include' }
         );
         if (!response.ok) throw new Error('Failed to fetch scheduled hunts');
@@ -154,6 +200,24 @@ export default function GlobalHuntingPage() {
         const data = await response.json();
         setResults(data.items || []);
         setTotalResults(data.totalCount || 0);
+      } else if (activeTab === 'saved-queries') {
+        const response = await fetch(
+          `http://localhost:7000/api/global/hunting/saved-queries`,
+          { credentials: 'include' }
+        );
+        if (!response.ok) throw new Error('Failed to fetch saved queries');
+        const data = await response.json();
+        setSavedQueries(data);
+      } else if (activeTab === 'hunt-runs') {
+        if (selectedScheduledHunt) {
+          const response = await fetch(
+            `http://localhost:7000/api/global/hunting/scheduled-hunts/${selectedScheduledHunt}/runs`,
+            { credentials: 'include' }
+          );
+          if (!response.ok) throw new Error('Failed to fetch hunt runs');
+          const data = await response.json();
+          setHuntRuns(data);
+        }
       }
     } catch (err) {
       setError(t('common.error'));
@@ -334,6 +398,93 @@ export default function GlobalHuntingPage() {
     }
   };
 
+  const handleCreateSavedQuery = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    try {
+      const url = editingSavedQuery
+        ? `http://localhost:7000/api/global/hunting/saved-queries/${editingSavedQuery.id}`
+        : `http://localhost:7000/api/global/hunting/saved-queries`;
+      const method = editingSavedQuery ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          userId,
+          ...savedQueryForm,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to save query');
+
+      setSuccess(editingSavedQuery ? 'Query updated successfully' : 'Query saved successfully');
+      setShowSavedQueryModal(false);
+      setEditingSavedQuery(null);
+      setSavedQueryForm({
+        name: '',
+        description: '',
+        oqlExpression: '',
+        datasetType: DATASET_TYPES[0],
+      });
+      fetchData();
+    } catch (err) {
+      setError(t('common.error'));
+    }
+  };
+
+  const handleDeleteSavedQuery = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this saved query?')) return;
+    try {
+      const response = await fetch(
+        `http://localhost:7000/api/global/hunting/saved-queries/${id}`,
+        { method: 'DELETE', credentials: 'include' }
+      );
+      if (!response.ok) throw new Error('Failed to delete saved query');
+      setSuccess('Saved query deleted successfully');
+      fetchData();
+    } catch (err) {
+      setError(t('common.error'));
+    }
+  };
+
+  const handleExecuteQuery = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setQueryResults(null);
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `http://localhost:7000/api/global/hunting/query`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            userId,
+            oqlExpression: queryExecutorForm.oqlExpression,
+            datasetType: queryExecutorForm.datasetType,
+            tenantIds: queryExecutorForm.targetAllTenants ? [] : queryExecutorForm.tenantIds,
+            targetAllTenants: queryExecutorForm.targetAllTenants,
+          }),
+        }
+      );
+
+      if (!response.ok) throw new Error('Failed to execute query');
+
+      const data = await response.json();
+      setQueryResults(data);
+      setSuccess('Query executed successfully');
+    } catch (err) {
+      setError(t('common.error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleEditTemplate = (template: GlobalQueryTemplate) => {
     setEditingTemplate(template);
     setTemplateForm({
@@ -345,6 +496,17 @@ export default function GlobalHuntingPage() {
       isPublished: template.isPublished,
     });
     setShowTemplateModal(true);
+  };
+
+  const handleEditSavedQuery = (query: SavedQuery) => {
+    setEditingSavedQuery(query);
+    setSavedQueryForm({
+      name: query.name,
+      description: query.description,
+      oqlExpression: query.oqlExpression,
+      datasetType: query.datasetType,
+    });
+    setShowSavedQueryModal(true);
   };
 
   const handleEditSchedule = (schedule: CrossTenantScheduledHunt) => {
@@ -445,19 +607,22 @@ export default function GlobalHuntingPage() {
       )}
 
       <div className="mb-6 border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
-          {(['templates', 'scheduled', 'results'] as Tab[]).map((tab) => (
+        <nav className="-mb-px flex space-x-8 overflow-x-auto">
+          {(['templates', 'scheduled', 'saved-queries', 'query-executor', 'hunt-runs', 'results'] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                 activeTab === tab
                   ? 'border-indigo-500 text-indigo-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
               {tab === 'templates' ? 'Global Query Templates' :
-               tab === 'scheduled' ? 'Cross-Tenant Scheduled Hunts' : 'Global Hunt Results'}
+               tab === 'scheduled' ? 'Scheduled Hunts' :
+               tab === 'saved-queries' ? 'Saved Queries' :
+               tab === 'query-executor' ? 'Query Executor' :
+               tab === 'hunt-runs' ? 'Hunt Runs' : 'Global Hunt Results'}
             </button>
           ))}
         </nav>
@@ -742,6 +907,233 @@ export default function GlobalHuntingPage() {
         </div>
       )}
 
+      {/* Saved Queries Tab */}
+      {activeTab === 'saved-queries' && (
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Saved Queries</h3>
+            <button
+              onClick={() => {
+                setEditingSavedQuery(null);
+                setSavedQueryForm({
+                  name: '',
+                  description: '',
+                  oqlExpression: '',
+                  datasetType: DATASET_TYPES[0],
+                });
+                setShowSavedQueryModal(true);
+              }}
+              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+            >
+              Create Saved Query
+            </button>
+          </div>
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dataset</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usage Count</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Used</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {savedQueries.map((query) => (
+                <tr key={query.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">{query.name}</div>
+                    {query.description && (
+                      <div className="text-sm text-gray-500">{query.description}</div>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="px-2 py-1 rounded text-xs bg-purple-100 text-purple-800">
+                      {query.datasetType}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {query.usageCount}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {query.lastUsedAt ? formatDate(query.lastUsedAt) : 'Never'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEditSavedQuery(query)}
+                        className="text-indigo-600 hover:text-indigo-900"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteSavedQuery(query.id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {savedQueries.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                    No saved queries. Create one to reuse your queries.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Query Executor Tab */}
+      {activeTab === 'query-executor' && (
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold mb-4">Execute Global Query</h3>
+          <form onSubmit={handleExecuteQuery} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Dataset Type</label>
+              <select
+                className="w-full px-3 py-2 border rounded"
+                value={queryExecutorForm.datasetType}
+                onChange={(e) => setQueryExecutorForm({ ...queryExecutorForm, datasetType: e.target.value })}
+              >
+                {DATASET_TYPES.map((dt) => (
+                  <option key={dt} value={dt}>{dt}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">OQL Expression</label>
+              <textarea
+                required
+                className="w-full px-3 py-2 border rounded font-mono text-sm"
+                rows={6}
+                value={queryExecutorForm.oqlExpression}
+                onChange={(e) => setQueryExecutorForm({ ...queryExecutorForm, oqlExpression: e.target.value })}
+                placeholder='e.g., riskLevel > 5 AND eventType == "FailedLogin"'
+              />
+            </div>
+            <div>
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  className="mr-2"
+                  checked={queryExecutorForm.targetAllTenants}
+                  onChange={(e) => setQueryExecutorForm({ ...queryExecutorForm, targetAllTenants: e.target.checked })}
+                />
+                Target all tenants
+              </label>
+            </div>
+            {!queryExecutorForm.targetAllTenants && (
+              <div>
+                <label className="block text-sm font-medium mb-2">Target Tenant IDs</label>
+                <textarea
+                  className="w-full px-3 py-2 border rounded font-mono text-sm"
+                  rows={3}
+                  value={queryExecutorForm.tenantIds.join('\n')}
+                  onChange={(e) => setQueryExecutorForm({
+                    ...queryExecutorForm,
+                    tenantIds: e.target.value.split('\n').filter(id => id.trim())
+                  })}
+                  placeholder="Enter one tenant ID per line"
+                />
+              </div>
+            )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
+            >
+              {loading ? 'Executing...' : 'Execute Query'}
+            </button>
+          </form>
+
+          {queryResults && (
+            <div className="mt-6 border-t pt-6">
+              <h4 className="text-md font-semibold mb-3">Query Results</h4>
+              <div className="bg-gray-50 p-4 rounded">
+                <pre className="text-sm overflow-auto max-h-96">
+                  {JSON.stringify(queryResults, null, 2)}
+                </pre>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Hunt Runs Tab */}
+      {activeTab === 'hunt-runs' && (
+        <div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2">Select Scheduled Hunt</label>
+            <select
+              className="w-full md:w-1/2 px-3 py-2 border rounded"
+              value={selectedScheduledHunt}
+              onChange={(e) => {
+                setSelectedScheduledHunt(e.target.value);
+                fetchData();
+              }}
+            >
+              <option value="">Select a scheduled hunt...</option>
+              {scheduledHunts.map((hunt) => (
+                <option key={hunt.id} value={hunt.id}>{hunt.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {selectedScheduledHunt && (
+            <div className="bg-white rounded-lg shadow overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Run ID</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Started</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Progress</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Matches</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {huntRuns.map((run) => (
+                    <tr key={run.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
+                        {run.id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 rounded text-xs ${getStatusColor(run.status)}`}>
+                          {run.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatDate(run.startedAt)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {run.completedTenants} / {run.totalTenants} tenants
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`text-sm font-semibold ${run.totalMatches > 0 ? 'text-orange-600' : 'text-gray-500'}`}>
+                          {run.totalMatches}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                  {huntRuns.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                        No hunt runs found for this scheduled hunt.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Create/Edit Template Modal */}
       {showTemplateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -950,6 +1342,78 @@ export default function GlobalHuntingPage() {
                   className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
                 >
                   {editingSchedule ? 'Update' : 'Create'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Create/Edit Saved Query Modal */}
+      {showSavedQueryModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4">
+              {editingSavedQuery ? 'Edit Saved Query' : 'Create Saved Query'}
+            </h2>
+            <form onSubmit={handleCreateSavedQuery}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Name</label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-3 py-2 border rounded"
+                  value={savedQueryForm.name}
+                  onChange={(e) => setSavedQueryForm({ ...savedQueryForm, name: e.target.value })}
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Description</label>
+                <textarea
+                  className="w-full px-3 py-2 border rounded"
+                  value={savedQueryForm.description}
+                  onChange={(e) => setSavedQueryForm({ ...savedQueryForm, description: e.target.value })}
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">Dataset</label>
+                <select
+                  className="w-full px-3 py-2 border rounded"
+                  value={savedQueryForm.datasetType}
+                  onChange={(e) => setSavedQueryForm({ ...savedQueryForm, datasetType: e.target.value })}
+                >
+                  {DATASET_TYPES.map((dt) => (
+                    <option key={dt} value={dt}>{dt}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">OQL Expression</label>
+                <textarea
+                  required
+                  className="w-full px-3 py-2 border rounded font-mono text-sm"
+                  rows={4}
+                  value={savedQueryForm.oqlExpression}
+                  onChange={(e) => setSavedQueryForm({ ...savedQueryForm, oqlExpression: e.target.value })}
+                  placeholder='e.g., riskLevel > 5 AND eventType == "FailedLogin"'
+                />
+              </div>
+              <div className="flex gap-2 justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowSavedQueryModal(false);
+                    setEditingSavedQuery(null);
+                  }}
+                  className="px-4 py-2 border rounded"
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                >
+                  {editingSavedQuery ? 'Update' : 'Create'}
                 </button>
               </div>
             </form>

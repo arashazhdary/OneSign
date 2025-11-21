@@ -33,7 +33,7 @@ public class PolicyController : TenantControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 
     [HttpGet("{id}")]
@@ -45,7 +45,7 @@ public class PolicyController : TenantControllerBase
         if (!result.IsSuccess)
             return NotFound(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 
     [HttpPost]
@@ -56,7 +56,7 @@ public class PolicyController : TenantControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return CreatedAtAction(nameof(GetPolicyById), new { id = result.Data!.Id }, result.Data);
+        return CreatedAtAction(nameof(GetPolicyById), new { id = result.Value!.Id }, result.Value);
     }
 
     [HttpPut("{id}")]
@@ -68,7 +68,7 @@ public class PolicyController : TenantControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 
     [HttpDelete("{id}")]
@@ -91,7 +91,7 @@ public class PolicyController : TenantControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return Ok(new { assignmentId = result.Data });
+        return Ok(new { assignmentId = result.Value });
     }
 
     [HttpPost("evaluate")]
@@ -102,6 +102,6 @@ public class PolicyController : TenantControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 }

@@ -25,7 +25,7 @@ public class GlobalObservabilityController : GlobalControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 
     [HttpGet("audit/{id}")]
@@ -37,6 +37,6 @@ public class GlobalObservabilityController : GlobalControllerBase
         if (!result.IsSuccess)
             return NotFound(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 }

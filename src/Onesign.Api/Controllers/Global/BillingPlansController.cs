@@ -26,7 +26,7 @@ public class BillingPlansController : GlobalControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 
     [HttpGet("{id}")]
@@ -38,7 +38,7 @@ public class BillingPlansController : GlobalControllerBase
         if (!result.IsSuccess)
             return NotFound(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 
     [HttpPost]
@@ -58,7 +58,7 @@ public class BillingPlansController : GlobalControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return CreatedAtAction(nameof(GetPlan), new { id = result.Data!.Id }, result.Data);
+        return CreatedAtAction(nameof(GetPlan), new { id = result.Value!.Id }, result.Value);
     }
 
     [HttpPut("{id}")]
@@ -79,7 +79,7 @@ public class BillingPlansController : GlobalControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 }
 

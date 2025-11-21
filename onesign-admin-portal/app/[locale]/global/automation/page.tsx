@@ -24,6 +24,8 @@ export default function GlobalAutomationPage() {
   const [success, setSuccess] = useState('');
 
   const [templates, setTemplates] = useState<AutomationWorkflowDto[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState('');
+  const [templateDetail, setTemplateDetail] = useState<AutomationWorkflowDto | null>(null);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newTemplate, setNewTemplate] = useState({
@@ -52,6 +54,22 @@ export default function GlobalAutomationPage() {
       console.error('Error fetching templates:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getTemplate = async () => {
+    if (!selectedTemplateId) return;
+    setError('');
+    try {
+      const response = await fetch(`http://localhost:7000/api/global/automation/templates/${selectedTemplateId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setTemplateDetail(data);
+      } else {
+        setError('Template not found');
+      }
+    } catch (err) {
+      setError(t('common.error'));
     }
   };
 
@@ -102,6 +120,41 @@ export default function GlobalAutomationPage() {
         setSuccess('Template enforced successfully');
       }
       fetchTemplates();
+    } catch (err) {
+      setError(t('common.error'));
+    }
+  };
+
+  const handleUpdateTemplate = async (id: string, data: any) => {
+    try {
+      const response = await fetch(`http://localhost:7000/api/global/automation/templates/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...data, userId }),
+      });
+      if (response.ok) {
+        setSuccess('Template updated successfully');
+        fetchTemplates();
+      } else {
+        setError(t('common.error'));
+      }
+    } catch (err) {
+      setError(t('common.error'));
+    }
+  };
+
+  const handleDeleteTemplate = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this template?')) return;
+    try {
+      const response = await fetch(`http://localhost:7000/api/global/automation/templates/${id}`, {
+        method: 'DELETE',
+      });
+      if (response.ok) {
+        setSuccess('Template deleted successfully');
+        fetchTemplates();
+      } else {
+        setError(t('common.error'));
+      }
     } catch (err) {
       setError(t('common.error'));
     }
@@ -202,7 +255,7 @@ export default function GlobalAutomationPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {!template.isEnabled && (
                         <button
                           onClick={() => handlePublish(template.id)}
@@ -216,6 +269,12 @@ export default function GlobalAutomationPage() {
                         className="text-purple-600 hover:text-purple-900"
                       >
                         {template.isEnforced ? 'Unenforce' : 'Enforce'}
+                      </button>
+                      <button
+                        onClick={() => handleDeleteTemplate(template.id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Delete
                       </button>
                     </div>
                   </td>

@@ -414,7 +414,7 @@ public class InsightGenerationWorker : BackgroundService
                     {
                         EventCount = adminEvents,
                         TypicalAverage = typicalDailyAverage,
-                        TimeframHours = 24
+                        TimeframeHours = 24
                     }),
                     Status = 0,
                     CreatedAt = DateTime.UtcNow

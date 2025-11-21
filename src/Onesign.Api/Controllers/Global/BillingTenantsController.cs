@@ -26,7 +26,7 @@ public class BillingTenantsController : GlobalControllerBase
         if (!result.IsSuccess)
             return NotFound(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 
     [HttpPost("{tenantId}/subscription")]
@@ -48,7 +48,7 @@ public class BillingTenantsController : GlobalControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return CreatedAtAction(nameof(GetTenantSubscription), new { tenantId }, result.Data);
+        return CreatedAtAction(nameof(GetTenantSubscription), new { tenantId }, result.Value);
     }
 
     [HttpPut("{tenantId}/subscription/plan")]
@@ -67,7 +67,7 @@ public class BillingTenantsController : GlobalControllerBase
         if (!result.IsSuccess)
             return BadRequest(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 
     [HttpGet("{tenantId}/usage")]
@@ -79,7 +79,7 @@ public class BillingTenantsController : GlobalControllerBase
         if (!result.IsSuccess)
             return NotFound(result.ErrorMessage);
 
-        return Ok(result.Data);
+        return Ok(result.Value);
     }
 }
 

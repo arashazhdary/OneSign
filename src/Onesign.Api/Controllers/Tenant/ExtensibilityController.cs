@@ -22,7 +22,7 @@ public class ExtensibilityController : TenantControllerBase
     public async Task<ActionResult<Guid>> CreateWebhook([FromBody] CreateWebhookCommand command)
     {
         var result = await _mediator.Send(command);
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
     }
 
     [HttpPut("webhooks/{id}")]
@@ -48,7 +48,7 @@ public class ExtensibilityController : TenantControllerBase
     public async Task<ActionResult<Guid>> CreateLoginHook([FromBody] CreateLoginHookCommand command)
     {
         var result = await _mediator.Send(command);
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
+        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
     }
 
     [HttpPut("login-hooks/{id}")]

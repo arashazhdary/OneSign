@@ -284,6 +284,58 @@ export default function TenantInsightsPage() {
     }
   };
 
+  // GET /api/tenant/insights/export/overview - خروجی Excel overview
+  const handleExportOverview = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:7000/api/tenant/insights/export/overview?tenantId=${tenantId}`,
+        { method: 'GET' }
+      );
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `insights-overview-${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        setSuccess('Overview exported successfully');
+      } else {
+        setError('Failed to export overview');
+      }
+    } catch (err) {
+      setError(t('common.error'));
+    }
+  };
+
+  // GET /api/tenant/insights/export/users - خروجی Excel user security posture
+  const handleExportUsers = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:7000/api/tenant/insights/export/users?tenantId=${tenantId}`,
+        { method: 'GET' }
+      );
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `user-security-posture-${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        setSuccess('User security posture exported successfully');
+      } else {
+        setError('Failed to export user security posture');
+      }
+    } catch (err) {
+      setError(t('common.error'));
+    }
+  };
+
   const handleSort = (column: string) => {
     if (postureSortBy === column) {
       setPostureSortDesc(!postureSortDesc);
@@ -317,14 +369,38 @@ export default function TenantInsightsPage() {
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Insights</h1>
-        {activeTab === 'reports' && (
-          <button
-            onClick={() => setShowCreateReportModal(true)}
-            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-          >
-            Create Report Subscription
-          </button>
-        )}
+        <div className="flex gap-2">
+          {activeTab === 'dashboard' && (
+            <button
+              onClick={handleExportOverview}
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Export Overview
+            </button>
+          )}
+          {activeTab === 'security-posture' && (
+            <button
+              onClick={handleExportUsers}
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Export Users
+            </button>
+          )}
+          {activeTab === 'reports' && (
+            <button
+              onClick={() => setShowCreateReportModal(true)}
+              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+            >
+              Create Report Subscription
+            </button>
+          )}
+        </div>
       </div>
 
       {error && (
