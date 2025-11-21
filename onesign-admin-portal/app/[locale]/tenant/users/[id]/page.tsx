@@ -39,7 +39,75 @@ interface UserActivity {
   occurredAt: string;
 }
 
-type Tab = 'profile' | 'activity' | 'security';
+interface LifecycleEvent {
+  id: string;
+  eventType: string;
+  eventName: string;
+  description: string;
+  timestamp: string;
+  actorId?: string;
+  actorName?: string;
+  metadata?: Record<string, any>;
+}
+
+interface RiskSignal {
+  id: string;
+  type: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  description: string;
+  detectedAt: string;
+  status: 'active' | 'resolved' | 'dismissed';
+}
+
+interface RiskAssessment {
+  userId: string;
+  riskScore: number;
+  riskLevel: 'low' | 'medium' | 'high' | 'critical';
+  lastAssessedAt: string;
+  signals: RiskSignal[];
+  factors: Array<{
+    factor: string;
+    score: number;
+    description: string;
+  }>;
+}
+
+interface AccessPackage {
+  id: string;
+  name: string;
+  description: string;
+  grantedAt: string;
+  expiresAt?: string;
+  status: 'active' | 'expired' | 'revoked';
+  resources: string[];
+}
+
+interface PrivilegedSession {
+  id: string;
+  sessionType: string;
+  resourceId: string;
+  resourceName: string;
+  startedAt: string;
+  endedAt?: string;
+  duration?: number;
+  ipAddress: string;
+  status: 'active' | 'completed' | 'terminated';
+}
+
+interface AuditTrailEntry {
+  id: string;
+  action: string;
+  resourceType: string;
+  resourceId?: string;
+  resourceName?: string;
+  result: 'success' | 'failure';
+  ipAddress: string;
+  userAgent: string;
+  timestamp: string;
+  details?: Record<string, any>;
+}
+
+type Tab = 'profile' | 'activity' | 'security' | 'lifecycle' | 'risk' | 'access-packages' | 'privileged-sessions' | 'audit-trail';
 
 export default function UserProfilePage() {
   const params = useParams();
@@ -54,6 +122,11 @@ export default function UserProfilePage() {
   // Data states
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [activities, setActivities] = useState<UserActivity[]>([]);
+  const [lifecycleEvents, setLifecycleEvents] = useState<LifecycleEvent[]>([]);
+  const [riskAssessment, setRiskAssessment] = useState<RiskAssessment | null>(null);
+  const [accessPackages, setAccessPackages] = useState<AccessPackage[]>([]);
+  const [privilegedSessions, setPrivilegedSessions] = useState<PrivilegedSession[]>([]);
+  const [auditTrail, setAuditTrail] = useState<AuditTrailEntry[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 
@@ -72,6 +145,16 @@ export default function UserProfilePage() {
   useEffect(() => {
     if (activeTab === 'activity') {
       fetchActivities();
+    } else if (activeTab === 'lifecycle') {
+      fetchLifecycleEvents();
+    } else if (activeTab === 'risk') {
+      fetchRiskAssessment();
+    } else if (activeTab === 'access-packages') {
+      fetchAccessPackages();
+    } else if (activeTab === 'privileged-sessions') {
+      fetchPrivilegedSessions();
+    } else if (activeTab === 'audit-trail') {
+      fetchAuditTrail();
     }
   }, [activeTab]);
 
@@ -118,6 +201,96 @@ export default function UserProfilePage() {
       }
     } catch (err) {
       console.error('Failed to fetch activities:', err);
+    }
+  };
+
+  const fetchLifecycleEvents = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:7000/api/tenant/users/${userId}/lifecycle?tenantId=${tenantId}`,
+        {
+          credentials: 'include',
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setLifecycleEvents(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch lifecycle events:', err);
+    }
+  };
+
+  const fetchRiskAssessment = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:7000/api/tenant/users/${userId}/risk-assessment?tenantId=${tenantId}`,
+        {
+          credentials: 'include',
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setRiskAssessment(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch risk assessment:', err);
+    }
+  };
+
+  const fetchAccessPackages = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:7000/api/tenant/users/${userId}/access-packages?tenantId=${tenantId}`,
+        {
+          credentials: 'include',
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setAccessPackages(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch access packages:', err);
+    }
+  };
+
+  const fetchPrivilegedSessions = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:7000/api/tenant/users/${userId}/privileged-sessions?tenantId=${tenantId}`,
+        {
+          credentials: 'include',
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setPrivilegedSessions(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch privileged sessions:', err);
+    }
+  };
+
+  const fetchAuditTrail = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:7000/api/tenant/users/${userId}/audit-trail?tenantId=${tenantId}&pageSize=50`,
+        {
+          credentials: 'include',
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setAuditTrail(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch audit trail:', err);
     }
   };
 
@@ -208,38 +381,30 @@ export default function UserProfilePage() {
       )}
 
       {/* Tabs */}
-      <div className="mb-6 border-b border-gray-200">
+      <div className="mb-6 border-b border-gray-200 overflow-x-auto">
         <nav className="-mb-px flex space-x-8">
-          <button
-            onClick={() => setActiveTab('profile')}
-            className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-              activeTab === 'profile'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Profile Information
-          </button>
-          <button
-            onClick={() => setActiveTab('activity')}
-            className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-              activeTab === 'activity'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Activity History
-          </button>
-          <button
-            onClick={() => setActiveTab('security')}
-            className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-              activeTab === 'security'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Security
-          </button>
+          {[
+            { key: 'profile', label: 'Profile Information' },
+            { key: 'activity', label: 'Activity History' },
+            { key: 'security', label: 'Security' },
+            { key: 'lifecycle', label: 'Lifecycle Timeline' },
+            { key: 'risk', label: 'Risk Assessment' },
+            { key: 'access-packages', label: 'Access Packages' },
+            { key: 'privileged-sessions', label: 'Privileged Sessions' },
+            { key: 'audit-trail', label: 'Audit Trail' },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key as Tab)}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
+                activeTab === tab.key
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </nav>
       </div>
 
@@ -422,6 +587,351 @@ export default function UserProfilePage() {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Lifecycle Timeline Tab */}
+      {activeTab === 'lifecycle' && (
+        <div className="bg-white rounded-2xl shadow-lg p-6">
+          <h3 className="text-lg font-semibold mb-4">User Lifecycle Timeline</h3>
+          {lifecycleEvents.length === 0 ? (
+            <p className="text-gray-500">No lifecycle events found</p>
+          ) : (
+            <div className="relative">
+              <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+              <div className="space-y-6">
+                {lifecycleEvents.map((event) => (
+                  <div key={event.id} className="relative pl-12">
+                    <div className="absolute left-0 w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                      {event.eventType.substring(0, 2).toUpperCase()}
+                    </div>
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <div className="font-medium text-gray-900">{event.eventName}</div>
+                          <div className="text-sm text-gray-600 mt-1">{event.description}</div>
+                          {event.actorName && (
+                            <div className="text-xs text-gray-500 mt-1">By: {event.actorName}</div>
+                          )}
+                        </div>
+                        <div className="text-xs text-gray-500 whitespace-nowrap ml-4">
+                          {formatDate(event.timestamp)}
+                        </div>
+                      </div>
+                      {event.metadata && Object.keys(event.metadata).length > 0 && (
+                        <details className="mt-2">
+                          <summary className="text-xs text-blue-600 cursor-pointer">View details</summary>
+                          <pre className="text-xs bg-white p-2 rounded mt-1 overflow-auto">
+                            {JSON.stringify(event.metadata, null, 2)}
+                          </pre>
+                        </details>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Risk Assessment Tab */}
+      {activeTab === 'risk' && (
+        <div className="space-y-6">
+          {!riskAssessment ? (
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <p className="text-gray-500">Loading risk assessment...</p>
+            </div>
+          ) : (
+            <>
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <h3 className="text-lg font-semibold mb-4">Risk Score</h3>
+                <div className="flex items-center gap-6">
+                  <div className="relative w-32 h-32">
+                    <svg className="w-32 h-32 transform -rotate-90">
+                      <circle
+                        cx="64"
+                        cy="64"
+                        r="56"
+                        stroke="#e5e7eb"
+                        strokeWidth="8"
+                        fill="transparent"
+                      />
+                      <circle
+                        cx="64"
+                        cy="64"
+                        r="56"
+                        stroke={
+                          riskAssessment.riskLevel === 'critical'
+                            ? '#dc2626'
+                            : riskAssessment.riskLevel === 'high'
+                            ? '#f59e0b'
+                            : riskAssessment.riskLevel === 'medium'
+                            ? '#3b82f6'
+                            : '#10b981'
+                        }
+                        strokeWidth="8"
+                        fill="transparent"
+                        strokeDasharray={`${(riskAssessment.riskScore / 100) * 352} 352`}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center">
+                        <div className="text-3xl font-bold">{riskAssessment.riskScore}</div>
+                        <div className="text-xs text-gray-500">Risk Score</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-600 mb-2">Risk Level</div>
+                    <span
+                      className={`px-4 py-2 rounded-full text-lg font-semibold inline-block ${
+                        riskAssessment.riskLevel === 'critical'
+                          ? 'bg-red-100 text-red-800'
+                          : riskAssessment.riskLevel === 'high'
+                          ? 'bg-orange-100 text-orange-800'
+                          : riskAssessment.riskLevel === 'medium'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-green-100 text-green-800'
+                      }`}
+                    >
+                      {riskAssessment.riskLevel.toUpperCase()}
+                    </span>
+                    <div className="text-xs text-gray-500 mt-2">
+                      Last assessed: {formatDate(riskAssessment.lastAssessedAt)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <h3 className="text-lg font-semibold mb-4">Risk Factors</h3>
+                <div className="space-y-4">
+                  {riskAssessment.factors.map((factor, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900">{factor.factor}</div>
+                        <div className="text-sm text-gray-600 mt-1">{factor.description}</div>
+                      </div>
+                      <div className="ml-4">
+                        <span className="text-lg font-bold text-gray-900">{factor.score}</span>
+                        <span className="text-sm text-gray-500">/100</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl shadow-lg p-6">
+                <h3 className="text-lg font-semibold mb-4">Risk Signals</h3>
+                {riskAssessment.signals.length === 0 ? (
+                  <p className="text-gray-500">No active risk signals</p>
+                ) : (
+                  <div className="space-y-4">
+                    {riskAssessment.signals.map((signal) => (
+                      <div
+                        key={signal.id}
+                        className={`p-4 border-l-4 rounded-lg ${
+                          signal.severity === 'critical'
+                            ? 'border-red-500 bg-red-50'
+                            : signal.severity === 'high'
+                            ? 'border-orange-500 bg-orange-50'
+                            : signal.severity === 'medium'
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-green-500 bg-green-50'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-gray-900">{signal.type}</span>
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                  signal.status === 'active'
+                                    ? 'bg-red-100 text-red-800'
+                                    : signal.status === 'resolved'
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-gray-100 text-gray-800'
+                                }`}
+                              >
+                                {signal.status}
+                              </span>
+                            </div>
+                            <div className="text-sm text-gray-600 mt-1">{signal.description}</div>
+                            <div className="text-xs text-gray-500 mt-1">
+                              Detected: {formatDate(signal.detectedAt)}
+                            </div>
+                          </div>
+                          <span
+                            className={`px-2 py-1 rounded text-xs font-medium ${
+                              signal.severity === 'critical'
+                                ? 'bg-red-200 text-red-900'
+                                : signal.severity === 'high'
+                                ? 'bg-orange-200 text-orange-900'
+                                : signal.severity === 'medium'
+                                ? 'bg-blue-200 text-blue-900'
+                                : 'bg-green-200 text-green-900'
+                            }`}
+                          >
+                            {signal.severity.toUpperCase()}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Access Packages Tab */}
+      {activeTab === 'access-packages' && (
+        <div className="bg-white rounded-2xl shadow-lg p-6">
+          <h3 className="text-lg font-semibold mb-4">Access Packages</h3>
+          {accessPackages.length === 0 ? (
+            <p className="text-gray-500">No access packages assigned</p>
+          ) : (
+            <div className="space-y-4">
+              {accessPackages.map((pkg) => (
+                <div key={pkg.id} className="p-4 border border-gray-200 rounded-lg">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="font-medium text-gray-900">{pkg.name}</div>
+                      <div className="text-sm text-gray-600 mt-1">{pkg.description}</div>
+                      <div className="text-xs text-gray-500 mt-2">
+                        Granted: {formatDate(pkg.grantedAt)}
+                        {pkg.expiresAt && ` • Expires: ${formatDate(pkg.expiresAt)}`}
+                      </div>
+                      {pkg.resources.length > 0 && (
+                        <div className="mt-2">
+                          <div className="text-xs font-medium text-gray-700 mb-1">Resources:</div>
+                          <div className="flex flex-wrap gap-1">
+                            {pkg.resources.map((resource, idx) => (
+                              <span
+                                key={idx}
+                                className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs"
+                              >
+                                {resource}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${
+                        pkg.status === 'active'
+                          ? 'bg-green-100 text-green-800'
+                          : pkg.status === 'expired'
+                          ? 'bg-gray-100 text-gray-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}
+                    >
+                      {pkg.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Privileged Sessions Tab */}
+      {activeTab === 'privileged-sessions' && (
+        <div className="bg-white rounded-2xl shadow-lg p-6">
+          <h3 className="text-lg font-semibold mb-4">Privileged Sessions</h3>
+          {privilegedSessions.length === 0 ? (
+            <p className="text-gray-500">No privileged sessions found</p>
+          ) : (
+            <div className="space-y-4">
+              {privilegedSessions.map((session) => (
+                <div key={session.id} className="p-4 border border-gray-200 rounded-lg">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-900">{session.sessionType}</span>
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                            session.status === 'active'
+                              ? 'bg-green-100 text-green-800'
+                              : session.status === 'completed'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          {session.status}
+                        </span>
+                      </div>
+                      <div className="text-sm text-gray-600 mt-1">{session.resourceName}</div>
+                      <div className="text-xs text-gray-500 mt-2">
+                        Started: {formatDate(session.startedAt)}
+                        {session.endedAt && ` • Ended: ${formatDate(session.endedAt)}`}
+                        {session.duration && ` • Duration: ${session.duration}m`}
+                      </div>
+                      <div className="text-xs text-gray-500">IP: {session.ipAddress}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Audit Trail Tab */}
+      {activeTab === 'audit-trail' && (
+        <div className="bg-white rounded-2xl shadow-lg p-6">
+          <h3 className="text-lg font-semibold mb-4">Audit Trail</h3>
+          {auditTrail.length === 0 ? (
+            <p className="text-gray-500">No audit entries found</p>
+          ) : (
+            <div className="space-y-4">
+              {auditTrail.map((entry) => (
+                <div
+                  key={entry.id}
+                  className={`border-l-4 pl-4 py-2 ${
+                    entry.result === 'success' ? 'border-green-500' : 'border-red-500'
+                  }`}
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-gray-900">{entry.action}</span>
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                            entry.result === 'success'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          {entry.result}
+                        </span>
+                      </div>
+                      <div className="text-sm text-gray-600 mt-1">
+                        {entry.resourceType}
+                        {entry.resourceName && `: ${entry.resourceName}`}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {formatDate(entry.timestamp)} • IP: {entry.ipAddress}
+                      </div>
+                      {entry.details && Object.keys(entry.details).length > 0 && (
+                        <details className="mt-2">
+                          <summary className="text-xs text-blue-600 cursor-pointer">View details</summary>
+                          <pre className="text-xs bg-gray-50 p-2 rounded mt-1 overflow-auto">
+                            {JSON.stringify(entry.details, null, 2)}
+                          </pre>
+                        </details>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
