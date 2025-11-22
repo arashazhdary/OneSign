@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { platformService } from '@/lib/api/services';
 
 interface Permission {
   id: string;
@@ -107,11 +108,8 @@ export default function RoleManagementPage() {
   const fetchRoles = async () => {
     if (!tenantId) return;
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/roles?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setRoles(data.items || []);
-      }
+      const data = await platformService.getRoles(tenantId);
+      setRoles(data.items || data || []);
     } catch (error) {
       console.error('Error fetching roles:', error);
     } finally {
@@ -134,28 +132,17 @@ export default function RoleManagementPage() {
     };
 
     try {
-      const method = editingRole ? 'PUT' : 'POST';
-      const url = editingRole
-        ? `http://localhost:7000/api/tenant/roles/${editingRole.id}?tenantId=${tenantId}`
-        : `http://localhost:7000/api/tenant/roles?tenantId=${tenantId}`;
-
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (response.ok) {
-        setSuccess(editingRole ? 'Role updated successfully' : 'Role created successfully');
-        setShowCreateModal(false);
-        resetForm();
-        fetchRoles();
+      if (editingRole) {
+        await platformService.updateRole(editingRole.id, payload, tenantId);
       } else {
-        const data = await response.json();
-        setError(data.errorMessage || 'Failed to save role');
+        await platformService.createRole({ ...payload, tenantId });
       }
-    } catch (error) {
-      setError('Failed to save role');
+      setSuccess(editingRole ? 'Role updated successfully' : 'Role created successfully');
+      setShowCreateModal(false);
+      resetForm();
+      fetchRoles();
+    } catch (error: any) {
+      setError(error?.message || 'Failed to save role');
       console.error('Error saving role:', error);
     }
   };
@@ -176,20 +163,11 @@ export default function RoleManagementPage() {
     setSuccess('');
 
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/roles/${roleId}?tenantId=${tenantId}`,
-        { method: 'DELETE' }
-      );
-
-      if (response.ok) {
-        setSuccess('Role deleted successfully');
-        fetchRoles();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || 'Failed to delete role');
-      }
-    } catch (error) {
-      setError('Failed to delete role');
+      await platformService.deleteRole(roleId, tenantId);
+      setSuccess('Role deleted successfully');
+      fetchRoles();
+    } catch (error: any) {
+      setError(error?.message || 'Failed to delete role');
       console.error('Error deleting role:', error);
     }
   };
