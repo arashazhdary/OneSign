@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import * as CopilotAPI from '@/lib/api/copilot';
 
 interface Message {
   id: string;
@@ -101,11 +102,11 @@ export default function TenantCopilotPage() {
   const fetchConversations = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/copilot/conversations?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setConversations(data.items || []);
-      }
+      const data = await CopilotAPI.getConversations(tenantId, {
+        pageNumber: 1,
+        pageSize: 100,
+      });
+      setConversations(data.items || []);
     } catch (err) {
       console.error('Error fetching conversations:', err);
     } finally {
@@ -115,11 +116,11 @@ export default function TenantCopilotPage() {
 
   const fetchMessages = async (conversationId: string) => {
     try {
-      const response = await fetch(`http://localhost:7000/api/copilot/conversations/${conversationId}/messages?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setMessages(data.items || []);
-      }
+      const data = await CopilotAPI.getMessages(tenantId, conversationId, {
+        pageNumber: 1,
+        pageSize: 100,
+      });
+      setMessages(data.items || []);
     } catch (err) {
       console.error('Error fetching messages:', err);
     }
@@ -155,39 +156,28 @@ export default function TenantCopilotPage() {
     setInputMessage('');
 
     try {
-      const response = await fetch(`http://localhost:7000/api/copilot/chat?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          conversationId: activeConversationId,
-          contextType: selectedContext,
-          message: inputMessage,
-        }),
+      const data = await CopilotAPI.sendChatMessage(tenantId, {
+        conversationId: activeConversationId || undefined,
+        contextType: selectedContext,
+        message: inputMessage,
       });
 
-      if (response.ok) {
-        const data = await response.json();
+      const assistantMessage: Message = {
+        id: data.messageId || `assistant-${Date.now()}`,
+        role: 'assistant',
+        content: data.response,
+        timestamp: new Date(),
+        suggestedActions: data.suggestedActions,
+      };
 
-        const assistantMessage: Message = {
-          id: data.messageId || `assistant-${Date.now()}`,
-          role: 'assistant',
-          content: data.response,
-          timestamp: new Date(),
-          suggestedActions: data.suggestedActions,
-        };
+      setMessages(prev => [...prev, assistantMessage]);
 
-        setMessages(prev => [...prev, assistantMessage]);
-
-        if (!activeConversationId && data.conversationId) {
-          setActiveConversationId(data.conversationId);
-          fetchConversations();
-        }
-      } else {
-        const errorData = await response.json();
-        setError(errorData.errorMessage || t('common.error'));
+      if (!activeConversationId && data.conversationId) {
+        setActiveConversationId(data.conversationId);
+        fetchConversations();
       }
-    } catch (err) {
-      setError(t('common.error'));
+    } catch (err: any) {
+      setError(err?.message || t('common.error'));
       console.error('Error sending message:', err);
     } finally {
       setSending(false);
@@ -200,11 +190,11 @@ export default function TenantCopilotPage() {
 
   const fetchSuggestions = async () => {
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/copilot/suggestions?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setSuggestions(data.items || []);
-      }
+      const data = await CopilotAPI.getSuggestions(tenantId, {
+        pageNumber: 1,
+        pageSize: 50,
+      });
+      setSuggestions(data.items || []);
     } catch (err) {
       console.error('Error fetching suggestions:', err);
     }
@@ -212,11 +202,11 @@ export default function TenantCopilotPage() {
 
   const fetchInsights = async () => {
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/copilot/insights?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setInsights(data.items || []);
-      }
+      const data = await CopilotAPI.getInsights(tenantId, {
+        pageNumber: 1,
+        pageSize: 50,
+      });
+      setInsights(data.items || []);
     } catch (err) {
       console.error('Error fetching insights:', err);
     }
@@ -226,21 +216,13 @@ export default function TenantCopilotPage() {
     setAnalyzing(true);
     setError('');
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/copilot/analyze?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contextType: selectedContext }),
+      const data = await CopilotAPI.analyzeTenant(tenantId, {
+        contextType: selectedContext,
       });
-      if (response.ok) {
-        const data = await response.json();
-        setAnalysisResult(data);
-        setSidebarTab('analysis');
-      } else {
-        const errorData = await response.json();
-        setError(errorData.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      setAnalysisResult(data);
+      setSidebarTab('analysis');
+    } catch (err: any) {
+      setError(err?.message || t('common.error'));
     } finally {
       setAnalyzing(false);
     }

@@ -3,8 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import * as InsightsAPI from '@/lib/api/insights';
 
 type Tab = 'dashboard' | 'security-posture' | 'reports';
+type UserSecurityPosture = InsightsAPI.UserSecurityPostureDto;
+type ReportSubscription = InsightsAPI.ReportSubscriptionDto;
 
 interface UsageSnapshot {
   id: string;
@@ -128,72 +131,76 @@ export default function TenantInsightsPage() {
   };
 
   const fetchDashboardData = async () => {
-    // Fetch dashboard stats
-    const statsResponse = await fetch(
-      `http://localhost:7000/api/tenant/insights/dashboard?tenantId=${tenantId}`
-    );
-    if (statsResponse.ok) {
-      const data = await statsResponse.json();
-      setDashboardStats(data);
-    }
+    if (!tenantId) return;
 
-    // Fetch usage snapshots for chart
-    const snapshotsResponse = await fetch(
-      `http://localhost:7000/api/tenant/insights/usage-snapshots?tenantId=${tenantId}&days=30`
-    );
-    if (snapshotsResponse.ok) {
-      const data = await snapshotsResponse.json();
-      setUsageSnapshots(data.items || []);
-    }
+    // Fetch insights overview
+    const now = new Date();
+    const from = new Date(now.setDate(now.getDate() - 30)).toISOString();
+    const to = new Date().toISOString();
+
+    const data = await InsightsAPI.getTenantInsightsOverview(tenantId, from, to);
+    setDashboardStats({
+      totalUsers: data.totalUsers,
+      activeUsersLast30Days: data.activeUsers,
+      mfaAdoptionRate: data.mfaAdoptionPercent,
+      averageLoginRate: data.totalSignIns / 30,
+      riskEventsThisWeek: data.highRiskEvents,
+      highRiskUsers: data.highRiskEvents, // approximate
+    });
+
+    // Set usage snapshots from trend data
+    setUsageSnapshots(data.signInTrend.map(trend => ({
+      id: trend.date,
+      snapshotDate: trend.date,
+      totalUsers: data.totalUsers,
+      activeUsers: data.activeUsers,
+      mfaEnabledUsers: Math.floor(data.totalUsers * data.mfaAdoptionPercent / 100),
+      totalApplications: data.topApplications.length,
+      totalLogins: trend.count,
+      failedLogins: trend.failureCount,
+    })));
   };
 
   const fetchSecurityPosture = async () => {
-    const response = await fetch(
-      `http://localhost:7000/api/tenant/insights/security-posture?tenantId=${tenantId}&pageNumber=${posturePageNumber}&pageSize=${pageSize}&sortBy=${postureSortBy}&sortDesc=${postureSortDesc}`
-    );
-    if (response.ok) {
-      const data = await response.json();
-      setUserPostures(data.items || []);
-      setPostureTotalCount(data.totalCount || 0);
-    }
+    if (!tenantId) return;
+
+    const data = await InsightsAPI.getUserSecurityPosture(tenantId, {
+      sortBy: postureSortBy,
+      page: posturePageNumber,
+      pageSize,
+    });
+
+    setUserPostures(data.users || []);
+    setPostureTotalCount(data.totalCount || 0);
   };
 
   const fetchReportSubscriptions = async () => {
-    const response = await fetch(
-      `http://localhost:7000/api/tenant/insights/report-subscriptions?tenantId=${tenantId}`
-    );
-    if (response.ok) {
-      const data = await response.json();
-      setReportSubscriptions(data.items || []);
-    }
+    if (!tenantId) return;
+
+    const data = await InsightsAPI.getReportSubscriptions(tenantId);
+    setReportSubscriptions(data.subscriptions || []);
   };
 
   const handleCreateReport = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
+    if (!tenantId) return;
 
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/insights/report-subscriptions?tenantId=${tenantId}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ...newReport,
-            recipients: newReport.recipients.split(',').map((r) => r.trim()).filter(Boolean),
-          }),
-        }
-      );
+      await InsightsAPI.createReportSubscription(tenantId, {
+        reportType: newReport.reportType as InsightsAPI.ReportType,
+        cronOrFrequency: newReport.frequency,
+        emailRecipients: newReport.recipients.split(',').map((r) => r.trim()).filter(Boolean),
+      });
 
-      if (response.ok) {
-        setSuccess('Report subscription created successfully');
-        setShowCreateReportModal(false);
-        setNewReport({
-          name: '',
-          reportType: 'SecuritySummary',
-          frequency: 'Weekly',
-          recipients: '',
+      setSuccess('Report subscription created successfully');
+      setShowCreateReportModal(false);
+      setNewReport({
+        name: '',
+        reportType: 'SecuritySummary',
+        frequency: 'Weekly',
+        recipients: '',
           isActive: true,
         });
         fetchReportSubscriptions();

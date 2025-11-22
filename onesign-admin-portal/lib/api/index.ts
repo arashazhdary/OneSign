@@ -31,6 +31,21 @@ export * from './errors';
 // Export utilities
 export * from './utils';
 
+// Export API modules
+export * as AccessRequestsAPI from './access-requests';
+export * as BrandingAPI from './branding';
+export * as FederationAPI from './federation';
+export * as LifecycleAPI from './lifecycle';
+export * as NotificationsAPI from './notifications';
+export * as PrivacyAPI from './privacy';
+export * as ExtensibilityAPI from './extensibility';
+export * as PlatformAPI from './platform';
+export * as InsightsAPI from './insights';
+export * as HuntingAPI from './hunting';
+export * as CopilotAPI from './copilot';
+export * as ChangeManagementAPI from './change-management';
+export * as AutomationAPI from './automation';
+
 // Default export
 export default {
   client: apiClient,
