@@ -116,13 +116,9 @@ export default function PrivacyPage() {
     if (!tenantId || !confirm('Are you sure you want to execute this request?')) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/privacy/data-requests/${id}/execute`, {
-        method: 'POST'
-      });
-      if (response.ok) {
-        setSuccess('Data request executed successfully');
-        fetchDataRequests();
-      }
+      await governanceService.executeDataSubjectRequest(tenantId, id);
+      setSuccess('Data request executed successfully');
+      fetchDataRequests();
     } catch (err) {
       setError('Failed to execute data request');
     } finally {

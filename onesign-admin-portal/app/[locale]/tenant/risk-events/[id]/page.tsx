@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
 import LoadingOverlay from '@/app/components/LoadingOverlay';
 import StatusBadge from '@/app/components/StatusBadge';
+import { securityService } from '@/lib/api/services/security.service';
 
 interface RiskEvent {
   id: string;
@@ -78,18 +79,7 @@ export default function RiskEventDetailsPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/risk-events/${eventId}?tenantId=${tenantId}`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch risk event');
-      }
-
-      const data = await response.json();
+      const data = await securityService.getRiskEventById(tenantId, eventId);
       setRiskEvent(data);
     } catch (err) {
       setError(t('common.error'));
@@ -100,17 +90,8 @@ export default function RiskEventDetailsPage() {
 
   const fetchTimeline = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/risk-events/${eventId}/timeline?tenantId=${tenantId}`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setTimeline(data);
-      }
+      const data = await securityService.getRiskEventTimeline(tenantId, eventId);
+      setTimeline(data);
     } catch (err) {
       console.error('Failed to fetch timeline:', err);
     }
@@ -121,17 +102,7 @@ export default function RiskEventDetailsPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/risk-events/${eventId}/resolve?tenantId=${tenantId}`,
-        {
-          method: 'POST',
-          credentials: 'include',
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to resolve risk event');
-      }
+      await securityService.resolveRiskEvent(tenantId, eventId);
 
       setSuccess('Risk event resolved successfully');
       fetchRiskEvent();

@@ -235,17 +235,11 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/login-hooks/${id}?tenantId=${tenantId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if (response.ok) {
-        setSuccess('Login hook updated successfully');
-        setEditingLoginHook(null);
-        setShowLoginHookModal(false);
-        fetchLoginHooks();
-      }
+      await platformService.updateLoginHook(tenantId, id, data);
+      setSuccess('Login hook updated successfully');
+      setEditingLoginHook(null);
+      setShowLoginHookModal(false);
+      fetchLoginHooks();
     } catch (err) {
       setError('Failed to update login hook');
     } finally {
@@ -257,13 +251,9 @@ export default function ExtensibilityPage() {
     if (!tenantId || !confirm('Are you sure you want to delete this login hook?')) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/login-hooks/${id}?tenantId=${tenantId}`, {
-        method: 'DELETE'
-      });
-      if (response.ok) {
-        setSuccess('Login hook deleted successfully');
-        fetchLoginHooks();
-      }
+      await platformService.deleteLoginHook(tenantId, id);
+      setSuccess('Login hook deleted successfully');
+      fetchLoginHooks();
     } catch (err) {
       setError('Failed to delete login hook');
     } finally {
@@ -276,16 +266,10 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/token-rules?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(tokenRuleForm)
-      });
-      if (response.ok) {
-        setSuccess('Token rule created successfully');
-        setShowTokenRuleModal(false);
-        fetchTokenRules();
-      }
+      await platformService.createTokenRule(tenantId, tokenRuleForm);
+      setSuccess('Token rule created successfully');
+      setShowTokenRuleModal(false);
+      fetchTokenRules();
     } catch (err) {
       setError('Failed to create token rule');
     } finally {
@@ -297,17 +281,11 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/token-rules/${id}?tenantId=${tenantId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if (response.ok) {
-        setSuccess('Token rule updated successfully');
-        setEditingTokenRule(null);
-        setShowTokenRuleModal(false);
-        fetchTokenRules();
-      }
+      await platformService.updateTokenRule(tenantId, id, data);
+      setSuccess('Token rule updated successfully');
+      setEditingTokenRule(null);
+      setShowTokenRuleModal(false);
+      fetchTokenRules();
     } catch (err) {
       setError('Failed to update token rule');
     } finally {
@@ -319,13 +297,9 @@ export default function ExtensibilityPage() {
     if (!tenantId || !confirm('Are you sure you want to delete this token rule?')) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/token-rules/${id}?tenantId=${tenantId}`, {
-        method: 'DELETE'
-      });
-      if (response.ok) {
-        setSuccess('Token rule deleted successfully');
-        fetchTokenRules();
-      }
+      await platformService.deleteTokenRule(tenantId, id);
+      setSuccess('Token rule deleted successfully');
+      fetchTokenRules();
     } catch (err) {
       setError('Failed to delete token rule');
     } finally {

@@ -134,14 +134,8 @@ export default function ApplicationDetailPage() {
 
   const fetchRedirectURIs = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/applications/${applicationId}/redirect-uris?tenantId=${tenantId}`,
-        { credentials: 'include' }
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setRedirectURIs(data);
-      }
+      const data = await applicationsService.getRedirectURIs(tenantId, applicationId);
+      setRedirectURIs(data);
     } catch (err) {
       console.error('Failed to fetch redirect URIs:', err);
     }
@@ -149,14 +143,8 @@ export default function ApplicationDetailPage() {
 
   const fetchClientSecrets = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/applications/${applicationId}/secrets?tenantId=${tenantId}`,
-        { credentials: 'include' }
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setClientSecrets(data);
-      }
+      const data = await applicationsService.getClientSecrets(tenantId, applicationId);
+      setClientSecrets(data);
     } catch (err) {
       console.error('Failed to fetch client secrets:', err);
     }
@@ -164,14 +152,8 @@ export default function ApplicationDetailPage() {
 
   const fetchPermissions = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/applications/${applicationId}/permissions?tenantId=${tenantId}`,
-        { credentials: 'include' }
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setPermissions(data);
-      }
+      const data = await applicationsService.getPermissions(tenantId, applicationId);
+      setPermissions(data);
     } catch (err) {
       console.error('Failed to fetch permissions:', err);
     }
@@ -179,14 +161,8 @@ export default function ApplicationDetailPage() {
 
   const fetchOrgUnits = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/applications/${applicationId}/org-units?tenantId=${tenantId}`,
-        { credentials: 'include' }
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setOrgUnits(data);
-      }
+      const data = await applicationsService.getApplicationOrgUnits(tenantId, applicationId);
+      setOrgUnits(data);
     } catch (err) {
       console.error('Failed to fetch org units:', err);
     }
@@ -194,14 +170,8 @@ export default function ApplicationDetailPage() {
 
   const fetchAuditLog = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/applications/${applicationId}/audit-log?tenantId=${tenantId}&pageSize=50`,
-        { credentials: 'include' }
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setAuditLog(data);
-      }
+      const data = await applicationsService.getAuditLog(tenantId, applicationId, 50);
+      setAuditLog(data);
     } catch (err) {
       console.error('Failed to fetch audit log:', err);
     }
@@ -236,22 +206,13 @@ export default function ApplicationDetailPage() {
     setSaving(true);
     setError('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/applications/${applicationId}/redirect-uris`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ tenantId, ...newURI }),
-        }
-      );
-      if (!response.ok) throw new Error('Failed to add redirect URI');
+      await applicationsService.addRedirectUri(tenantId, applicationId, newURI.uri, newURI.type);
       setSuccess('Redirect URI added successfully');
       setShowAddURIModal(false);
       setNewURI({ uri: '', type: 'web' });
       fetchRedirectURIs();
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Failed to add redirect URI');
     } finally {
       setSaving(false);
     }
@@ -260,15 +221,11 @@ export default function ApplicationDetailPage() {
   const handleDeleteRedirectURI = async (uriId: string) => {
     if (!confirm('Are you sure you want to delete this redirect URI?')) return;
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/applications/${applicationId}/redirect-uris/${uriId}?tenantId=${tenantId}`,
-        { method: 'DELETE', credentials: 'include' }
-      );
-      if (!response.ok) throw new Error('Failed to delete redirect URI');
+      await applicationsService.removeRedirectUri(tenantId, applicationId, uriId);
       setSuccess('Redirect URI deleted successfully');
       fetchRedirectURIs();
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Failed to delete redirect URI');
     }
   };
 
@@ -276,23 +233,13 @@ export default function ApplicationDetailPage() {
     setSaving(true);
     setError('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/applications/${applicationId}/secrets`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ tenantId, name: newSecretName }),
-        }
-      );
-      if (!response.ok) throw new Error('Failed to generate secret');
-      const data = await response.json();
+      const data = await applicationsService.addClientSecret(tenantId, applicationId, newSecretName);
       setShowGeneratedSecret(data.secret);
       setShowAddSecretModal(false);
       setNewSecretName('');
       fetchClientSecrets();
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Failed to generate secret');
     } finally {
       setSaving(false);
     }
@@ -301,15 +248,11 @@ export default function ApplicationDetailPage() {
   const handleDeleteSecret = async (secretId: string) => {
     if (!confirm('Are you sure you want to delete this client secret? This action cannot be undone.')) return;
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/applications/${applicationId}/secrets/${secretId}?tenantId=${tenantId}`,
-        { method: 'DELETE', credentials: 'include' }
-      );
-      if (!response.ok) throw new Error('Failed to delete secret');
+      await applicationsService.removeClientSecret(tenantId, applicationId, secretId);
       setSuccess('Client secret deleted successfully');
       fetchClientSecrets();
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Failed to delete secret');
     }
   };
 

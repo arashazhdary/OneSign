@@ -7,6 +7,7 @@ import { getTenantId } from '@/lib/tenant-context';
 import LoadingOverlay from '@/app/components/LoadingOverlay';
 import Modal from '@/app/components/Modal';
 import StatusBadge from '@/app/components/StatusBadge';
+import { incidentsService } from '@/lib/api/services/incidents.service';
 
 interface Incident {
   id: string;
@@ -117,18 +118,7 @@ export default function IncidentDetailsPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/incidents/${incidentId}?tenantId=${tenantId}`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch incident');
-      }
-
-      const data = await response.json();
+      const data = await incidentsService.getIncidentById(tenantId, incidentId);
       setIncident(data);
     } catch (err) {
       setError(t('common.error'));
@@ -139,17 +129,8 @@ export default function IncidentDetailsPage() {
 
   const fetchTimeline = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/incidents/${incidentId}/timeline?tenantId=${tenantId}`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setTimeline(data);
-      }
+      const data = await incidentsService.getIncidentTimeline(tenantId, incidentId);
+      setTimeline(data);
     } catch (err) {
       console.error('Failed to fetch timeline:', err);
     }
@@ -157,17 +138,8 @@ export default function IncidentDetailsPage() {
 
   const fetchRelatedIncidents = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/incidents/${incidentId}/related?tenantId=${tenantId}`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setRelatedIncidents(data);
-      }
+      const data = await incidentsService.getRelatedIncidents(tenantId, incidentId);
+      setRelatedIncidents(data);
     } catch (err) {
       console.error('Failed to fetch related incidents:', err);
     }
@@ -175,17 +147,8 @@ export default function IncidentDetailsPage() {
 
   const fetchPlaybooks = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/playbooks?tenantId=${tenantId}`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setPlaybooks(data);
-      }
+      const data = await incidentsService.getPlaybooks(tenantId);
+      setPlaybooks(data);
     } catch (err) {
       console.error('Failed to fetch playbooks:', err);
     }
@@ -198,20 +161,7 @@ export default function IncidentDetailsPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/incidents/${incidentId}/notes?tenantId=${tenantId}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ content: newNoteContent }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to add note');
-      }
-
+      await incidentsService.addNote(tenantId, incidentId, newNoteContent);
       setSuccess('Note added successfully');
       setNewNoteContent('');
       setShowAddNoteModal(false);
@@ -234,24 +184,13 @@ export default function IncidentDetailsPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/incidents/${incidentId}/entities?tenantId=${tenantId}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            entityType,
-            entityId,
-            entityName: entityName || entityId,
-          }),
-        }
+      await incidentsService.addLinkedEntity(
+        tenantId,
+        incidentId,
+        entityType,
+        entityId,
+        entityName || entityId
       );
-
-      if (!response.ok) {
-        throw new Error('Failed to add entity');
-      }
-
       setSuccess('Entity linked successfully');
       setEntityType('');
       setEntityId('');
@@ -275,20 +214,7 @@ export default function IncidentDetailsPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/incidents/${incidentId}/playbook?tenantId=${tenantId}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ playbookId: selectedPlaybookId }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to execute playbook');
-      }
-
+      await incidentsService.executePlaybook(tenantId, incidentId, selectedPlaybookId);
       setSuccess('Playbook execution started successfully');
       setSelectedPlaybookId('');
       setShowPlaybookModal(false);
@@ -304,18 +230,13 @@ export default function IncidentDetailsPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/incidents/${incidentId}/${action}?tenantId=${tenantId}`,
-        {
-          method: 'POST',
-          credentials: 'include',
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to ${action} incident`);
+      if (action === 'acknowledge') {
+        await incidentsService.acknowledgeIncident(tenantId, incidentId);
+      } else if (action === 'resolve') {
+        await incidentsService.resolveIncident(tenantId, incidentId, '');
+      } else if (action === 'close') {
+        await incidentsService.closeIncident(tenantId, incidentId);
       }
-
       setSuccess(`Incident ${action}d successfully`);
       fetchIncident();
       if (activeTab === 'timeline') fetchTimeline();

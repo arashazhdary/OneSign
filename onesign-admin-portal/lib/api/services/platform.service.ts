@@ -1334,6 +1334,78 @@ export class PlatformService {
   async importTenantData(tenantId: string): Promise<void> {
     await this.client.post(`/api/global/tenants/${tenantId}/import`);
   }
+
+  // Org Unit Detail Management
+
+  /**
+   * Get org unit by ID
+   */
+  async getOrgUnit(tenantId: string, orgUnitId: string): Promise<any> {
+    const response = await this.client.get<any>(`/api/tenant/org-units/${orgUnitId}`, { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Get org unit users
+   */
+  async getOrgUnitUsers(tenantId: string, orgUnitId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>(`/api/tenant/org-units/${orgUnitId}/users`, { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Get org unit applications
+   */
+  async getOrgUnitApplications(tenantId: string, orgUnitId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>(`/api/tenant/org-units/${orgUnitId}/applications`, { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Get org unit policies
+   */
+  async getOrgUnitPolicies(tenantId: string, orgUnitId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>(`/api/tenant/org-units/${orgUnitId}/policies`, { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Get org unit hierarchy
+   */
+  async getOrgUnitHierarchy(tenantId: string, orgUnitId: string): Promise<any> {
+    const response = await this.client.get<any>(`/api/tenant/org-units/${orgUnitId}/hierarchy`, { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Get org unit statistics
+   */
+  async getOrgUnitStatistics(tenantId: string, orgUnitId: string): Promise<any> {
+    const response = await this.client.get<any>(`/api/tenant/org-units/${orgUnitId}/statistics`, { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Update org unit
+   */
+  async updateOrgUnit(tenantId: string, orgUnitId: string, data: any): Promise<any> {
+    const response = await this.client.put<any>(`/api/tenant/org-units/${orgUnitId}`, { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Remove user from org unit
+   */
+  async removeOrgUnitUser(tenantId: string, orgUnitId: string, userId: string): Promise<void> {
+    await this.client.delete(`/api/tenant/org-units/${orgUnitId}/users/${userId}`, { params: { tenantId } });
+  }
+
+  /**
+   * Remove application from org unit
+   */
+  async removeOrgUnitApplication(tenantId: string, orgUnitId: string, applicationId: string): Promise<void> {
+    await this.client.delete(`/api/tenant/org-units/${orgUnitId}/applications/${applicationId}`, { params: { tenantId } });
+  }
 }
 
 // Export singleton instance

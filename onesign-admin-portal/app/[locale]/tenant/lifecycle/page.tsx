@@ -162,32 +162,22 @@ export default function LifecyclePage() {
     if (!tenantId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/lifecycle/access-packages?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenantId,
-          name: packageName,
-          description: packageDescription,
-          roles: packageRoles.split(',').map(r => r.trim()).filter(r => r),
-          durationDays: packageDuration,
-          requiresApproval: packageApprovalRequired
-        })
+      await lifecycleService.createAccessPackage(tenantId, {
+        name: packageName,
+        description: packageDescription,
+        roles: packageRoles.split(',').map(r => r.trim()).filter(r => r),
+        durationDays: packageDuration,
+        requiresApproval: packageApprovalRequired
       });
 
-      if (response.ok) {
-        setShowPackageModal(false);
-        setPackageName('');
-        setPackageDescription('');
-        setPackageRoles('');
-        setPackageDuration(30);
-        setPackageApprovalRequired(true);
-        setSuccess(t('tenant.lifecycle.packageCreated') || 'Access package created successfully');
-        fetchAccessPackages();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      setShowPackageModal(false);
+      setPackageName('');
+      setPackageDescription('');
+      setPackageRoles('');
+      setPackageDuration(30);
+      setPackageApprovalRequired(true);
+      setSuccess(t('tenant.lifecycle.packageCreated') || 'Access package created successfully');
+      fetchAccessPackages();
     } catch (error) {
       setError(t('common.error'));
       console.error('Error creating access package:', error);
@@ -201,29 +191,19 @@ export default function LifecyclePage() {
     if (!tenantId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/lifecycle/policies?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenantId,
-          name: policyName,
-          trigger: policyTrigger,
-          actions: policyActions.split(',').map(a => a.trim()).filter(a => a),
-          enabled: policyEnabled
-        })
+      await lifecycleService.createLifecyclePolicy(tenantId, {
+        name: policyName,
+        trigger: policyTrigger,
+        actions: policyActions.split(',').map(a => a.trim()).filter(a => a),
+        enabled: policyEnabled
       });
 
-      if (response.ok) {
-        setShowPolicyModal(false);
-        setPolicyName('');
-        setPolicyActions('');
-        setPolicyEnabled(true);
-        setSuccess(t('tenant.lifecycle.policyCreated') || 'Lifecycle policy created successfully');
-        fetchLifecyclePolicies();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      setShowPolicyModal(false);
+      setPolicyName('');
+      setPolicyActions('');
+      setPolicyEnabled(true);
+      setSuccess(t('tenant.lifecycle.policyCreated') || 'Lifecycle policy created successfully');
+      fetchLifecyclePolicies();
     } catch (error) {
       setError(t('common.error'));
       console.error('Error creating lifecycle policy:', error);
@@ -237,20 +217,9 @@ export default function LifecyclePage() {
     setIsSyncing(true);
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/lifecycle/hr/sync?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantId })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setSuccess(t('tenant.lifecycle.hrSyncTriggered') || `HR Sync triggered successfully. ${data} records processed.`);
-        fetchHRSyncStatus();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      const data = await lifecycleService.syncWithHR(tenantId);
+      setSuccess(t('tenant.lifecycle.hrSyncTriggered') || `HR Sync triggered successfully. ${data} records processed.`);
+      fetchHRSyncStatus();
     } catch (error) {
       setError(t('common.error'));
       console.error('Error triggering HR sync:', error);

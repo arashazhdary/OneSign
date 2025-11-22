@@ -406,6 +406,87 @@ export class UsersService {
       params: { tenantId },
     });
   }
+
+  // User Profile Details
+
+  /**
+   * Get user profile
+   */
+  async getUserProfile(tenantId: string, userId: string): Promise<any> {
+    const response = await this.client.get(`/api/tenant/users/${userId}/profile`, { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Update user profile
+   */
+  async updateUserProfile(tenantId: string, userId: string, data: any): Promise<any> {
+    const response = await this.client.put(`/api/tenant/users/${userId}/profile`, {
+      ...data,
+      tenantId,
+    });
+    return response.data;
+  }
+
+  /**
+   * Get user activities
+   */
+  async getUserActivities(tenantId: string, userId: string, pageSize?: number): Promise<any[]> {
+    const response = await this.client.get(`/api/tenant/users/${userId}/activities`, {
+      tenantId,
+      pageSize,
+    });
+    return response.data;
+  }
+
+  /**
+   * Get user lifecycle events
+   */
+  async getUserLifecycle(tenantId: string, userId: string): Promise<any[]> {
+    const response = await this.client.get(`/api/tenant/users/${userId}/lifecycle`, { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Get user risk assessment
+   */
+  async getUserRiskAssessment(tenantId: string, userId: string): Promise<any> {
+    const response = await this.client.get(`/api/tenant/users/${userId}/risk-assessment`, {
+      tenantId,
+    });
+    return response.data;
+  }
+
+  /**
+   * Get user access packages
+   */
+  async getUserAccessPackages(tenantId: string, userId: string): Promise<any[]> {
+    const response = await this.client.get(`/api/tenant/users/${userId}/access-packages`, {
+      tenantId,
+    });
+    return response.data;
+  }
+
+  /**
+   * Get user privileged sessions
+   */
+  async getUserPrivilegedSessions(tenantId: string, userId: string): Promise<any[]> {
+    const response = await this.client.get(`/api/tenant/users/${userId}/privileged-sessions`, {
+      tenantId,
+    });
+    return response.data;
+  }
+
+  /**
+   * Get user audit trail
+   */
+  async getUserAuditTrail(tenantId: string, userId: string, pageSize?: number): Promise<any[]> {
+    const response = await this.client.get(`/api/tenant/users/${userId}/audit-trail`, {
+      tenantId,
+      pageSize,
+    });
+    return response.data;
+  }
 }
 
 // Export singleton instance

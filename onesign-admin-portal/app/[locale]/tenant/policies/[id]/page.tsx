@@ -7,6 +7,7 @@ import { getTenantId } from '@/lib/tenant-context';
 import LoadingOverlay from '@/app/components/LoadingOverlay';
 import Modal from '@/app/components/Modal';
 import StatusBadge from '@/app/components/StatusBadge';
+import { securityService } from '@/lib/api/services/security.service';
 
 interface Policy {
   id: string;
@@ -125,18 +126,7 @@ export default function PolicyDetailPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/policies/${policyId}?tenantId=${tenantId}`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch policy');
-      }
-
-      const data = await response.json();
+      const data = await securityService.getPolicyById(tenantId, policyId);
       setPolicy(data);
     } catch (err) {
       setError(t('common.error'));
@@ -147,17 +137,8 @@ export default function PolicyDetailPage() {
 
   const fetchAppliedEntities = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/policies/${policyId}/applied?tenantId=${tenantId}`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setAppliedEntities(data);
-      }
+      const data = await securityService.getPolicyAppliedEntities(tenantId, policyId);
+      setAppliedEntities(data);
     } catch (err) {
       console.error('Failed to fetch applied entities:', err);
     }
@@ -165,17 +146,8 @@ export default function PolicyDetailPage() {
 
   const fetchAuditLog = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/policies/${policyId}/audit-log?tenantId=${tenantId}&pageSize=50`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setAuditLog(data);
-      }
+      const data = await securityService.getPolicyAuditLog(tenantId, policyId, 50);
+      setAuditLog(data);
     } catch (err) {
       console.error('Failed to fetch audit log:', err);
     }
@@ -183,17 +155,8 @@ export default function PolicyDetailPage() {
 
   const fetchImpactAnalysis = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/policies/${policyId}/impact-analysis?tenantId=${tenantId}`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setImpactAnalysis(data);
-      }
+      const data = await securityService.getPolicyImpactAnalysis(tenantId, policyId);
+      setImpactAnalysis(data);
     } catch (err) {
       console.error('Failed to fetch impact analysis:', err);
     }
@@ -207,16 +170,10 @@ export default function PolicyDetailPage() {
     setSuccess('');
     try {
       const action = policy.isActive ? 'deactivate' : 'activate';
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/policies/${policyId}/${action}?tenantId=${tenantId}`,
-        {
-          method: 'POST',
-          credentials: 'include',
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to ${action} policy`);
+      if (policy.isActive) {
+        await securityService.deactivatePolicy(tenantId, policyId);
+      } else {
+        await securityService.activatePolicy(tenantId, policyId);
       }
 
       setSuccess(`Policy ${action}d successfully`);
@@ -239,21 +196,7 @@ export default function PolicyDetailPage() {
     setSuccess('');
     setTestResult(null);
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/policies/${policyId}/test?tenantId=${tenantId}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ userId: testUserId }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to test policy');
-      }
-
-      const result = await response.json();
+      const result = await securityService.testPolicy(tenantId, policyId, testUserId);
       setTestResult(result);
       setSuccess('Policy test completed');
     } catch (err) {
@@ -273,22 +216,7 @@ export default function PolicyDetailPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/policies/${policyId}/apply?tenantId=${tenantId}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            entityType: applyEntityType,
-            entityId: applyEntityId,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to apply policy');
-      }
+      await securityService.applyPolicyToEntity(tenantId, policyId, applyEntityType, applyEntityId);
 
       setSuccess('Policy applied successfully');
       setShowApplyModal(false);

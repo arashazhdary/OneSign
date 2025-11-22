@@ -504,3 +504,120 @@ export async function deployWorkflow(
   }
   return response.json();
 }
+
+// Workflow Detail Management
+
+/**
+ * Get workflow runs/execution history
+ */
+export async function getWorkflowRuns(
+  workflowId: string,
+  tenantId: string,
+  pageSize?: number
+): Promise<any[]> {
+  const params = new URLSearchParams({ tenantId });
+  if (pageSize) params.append('pageSize', pageSize.toString());
+
+  const response = await fetch(
+    `${API_BASE}/api/tenant/automation/workflows/${workflowId}/runs?${params}`,
+    { credentials: 'include' }
+  );
+  if (!response.ok) throw new Error('Failed to fetch workflow runs');
+  return response.json();
+}
+
+/**
+ * Get workflow logs
+ */
+export async function getWorkflowLogs(
+  workflowId: string,
+  tenantId: string,
+  pageSize?: number
+): Promise<any[]> {
+  const params = new URLSearchParams({ tenantId });
+  if (pageSize) params.append('pageSize', pageSize.toString());
+
+  const response = await fetch(
+    `${API_BASE}/api/tenant/automation/workflows/${workflowId}/logs?${params}`,
+    { credentials: 'include' }
+  );
+  if (!response.ok) throw new Error('Failed to fetch workflow logs');
+  return response.json();
+}
+
+/**
+ * Activate workflow
+ */
+export async function activateWorkflow(
+  workflowId: string,
+  tenantId: string
+): Promise<void> {
+  const response = await fetch(
+    `${API_BASE}/api/tenant/automation/workflows/${workflowId}/activate?tenantId=${tenantId}`,
+    {
+      method: 'POST',
+      credentials: 'include',
+    }
+  );
+  if (!response.ok) throw new Error('Failed to activate workflow');
+}
+
+/**
+ * Deactivate workflow
+ */
+export async function deactivateWorkflow(
+  workflowId: string,
+  tenantId: string
+): Promise<void> {
+  const response = await fetch(
+    `${API_BASE}/api/tenant/automation/workflows/${workflowId}/deactivate?tenantId=${tenantId}`,
+    {
+      method: 'POST',
+      credentials: 'include',
+    }
+  );
+  if (!response.ok) throw new Error('Failed to deactivate workflow');
+}
+
+/**
+ * Test workflow (detail page version)
+ */
+export async function testWorkflowDetail(
+  workflowId: string,
+  tenantId: string,
+  testData: any
+): Promise<any> {
+  const response = await fetch(
+    `${API_BASE}/api/tenant/automation/workflows/${workflowId}/test?tenantId=${tenantId}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ testData }),
+    }
+  );
+  if (!response.ok) throw new Error('Failed to test workflow');
+  return response.json();
+}
+
+/**
+ * Update workflow basic info (name and description only)
+ */
+export async function updateWorkflowBasicInfo(
+  workflowId: string,
+  tenantId: string,
+  name: string,
+  description: string
+): Promise<any> {
+  const response = await fetch(
+    `${API_BASE}/api/tenant/automation/workflows/${workflowId}?tenantId=${tenantId}`,
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ name, description }),
+    }
+  );
+  if (!response.ok) throw new Error('Failed to update workflow');
+  return response.json();
+}

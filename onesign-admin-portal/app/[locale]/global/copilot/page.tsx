@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { copilotService } from '@/lib/api/services/copilot.service';
 
 interface CopilotSettings {
   isEnabled: boolean;
@@ -154,48 +155,27 @@ export default function GlobalCopilotPage() {
     setError('');
     try {
       if (activeTab === 'settings') {
-        const response = await fetch('http://localhost:7000/api/global/copilot/settings');
-        if (response.ok) {
-          const data = await response.json();
-          setSettings(data);
-        }
+        const data = await copilotService.getGlobalSettings();
+        setSettings(data);
       } else if (activeTab === 'analytics') {
-        const response = await fetch('http://localhost:7000/api/global/copilot/analytics');
-        if (response.ok) {
-          const data = await response.json();
-          setUsageStats(data);
-        }
+        const data = await copilotService.getGlobalAnalytics();
+        setUsageStats(data);
       } else if (activeTab === 'history') {
-        const response = await fetch(`http://localhost:7000/api/global/copilot/conversations?page=${page}&pageSize=${pageSize}`);
-        if (response.ok) {
-          const data = await response.json();
-          setConversations(data.items || []);
-          setTotalConversations(data.totalCount || 0);
-        }
+        const data = await copilotService.getGlobalConversations({ page, pageSize });
+        setConversations(data.items || []);
+        setTotalConversations(data.totalCount || 0);
       } else if (activeTab === 'insights') {
-        const response = await fetch('http://localhost:7000/api/global/copilot/platform-insights');
-        if (response.ok) {
-          const data = await response.json();
-          setPlatformInsights(data.items || []);
-        }
+        const data = await copilotService.getGlobalPlatformInsights();
+        setPlatformInsights(data.items || []);
       } else if (activeTab === 'recommendations') {
-        const response = await fetch('http://localhost:7000/api/global/copilot/recommendations');
-        if (response.ok) {
-          const data = await response.json();
-          setRecommendations(data.items || []);
-        }
+        const data = await copilotService.getGlobalRecommendations();
+        setRecommendations(data.items || []);
       } else if (activeTab === 'alerts') {
-        const response = await fetch('http://localhost:7000/api/global/copilot/alerts');
-        if (response.ok) {
-          const data = await response.json();
-          setAlerts(data.items || []);
-        }
+        const data = await copilotService.getGlobalAlerts();
+        setAlerts(data.items || []);
       } else if (activeTab === 'knowledge') {
-        const response = await fetch('http://localhost:7000/api/global/copilot/knowledge-base/status');
-        if (response.ok) {
-          const data = await response.json();
-          setKnowledgeBaseStatus(data);
-        }
+        const data = await copilotService.getKnowledgeBaseStatus();
+        setKnowledgeBaseStatus(data);
       }
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -209,20 +189,10 @@ export default function GlobalCopilotPage() {
     setAnalyzingTenants(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/copilot/analyze-tenants', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setSuccess(`Analysis completed: ${data.summary}`);
-        setActiveTab('insights');
-        fetchData();
-      } else {
-        const errorData = await response.json();
-        setError(errorData.errorMessage || t('common.error'));
-      }
+      const data = await copilotService.analyzeTenants();
+      setSuccess(`Analysis completed: ${data.summary}`);
+      setActiveTab('insights');
+      fetchData();
     } catch (err) {
       setError(t('common.error'));
     } finally {
@@ -232,13 +202,9 @@ export default function GlobalCopilotPage() {
 
   const handleAcknowledgeAlert = async (alertId: string) => {
     try {
-      const response = await fetch(`http://localhost:7000/api/global/copilot/alerts/${alertId}/acknowledge`, {
-        method: 'POST',
-      });
-      if (response.ok) {
-        setSuccess('Alert acknowledged');
-        fetchData();
-      }
+      await copilotService.acknowledgeGlobalAlert(alertId);
+      setSuccess('Alert acknowledged');
+      fetchData();
     } catch (err) {
       setError(t('common.error'));
     }
@@ -250,18 +216,8 @@ export default function GlobalCopilotPage() {
     setError('');
     setQueryResponse(null);
     try {
-      const response = await fetch('http://localhost:7000/api/global/copilot/query', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: queryText }),
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setQueryResponse(data);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      const data = await copilotService.executeGlobalQuery(queryText);
+      setQueryResponse(data);
     } catch (err) {
       setError(t('common.error'));
     } finally {
@@ -273,14 +229,8 @@ export default function GlobalCopilotPage() {
     if (!selectedConversationId.trim()) return;
     setError('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/copilot/conversations/${selectedConversationId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setConversationDetail(data);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      const data = await copilotService.getGlobalConversation(selectedConversationId);
+      setConversationDetail(data);
     } catch (err) {
       setError(t('common.error'));
     }
@@ -292,18 +242,8 @@ export default function GlobalCopilotPage() {
     setError('');
     setActionResult(null);
     try {
-      const response = await fetch('http://localhost:7000/api/global/copilot/actions/execute', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ command: actionCommand }),
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setActionResult(data);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      const data = await copilotService.executeGlobalAction(actionCommand);
+      setActionResult(data);
     } catch (err) {
       setError(t('common.error'));
     } finally {
@@ -343,18 +283,8 @@ export default function GlobalCopilotPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/copilot/settings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settings),
-      });
-
-      if (response.ok) {
-        setSuccess('Settings saved successfully');
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      await copilotService.updateGlobalSettings(settings);
+      setSuccess('Settings saved successfully');
     } catch (err) {
       setError(t('common.error'));
     }

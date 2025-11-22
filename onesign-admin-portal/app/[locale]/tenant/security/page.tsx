@@ -101,22 +101,13 @@ export default function SecurityCenterPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/security/policy?tenantId=${tenantId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          mfaRequirement,
-          allowTrustedDevices,
-          trustedDeviceExpireDays,
-          sessionTimeoutMinutes,
-          maxFailedLoginAttempts,
-        }),
+      await securityService.updateSecurityPolicy(tenantId, {
+        mfaRequirement,
+        allowTrustedDevices,
+        trustedDeviceExpireDays,
+        sessionTimeoutMinutes,
+        maxFailedLoginAttempts,
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to update policy');
-      }
 
       setSuccess(t('security.policyUpdated'));
       await fetchSecurityData();
@@ -131,16 +122,7 @@ export default function SecurityCenterPage() {
       const userId = 'current-user-id'; // Should be from auth context
       const userEmail = 'user@example.com'; // Should be from auth context
 
-      const response = await fetch(`http://localhost:7000/api/tenant/mfa/totp/begin?userId=${userId}&userEmail=${userEmail}`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to begin TOTP enrollment');
-      }
-
-      const data = await response.json();
+      const data = await securityService.beginTotpEnrollment(userId, userEmail);
       setTotpSecret(data.secret);
       setTotpQrCode(data.qrCodeUri);
       setShowTotpEnrollment(true);
@@ -155,19 +137,7 @@ export default function SecurityCenterPage() {
     try {
       const userId = 'current-user-id'; // Should be from auth context
 
-      const response = await fetch(`http://localhost:7000/api/tenant/mfa/totp/confirm?userId=${userId}&tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          secret: totpSecret,
-          code: totpCode,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Invalid TOTP code');
-      }
+      await securityService.confirmTotpEnrollment(userId, tenantId, totpSecret, totpCode);
 
       setSuccess(t('security.totpEnrolled'));
       setShowTotpEnrollment(false);
@@ -183,16 +153,7 @@ export default function SecurityCenterPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/security/policy/org-unit-rules?tenantId=${tenantId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(orgUnitRules),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update org unit rules');
-      }
+      await securityService.updateOrgUnitMFARules(tenantId, orgUnitRules);
 
       setSuccess(t('security.orgUnitRulesUpdated') || 'Org unit rules updated successfully');
       setShowOrgUnitRulesModal(false);

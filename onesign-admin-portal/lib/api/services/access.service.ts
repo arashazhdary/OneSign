@@ -114,6 +114,82 @@ export class AccessService {
     const response = await this.client.get<any[]>('/api/tenant/privileged-access/requests', { tenantId });
     return response.data;
   }
+
+  // Access Request Details
+
+  /**
+   * Get access request by ID
+   */
+  async getAccessRequestById(tenantId: string, requestId: string): Promise<any> {
+    const response = await this.client.get(`/api/tenant/access-requests/${requestId}`, { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Get access request timeline
+   */
+  async getAccessRequestTimeline(tenantId: string, requestId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>(
+      `/api/tenant/access-requests/${requestId}/timeline`,
+      { tenantId }
+    );
+    return response.data;
+  }
+
+  /**
+   * Get access request audit trail
+   */
+  async getAccessRequestAuditTrail(tenantId: string, requestId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>(
+      `/api/tenant/access-requests/${requestId}/audit-trail`,
+      { tenantId }
+    );
+    return response.data;
+  }
+
+  /**
+   * Approve access request
+   */
+  async approveAccessRequest(tenantId: string, requestId: string, comments?: string): Promise<any> {
+    const response = await this.client.post(
+      `/api/tenant/access-requests/${requestId}/approve`,
+      { tenantId, comments }
+    );
+    return response.data;
+  }
+
+  /**
+   * Reject access request
+   */
+  async rejectAccessRequest(tenantId: string, requestId: string, comments?: string): Promise<any> {
+    const response = await this.client.post(
+      `/api/tenant/access-requests/${requestId}/reject`,
+      { tenantId, comments }
+    );
+    return response.data;
+  }
+
+  /**
+   * Add comment to access request
+   */
+  async addAccessRequestComment(tenantId: string, requestId: string, content: string): Promise<any> {
+    const response = await this.client.post(
+      `/api/tenant/access-requests/${requestId}/comments`,
+      { tenantId, content }
+    );
+    return response.data;
+  }
+
+  /**
+   * Withdraw access request
+   */
+  async withdrawAccessRequest(tenantId: string, requestId: string): Promise<any> {
+    const response = await this.client.post(
+      `/api/tenant/access-requests/${requestId}/withdraw`,
+      { tenantId }
+    );
+    return response.data;
+  }
 }
 
 // Export singleton instance

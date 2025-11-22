@@ -26,6 +26,102 @@ export class HuntingService {
   }
 
   /**
+   * Get global templates
+   */
+  async getGlobalTemplates(params?: any): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/global/hunting/templates', params);
+    return response.data;
+  }
+
+  /**
+   * Get global template by ID
+   */
+  async getGlobalTemplate(id: string): Promise<any> {
+    const response = await this.client.get<any>(`/api/global/hunting/templates/${id}`);
+    return response.data;
+  }
+
+  /**
+   * Create global template
+   */
+  async createGlobalTemplate(data: any): Promise<any> {
+    const response = await this.client.post<any>('/api/global/hunting/templates', data);
+    return response.data;
+  }
+
+  /**
+   * Update global template
+   */
+  async updateGlobalTemplate(id: string, data: any): Promise<any> {
+    const response = await this.client.put<any>(`/api/global/hunting/templates/${id}`, data);
+    return response.data;
+  }
+
+  /**
+   * Delete global template
+   */
+  async deleteGlobalTemplate(id: string): Promise<void> {
+    await this.client.delete(`/api/global/hunting/templates/${id}`);
+  }
+
+  /**
+   * Publish global template
+   */
+  async publishGlobalTemplate(id: string, userId: string): Promise<void> {
+    await this.client.post(`/api/global/hunting/templates/${id}/publish`, { userId });
+  }
+
+  /**
+   * Unpublish global template
+   */
+  async unpublishGlobalTemplate(id: string, userId: string): Promise<void> {
+    await this.client.post(`/api/global/hunting/templates/${id}/unpublish`, { userId });
+  }
+
+  /**
+   * Update global scheduled hunt (alias)
+   */
+  async updateGlobalScheduled(id: string, data: any): Promise<any> {
+    return this.updateGlobalScheduledHunt(id, data);
+  }
+
+  /**
+   * Delete global scheduled hunt (alias)
+   */
+  async deleteGlobalScheduled(id: string): Promise<void> {
+    return this.deleteGlobalScheduledHunt(id);
+  }
+
+  /**
+   * Enable global scheduled hunt
+   */
+  async enableGlobalScheduledHunt(id: string, userId: string): Promise<void> {
+    await this.client.post(`/api/global/hunting/scheduled/${id}/enable`, { userId });
+  }
+
+  /**
+   * Disable global scheduled hunt
+   */
+  async disableGlobalScheduledHunt(id: string, userId: string): Promise<void> {
+    await this.client.post(`/api/global/hunting/scheduled/${id}/disable`, { userId });
+  }
+
+  /**
+   * Run global scheduled hunt now
+   */
+  async runGlobalScheduledHuntNow(id: string, userId: string): Promise<void> {
+    await this.client.post(`/api/global/hunting/scheduled/${id}/run`, { userId });
+  }
+
+  /**
+   * Get global hunt results
+   */
+  async getGlobalHuntResults(params: any): Promise<any> {
+    const response = await this.client.get<any>('/api/global/hunting/results', params);
+    return response.data;
+  }
+
+  /**
    * Get global saved queries
    */
   async getGlobalSavedQueries(params?: any): Promise<any[]> {

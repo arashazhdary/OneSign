@@ -7,6 +7,7 @@ import { getTenantId } from '@/lib/tenant-context';
 import LoadingOverlay from '@/app/components/LoadingOverlay';
 import Modal from '@/app/components/Modal';
 import StatusBadge from '@/app/components/StatusBadge';
+import { platformService } from '@/lib/api/services/platform.service';
 
 // Types
 interface OrgUnit {
@@ -137,16 +138,7 @@ export default function OrgUnitDetailPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/org-units/${orgUnitId}?tenantId=${tenantId}`,
-        { credentials: 'include' }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch org unit');
-      }
-
-      const data = await response.json();
+      const data = await platformService.getOrgUnit(tenantId, orgUnitId);
       setOrgUnit(data);
       setEditForm({
         name: data.name || '',
@@ -161,15 +153,8 @@ export default function OrgUnitDetailPage() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/org-units/${orgUnitId}/users?tenantId=${tenantId}`,
-        { credentials: 'include' }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(data);
-      }
+      const data = await platformService.getOrgUnitUsers(tenantId, orgUnitId);
+      setUsers(data);
     } catch (err) {
       console.error('Failed to fetch users:', err);
     }
@@ -177,15 +162,8 @@ export default function OrgUnitDetailPage() {
 
   const fetchApplications = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/org-units/${orgUnitId}/applications?tenantId=${tenantId}`,
-        { credentials: 'include' }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setApplications(data);
-      }
+      const data = await platformService.getOrgUnitApplications(tenantId, orgUnitId);
+      setApplications(data);
     } catch (err) {
       console.error('Failed to fetch applications:', err);
     }
@@ -193,15 +171,8 @@ export default function OrgUnitDetailPage() {
 
   const fetchPolicies = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/org-units/${orgUnitId}/policies?tenantId=${tenantId}`,
-        { credentials: 'include' }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setPolicies(data);
-      }
+      const data = await platformService.getOrgUnitPolicies(tenantId, orgUnitId);
+      setPolicies(data);
     } catch (err) {
       console.error('Failed to fetch policies:', err);
     }
@@ -209,15 +180,8 @@ export default function OrgUnitDetailPage() {
 
   const fetchHierarchy = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/org-units/${orgUnitId}/hierarchy?tenantId=${tenantId}`,
-        { credentials: 'include' }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setHierarchy(data);
-      }
+      const data = await platformService.getOrgUnitHierarchy(tenantId, orgUnitId);
+      setHierarchy(data);
     } catch (err) {
       console.error('Failed to fetch hierarchy:', err);
     }
@@ -225,15 +189,8 @@ export default function OrgUnitDetailPage() {
 
   const fetchStatistics = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/org-units/${orgUnitId}/statistics?tenantId=${tenantId}`,
-        { credentials: 'include' }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setStatistics(data);
-      }
+      const data = await platformService.getOrgUnitStatistics(tenantId, orgUnitId);
+      setStatistics(data);
     } catch (err) {
       console.error('Failed to fetch statistics:', err);
     }
@@ -244,17 +201,7 @@ export default function OrgUnitDetailPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/org-units/${orgUnitId}`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ tenantId, ...editForm }),
-        }
-      );
-
-      if (!response.ok) throw new Error('Failed to update org unit');
+      await platformService.updateOrgUnit(tenantId, orgUnitId, editForm);
 
       setSuccess('Org unit updated successfully');
       setShowEditModal(false);
@@ -269,12 +216,7 @@ export default function OrgUnitDetailPage() {
   const handleRemoveUser = async (userId: string) => {
     if (!confirm('Are you sure you want to remove this user from the org unit?')) return;
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/org-units/${orgUnitId}/users/${userId}?tenantId=${tenantId}`,
-        { method: 'DELETE', credentials: 'include' }
-      );
-
-      if (!response.ok) throw new Error('Failed to remove user');
+      await platformService.removeOrgUnitUser(tenantId, orgUnitId, userId);
 
       setSuccess('User removed successfully');
       fetchUsers();
@@ -286,12 +228,7 @@ export default function OrgUnitDetailPage() {
   const handleRemoveApplication = async (applicationId: string) => {
     if (!confirm('Are you sure you want to remove this application from the org unit?')) return;
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/org-units/${orgUnitId}/applications/${applicationId}?tenantId=${tenantId}`,
-        { method: 'DELETE', credentials: 'include' }
-      );
-
-      if (!response.ok) throw new Error('Failed to remove application');
+      await platformService.removeOrgUnitApplication(tenantId, orgUnitId, applicationId);
 
       setSuccess('Application removed successfully');
       fetchApplications();

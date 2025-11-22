@@ -329,12 +329,23 @@ export class ApplicationsService {
   // Redirect URIs Management
 
   /**
+   * Get application redirect URIs
+   */
+  async getRedirectURIs(tenantId: string, applicationId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>(
+      `/api/tenant/applications/${applicationId}/redirect-uris`,
+      { tenantId }
+    );
+    return response.data;
+  }
+
+  /**
    * Add redirect URI to application
    */
-  async addRedirectUri(tenantId: string, applicationId: string, uri: string): Promise<any> {
+  async addRedirectUri(tenantId: string, applicationId: string, uri: string, type?: string): Promise<any> {
     const response = await this.client.post(
       `/api/tenant/applications/${applicationId}/redirect-uris`,
-      { tenantId, uri }
+      { tenantId, uri, type }
     );
     return response.data;
   }
@@ -342,8 +353,8 @@ export class ApplicationsService {
   /**
    * Remove redirect URI from application
    */
-  async removeRedirectUri(tenantId: string, redirectUriId: string): Promise<void> {
-    await this.client.delete(`/api/tenant/applications/redirect-uris/${redirectUriId}`, {
+  async removeRedirectUri(tenantId: string, applicationId: string, redirectUriId: string): Promise<void> {
+    await this.client.delete(`/api/tenant/applications/${applicationId}/redirect-uris/${redirectUriId}`, {
       params: { tenantId },
     });
   }
@@ -351,16 +362,27 @@ export class ApplicationsService {
   // Client Secrets Management
 
   /**
+   * Get application client secrets
+   */
+  async getClientSecrets(tenantId: string, applicationId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>(
+      `/api/tenant/applications/${applicationId}/secrets`,
+      { tenantId }
+    );
+    return response.data;
+  }
+
+  /**
    * Add client secret to application
    */
   async addClientSecret(
     tenantId: string,
     applicationId: string,
-    description: string
+    name: string
   ): Promise<any> {
     const response = await this.client.post(
       `/api/tenant/applications/${applicationId}/secrets`,
-      { tenantId, description }
+      { tenantId, name }
     );
     return response.data;
   }
@@ -368,10 +390,23 @@ export class ApplicationsService {
   /**
    * Remove client secret from application
    */
-  async removeClientSecret(tenantId: string, secretId: string): Promise<void> {
-    await this.client.delete(`/api/tenant/applications/secrets/${secretId}`, {
+  async removeClientSecret(tenantId: string, applicationId: string, secretId: string): Promise<void> {
+    await this.client.delete(`/api/tenant/applications/${applicationId}/secrets/${secretId}`, {
       params: { tenantId },
     });
+  }
+
+  // Application Permissions
+
+  /**
+   * Get application permissions
+   */
+  async getPermissions(tenantId: string, applicationId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>(
+      `/api/tenant/applications/${applicationId}/permissions`,
+      { tenantId }
+    );
+    return response.data;
   }
 
   // Organization Units Assignment
@@ -399,6 +434,19 @@ export class ApplicationsService {
       tenantId,
       orgUnitIds,
     });
+  }
+
+  // Application Audit Log
+
+  /**
+   * Get application audit log
+   */
+  async getAuditLog(tenantId: string, applicationId: string, pageSize?: number): Promise<any[]> {
+    const response = await this.client.get<any[]>(
+      `/api/tenant/applications/${applicationId}/audit-log`,
+      { tenantId, pageSize }
+    );
+    return response.data;
   }
 }
 

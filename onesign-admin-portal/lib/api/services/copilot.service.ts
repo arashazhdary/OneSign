@@ -220,6 +220,111 @@ export class CopilotService {
       comment,
     });
   }
+
+  // Global Copilot Management
+
+  /**
+   * Get global copilot settings
+   */
+  async getGlobalSettings(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/copilot/settings');
+    return response.data;
+  }
+
+  /**
+   * Update global copilot settings
+   */
+  async updateGlobalSettings(data: any): Promise<any> {
+    const response = await this.client.put<any>('/api/global/copilot/settings', data);
+    return response.data;
+  }
+
+  /**
+   * Get global copilot analytics
+   */
+  async getGlobalAnalytics(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/copilot/analytics');
+    return response.data;
+  }
+
+  /**
+   * Get global copilot conversations
+   */
+  async getGlobalConversations(params: { page: number; pageSize: number }): Promise<any> {
+    const response = await this.client.get<any>('/api/global/copilot/conversations', params);
+    return response.data;
+  }
+
+  /**
+   * Get global conversation by ID
+   */
+  async getGlobalConversation(conversationId: string): Promise<any> {
+    const response = await this.client.get<any>(`/api/global/copilot/conversations/${conversationId}`);
+    return response.data;
+  }
+
+  /**
+   * Get global platform insights
+   */
+  async getGlobalPlatformInsights(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/copilot/platform-insights');
+    return response.data;
+  }
+
+  /**
+   * Get global recommendations
+   */
+  async getGlobalRecommendations(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/copilot/recommendations');
+    return response.data;
+  }
+
+  /**
+   * Get global alerts
+   */
+  async getGlobalAlerts(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/copilot/alerts');
+    return response.data;
+  }
+
+  /**
+   * Acknowledge global alert
+   */
+  async acknowledgeGlobalAlert(alertId: string): Promise<void> {
+    await this.client.post(`/api/global/copilot/alerts/${alertId}/acknowledge`);
+  }
+
+  /**
+   * Get knowledge base status
+   */
+  async getKnowledgeBaseStatus(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/copilot/knowledge-base/status');
+    return response.data;
+  }
+
+  /**
+   * Analyze all tenants
+   */
+  async analyzeTenants(data?: any): Promise<any> {
+    const response = await this.client.post<any>('/api/global/copilot/analyze-tenants', data || {});
+    return response.data;
+  }
+
+  /**
+   * Execute global query
+   */
+  async executeGlobalQuery(query: string): Promise<any> {
+    const response = await this.client.post<any>('/api/global/copilot/query', { query });
+    return response.data;
+  }
+
+  /**
+   * Execute global action
+   */
+  async executeGlobalAction(command: string): Promise<any> {
+    const response = await this.client.post<any>('/api/global/copilot/actions/execute', { command });
+    return response.data;
+  }
 }
 
 // Export singleton instance

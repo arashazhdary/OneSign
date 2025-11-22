@@ -739,6 +739,120 @@ export class SecurityService {
       entityId
     });
   }
+
+  // Security Policy Management
+
+  /**
+   * Update security policy
+   */
+  async updateSecurityPolicy(tenantId: string, data: any): Promise<any> {
+    const response = await this.client.put<any>('/api/tenant/security/policy', { ...data, tenantId });
+    return response.data;
+  }
+
+  // TOTP Enrollment
+
+  /**
+   * Begin TOTP enrollment
+   */
+  async beginTotpEnrollment(userId: string, userEmail: string): Promise<any> {
+    const response = await this.client.post<any>('/api/tenant/mfa/totp/begin', {}, { userId, userEmail });
+    return response.data;
+  }
+
+  /**
+   * Confirm TOTP enrollment
+   */
+  async confirmTotpEnrollment(userId: string, tenantId: string, secret: string, code: string): Promise<any> {
+    const response = await this.client.post<any>('/api/tenant/mfa/totp/confirm', { secret, code }, { userId, tenantId });
+    return response.data;
+  }
+
+  // Policy Detail Management
+
+  /**
+   * Get policy by ID
+   */
+  async getPolicyById(tenantId: string, policyId: string): Promise<any> {
+    const response = await this.client.get<any>(`/api/tenant/policies/${policyId}`, { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Get policy applied entities
+   */
+  async getPolicyAppliedEntities(tenantId: string, policyId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>(`/api/tenant/policies/${policyId}/applied`, { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Get policy audit log
+   */
+  async getPolicyAuditLog(tenantId: string, policyId: string, pageSize?: number): Promise<any[]> {
+    const params: any = { tenantId };
+    if (pageSize) params.pageSize = pageSize;
+    const response = await this.client.get<any[]>(`/api/tenant/policies/${policyId}/audit-log`, params);
+    return response.data;
+  }
+
+  /**
+   * Get policy impact analysis
+   */
+  async getPolicyImpactAnalysis(tenantId: string, policyId: string): Promise<any> {
+    const response = await this.client.get<any>(`/api/tenant/policies/${policyId}/impact-analysis`, { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Activate policy
+   */
+  async activatePolicy(tenantId: string, policyId: string): Promise<void> {
+    await this.client.post(`/api/tenant/policies/${policyId}/activate`, { tenantId });
+  }
+
+  /**
+   * Deactivate policy
+   */
+  async deactivatePolicy(tenantId: string, policyId: string): Promise<void> {
+    await this.client.post(`/api/tenant/policies/${policyId}/deactivate`, { tenantId });
+  }
+
+  /**
+   * Test policy
+   */
+  async testPolicy(tenantId: string, policyId: string, userId: string): Promise<any> {
+    const response = await this.client.post<any>(`/api/tenant/policies/${policyId}/test`, { tenantId, userId });
+    return response.data;
+  }
+
+  /**
+   * Apply policy to entity
+   */
+  async applyPolicyToEntity(tenantId: string, policyId: string, entityType: string, entityId: string): Promise<void> {
+    await this.client.post(`/api/tenant/policies/${policyId}/apply`, {
+      tenantId,
+      entityType,
+      entityId
+    });
+  }
+
+  // Risk Event Detail Management
+
+  /**
+   * Get risk event timeline
+   */
+  async getRiskEventTimeline(tenantId: string, eventId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>(`/api/tenant/risk-events/${eventId}/timeline`, { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Resolve risk event
+   */
+  async resolveRiskEvent(tenantId: string, eventId: string): Promise<void> {
+    await this.client.post(`/api/tenant/risk-events/${eventId}/resolve`, { tenantId });
+  }
 }
 
 // Export singleton instance
