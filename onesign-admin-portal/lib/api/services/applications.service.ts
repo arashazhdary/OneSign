@@ -448,6 +448,16 @@ export class ApplicationsService {
     );
     return response.data;
   }
+
+  // Organization Units Tree
+
+  /**
+   * Get organization units tree
+   */
+  async getOrgUnitsTree(tenantId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/tenant/org-units/tree', { tenantId });
+    return response.data;
+  }
 }
 
 // Export singleton instance

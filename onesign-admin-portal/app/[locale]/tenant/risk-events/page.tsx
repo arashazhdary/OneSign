@@ -102,24 +102,15 @@ export default function RiskEventsPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/risk-events?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          userId: newEventUserId,
-          eventType: newEventType,
-          riskLevel: newRiskLevel,
-          ipAddress: newIpAddress || null,
-          userAgent: newUserAgent || null,
-          location: newLocation || null,
-          details: newDetails || null,
-        }),
+      await securityService.createRiskEvent(tenantId, {
+        userId: newEventUserId,
+        eventType: newEventType,
+        riskLevel: newRiskLevel,
+        ipAddress: newIpAddress || null,
+        userAgent: newUserAgent || null,
+        location: newLocation || null,
+        details: newDetails || null,
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to create risk event');
-      }
 
       setSuccess(t('riskEvents.eventCreated') || 'Risk event created successfully');
       setShowCreateModal(false);

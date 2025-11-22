@@ -158,12 +158,8 @@ export default function IntegrationHubPage() {
   const fetchSyncLogs = async () => {
     if (!tenantId) return;
     try {
-      // Note: sync logs endpoint not yet in platformService, keeping as fetch for now
-      const response = await fetch(`http://localhost:7000/api/tenant/integrations/sync-logs?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setSyncLogs(data.items || []);
-      }
+      const data = await platformService.getAllIntegrationSyncLogs(tenantId);
+      setSyncLogs(data.items || data || []);
     } catch (error) {
       console.error('Error fetching sync logs:', error);
     }

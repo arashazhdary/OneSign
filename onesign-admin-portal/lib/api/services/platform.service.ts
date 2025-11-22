@@ -285,6 +285,25 @@ export class PlatformService {
     await this.client.post(endpoint, { tenantId });
   }
 
+  /**
+   * Get integration sync logs for a specific integration
+   */
+  async getIntegrationSyncLogs(integrationId: string, tenantId?: string): Promise<any[]> {
+    const endpoint = tenantId
+      ? `/api/tenant/integrations/${integrationId}/sync-logs`
+      : `/api/global/integrations/${integrationId}/sync-logs`;
+    const response = await this.client.get<any[]>(endpoint, { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Get all integration sync logs
+   */
+  async getAllIntegrationSyncLogs(tenantId: string): Promise<any> {
+    const response = await this.client.get<any>('/api/tenant/integrations/sync-logs', { tenantId });
+    return response.data;
+  }
+
   // Webhooks
 
   /**

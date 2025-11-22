@@ -145,13 +145,8 @@ export default function TenantAppsPage() {
   const fetchOrgTree = async () => {
     if (!tenantId) return;
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/org-units/tree?tenantId=${tenantId}`, {
-        headers: { 'Accept-Language': locale }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setOrgTree(data);
-      }
+      const data = await applicationsService.getOrgUnitsTree(tenantId);
+      setOrgTree(data || []);
     } catch (error) {
       console.error('Error fetching org tree:', error);
     }

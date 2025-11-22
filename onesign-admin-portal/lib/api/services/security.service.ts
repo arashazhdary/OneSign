@@ -123,6 +123,17 @@ export class SecurityService {
   }
 
   /**
+   * Create risk event
+   */
+  async createRiskEvent(tenantId: string, data: Partial<RiskEvent>): Promise<RiskEvent> {
+    const response = await this.client.post<RiskEvent>(
+      '/api/tenant/risk-events',
+      { ...data, tenantId }
+    );
+    return response.data;
+  }
+
+  /**
    * Update risk event status
    */
   async updateRiskEventStatus(

@@ -94,16 +94,9 @@ export default function CryptographyManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/crypto/keysets/${id}/rollover`, {
-        method: 'POST',
-      });
-      if (response.ok) {
-        setSuccess('Keyset rollover initiated successfully');
-        fetchKeySets();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      await platformService.rolloverCryptoKey(id);
+      setSuccess('Keyset rollover initiated successfully');
+      fetchKeySets();
     } catch (err) {
       setError(t('common.error'));
     }
@@ -113,16 +106,9 @@ export default function CryptographyManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/crypto/keyversions/${versionId}/revoke`, {
-        method: 'POST',
-      });
-      if (response.ok) {
-        setSuccess('Key version revoked successfully');
-        fetchKeySets();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      await platformService.revokeCryptoKeyVersion(versionId);
+      setSuccess('Key version revoked successfully');
+      fetchKeySets();
     } catch (err) {
       setError(t('common.error'));
     }
@@ -132,14 +118,8 @@ export default function CryptographyManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/crypto/rotation-policies');
-      if (response.ok) {
-        const data = await response.json();
-        setRotationPolicies(data.policies || data || []);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      const data = await platformService.getCryptoRotationPolicies();
+      setRotationPolicies(data || []);
     } catch (err) {
       setError(t('common.error'));
     } finally {
