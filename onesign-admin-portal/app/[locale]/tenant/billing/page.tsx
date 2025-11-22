@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { billingService } from '@/lib/api/services';
 
 interface UsageSummary {
   period: string;
@@ -72,11 +73,8 @@ export default function BillingPage() {
     if (!tenantId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/billing/summary?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setUsageSummary(data);
-      }
+      const data = await billingService.getBillingSummary(tenantId);
+      setUsageSummary(data);
     } catch (error) {
       console.error('Error fetching usage summary:', error);
     }
@@ -86,11 +84,8 @@ export default function BillingPage() {
     if (!tenantId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/billing/quota-status?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setQuotaStatus(data);
-      }
+      const data = await billingService.getQuotaStatus(tenantId);
+      setQuotaStatus(data);
     } catch (error) {
       console.error('Error fetching quota status:', error);
     }
@@ -100,11 +95,8 @@ export default function BillingPage() {
     if (!tenantId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/billing/subscription?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setSubscription(data);
-      }
+      const data = await billingService.getCurrentSubscription(tenantId);
+      setSubscription(data);
     } catch (error) {
       console.error('Error fetching subscription:', error);
     }
@@ -117,25 +109,12 @@ export default function BillingPage() {
     if (!tenantId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/billing/upgrade-requests?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          targetPlanId: targetPlan,
-          comments: upgradeComments
-        })
-      });
-
-      if (response.ok) {
-        setShowUpgradeModal(false);
-        setUpgradeComments('');
-        setSuccess(t('tenant.billing.upgradeRequested') || 'Upgrade request submitted successfully. Our team will contact you soon.');
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (error) {
-      setError(t('common.error'));
+      await billingService.requestUpgrade(tenantId, targetPlan, upgradeComments);
+      setShowUpgradeModal(false);
+      setUpgradeComments('');
+      setSuccess(t('tenant.billing.upgradeRequested') || 'Upgrade request submitted successfully. Our team will contact you soon.');
+    } catch (error: any) {
+      setError(error?.message || t('common.error'));
       console.error('Error requesting upgrade:', error);
     }
   };

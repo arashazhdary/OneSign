@@ -3,15 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import * as AutomationAPI from '@/lib/api/automation';
 import {
-  getWorkflows,
-  getExecutions,
-  getAvailableTemplates,
-  createWorkflow,
-  deleteWorkflow,
-  enableWorkflow,
-  disableWorkflow,
-  cloneTemplate,
   AutomationWorkflowDto,
   AutomationExecutionDto,
   EVENT_TYPES,
@@ -48,12 +41,6 @@ interface ExecutionDetail {
   }[];
 }
 
-interface AvailableTrigger {
-  eventType: string;
-  sourceModule: string;
-  description: string;
-  samplePayload: string;
-}
 
 type Tab = 'workflows' | 'executionHistory' | 'templates' | 'triggers';
 
@@ -69,7 +56,7 @@ export default function TenantAutomationPage() {
   const [workflows, setWorkflows] = useState<AutomationWorkflowDto[]>([]);
   const [executions, setExecutions] = useState<AutomationExecutionDto[]>([]);
   const [templates, setTemplates] = useState<AutomationWorkflowDto[]>([]);
-  const [availableTriggers, setAvailableTriggers] = useState<AvailableTrigger[]>([]);
+  const [availableTriggers, setAvailableTriggers] = useState<AutomationAPI.AvailableTrigger[]>([]);
   const [workflowExecutions, setWorkflowExecutions] = useState<WorkflowExecution[]>([]);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string>('');
   const [executionDetail, setExecutionDetail] = useState<ExecutionDetail | null>(null);
@@ -104,21 +91,18 @@ export default function TenantAutomationPage() {
     setError('');
     try {
       if (activeTab === 'workflows') {
-        const data = await getWorkflows(tenantId);
+        const data = await AutomationAPI.getWorkflows(tenantId);
         setWorkflows(data);
       } else if (activeTab === 'executionHistory') {
-        const data = await getExecutions(tenantId, { page: executionPage, pageSize: 20 });
+        const data = await AutomationAPI.getExecutions(tenantId, { page: executionPage, pageSize: 20 });
         setExecutions(data.items);
         setTotalExecutions(data.totalCount);
       } else if (activeTab === 'templates') {
-        const data = await getAvailableTemplates();
+        const data = await AutomationAPI.getAvailableTemplates();
         setTemplates(data);
       } else if (activeTab === 'triggers') {
-        const response = await fetch(`http://localhost:7000/api/tenant/automation/triggers/available?tenantId=${tenantId}`);
-        if (response.ok) {
-          const data = await response.json();
-          setAvailableTriggers(data);
-        }
+        const data = await AutomationAPI.getAvailableTriggers(tenantId);
+        setAvailableTriggers(data);
       }
     } catch (err) {
       setError(t('common.error'));
@@ -131,11 +115,8 @@ export default function TenantAutomationPage() {
   const fetchWorkflowExecutions = async (workflowId: string) => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/automation/workflows/${workflowId}/executions?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setWorkflowExecutions(data.items || []);
-      }
+      const data = await AutomationAPI.getWorkflowExecutions(tenantId, workflowId);
+      setWorkflowExecutions(data.items || []);
     } catch (err) {
       setError(t('common.error'));
     } finally {
@@ -146,12 +127,9 @@ export default function TenantAutomationPage() {
   const fetchExecutionDetail = async (workflowId: string, execId: string) => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/automation/workflows/${workflowId}/executions/${execId}?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setExecutionDetail(data);
-        setShowExecutionDetail(true);
-      }
+      const data = await AutomationAPI.getExecutionDetail(tenantId, workflowId, execId);
+      setExecutionDetail(data);
+      setShowExecutionDetail(true);
     } catch (err) {
       setError(t('common.error'));
     } finally {
@@ -161,46 +139,28 @@ export default function TenantAutomationPage() {
 
   const handleTestWorkflow = async (workflowId: string) => {
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/automation/workflows/${workflowId}/test?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setSuccess(`Test completed: ${data.result}`);
-        fetchData();
-      } else {
-        const errorData = await response.json();
-        setError(errorData.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      const data = await AutomationAPI.testWorkflowWithPayload(workflowId, tenantId, userId);
+      setSuccess(`Test completed: ${data.result}`);
+      fetchData();
+    } catch (err: any) {
+      setError(err?.message || t('common.error'));
     }
   };
 
   const handleCreateTemplate = async (workflow: AutomationWorkflowDto) => {
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/automation/templates?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: workflow.name,
-          description: workflow.description,
-          severity: workflow.severity,
-          triggers: workflow.triggers,
-          conditions: workflow.conditions,
-          actions: workflow.actions,
-          userId,
-        }),
+      await AutomationAPI.createTemplate(tenantId, {
+        name: workflow.name,
+        description: workflow.description,
+        severity: workflow.severity,
+        triggers: workflow.triggers,
+        conditions: workflow.conditions,
+        actions: workflow.actions,
+        userId,
       });
-      if (response.ok) {
-        setSuccess('Template created successfully');
-        setActiveTab('templates');
-        fetchData();
-      } else {
-        setError(t('common.error'));
-      }
+      setSuccess('Template created successfully');
+      setActiveTab('templates');
+      fetchData();
     } catch (err) {
       setError(t('common.error'));
     }
@@ -211,7 +171,7 @@ export default function TenantAutomationPage() {
     setError('');
     setSuccess('');
     try {
-      await createWorkflow({
+      await AutomationAPI.createWorkflow({
         tenantId,
         userId,
         ...newWorkflow,
@@ -236,7 +196,7 @@ export default function TenantAutomationPage() {
   const handleDeleteWorkflow = async (id: string) => {
     if (!confirm(t('automation.confirmDelete'))) return;
     try {
-      await deleteWorkflow(id, tenantId);
+      await AutomationAPI.deleteWorkflow(id, tenantId);
       setSuccess(t('automation.workflowDeleted'));
       fetchData();
     } catch (err) {
@@ -247,9 +207,9 @@ export default function TenantAutomationPage() {
   const handleToggleWorkflow = async (workflow: AutomationWorkflowDto) => {
     try {
       if (workflow.isEnabled) {
-        await disableWorkflow(workflow.id, tenantId, userId);
+        await AutomationAPI.disableWorkflow(workflow.id, tenantId, userId);
       } else {
-        await enableWorkflow(workflow.id, tenantId, userId);
+        await AutomationAPI.enableWorkflow(workflow.id, tenantId, userId);
       }
       fetchData();
     } catch (err) {
@@ -259,7 +219,7 @@ export default function TenantAutomationPage() {
 
   const handleCloneTemplate = async (template: AutomationWorkflowDto) => {
     try {
-      await cloneTemplate(template.id, tenantId, userId);
+      await AutomationAPI.cloneTemplate(template.id, tenantId, userId);
       setSuccess(t('automation.templateCloned'));
       setActiveTab('workflows');
       fetchData();

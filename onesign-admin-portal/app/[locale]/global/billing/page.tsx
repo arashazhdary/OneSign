@@ -5,6 +5,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import DataTable, { Column } from '@/app/components/DataTable';
 import Modal from '@/app/components/Modal';
 import StatusBadge from '@/app/components/StatusBadge';
+import { billingService } from '@/lib/api/services';
 
 interface Plan {
   id: string;
@@ -105,13 +106,8 @@ export default function GlobalBillingPage() {
 
   const fetchPlans = async () => {
     try {
-      const response = await fetch('http://localhost:7000/api/global/billing/plans', {
-        headers: { 'Accept-Language': locale }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setPlans(data);
-      }
+      const data = await billingService.getGlobalPlans();
+      setPlans(data);
     } catch (err) {
       console.error('Error fetching plans:', err);
     } finally {
@@ -121,13 +117,8 @@ export default function GlobalBillingPage() {
 
   const fetchSubscriptions = async () => {
     try {
-      const response = await fetch('http://localhost:7000/api/global/billing/tenants', {
-        headers: { 'Accept-Language': locale }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setSubscriptions(data);
-      }
+      const data = await billingService.getGlobalTenantSubscriptions();
+      setSubscriptions(data);
     } catch (err) {
       console.error('Error fetching subscriptions:', err);
     }
@@ -135,13 +126,8 @@ export default function GlobalBillingPage() {
 
   const fetchUsageData = async () => {
     try {
-      const response = await fetch('http://localhost:7000/api/global/billing/usage', {
-        headers: { 'Accept-Language': locale }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setUsageData(data);
-      }
+      const data = await billingService.getGlobalUsageData();
+      setUsageData(data);
     } catch (err) {
       console.error('Error fetching usage data:', err);
     }
@@ -149,13 +135,8 @@ export default function GlobalBillingPage() {
 
   const fetchRevenueData = async () => {
     try {
-      const response = await fetch('http://localhost:7000/api/global/billing/revenue', {
-        headers: { 'Accept-Language': locale }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setRevenueData(data);
-      }
+      const data = await billingService.getGlobalRevenueData();
+      setRevenueData(data);
     } catch (err) {
       console.error('Error fetching revenue data:', err);
     }
@@ -163,13 +144,8 @@ export default function GlobalBillingPage() {
 
   const fetchInvoices = async () => {
     try {
-      const response = await fetch('http://localhost:7000/api/global/billing/invoices', {
-        headers: { 'Accept-Language': locale }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setInvoices(data);
-      }
+      const data = await billingService.getGlobalInvoices();
+      setInvoices(data);
     } catch (err) {
       console.error('Error fetching invoices:', err);
     }
@@ -181,34 +157,21 @@ export default function GlobalBillingPage() {
     setSuccess('');
 
     try {
-      const response = await fetch('http://localhost:7000/api/global/billing/plans', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept-Language': locale
-        },
-        body: JSON.stringify({
-          name: planName,
-          description: planDescription,
-          price: parseFloat(planPrice),
-          currency: planCurrency,
-          billingCycle: planBillingCycle,
-          maxUsers: parseInt(planMaxUsers),
-          maxApps: parseInt(planMaxApps)
-        })
+      await billingService.createGlobalPlan({
+        name: planName,
+        description: planDescription,
+        price: parseFloat(planPrice),
+        currency: planCurrency,
+        billingCycle: planBillingCycle,
+        maxUsers: parseInt(planMaxUsers),
+        maxApps: parseInt(planMaxApps)
       });
-
-      if (response.ok) {
-        setSuccess(t('global.billing.planCreated'));
-        setShowCreatePlanModal(false);
-        resetPlanForm();
-        fetchPlans();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      setSuccess(t('global.billing.planCreated'));
+      setShowCreatePlanModal(false);
+      resetPlanForm();
+      fetchPlans();
+    } catch (err: any) {
+      setError(err?.message || t('common.error'));
       console.error('Error creating plan:', err);
     }
   };
@@ -220,34 +183,21 @@ export default function GlobalBillingPage() {
     setSuccess('');
 
     try {
-      const response = await fetch(`http://localhost:7000/api/global/billing/plans/${selectedPlan.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept-Language': locale
-        },
-        body: JSON.stringify({
-          name: planName,
-          description: planDescription,
-          price: parseFloat(planPrice),
-          currency: planCurrency,
-          billingCycle: planBillingCycle,
-          maxUsers: parseInt(planMaxUsers),
-          maxApps: parseInt(planMaxApps)
-        })
+      await billingService.updateGlobalPlan(selectedPlan.id, {
+        name: planName,
+        description: planDescription,
+        price: parseFloat(planPrice),
+        currency: planCurrency,
+        billingCycle: planBillingCycle,
+        maxUsers: parseInt(planMaxUsers),
+        maxApps: parseInt(planMaxApps)
       });
-
-      if (response.ok) {
-        setSuccess(t('global.billing.planUpdated'));
-        setShowEditPlanModal(false);
-        resetPlanForm();
-        fetchPlans();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      setSuccess(t('global.billing.planUpdated'));
+      setShowEditPlanModal(false);
+      resetPlanForm();
+      fetchPlans();
+    } catch (err: any) {
+      setError(err?.message || t('common.error'));
       console.error('Error updating plan:', err);
     }
   };
@@ -258,32 +208,14 @@ export default function GlobalBillingPage() {
     setSuccess('');
 
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/global/billing/tenants/${selectedTenantId}/subscription`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept-Language': locale
-          },
-          body: JSON.stringify({
-            planId: selectedPlanId
-          })
-        }
-      );
-
-      if (response.ok) {
-        setSuccess(t('global.billing.subscriptionAssigned'));
-        setShowAssignSubscriptionModal(false);
-        setSelectedTenantId('');
-        setSelectedPlanId('');
-        fetchSubscriptions();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await billingService.assignSubscriptionToTenant(selectedTenantId, selectedPlanId);
+      setSuccess(t('global.billing.subscriptionAssigned'));
+      setShowAssignSubscriptionModal(false);
+      setSelectedTenantId('');
+      setSelectedPlanId('');
+      fetchSubscriptions();
+    } catch (err: any) {
+      setError(err?.message || t('common.error'));
       console.error('Error assigning subscription:', err);
     }
   };
@@ -293,24 +225,11 @@ export default function GlobalBillingPage() {
     setSuccess('');
 
     try {
-      const response = await fetch('http://localhost:7000/api/global/billing/invoices/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept-Language': locale
-        },
-        body: JSON.stringify({ tenantId })
-      });
-
-      if (response.ok) {
-        setSuccess(t('global.billing.invoiceGenerated'));
-        fetchInvoices();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await billingService.generateInvoice(tenantId);
+      setSuccess(t('global.billing.invoiceGenerated'));
+      fetchInvoices();
+    } catch (err: any) {
+      setError(err?.message || t('common.error'));
       console.error('Error generating invoice:', err);
     }
   };

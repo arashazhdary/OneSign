@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { usersService } from '@/lib/api/services';
 import {
   LineChart,
   Line,
@@ -102,35 +103,34 @@ export default function UserAnalyticsDashboard() {
 
     setLoading(true);
     try {
-      // Fetch users
-      const usersResponse = await fetch(
-        `http://localhost:7000/api/tenant/users?tenantId=${tenantId}&pageNumber=1&pageSize=1000`
-      );
+      // Fetch users using usersService
+      const usersData = await usersService.getUsers({
+        tenantId,
+        pageNumber: 1,
+        pageSize: 1000
+      });
 
-      if (usersResponse.ok) {
-        const usersData = await usersResponse.json();
-        const users = usersData.items || [];
+      const users = usersData.items || [];
 
-        // Calculate stats
-        const total = usersData.totalCount || 0;
-        const active = users.filter((u: any) => u.isActive).length;
-        const locked = users.filter((u: any) => u.isLocked).length;
-        const withMfa = users.filter((u: any) => u.mfaEnabled).length;
+      // Calculate stats
+      const total = usersData.totalCount || 0;
+      const active = users.filter((u: any) => u.isActive).length;
+      const locked = users.filter((u: any) => u.isLocked).length;
+      const withMfa = users.filter((u: any) => u.mfaEnabled).length;
 
-        setStats({
-          totalUsers: total,
-          activeUsers: active,
-          inactiveUsers: total - active,
-          lockedUsers: locked,
-          mfaAdoptionRate: total > 0 ? Math.round((withMfa / total) * 100) : 0
-        });
+      setStats({
+        totalUsers: total,
+        activeUsers: active,
+        inactiveUsers: total - active,
+        lockedUsers: locked,
+        mfaAdoptionRate: total > 0 ? Math.round((withMfa / total) * 100) : 0
+      });
 
-        // Generate top users
-        generateTopUsers(users);
+      // Generate top users
+      generateTopUsers(users);
 
-        // Generate auth methods
-        generateAuthMethods(users);
-      }
+      // Generate auth methods
+      generateAuthMethods(users);
 
       // Generate growth data
       generateGrowthData();

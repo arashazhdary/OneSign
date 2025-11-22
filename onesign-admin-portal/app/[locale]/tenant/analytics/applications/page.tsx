@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { applicationsService } from '@/lib/api/services';
 import {
   LineChart,
   Line,
@@ -109,38 +110,37 @@ export default function ApplicationAnalyticsDashboard() {
 
     setLoading(true);
     try {
-      // Fetch applications
-      const appsResponse = await fetch(
-        `http://localhost:7000/api/tenant/applications?tenantId=${tenantId}&pageNumber=1&pageSize=1000`
-      );
+      // Fetch applications using applicationsService
+      const appsData = await applicationsService.getApplications({
+        tenantId,
+        pageNumber: 1,
+        pageSize: 1000
+      });
 
-      if (appsResponse.ok) {
-        const appsData = await appsResponse.json();
-        const apps = appsData.items || [];
+      const apps = appsData.items || [];
 
-        // Calculate stats
-        const total = appsData.totalCount || 0;
-        const active = apps.filter((a: any) => a.isActive).length;
-        const unused = apps.filter((a: any) => !a.lastUsed ||
-          new Date(a.lastUsed) < new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-        ).length;
+      // Calculate stats
+      const total = appsData.totalCount || 0;
+      const active = apps.filter((a: any) => a.isActive).length;
+      const unused = apps.filter((a: any) => !a.lastUsed ||
+        new Date(a.lastUsed) < new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+      ).length;
 
-        setStats(prev => ({
-          ...prev,
-          totalApps: total,
-          activeApps: active,
-          unusedApps: unused
-        }));
+      setStats(prev => ({
+        ...prev,
+        totalApps: total,
+        activeApps: active,
+        unusedApps: unused
+      }));
 
-        // Generate most used apps
-        generateMostUsedApps(apps);
+      // Generate most used apps
+      generateMostUsedApps(apps);
 
-        // Generate protocols
-        generateProtocols(apps);
+      // Generate protocols
+      generateProtocols(apps);
 
-        // Generate health status
-        generateHealthStatus(apps);
-      }
+      // Generate health status
+      generateHealthStatus(apps);
 
       // Generate usage data
       generateUsageData();
