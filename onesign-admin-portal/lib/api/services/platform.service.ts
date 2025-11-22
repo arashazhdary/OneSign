@@ -578,6 +578,54 @@ export class PlatformService {
     const response = await this.client.post<any>(`/api/tenant/service-accounts/${id}/rotate`, { tenantId });
     return response.data;
   }
+
+  // Scopes Management
+
+  /**
+   * Get scopes
+   */
+  async getScopes(tenantId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/tenant/scopes', { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Create scope
+   */
+  async createScope(tenantId: string, data: any): Promise<any> {
+    const response = await this.client.post<any>('/api/tenant/scopes', { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Update scope
+   */
+  async updateScope(tenantId: string, scopeId: string, data: any): Promise<any> {
+    const response = await this.client.put<any>(`/api/tenant/scopes/${scopeId}`, { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Delete scope
+   */
+  async deleteScope(tenantId: string, scopeId: string): Promise<void> {
+    await this.client.delete(`/api/tenant/scopes/${scopeId}`, { params: { tenantId } });
+  }
+
+  /**
+   * Update scope status
+   */
+  async updateScopeStatus(tenantId: string, scopeId: string, isEnabled: boolean): Promise<void> {
+    await this.client.patch(`/api/tenant/scopes/${scopeId}/status`, { tenantId, isEnabled });
+  }
+
+  /**
+   * Get scope groups
+   */
+  async getScopeGroups(tenantId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/tenant/scope-groups', { tenantId });
+    return response.data;
+  }
 }
 
 // Export singleton instance

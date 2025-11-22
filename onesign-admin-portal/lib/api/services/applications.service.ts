@@ -325,6 +325,81 @@ export class ApplicationsService {
     );
     return response.data;
   }
+
+  // Redirect URIs Management
+
+  /**
+   * Add redirect URI to application
+   */
+  async addRedirectUri(tenantId: string, applicationId: string, uri: string): Promise<any> {
+    const response = await this.client.post(
+      `/api/tenant/applications/${applicationId}/redirect-uris`,
+      { tenantId, uri }
+    );
+    return response.data;
+  }
+
+  /**
+   * Remove redirect URI from application
+   */
+  async removeRedirectUri(tenantId: string, redirectUriId: string): Promise<void> {
+    await this.client.delete(`/api/tenant/applications/redirect-uris/${redirectUriId}`, {
+      params: { tenantId },
+    });
+  }
+
+  // Client Secrets Management
+
+  /**
+   * Add client secret to application
+   */
+  async addClientSecret(
+    tenantId: string,
+    applicationId: string,
+    description: string
+  ): Promise<any> {
+    const response = await this.client.post(
+      `/api/tenant/applications/${applicationId}/secrets`,
+      { tenantId, description }
+    );
+    return response.data;
+  }
+
+  /**
+   * Remove client secret from application
+   */
+  async removeClientSecret(tenantId: string, secretId: string): Promise<void> {
+    await this.client.delete(`/api/tenant/applications/secrets/${secretId}`, {
+      params: { tenantId },
+    });
+  }
+
+  // Organization Units Assignment
+
+  /**
+   * Get application's assigned org units
+   */
+  async getApplicationOrgUnits(tenantId: string, applicationId: string): Promise<any> {
+    const response = await this.client.get(
+      `/api/tenant/applications/${applicationId}/org-units`,
+      { tenantId }
+    );
+    return response.data;
+  }
+
+  /**
+   * Assign org units to application
+   */
+  async assignOrgUnits(
+    tenantId: string,
+    applicationId: string,
+    orgUnitIds: string[]
+  ): Promise<void> {
+    await this.client.put(`/api/tenant/applications/${applicationId}/org-units`, {
+      tenantId,
+      orgUnitIds,
+    });
+  }
 }
 
 // Export singleton instance

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
 import { getCurrentUserScope, CurrentUserScopeDto } from '@/lib/api/users';
+import { applicationsService } from '@/lib/api/services';
 
 interface Application {
   id: string;
@@ -95,45 +96,43 @@ export default function TenantAppsPage() {
 
   const fetchApplications = async () => {
     if (!tenantId) return;
-    
+
     try {
-      const url = `http://localhost:7000/api/tenant/applications?tenantId=${tenantId}&pageNumber=1&pageSize=100${selectedOrgUnitId ? `&orgUnitId=${selectedOrgUnitId}` : ''}`;
-      const response = await fetch(url);
-      if (response.ok) {
-        const data = await response.json();
-        const apps = data.items || [];
-        // Fetch details for each app to get redirect URIs
-        const appsWithDetails = await Promise.all(
-          apps.map(async (app: Application) => {
-            try {
-              const detailResponse = await fetch(`http://localhost:7000/api/tenant/applications/${app.id}?tenantId=${tenantId}`);
-              if (detailResponse.ok) {
-                const detailData = await detailResponse.json();
-                return {
-                  ...app,
-                  redirectUris: detailData.redirectUris || [],
-                  clientSecrets: detailData.clientSecrets || []
-                };
-              }
-            } catch (error) {
-              console.error(`Error fetching details for app ${app.id}:`, error);
-            }
+      const params: any = { tenantId, pageNumber: 1, pageSize: 100 };
+      if (selectedOrgUnitId) params.orgUnitId = selectedOrgUnitId;
+
+      const data = await applicationsService.getApplications(params);
+      const apps = data.items || [];
+
+      // Fetch details for each app to get redirect URIs
+      const appsWithDetails = await Promise.all(
+        apps.map(async (app: Application) => {
+          try {
+            const detailData = await applicationsService.getApplicationById(tenantId, app.id);
+            return {
+              ...app,
+              redirectUris: detailData.redirectUris || [],
+              clientSecrets: detailData.clientSecrets || []
+            };
+          } catch (error) {
+            console.error(`Error fetching details for app ${app.id}:`, error);
             return { ...app, redirectUris: [], clientSecrets: [] };
-          })
-        );
-        setApplications(appsWithDetails);
-        // Update selected app if modal is open
-        if (selectedAppForRedirectUris) {
-          const updatedApp = appsWithDetails.find(a => a.id === selectedAppForRedirectUris.id);
-          if (updatedApp) {
-            setSelectedAppForRedirectUris(updatedApp);
           }
+        })
+      );
+      setApplications(appsWithDetails);
+
+      // Update selected app if modal is open
+      if (selectedAppForRedirectUris) {
+        const updatedApp = appsWithDetails.find(a => a.id === selectedAppForRedirectUris.id);
+        if (updatedApp) {
+          setSelectedAppForRedirectUris(updatedApp);
         }
-        if (selectedAppForSecrets) {
-          const updatedApp = appsWithDetails.find(a => a.id === selectedAppForSecrets.id);
-          if (updatedApp) {
-            setSelectedAppForSecrets(updatedApp);
-          }
+      }
+      if (selectedAppForSecrets) {
+        const updatedApp = appsWithDetails.find(a => a.id === selectedAppForSecrets.id);
+        if (updatedApp) {
+          setSelectedAppForSecrets(updatedApp);
         }
       }
     } catch (error) {
@@ -181,13 +180,8 @@ export default function TenantAppsPage() {
   const handleAssignOrgUnits = async (app: Application) => {
     setSelectedAppForOrgUnits(app);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/applications/${app.id}/org-units?tenantId=${tenantId}`, {
-        headers: { 'Accept-Language': locale }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setSelectedOrgUnitIds(data.orgUnitIds || []);
-      }
+      const data = await applicationsService.getApplicationOrgUnits(tenantId, app.id);
+      setSelectedOrgUnitIds(data.orgUnitIds || []);
     } catch (error) {
       console.error('Error fetching application org units:', error);
     }
@@ -198,30 +192,15 @@ export default function TenantAppsPage() {
     if (!selectedAppForOrgUnits) return;
     setError('');
     setSuccess('');
-    
-    try {
-      const response = await fetch(`http://localhost:7000/api/tenant/applications/${selectedAppForOrgUnits.id}/org-units?tenantId=${tenantId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept-Language': locale
-        },
-        body: JSON.stringify({
-          orgUnitIds: selectedOrgUnitIds
-        })
-      });
 
-      if (response.ok) {
-        setSuccess(t('tenant.applicationOrgUnits.orgUnitsAssigned'));
-        setShowAssignOrgUnitsModal(false);
-        setSelectedAppForOrgUnits(null);
-        fetchApplications();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (error) {
-      setError(t('common.error'));
+    try {
+      await applicationsService.assignOrgUnits(tenantId, selectedAppForOrgUnits.id, selectedOrgUnitIds);
+      setSuccess(t('tenant.applicationOrgUnits.orgUnitsAssigned'));
+      setShowAssignOrgUnitsModal(false);
+      setSelectedAppForOrgUnits(null);
+      fetchApplications();
+    } catch (error: any) {
+      setError(error?.message || t('common.error'));
       console.error('Error assigning org units:', error);
     }
   };
@@ -231,32 +210,23 @@ export default function TenantAppsPage() {
     setError('');
     setSuccess('');
     if (!tenantId) return;
-    
-    try {
-      const response = await fetch(`http://localhost:7000/api/tenant/applications?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: newAppName,
-          applicationType: newAppType === 'Web' ? 1 : newAppType === 'Mobile' ? 2 : 3,
-          grantType: 2, // AuthorizationCodeWithPkce
-          redirectUris: newRedirectUris.filter(uri => uri.trim() !== '')
-        })
-      });
 
-      if (response.ok) {
-        setShowCreateModal(false);
-        setNewAppName('');
-        setNewAppType('Web');
-        setNewRedirectUris(['']);
-        setSuccess(t('tenant.applications.applicationCreated'));
-        fetchApplications();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (error) {
-      setError(t('common.error'));
+    try {
+      await applicationsService.createApplication({
+        tenantId,
+        name: newAppName,
+        applicationType: newAppType === 'Web' ? 1 : newAppType === 'Mobile' ? 2 : 3,
+        grantType: 2, // AuthorizationCodeWithPkce
+        redirectUris: newRedirectUris.filter(uri => uri.trim() !== '')
+      });
+      setShowCreateModal(false);
+      setNewAppName('');
+      setNewAppType('Web');
+      setNewRedirectUris(['']);
+      setSuccess(t('tenant.applications.applicationCreated'));
+      fetchApplications();
+    } catch (error: any) {
+      setError(error?.message || t('common.error'));
       console.error('Error creating application:', error);
     }
   };
@@ -282,31 +252,21 @@ export default function TenantAppsPage() {
     setError('');
     setSuccess('');
     if (!tenantId || !editingApp) return;
-    
-    try {
-      const response = await fetch(`http://localhost:7000/api/tenant/applications/${editingApp.id}?tenantId=${tenantId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: editAppName,
-          applicationType: editAppType === 'Web' ? 1 : editAppType === 'Mobile' ? 2 : 3,
-          grantType: 2 // AuthorizationCodeWithPkce
-        })
-      });
 
-      if (response.ok) {
-        setShowEditModal(false);
-        setEditingApp(null);
-        setEditAppName('');
-        setEditAppType('Web');
-        setSuccess(t('tenant.applications.applicationUpdated'));
-        fetchApplications();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (error) {
-      setError(t('common.error'));
+    try {
+      await applicationsService.updateApplication(tenantId, editingApp.id, {
+        name: editAppName,
+        applicationType: editAppType === 'Web' ? 1 : editAppType === 'Mobile' ? 2 : 3,
+        grantType: 2 // AuthorizationCodeWithPkce
+      });
+      setShowEditModal(false);
+      setEditingApp(null);
+      setEditAppName('');
+      setEditAppType('Web');
+      setSuccess(t('tenant.applications.applicationUpdated'));
+      fetchApplications();
+    } catch (error: any) {
+      setError(error?.message || t('common.error'));
       console.error('Error updating application:', error);
     }
   };
@@ -316,21 +276,13 @@ export default function TenantAppsPage() {
     setError('');
     setSuccess('');
     if (!tenantId) return;
-    
-    try {
-      const response = await fetch(`http://localhost:7000/api/tenant/applications/${appId}?tenantId=${tenantId}`, {
-        method: 'DELETE'
-      });
 
-      if (response.ok) {
-        setSuccess(t('tenant.applications.applicationDeleted'));
-        fetchApplications();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (error) {
-      setError(t('common.error'));
+    try {
+      await applicationsService.deleteApplication(tenantId, appId);
+      setSuccess(t('tenant.applications.applicationDeleted'));
+      fetchApplications();
+    } catch (error: any) {
+      setError(error?.message || t('common.error'));
       console.error('Error deleting application:', error);
     }
   };
@@ -346,30 +298,18 @@ export default function TenantAppsPage() {
     setError('');
     setSuccess('');
     if (!tenantId || !selectedAppForRedirectUris) return;
-    
-    try {
-      const response = await fetch(`http://localhost:7000/api/tenant/applications/${selectedAppForRedirectUris.id}/redirect-uris?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ uri: newRedirectUri })
-      });
 
-      if (response.ok) {
-        setNewRedirectUri('');
-        setSuccess(t('tenant.applications.redirectUriAdded'));
-        // Refresh applications and update selected app
-        await fetchApplications();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (error) {
-      setError(t('common.error'));
+    try {
+      await applicationsService.addRedirectUri(tenantId, selectedAppForRedirectUris.id, newRedirectUri);
+      setNewRedirectUri('');
+      setSuccess(t('tenant.applications.redirectUriAdded'));
+      await fetchApplications();
+    } catch (error: any) {
+      setError(error?.message || t('common.error'));
       console.error('Error adding redirect URI:', error);
     }
   };
 
-  // DELETE /api/tenant/applications/redirect-uris/{redirectUriId} - حذف redirect URI
   const handleRemoveRedirectUri = async (redirectUriId: string) => {
     if (!confirm(t('tenant.applications.confirmRemoveRedirectUri'))) return;
     setError('');
@@ -377,20 +317,11 @@ export default function TenantAppsPage() {
     if (!tenantId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/applications/redirect-uris/${redirectUriId}?tenantId=${tenantId}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        setSuccess(t('tenant.applications.redirectUriRemoved'));
-        // Refresh applications and update selected app
-        await fetchApplications();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (error) {
-      setError(t('common.error'));
+      await applicationsService.removeRedirectUri(tenantId, redirectUriId);
+      setSuccess(t('tenant.applications.redirectUriRemoved'));
+      await fetchApplications();
+    } catch (error: any) {
+      setError(error?.message || t('common.error'));
       console.error('Error removing redirect URI:', error);
     }
   };
@@ -408,27 +339,16 @@ export default function TenantAppsPage() {
     if (!tenantId || !selectedAppForSecrets) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/applications/${selectedAppForSecrets.id}/secrets?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description: newSecretDescription })
-      });
-
-      if (response.ok) {
-        setNewSecretDescription('');
-        setSuccess('Client secret added successfully');
-        await fetchApplications();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (error) {
-      setError(t('common.error'));
+      await applicationsService.addClientSecret(tenantId, selectedAppForSecrets.id, newSecretDescription);
+      setNewSecretDescription('');
+      setSuccess('Client secret added successfully');
+      await fetchApplications();
+    } catch (error: any) {
+      setError(error?.message || t('common.error'));
       console.error('Error adding client secret:', error);
     }
   };
 
-  // DELETE /api/tenant/applications/secrets/{secretId} - حذف client secret
   const handleRemoveSecret = async (secretId: string) => {
     if (!confirm('Are you sure you want to delete this client secret? Applications using this secret will stop working.')) return;
     setError('');
@@ -436,19 +356,11 @@ export default function TenantAppsPage() {
     if (!tenantId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/applications/secrets/${secretId}?tenantId=${tenantId}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        setSuccess('Client secret deleted successfully');
-        await fetchApplications();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (error) {
-      setError(t('common.error'));
+      await applicationsService.removeClientSecret(tenantId, secretId);
+      setSuccess('Client secret deleted successfully');
+      await fetchApplications();
+    } catch (error: any) {
+      setError(error?.message || t('common.error'));
       console.error('Error removing client secret:', error);
     }
   };
