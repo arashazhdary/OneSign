@@ -616,6 +616,16 @@ export class SecurityService {
     });
   }
 
+  /**
+   * Disable MFA for user
+   */
+  async disableMFAForUser(tenantId: string, userId: string): Promise<void> {
+    await this.client.post('/api/tenant/mfa/disable', {
+      tenantId,
+      userId,
+    });
+  }
+
   // Trusted Devices
 
   /**
@@ -638,6 +648,15 @@ export class SecurityService {
       { tenantId, deviceFingerprint }
     );
     return response.data;
+  }
+
+  /**
+   * Revoke device trust
+   */
+  async revokeDeviceTrust(tenantId: string, deviceId: string): Promise<void> {
+    await this.client.post(`/api/tenant/trusted-devices/${deviceId}/revoke`, {
+      tenantId,
+    });
   }
 
   // Security Policy - Org Unit Rules

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getTenantId } from '@/lib/tenant-context';
+import { securityService } from '@/lib/api/services';
 import DataTable, { Column } from '@/app/components/DataTable';
 import StatusBadge from '@/app/components/StatusBadge';
 import ActionButton from '@/app/components/ActionButton';
@@ -54,11 +55,8 @@ export default function MFAManagementPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/mfa/methods?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setMfaMethods(data || []);
-      }
+      const data = await securityService.getUserMFAMethods(tenantId);
+      setMfaMethods(data || []);
     } catch (err) {
       console.error('Error fetching MFA methods:', err);
     } finally {
@@ -70,11 +68,8 @@ export default function MFAManagementPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/trusted-devices?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setTrustedDevices(data || []);
-      }
+      const data = await securityService.getTrustedDevices(tenantId);
+      setTrustedDevices(data || []);
     } catch (err) {
       console.error('Error fetching trusted devices:', err);
     } finally {
@@ -86,11 +81,8 @@ export default function MFAManagementPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/security/org-unit-rules?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setOrgUnitRules(data || []);
-      }
+      const data = await securityService.getOrgUnitMFARules(tenantId);
+      setOrgUnitRules(data || []);
     } catch (err) {
       console.error('Error fetching org unit rules:', err);
     } finally {
@@ -102,13 +94,9 @@ export default function MFAManagementPage() {
     if (!tenantId || !confirm('Are you sure you want to disable MFA for this user?')) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/mfa/disable?tenantId=${tenantId}&userId=${userId}`, {
-        method: 'POST'
-      });
-      if (response.ok) {
-        setSuccess('MFA disabled successfully');
-        fetchMFAMethods();
-      }
+      await securityService.disableMFAForUser(tenantId, userId);
+      setSuccess('MFA disabled successfully');
+      fetchMFAMethods();
     } catch (err) {
       setError('Failed to disable MFA');
     } finally {
@@ -120,13 +108,9 @@ export default function MFAManagementPage() {
     if (!tenantId || !confirm('Are you sure you want to delete this MFA method?')) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/mfa/methods/${methodId}?tenantId=${tenantId}`, {
-        method: 'DELETE'
-      });
-      if (response.ok) {
-        setSuccess('MFA method deleted successfully');
-        fetchMFAMethods();
-      }
+      await securityService.deleteMFAMethod(tenantId, methodId);
+      setSuccess('MFA method deleted successfully');
+      fetchMFAMethods();
     } catch (err) {
       setError('Failed to delete MFA method');
     } finally {
@@ -138,13 +122,9 @@ export default function MFAManagementPage() {
     if (!tenantId || !confirm('Are you sure you want to revoke trust for this device?')) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/trusted-devices/${deviceId}/revoke?tenantId=${tenantId}`, {
-        method: 'POST'
-      });
-      if (response.ok) {
-        setSuccess('Trust revoked successfully');
-        fetchTrustedDevices();
-      }
+      await securityService.revokeDeviceTrust(tenantId, deviceId);
+      setSuccess('Trust revoked successfully');
+      fetchTrustedDevices();
     } catch (err) {
       setError('Failed to revoke trust');
     } finally {
