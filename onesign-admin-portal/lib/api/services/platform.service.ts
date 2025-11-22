@@ -421,6 +421,80 @@ export class PlatformService {
     const response = await this.client.get<any[]>('/api/global/crypto/rotation-policies');
     return response.data;
   }
+
+  // Extensibility - Login Hooks
+
+  /**
+   * Get login hooks
+   */
+  async getLoginHooks(tenantId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/tenant/extensibility/login-hooks', { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Create login hook
+   */
+  async createLoginHook(tenantId: string, data: any): Promise<any> {
+    const response = await this.client.post<any>('/api/tenant/extensibility/login-hooks', { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Update login hook
+   */
+  async updateLoginHook(tenantId: string, id: string, data: any): Promise<any> {
+    const response = await this.client.put<any>(`/api/tenant/extensibility/login-hooks/${id}`, { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Delete login hook
+   */
+  async deleteLoginHook(tenantId: string, id: string): Promise<void> {
+    await this.client.delete(`/api/tenant/extensibility/login-hooks/${id}`, { params: { tenantId } });
+  }
+
+  // Service Accounts
+
+  /**
+   * Get service accounts
+   */
+  async getServiceAccounts(tenantId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/tenant/service-accounts', { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Create service account
+   */
+  async createServiceAccount(tenantId: string, data: any): Promise<any> {
+    const response = await this.client.post<any>('/api/tenant/service-accounts', { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Update service account
+   */
+  async updateServiceAccount(tenantId: string, id: string, data: any): Promise<any> {
+    const response = await this.client.put<any>(`/api/tenant/service-accounts/${id}`, { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Delete service account
+   */
+  async deleteServiceAccount(tenantId: string, id: string): Promise<void> {
+    await this.client.delete(`/api/tenant/service-accounts/${id}`, { params: { tenantId } });
+  }
+
+  /**
+   * Rotate service account credentials
+   */
+  async rotateServiceAccountCredentials(tenantId: string, id: string): Promise<any> {
+    const response = await this.client.post<any>(`/api/tenant/service-accounts/${id}/rotate`, { tenantId });
+    return response.data;
+  }
 }
 
 // Export singleton instance
