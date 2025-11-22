@@ -144,39 +144,33 @@ export default function GlobalSettingsPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/settings/${activeTab}`);
-      if (response.ok) {
-        const data = await response.json();
-        switch (activeTab) {
-          case 'platform':
-            setPlatformSettings(data.settings);
-            break;
-          case 'email':
-            setEmailSettings(data.settings);
-            break;
-          case 'sms':
-            setSmsSettings(data.settings);
-            break;
-          case 'oauth':
-            setOauthProviders(data.providers);
-            break;
-          case 'security':
-            setSecuritySettings(data.settings);
-            break;
-          case 'backup':
-            setBackupSettings(data.settings);
-            break;
-          case 'logs':
-            setLogSettings(data.settings);
-            break;
-        }
-        setHasChanges(false);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
+      const data = await platformService.getGlobalSettings(activeTab);
+      switch (activeTab) {
+        case 'platform':
+          setPlatformSettings(data.settings);
+          break;
+        case 'email':
+          setEmailSettings(data.settings);
+          break;
+        case 'sms':
+          setSmsSettings(data.settings);
+          break;
+        case 'oauth':
+          setOauthProviders(data.providers);
+          break;
+        case 'security':
+          setSecuritySettings(data.settings);
+          break;
+        case 'backup':
+          setBackupSettings(data.settings);
+          break;
+        case 'logs':
+          setLogSettings(data.settings);
+          break;
       }
-    } catch (err) {
-      setError(t('common.error'));
+      setHasChanges(false);
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -212,21 +206,11 @@ export default function GlobalSettingsPage() {
           break;
       }
 
-      const response = await fetch(`http://localhost:7000/api/global/settings/${activeTab}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (response.ok) {
-        setSuccess('Settings saved successfully');
-        setHasChanges(false);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.updateGlobalSettings(activeTab, payload);
+      setSuccess('Settings saved successfully');
+      setHasChanges(false);
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -236,19 +220,10 @@ export default function GlobalSettingsPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/settings/email/test', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(emailSettings)
-      });
-      if (response.ok) {
-        setSuccess('Test email sent successfully!');
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || 'Failed to send test email');
-      }
-    } catch (err) {
-      setError('Failed to send test email');
+      await platformService.testEmailConfiguration(emailSettings);
+      setSuccess('Test email sent successfully!');
+    } catch (err: any) {
+      setError(err.message || 'Failed to send test email');
     } finally {
       setLoading(false);
     }
@@ -258,19 +233,10 @@ export default function GlobalSettingsPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/settings/sms/test', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(smsSettings)
-      });
-      if (response.ok) {
-        setSuccess('Test SMS sent successfully!');
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || 'Failed to send test SMS');
-      }
-    } catch (err) {
-      setError('Failed to send test SMS');
+      await platformService.testSMSConfiguration(smsSettings);
+      setSuccess('Test SMS sent successfully!');
+    } catch (err: any) {
+      setError(err.message || 'Failed to send test SMS');
     } finally {
       setLoading(false);
     }

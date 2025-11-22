@@ -62,16 +62,10 @@ export default function TenantLifecyclePage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/tenants/${tenantId}/health`);
-      if (response.ok) {
-        const data = await response.json();
-        setTenantHealth(data);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      const data = await platformService.getTenantHealthGlobal(tenantId);
+      setTenantHealth(data);
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -83,16 +77,10 @@ export default function TenantLifecyclePage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/tenants/${tenantId}/metrics`);
-      if (response.ok) {
-        const data = await response.json();
-        setTenantMetrics(data.metrics || []);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      const data = await platformService.getTenantMetricsGlobal(tenantId);
+      setTenantMetrics(data.metrics || []);
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -107,16 +95,10 @@ export default function TenantLifecyclePage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/tenants/${tenantId}/migrations/${migrationId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setMigrationStatus(data);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      const data = await platformService.getTenantMigrationStatus(tenantId, migrationId);
+      setMigrationStatus(data);
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -131,16 +113,10 @@ export default function TenantLifecyclePage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/tenants/${tenantId}/exports/${exportId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setExportStatus(data);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      const data = await platformService.getTenantExportStatus(tenantId, exportId);
+      setExportStatus(data);
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -163,18 +139,11 @@ export default function TenantLifecyclePage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/tenants/${tenantId}/suspend`, {
-        method: 'POST',
-      });
-      if (response.ok) {
-        setSuccess('Tenant suspended successfully');
-        fetchTenantHealth();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.suspendTenantGlobal(tenantId);
+      setSuccess('Tenant suspended successfully');
+      fetchTenantHealth();
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -190,18 +159,11 @@ export default function TenantLifecyclePage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/tenants/${tenantId}/resume`, {
-        method: 'POST',
-      });
-      if (response.ok) {
-        setSuccess('Tenant resumed successfully');
-        fetchTenantHealth();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.resumeTenantGlobal(tenantId);
+      setSuccess('Tenant resumed successfully');
+      fetchTenantHealth();
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -217,19 +179,11 @@ export default function TenantLifecyclePage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/tenants/${tenantId}/migrate`, {
-        method: 'POST',
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setMigrationStatus(data);
-        setSuccess('Migration started successfully');
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      const data = await platformService.migrateTenant(tenantId);
+      setMigrationStatus(data);
+      setSuccess('Migration started successfully');
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -245,19 +199,11 @@ export default function TenantLifecyclePage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/tenants/${tenantId}/export`, {
-        method: 'POST',
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setExportJobs([data, ...exportJobs]);
-        setSuccess('Export started successfully');
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      const data = await platformService.exportTenantData(tenantId);
+      setExportJobs([data, ...exportJobs]);
+      setSuccess('Export started successfully');
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -273,17 +219,10 @@ export default function TenantLifecyclePage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/tenants/${tenantId}/import`, {
-        method: 'POST',
-      });
-      if (response.ok) {
-        setSuccess('Import started successfully');
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.importTenantData(tenantId);
+      setSuccess('Import started successfully');
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }

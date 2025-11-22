@@ -78,16 +78,10 @@ export default function APIManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/api-management/endpoints');
-      if (response.ok) {
-        const data = await response.json();
-        setEndpoints(data.endpoints || []);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      const data = await platformService.getAPIEndpoints();
+      setEndpoints(data.endpoints || []);
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -97,16 +91,10 @@ export default function APIManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/api-management/keys');
-      if (response.ok) {
-        const data = await response.json();
-        setApiKeys(data.keys || []);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      const data = await platformService.getAPIKeys();
+      setApiKeys(data.keys || []);
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -116,16 +104,10 @@ export default function APIManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/api-management/consumers');
-      if (response.ok) {
-        const data = await response.json();
-        setConsumers(data.consumers || []);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      const data = await platformService.getAPIConsumers();
+      setConsumers(data.consumers || []);
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -135,16 +117,10 @@ export default function APIManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/api-management/versions');
-      if (response.ok) {
-        const data = await response.json();
-        setVersions(data.versions || []);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      const data = await platformService.getAPIVersions();
+      setVersions(data.versions || []);
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -155,27 +131,17 @@ export default function APIManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/api-management/keys', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: keyFormData.name,
-          scope: keyFormData.scope,
-          expiresIn: parseInt(keyFormData.expiresIn)
-        })
+      const data = await platformService.createAPIKey({
+        name: keyFormData.name,
+        scope: keyFormData.scope,
+        expiresIn: parseInt(keyFormData.expiresIn)
       });
-      if (response.ok) {
-        const data = await response.json();
-        setSuccess(`API Key created: ${data.key}`);
-        setIsCreateKeyModalOpen(false);
-        setKeyFormData({ name: '', scope: [], expiresIn: '90' });
-        fetchAPIKeys();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      setSuccess(`API Key created: ${data.key}`);
+      setIsCreateKeyModalOpen(false);
+      setKeyFormData({ name: '', scope: [], expiresIn: '90' });
+      fetchAPIKeys();
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -187,18 +153,11 @@ export default function APIManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/api-management/keys/${keyId}/revoke`, {
-        method: 'POST'
-      });
-      if (response.ok) {
-        setSuccess('API Key revoked successfully');
-        fetchAPIKeys();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.revokeAPIKey(keyId);
+      setSuccess('API Key revoked successfully');
+      fetchAPIKeys();
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -210,21 +169,12 @@ export default function APIManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/api-management/endpoints/${selectedEndpoint.id}/rate-limit`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(rateLimitForm)
-      });
-      if (response.ok) {
-        setSuccess('Rate limit updated successfully');
-        setIsRateLimitModalOpen(false);
-        fetchEndpoints();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.updateEndpointRateLimit(selectedEndpoint.id, rateLimitForm);
+      setSuccess('Rate limit updated successfully');
+      setIsRateLimitModalOpen(false);
+      fetchEndpoints();
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }

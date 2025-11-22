@@ -75,19 +75,13 @@ export default function EnvironmentManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/environments');
-      if (response.ok) {
-        const data = await response.json();
-        setEnvironments(data.items || data || []);
-        if (data.items?.length > 0 && !selectedEnvironment) {
-          setSelectedEnvironment(data.items[0].id);
-        }
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
+      const data = await platformService.getEnvironments();
+      setEnvironments(data.items || data || []);
+      if (data.items?.length > 0 && !selectedEnvironment) {
+        setSelectedEnvironment(data.items[0].id);
       }
-    } catch (err) {
-      setError(t('common.error'));
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -95,11 +89,8 @@ export default function EnvironmentManagementPage() {
 
   const fetchHeartbeat = async (environmentId: string) => {
     try {
-      const response = await fetch(`http://localhost:7000/api/global/environments/${environmentId}/heartbeat`);
-      if (response.ok) {
-        const data = await response.json();
-        setHeartbeat(data);
-      }
+      const data = await platformService.getEnvironmentHeartbeat(environmentId);
+      setHeartbeat(data);
     } catch (err) {
       console.error('Failed to fetch heartbeat:', err);
     }
@@ -115,22 +106,13 @@ export default function EnvironmentManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/environments/bootstrap', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(bootstrapConfig),
-      });
-      if (response.ok) {
-        setSuccess('Environment bootstrapped successfully');
-        setShowBootstrapModal(false);
-        setBootstrapConfig({ name: '', type: 'Development', region: '', version: '' });
-        fetchEnvironments();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.bootstrapEnvironment(bootstrapConfig);
+      setSuccess('Environment bootstrapped successfully');
+      setShowBootstrapModal(false);
+      setBootstrapConfig({ name: '', type: 'Development', region: '', version: '' });
+      fetchEnvironments();
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -145,18 +127,11 @@ export default function EnvironmentManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/environments/${environmentId}/restart`, {
-        method: 'POST',
-      });
-      if (response.ok) {
-        setSuccess('Environment restart initiated successfully');
-        fetchEnvironments();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.restartEnvironment(environmentId);
+      setSuccess('Environment restart initiated successfully');
+      fetchEnvironments();
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }

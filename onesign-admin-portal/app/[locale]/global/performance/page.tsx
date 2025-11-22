@@ -63,16 +63,10 @@ export default function PerformanceMonitoringPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/performance/metrics');
-      if (response.ok) {
-        const data = await response.json();
-        setMetrics(data);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      const data = await platformService.getPerformanceMetrics();
+      setMetrics(data);
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -80,11 +74,8 @@ export default function PerformanceMonitoringPage() {
 
   const fetchSlowQueries = async () => {
     try {
-      const response = await fetch('http://localhost:7000/api/global/performance/slow-queries');
-      if (response.ok) {
-        const data = await response.json();
-        setSlowQueries(data.queries || []);
-      }
+      const data = await platformService.getSlowQueries();
+      setSlowQueries(data.queries || []);
     } catch (err) {
       console.error('Failed to fetch slow queries');
     }
@@ -92,11 +83,8 @@ export default function PerformanceMonitoringPage() {
 
   const fetchAlerts = async () => {
     try {
-      const response = await fetch('http://localhost:7000/api/global/performance/alerts');
-      if (response.ok) {
-        const data = await response.json();
-        setAlerts(data.alerts || []);
-      }
+      const data = await platformService.getPerformanceAlerts();
+      setAlerts(data.alerts || []);
     } catch (err) {
       console.error('Failed to fetch alerts');
     }
@@ -104,14 +92,10 @@ export default function PerformanceMonitoringPage() {
 
   const resolveAlert = async (alertId: string) => {
     try {
-      const response = await fetch(`http://localhost:7000/api/global/performance/alerts/${alertId}/resolve`, {
-        method: 'POST'
-      });
-      if (response.ok) {
-        setAlerts(prev => prev.map(alert =>
-          alert.id === alertId ? { ...alert, resolved: true } : alert
-        ));
-      }
+      await platformService.resolvePerformanceAlert(alertId);
+      setAlerts(prev => prev.map(alert =>
+        alert.id === alertId ? { ...alert, resolved: true } : alert
+      ));
     } catch (err) {
       console.error('Failed to resolve alert');
     }

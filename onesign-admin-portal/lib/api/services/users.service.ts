@@ -487,6 +487,22 @@ export class UsersService {
     });
     return response.data;
   }
+
+  // ==================== OpenID Connect Endpoints ====================
+
+  /**
+   * Get user info from OpenID Connect userinfo endpoint
+   * Note: This endpoint requires a valid access token with Authorization header
+   */
+  async getUserInfo(accessToken: string): Promise<any> {
+    const response = await this.client.get<any>('/api/connect/userinfo', {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Accept': 'application/json',
+      },
+    } as any);
+    return response.data;
+  }
 }
 
 // Export singleton instance

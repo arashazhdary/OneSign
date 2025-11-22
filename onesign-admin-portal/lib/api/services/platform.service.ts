@@ -1406,6 +1406,31 @@ export class PlatformService {
   async removeOrgUnitApplication(tenantId: string, orgUnitId: string, applicationId: string): Promise<void> {
     await this.client.delete(`/api/tenant/org-units/${orgUnitId}/applications/${applicationId}`, { params: { tenantId } });
   }
+
+  // ==================== Admin Tenant Management ====================
+
+  /**
+   * Get admin tenants with pagination
+   */
+  async getAdminTenants(pageNumber: number, pageSize: number): Promise<any> {
+    const response = await this.client.get<any>(`/api/admin/tenants?pageNumber=${pageNumber}&pageSize=${pageSize}`);
+    return response.data;
+  }
+
+  /**
+   * Create admin tenant
+   */
+  async createAdminTenant(data: { name: string; slug: string }): Promise<any> {
+    const response = await this.client.post<any>('/api/admin/tenants', data);
+    return response.data;
+  }
+
+  /**
+   * Update admin tenant status
+   */
+  async updateAdminTenantStatus(tenantId: string, status: string): Promise<void> {
+    await this.client.patch(`/api/admin/tenants/${tenantId}/status`, { status });
+  }
 }
 
 // Export singleton instance
