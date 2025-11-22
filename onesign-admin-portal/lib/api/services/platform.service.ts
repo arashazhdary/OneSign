@@ -185,6 +185,24 @@ export class PlatformService {
     });
   }
 
+  /**
+   * Get org units tree
+   */
+  async getOrgUnitsTree(tenantId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/tenant/org-units/tree', { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Move org unit to new parent
+   */
+  async moveOrgUnit(tenantId: string, orgUnitId: string, newParentId: string | null): Promise<void> {
+    await this.client.post(`/api/tenant/org-units/${orgUnitId}/move`, {
+      tenantId,
+      newParentId,
+    });
+  }
+
   // Integrations
 
   /**

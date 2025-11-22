@@ -326,6 +326,37 @@ export class UsersService {
     const response = await this.client.post<BulkInviteResponse>('/api/tenant/users/import', formData);
     return response.data;
   }
+
+  /**
+   * Update user status (enable/disable)
+   */
+  async updateUserStatus(tenantId: string, userId: string): Promise<void> {
+    await this.client.patch(`/api/tenant/users/${userId}/status`, { tenantId });
+  }
+
+  /**
+   * Get user's org units
+   */
+  async getUserOrgUnits(tenantId: string, userId: string): Promise<any> {
+    const response = await this.client.get(`/api/tenant/users/${userId}/org-units`, { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Update user's org units
+   */
+  async updateUserOrgUnits(
+    tenantId: string,
+    userId: string,
+    primaryOrgUnitId: string,
+    secondaryOrgUnitIds: string[]
+  ): Promise<void> {
+    await this.client.put(`/api/tenant/users/${userId}/org-units`, {
+      tenantId,
+      primaryOrgUnitId,
+      secondaryOrgUnitIds,
+    });
+  }
 }
 
 // Export singleton instance
