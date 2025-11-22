@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getTenantId } from '@/lib/tenant-context';
+import { platformService } from '@/lib/api/services';
 import DataTable, { Column } from '@/app/components/DataTable';
 import StatusBadge from '@/app/components/StatusBadge';
 import ActionButton from '@/app/components/ActionButton';
@@ -42,11 +43,8 @@ export default function ServiceAccountsPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/service-accounts?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setServiceAccounts(data || []);
-      }
+      const data = await platformService.getServiceAccounts(tenantId);
+      setServiceAccounts(data || []);
     } catch (err) {
       console.error('Error fetching service accounts:', err);
     } finally {
@@ -59,17 +57,11 @@ export default function ServiceAccountsPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/service-accounts?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
-      });
-      if (response.ok) {
-        setSuccess('Service account created successfully');
-        setShowModal(false);
-        fetchServiceAccounts();
-        setForm({ name: '', description: '' });
-      }
+      await platformService.createServiceAccount(tenantId, form);
+      setSuccess('Service account created successfully');
+      setShowModal(false);
+      fetchServiceAccounts();
+      setForm({ name: '', description: '' });
     } catch (err) {
       setError('Failed to create service account');
     } finally {

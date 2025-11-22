@@ -455,6 +455,89 @@ export class PlatformService {
     await this.client.delete(`/api/tenant/extensibility/login-hooks/${id}`, { params: { tenantId } });
   }
 
+  // Webhooks
+
+  /**
+   * Get webhooks
+   */
+  async getWebhooks(tenantId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/tenant/extensibility/webhooks', { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Create webhook
+   */
+  async createWebhook(tenantId: string, data: any): Promise<any> {
+    const response = await this.client.post<any>('/api/tenant/extensibility/webhooks', { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Update webhook
+   */
+  async updateWebhook(tenantId: string, id: string, data: any): Promise<any> {
+    const response = await this.client.put<any>(`/api/tenant/extensibility/webhooks/${id}`, { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Delete webhook
+   */
+  async deleteWebhook(tenantId: string, id: string): Promise<void> {
+    await this.client.delete(`/api/tenant/extensibility/webhooks/${id}`, { params: { tenantId } });
+  }
+
+  /**
+   * Test webhook
+   */
+  async testWebhook(tenantId: string, id: string): Promise<void> {
+    await this.client.post(`/api/tenant/extensibility/webhooks/${id}/test`, { tenantId });
+  }
+
+  // Token Rules
+
+  /**
+   * Get token rules
+   */
+  async getTokenRules(tenantId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/tenant/extensibility/token-rules', { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Create token rule
+   */
+  async createTokenRule(tenantId: string, data: any): Promise<any> {
+    const response = await this.client.post<any>('/api/tenant/extensibility/token-rules', { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Update token rule
+   */
+  async updateTokenRule(tenantId: string, id: string, data: any): Promise<any> {
+    const response = await this.client.put<any>(`/api/tenant/extensibility/token-rules/${id}`, { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Delete token rule
+   */
+  async deleteTokenRule(tenantId: string, id: string): Promise<void> {
+    await this.client.delete(`/api/tenant/extensibility/token-rules/${id}`, { params: { tenantId } });
+  }
+
+  // Event Types
+
+  /**
+   * Get event types
+   */
+  async getEventTypes(tenantId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/tenant/extensibility/event-types', { tenantId });
+    return response.data;
+  }
+
   // Service Accounts
 
   /**

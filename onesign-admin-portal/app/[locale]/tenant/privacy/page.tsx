@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getTenantId } from '@/lib/tenant-context';
+import { governanceService } from '@/lib/api/services';
 import DataTable, { Column } from '@/app/components/DataTable';
 import StatusBadge from '@/app/components/StatusBadge';
 import ActionButton from '@/app/components/ActionButton';
@@ -57,11 +58,8 @@ export default function PrivacyPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/privacy/retention-policies`);
-      if (response.ok) {
-        const data = await response.json();
-        setRetentionPolicies(data || []);
-      }
+      const data = await governanceService.getRetentionPolicies(tenantId);
+      setRetentionPolicies(data || []);
     } catch (err) {
       console.error('Error fetching retention policies:', err);
     } finally {
@@ -73,11 +71,8 @@ export default function PrivacyPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/privacy/data-requests`);
-      if (response.ok) {
-        const data = await response.json();
-        setDataRequests(data || []);
-      }
+      const data = await governanceService.getDataSubjectRequests(tenantId);
+      setDataRequests(data || []);
     } catch (err) {
       console.error('Error fetching data requests:', err);
     } finally {
@@ -89,15 +84,9 @@ export default function PrivacyPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/privacy/retention-policies/${category}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if (response.ok) {
-        setSuccess('Retention policy updated successfully');
-        fetchRetentionPolicies();
-      }
+      await governanceService.updateRetentionPolicy(tenantId, category, data);
+      setSuccess('Retention policy updated successfully');
+      fetchRetentionPolicies();
     } catch (err) {
       setError('Failed to update retention policy');
     } finally {
@@ -110,14 +99,9 @@ export default function PrivacyPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/privacy/data-requests`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestForm)
-      });
-      if (response.ok) {
-        setSuccess('Data request created successfully');
-        setShowRequestModal(false);
+      await governanceService.createDataSubjectRequest(tenantId, requestForm);
+      setSuccess('Data request created successfully');
+      setShowRequestModal(false);
         fetchDataRequests();
         setRequestForm({ subjectId: '', type: 'Access', reason: '' });
       }
