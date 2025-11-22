@@ -249,6 +249,39 @@ export async function unenforceTemplate(id: string, userId: string): Promise<voi
   if (!response.ok) throw new Error('Failed to unenforce template');
 }
 
+export async function getGlobalTemplate(id: string): Promise<AutomationWorkflowDto> {
+  const response = await fetch(`${API_BASE}/api/global/automation/templates/${id}`);
+  if (!response.ok) throw new Error('Failed to fetch global template');
+  return response.json();
+}
+
+export async function updateGlobalTemplate(id: string, data: {
+  userId: string;
+  name: string;
+  description?: string;
+  severity: string;
+  tenantCanDisable: boolean;
+  tenantCanOverrideConditions: boolean;
+  triggers: { eventType: string; sourceModule: string }[];
+  conditions: { expressionType: string; expression: string; order: number }[];
+  actions: { actionType: string; order: number; configJson: string; isCritical: boolean }[];
+}): Promise<AutomationWorkflowDto> {
+  const response = await fetch(`${API_BASE}/api/global/automation/templates/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error('Failed to update global template');
+  return response.json();
+}
+
+export async function deleteGlobalTemplate(id: string, userId: string): Promise<void> {
+  const response = await fetch(`${API_BASE}/api/global/automation/templates/${id}?userId=${userId}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete global template');
+}
+
 export const EVENT_TYPES = [
   'Auth.SignInSucceeded',
   'Auth.SignInFailed',

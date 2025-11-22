@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import DataTable, { Column } from '@/app/components/DataTable';
+import { platformService } from '@/lib/api/services';
 
 interface PerformanceMetrics {
   cpuUsage: number;

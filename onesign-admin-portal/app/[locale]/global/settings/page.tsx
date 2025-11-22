@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import Modal from '@/app/components/Modal';
+import { platformService } from '@/lib/api/services';
 
 type Tab = 'platform' | 'email' | 'sms' | 'oauth' | 'security' | 'backup' | 'logs';
 

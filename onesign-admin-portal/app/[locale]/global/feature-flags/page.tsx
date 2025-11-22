@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import Modal from '@/app/components/Modal';
 import DataTable, { Column } from '@/app/components/DataTable';
+import { platformService } from '@/lib/api/services';
 
 type TargetAudience = 'all' | 'specific' | 'percentage';
 

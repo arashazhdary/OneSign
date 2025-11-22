@@ -440,6 +440,41 @@ export class PlatformService {
     return response.data;
   }
 
+  /**
+   * Create new keyset
+   */
+  async createCryptoKeyset(data: {
+    name: string;
+    algorithm: string;
+    keySize: number;
+    purpose: string;
+  }): Promise<any> {
+    const response = await this.client.post<any>('/api/global/crypto/key-sets', data);
+    return response.data;
+  }
+
+  /**
+   * Rotate key manually
+   */
+  async rotateCryptoKey(keysetId: string): Promise<void> {
+    await this.client.post(`/api/global/crypto/key-sets/${keysetId}/rotate`, {});
+  }
+
+  /**
+   * Update rotation policy
+   */
+  async updateCryptoRotationPolicy(data: {
+    name: string;
+    rotationInterval: number;
+    rotationUnit: string;
+    autoRotate: boolean;
+    gracePeriod: number;
+    notifyBefore: number;
+  }): Promise<any> {
+    const response = await this.client.put<any>('/api/global/crypto/rotation-policies', data);
+    return response.data;
+  }
+
   // Extensibility - Login Hooks
 
   /**
@@ -793,6 +828,511 @@ export class PlatformService {
    */
   async deleteDelegatedAdmin(tenantId: string, id: string): Promise<void> {
     await this.client.delete(`/api/tenant/delegated-admins/${id}`, { params: { tenantId } });
+  }
+
+  // ==================== Global Infrastructure Management ====================
+
+  // Platform Management
+
+  /**
+   * Get platform version information
+   */
+  async getPlatformVersion(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/platform/version');
+    return response.data;
+  }
+
+  /**
+   * Get platform migrations
+   */
+  async getPlatformMigrations(page: number, pageSize: number): Promise<any> {
+    const response = await this.client.get<any>(`/api/global/platform/migrations?page=${page}&pageSize=${pageSize}`);
+    return response.data;
+  }
+
+  /**
+   * Get platform tests
+   */
+  async getPlatformTests(page: number, pageSize: number): Promise<any> {
+    const response = await this.client.get<any>(`/api/global/platform/tests?page=${page}&pageSize=${pageSize}`);
+    return response.data;
+  }
+
+  /**
+   * Get platform health
+   */
+  async getPlatformHealth(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/platform/health');
+    return response.data;
+  }
+
+  /**
+   * Get platform diagnostics
+   */
+  async getPlatformDiagnostics(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/platform/diagnostics');
+    return response.data;
+  }
+
+  /**
+   * Get platform OpenAPI documentation
+   */
+  async getPlatformOpenApiDocs(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/platform/docs/openapi');
+    return response.data;
+  }
+
+  /**
+   * Run platform tests
+   */
+  async runPlatformTests(): Promise<void> {
+    await this.client.post('/api/global/platform/tests/run');
+  }
+
+  /**
+   * Apply platform migration
+   */
+  async applyPlatformMigration(migrationId: string): Promise<void> {
+    await this.client.post('/api/global/platform/migrations/apply', { migrationId });
+  }
+
+  /**
+   * Get platform test by ID
+   */
+  async getPlatformTestById(testId: string): Promise<any> {
+    const response = await this.client.get<any>(`/api/global/platform/tests/${testId}`);
+    return response.data;
+  }
+
+  /**
+   * Get platform test results
+   */
+  async getPlatformTestResults(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/platform/tests/results');
+    return response.data;
+  }
+
+  /**
+   * Generate platform documentation
+   */
+  async generatePlatformDocs(): Promise<void> {
+    await this.client.post('/api/global/platform/docs/generate');
+  }
+
+  // Regions Management
+
+  /**
+   * Get all regions
+   */
+  async getRegions(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/regions');
+    return response.data;
+  }
+
+  /**
+   * Get region health
+   */
+  async getRegionHealth(regionId: string): Promise<any> {
+    const response = await this.client.get<any>(`/api/global/regions/${regionId}/health`);
+    return response.data;
+  }
+
+  /**
+   * Get region backups
+   */
+  async getRegionBackups(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/regions/backups');
+    return response.data;
+  }
+
+  /**
+   * Get data residency rules
+   */
+  async getDataResidencyRules(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/regions/data-residency');
+    return response.data;
+  }
+
+  /**
+   * Get disaster recovery status
+   */
+  async getDRStatus(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/regions/dr/status');
+    return response.data;
+  }
+
+  /**
+   * Create region
+   */
+  async createRegion(data: any): Promise<any> {
+    const response = await this.client.post<any>('/api/global/regions', data);
+    return response.data;
+  }
+
+  /**
+   * Activate region
+   */
+  async activateRegion(regionId: string): Promise<void> {
+    await this.client.post(`/api/global/regions/${regionId}/activate`);
+  }
+
+  /**
+   * Deactivate region
+   */
+  async deactivateRegion(regionId: string): Promise<void> {
+    await this.client.post(`/api/global/regions/${regionId}/deactivate`);
+  }
+
+  /**
+   * Delete region
+   */
+  async deleteRegion(regionId: string): Promise<void> {
+    await this.client.delete(`/api/global/regions/${regionId}`);
+  }
+
+  /**
+   * Create region backup
+   */
+  async createRegionBackup(regionId: string): Promise<any> {
+    const response = await this.client.post<any>('/api/global/regions/backups', { regionId });
+    return response.data;
+  }
+
+  /**
+   * Restore region backup
+   */
+  async restoreRegionBackup(backupId: string): Promise<void> {
+    await this.client.post(`/api/global/regions/backups/${backupId}/restore`);
+  }
+
+  /**
+   * Update region
+   */
+  async updateRegion(regionId: string, data: any): Promise<any> {
+    const response = await this.client.put<any>(`/api/global/regions/${regionId}`, data);
+    return response.data;
+  }
+
+  /**
+   * Get backups for specific region
+   */
+  async getRegionBackupsById(regionId: string): Promise<any> {
+    const response = await this.client.get<any>(`/api/global/regions/${regionId}/backups`);
+    return response.data;
+  }
+
+  /**
+   * Create backup for specific region
+   */
+  async createRegionBackupById(regionId: string): Promise<any> {
+    const response = await this.client.post<any>(`/api/global/regions/${regionId}/backups`);
+    return response.data;
+  }
+
+  /**
+   * Get tenant data residency
+   */
+  async getTenantDataResidency(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/regions/tenants/data-residency');
+    return response.data;
+  }
+
+  /**
+   * Get tenant backups
+   */
+  async getTenantBackups(tenantId: string): Promise<any> {
+    const response = await this.client.get<any>(`/api/global/regions/tenants/${tenantId}/backups`);
+    return response.data;
+  }
+
+  /**
+   * Create tenant backup
+   */
+  async createTenantBackup(tenantId: string): Promise<any> {
+    const response = await this.client.post<any>(`/api/global/regions/tenants/${tenantId}/backups`);
+    return response.data;
+  }
+
+  /**
+   * Restore tenant
+   */
+  async restoreTenant(tenantId: string): Promise<void> {
+    await this.client.post(`/api/global/regions/tenants/${tenantId}/restore`);
+  }
+
+  /**
+   * Get DR dashboard
+   */
+  async getDRDashboard(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/regions/dr-dashboard');
+    return response.data;
+  }
+
+  // Environments Management
+
+  /**
+   * Get all environments
+   */
+  async getEnvironments(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/environments');
+    return response.data;
+  }
+
+  /**
+   * Get environment heartbeat
+   */
+  async getEnvironmentHeartbeat(environmentId: string): Promise<any> {
+    const response = await this.client.get<any>(`/api/global/environments/${environmentId}/heartbeat`);
+    return response.data;
+  }
+
+  /**
+   * Bootstrap environment
+   */
+  async bootstrapEnvironment(data: any): Promise<any> {
+    const response = await this.client.post<any>('/api/global/environments/bootstrap', data);
+    return response.data;
+  }
+
+  /**
+   * Restart environment
+   */
+  async restartEnvironment(environmentId: string): Promise<void> {
+    await this.client.post(`/api/global/environments/${environmentId}/restart`);
+  }
+
+  // Feature Flags Management
+
+  /**
+   * Get all feature flags
+   */
+  async getFeatureFlags(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/feature-flags');
+    return response.data;
+  }
+
+  /**
+   * Get feature flag history
+   */
+  async getFeatureFlagHistory(flagId: string): Promise<any> {
+    const response = await this.client.get<any>(`/api/global/feature-flags/${flagId}/history`);
+    return response.data;
+  }
+
+  /**
+   * Toggle feature flag
+   */
+  async toggleFeatureFlag(flagId: string, enabled: boolean): Promise<void> {
+    await this.client.patch(`/api/global/feature-flags/${flagId}/toggle`, { enabled });
+  }
+
+  /**
+   * Create feature flag
+   */
+  async createFeatureFlag(data: any): Promise<any> {
+    const response = await this.client.post<any>('/api/global/feature-flags', data);
+    return response.data;
+  }
+
+  /**
+   * Delete feature flag
+   */
+  async deleteFeatureFlag(flagId: string): Promise<void> {
+    await this.client.delete(`/api/global/feature-flags/${flagId}`);
+  }
+
+  // Global Settings Management
+
+  /**
+   * Get settings by category
+   */
+  async getGlobalSettings(category: string): Promise<any> {
+    const response = await this.client.get<any>(`/api/global/settings/${category}`);
+    return response.data;
+  }
+
+  /**
+   * Update settings by category
+   */
+  async updateGlobalSettings(category: string, data: any): Promise<any> {
+    const response = await this.client.put<any>(`/api/global/settings/${category}`, data);
+    return response.data;
+  }
+
+  /**
+   * Test email configuration
+   */
+  async testEmailConfiguration(data: any): Promise<any> {
+    const response = await this.client.post<any>('/api/global/settings/email/test', data);
+    return response.data;
+  }
+
+  /**
+   * Test SMS configuration
+   */
+  async testSMSConfiguration(data: any): Promise<any> {
+    const response = await this.client.post<any>('/api/global/settings/sms/test', data);
+    return response.data;
+  }
+
+  // API Management
+
+  /**
+   * Get API endpoints
+   */
+  async getAPIEndpoints(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/api-management/endpoints');
+    return response.data;
+  }
+
+  /**
+   * Get API keys
+   */
+  async getAPIKeys(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/api-management/keys');
+    return response.data;
+  }
+
+  /**
+   * Get API consumers
+   */
+  async getAPIConsumers(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/api-management/consumers');
+    return response.data;
+  }
+
+  /**
+   * Get API versions
+   */
+  async getAPIVersions(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/api-management/versions');
+    return response.data;
+  }
+
+  /**
+   * Create API key
+   */
+  async createAPIKey(data: any): Promise<any> {
+    const response = await this.client.post<any>('/api/global/api-management/keys', data);
+    return response.data;
+  }
+
+  /**
+   * Revoke API key
+   */
+  async revokeAPIKey(keyId: string): Promise<void> {
+    await this.client.post(`/api/global/api-management/keys/${keyId}/revoke`);
+  }
+
+  /**
+   * Update endpoint rate limit
+   */
+  async updateEndpointRateLimit(endpointId: string, data: any): Promise<void> {
+    await this.client.patch(`/api/global/api-management/endpoints/${endpointId}/rate-limit`, data);
+  }
+
+  // Performance Monitoring
+
+  /**
+   * Get performance metrics
+   */
+  async getPerformanceMetrics(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/performance/metrics');
+    return response.data;
+  }
+
+  /**
+   * Get slow queries
+   */
+  async getSlowQueries(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/performance/slow-queries');
+    return response.data;
+  }
+
+  /**
+   * Get performance alerts
+   */
+  async getPerformanceAlerts(): Promise<any> {
+    const response = await this.client.get<any>('/api/global/performance/alerts');
+    return response.data;
+  }
+
+  /**
+   * Resolve performance alert
+   */
+  async resolvePerformanceAlert(alertId: string): Promise<void> {
+    await this.client.post(`/api/global/performance/alerts/${alertId}/resolve`);
+  }
+
+  // Tenant Lifecycle Management
+
+  /**
+   * Get tenant health (overloaded for global context)
+   */
+  async getTenantHealthGlobal(tenantId: string): Promise<any> {
+    const response = await this.client.get<any>(`/api/global/tenants/${tenantId}/health`);
+    return response.data;
+  }
+
+  /**
+   * Get tenant metrics (global)
+   */
+  async getTenantMetricsGlobal(tenantId: string): Promise<any> {
+    const response = await this.client.get<any>(`/api/global/tenants/${tenantId}/metrics`);
+    return response.data;
+  }
+
+  /**
+   * Get tenant migration status
+   */
+  async getTenantMigrationStatus(tenantId: string, migrationId: string): Promise<any> {
+    const response = await this.client.get<any>(`/api/global/tenants/${tenantId}/migrations/${migrationId}`);
+    return response.data;
+  }
+
+  /**
+   * Get tenant export status
+   */
+  async getTenantExportStatus(tenantId: string, exportId: string): Promise<any> {
+    const response = await this.client.get<any>(`/api/global/tenants/${tenantId}/exports/${exportId}`);
+    return response.data;
+  }
+
+  /**
+   * Suspend tenant (global)
+   */
+  async suspendTenantGlobal(tenantId: string): Promise<void> {
+    await this.client.post(`/api/global/tenants/${tenantId}/suspend`);
+  }
+
+  /**
+   * Resume tenant (global)
+   */
+  async resumeTenantGlobal(tenantId: string): Promise<void> {
+    await this.client.post(`/api/global/tenants/${tenantId}/resume`);
+  }
+
+  /**
+   * Migrate tenant
+   */
+  async migrateTenant(tenantId: string): Promise<any> {
+    const response = await this.client.post<any>(`/api/global/tenants/${tenantId}/migrate`);
+    return response.data;
+  }
+
+  /**
+   * Export tenant data
+   */
+  async exportTenantData(tenantId: string): Promise<any> {
+    const response = await this.client.post<any>(`/api/global/tenants/${tenantId}/export`);
+    return response.data;
+  }
+
+  /**
+   * Import tenant data
+   */
+  async importTenantData(tenantId: string): Promise<void> {
+    await this.client.post(`/api/global/tenants/${tenantId}/import`);
   }
 }
 

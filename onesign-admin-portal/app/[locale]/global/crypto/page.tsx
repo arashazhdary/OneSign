@@ -157,20 +157,11 @@ export default function CryptographyManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/crypto/key-sets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newKeySet),
-      });
-      if (response.ok) {
-        setSuccess('Key set created successfully');
-        setShowCreateKeySetModal(false);
-        setNewKeySet({ name: '', algorithm: 'RSA', keySize: 2048, purpose: '' });
-        fetchKeySets();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      await platformService.createCryptoKeyset(newKeySet);
+      setSuccess('Key set created successfully');
+      setShowCreateKeySetModal(false);
+      setNewKeySet({ name: '', algorithm: 'RSA', keySize: 2048, purpose: '' });
+      fetchKeySets();
     } catch (err) {
       setError(t('common.error'));
     } finally {
@@ -187,16 +178,9 @@ export default function CryptographyManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/crypto/key-sets/${keySetId}/rotate`, {
-        method: 'POST',
-      });
-      if (response.ok) {
-        setSuccess('Key rotation started successfully');
-        fetchKeySets();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      await platformService.rotateCryptoKey(keySetId);
+      setSuccess('Key rotation started successfully');
+      fetchKeySets();
     } catch (err) {
       setError(t('common.error'));
     } finally {
@@ -214,27 +198,18 @@ export default function CryptographyManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/crypto/rotation-policies', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newPolicy),
+      await platformService.updateCryptoRotationPolicy(newPolicy);
+      setSuccess('Rotation policy updated successfully');
+      setShowCreatePolicyModal(false);
+      setNewPolicy({
+        name: '',
+        rotationInterval: 90,
+        rotationUnit: 'Days',
+        autoRotate: true,
+        gracePeriod: 7,
+        notifyBefore: 14,
       });
-      if (response.ok) {
-        setSuccess('Rotation policy updated successfully');
-        setShowCreatePolicyModal(false);
-        setNewPolicy({
-          name: '',
-          rotationInterval: 90,
-          rotationUnit: 'Days',
-          autoRotate: true,
-          gracePeriod: 7,
-          notifyBefore: 14,
-        });
-        fetchRotationPolicies();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      fetchRotationPolicies();
     } catch (err) {
       setError(t('common.error'));
     } finally {

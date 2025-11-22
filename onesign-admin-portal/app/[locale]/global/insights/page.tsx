@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import * as insightsApi from '@/lib/api/insights';
 
 type Tab = 'platform-overview' | 'high-risk-users' | 'risky-tenants' | 'system-health' | 'report-subscriptions';
 
@@ -154,54 +155,31 @@ export default function GlobalInsightsPage() {
 
   const fetchPlatformOverview = async () => {
     // Fetch platform stats
-    const statsResponse = await fetch(
-      'http://localhost:7000/api/global/insights/platform-overview'
-    );
-    if (statsResponse.ok) {
-      const data = await statsResponse.json();
-      setPlatformStats(data);
-    }
+    const data = await insightsApi.getGlobalPlatformOverview();
+    setPlatformStats(data);
 
     // Fetch tenant usage breakdown
-    const tenantStatsResponse = await fetch(
-      'http://localhost:7000/api/global/insights/tenant-usage'
-    );
-    if (tenantStatsResponse.ok) {
-      const data = await tenantStatsResponse.json();
-      setTenantUsageStats(data.items || []);
-    }
+    const tenantData = await insightsApi.getGlobalTenantUsage();
+    setTenantUsageStats(tenantData.items || []);
   };
 
   const fetchHighRiskUsers = async () => {
-    const riskFilter = riskLevelFilter !== 'all' ? `&riskLevel=${riskLevelFilter}` : '';
-    const response = await fetch(
-      `http://localhost:7000/api/global/insights/high-risk-users?pageNumber=${riskPageNumber}&pageSize=${pageSize}&sortBy=${riskSortBy}&sortDesc=${riskSortDesc}${riskFilter}`
-    );
-    if (response.ok) {
-      const data = await response.json();
-      setHighRiskUsers(data.items || []);
-      setRiskTotalCount(data.totalCount || 0);
-    }
+    const data = await insightsApi.getGlobalHighRiskUsers({
+      page: riskPageNumber,
+      pageSize,
+    });
+    setHighRiskUsers(data.items || []);
+    setRiskTotalCount(data.totalCount || 0);
   };
 
   const fetchSystemHealth = async () => {
     // Fetch health metrics
-    const metricsResponse = await fetch(
-      'http://localhost:7000/api/global/insights/system-health'
-    );
-    if (metricsResponse.ok) {
-      const data = await metricsResponse.json();
-      setHealthMetrics(data.services || []);
-    }
+    const healthData = await insightsApi.getGlobalSystemHealth();
+    setHealthMetrics(healthData.services || []);
 
     // Fetch system alerts
-    const alertsResponse = await fetch(
-      'http://localhost:7000/api/global/insights/system-alerts?acknowledged=false'
-    );
-    if (alertsResponse.ok) {
-      const data = await alertsResponse.json();
-      setSystemAlerts(data.items || []);
-    }
+    const alertsData = await insightsApi.getGlobalSystemAlerts({ acknowledged: false });
+    setSystemAlerts(alertsData.items || []);
   };
 
   const handleAcknowledgeAlert = async (alertId: string) => {
@@ -209,20 +187,9 @@ export default function GlobalInsightsPage() {
     setSuccess('');
 
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/global/insights/system-alerts/${alertId}/acknowledge`,
-        {
-          method: 'POST',
-        }
-      );
-
-      if (response.ok) {
-        setSuccess('Alert acknowledged');
-        fetchSystemHealth();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      await insightsApi.acknowledgeGlobalSystemAlert(alertId, 'current-user-id');
+      setSuccess('Alert acknowledged');
+      fetchSystemHealth();
     } catch (err) {
       setError(t('common.error'));
     }

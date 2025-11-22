@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { platformService } from '@/lib/api/services';
 
 interface TenantHealth {
   tenantId: string;

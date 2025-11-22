@@ -72,3 +72,26 @@ export async function exportAuditLogs(
   if (!response.ok) throw new Error('Failed to export audit logs');
   return response.blob();
 }
+
+// Global API functions
+
+export async function searchGlobalAuditEvents(
+  filter: Omit<AuditSearchFilter, 'tenantId'>
+): Promise<AuditSearchResult> {
+  const response = await fetch(
+    `${API_BASE}/api/global/observability/audit/search`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(filter),
+    }
+  );
+  if (!response.ok) throw new Error('Failed to search global audit events');
+  return response.json();
+}
+
+export async function getGlobalAuditEvent(id: string): Promise<AuditEvent> {
+  const response = await fetch(`${API_BASE}/api/global/observability/audit/${id}`);
+  if (!response.ok) throw new Error('Failed to fetch global audit event');
+  return response.json();
+}

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { platformService } from '@/lib/api/services';
 
 interface PlatformVersion {
   version: string;
@@ -88,43 +89,25 @@ export default function GlobalPlatformPage() {
     setError('');
     try {
       if (activeTab === 'version') {
-        const response = await fetch('http://localhost:7000/api/global/platform/version');
-        if (response.ok) {
-          const data = await response.json();
-          setPlatformVersion(data);
-        }
+        const data = await platformService.getPlatformVersion();
+        setPlatformVersion(data);
       } else if (activeTab === 'migrations') {
-        const response = await fetch(`http://localhost:7000/api/global/platform/migrations?page=${migrationPage}&pageSize=${pageSize}`);
-        if (response.ok) {
-          const data = await response.json();
-          setMigrations(data.items || []);
-          setTotalMigrations(data.totalCount || 0);
-        }
+        const data = await platformService.getPlatformMigrations(migrationPage, pageSize);
+        setMigrations(data.items || []);
+        setTotalMigrations(data.totalCount || 0);
       } else if (activeTab === 'tests') {
-        const response = await fetch(`http://localhost:7000/api/global/platform/tests?page=${testPage}&pageSize=${pageSize}`);
-        if (response.ok) {
-          const data = await response.json();
-          setTestResults(data.items || []);
-          setTotalTests(data.totalCount || 0);
-        }
+        const data = await platformService.getPlatformTests(testPage, pageSize);
+        setTestResults(data.items || []);
+        setTotalTests(data.totalCount || 0);
       } else if (activeTab === 'health') {
-        const response = await fetch('http://localhost:7000/api/global/platform/health');
-        if (response.ok) {
-          const data = await response.json();
-          setSystemHealth(data.services || []);
-        }
+        const data = await platformService.getPlatformHealth();
+        setSystemHealth(data.services || []);
       } else if (activeTab === 'diagnostics') {
-        const response = await fetch('http://localhost:7000/api/global/platform/diagnostics');
-        if (response.ok) {
-          const data = await response.json();
-          setDiagnostics(data.diagnostics || []);
-        }
+        const data = await platformService.getPlatformDiagnostics();
+        setDiagnostics(data.diagnostics || []);
       } else if (activeTab === 'docs') {
-        const response = await fetch('http://localhost:7000/api/global/platform/docs/openapi');
-        if (response.ok) {
-          const data = await response.json();
-          setOpenApiSpec(data);
-        }
+        const data = await platformService.getPlatformOpenApiDocs();
+        setOpenApiSpec(data);
       }
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -137,17 +120,10 @@ export default function GlobalPlatformPage() {
   const runTests = async () => {
     setError('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/platform/tests/run', {
-        method: 'POST',
-      });
-      if (response.ok) {
-        fetchData();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.runPlatformTests();
+      fetchData();
+    } catch (err: any) {
+      setError(err.response?.data?.errorMessage || t('common.error'));
     }
   };
 
@@ -155,19 +131,10 @@ export default function GlobalPlatformPage() {
     setError('');
     setApplyingMigration(true);
     try {
-      const response = await fetch('http://localhost:7000/api/global/platform/migrations/apply', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ migrationId }),
-      });
-      if (response.ok) {
-        fetchData();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.applyPlatformMigration(migrationId);
+      fetchData();
+    } catch (err: any) {
+      setError(err.response?.data?.errorMessage || t('common.error'));
     } finally {
       setApplyingMigration(false);
     }
@@ -176,33 +143,21 @@ export default function GlobalPlatformPage() {
   const getTestResult = async (testId: string) => {
     setError('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/platform/tests/${testId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setSingleTestResult(data);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      const data = await platformService.getPlatformTestById(testId);
+      setSingleTestResult(data);
+    } catch (err: any) {
+      setError(err.response?.data?.errorMessage || t('common.error'));
     }
   };
 
   const getTestResults = async () => {
     setError('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/platform/tests/results');
-      if (response.ok) {
-        const data = await response.json();
-        setTestResults(data.items || []);
-        setTotalTests(data.totalCount || 0);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      const data = await platformService.getPlatformTestResults();
+      setTestResults(data.items || []);
+      setTotalTests(data.totalCount || 0);
+    } catch (err: any) {
+      setError(err.response?.data?.errorMessage || t('common.error'));
     }
   };
 
@@ -210,17 +165,10 @@ export default function GlobalPlatformPage() {
     setError('');
     setGeneratingDocs(true);
     try {
-      const response = await fetch('http://localhost:7000/api/global/platform/docs/generate', {
-        method: 'POST',
-      });
-      if (response.ok) {
-        fetchData();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.generatePlatformDocs();
+      fetchData();
+    } catch (err: any) {
+      setError(err.response?.data?.errorMessage || t('common.error'));
     } finally {
       setGeneratingDocs(false);
     }

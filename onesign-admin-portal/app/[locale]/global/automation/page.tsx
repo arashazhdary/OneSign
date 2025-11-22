@@ -8,6 +8,9 @@ import {
   publishTemplate,
   enforceTemplate,
   unenforceTemplate,
+  getGlobalTemplate,
+  updateGlobalTemplate,
+  deleteGlobalTemplate,
   AutomationWorkflowDto,
   EVENT_TYPES,
   ACTION_TYPES,
@@ -61,13 +64,8 @@ export default function GlobalAutomationPage() {
     if (!selectedTemplateId) return;
     setError('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/automation/templates/${selectedTemplateId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setTemplateDetail(data);
-      } else {
-        setError('Template not found');
-      }
+      const data = await getGlobalTemplate(selectedTemplateId);
+      setTemplateDetail(data);
     } catch (err) {
       setError(t('common.error'));
     }
@@ -127,17 +125,9 @@ export default function GlobalAutomationPage() {
 
   const handleUpdateTemplate = async (id: string, data: any) => {
     try {
-      const response = await fetch(`http://localhost:7000/api/global/automation/templates/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, userId }),
-      });
-      if (response.ok) {
-        setSuccess('Template updated successfully');
-        fetchTemplates();
-      } else {
-        setError(t('common.error'));
-      }
+      await updateGlobalTemplate(id, { ...data, userId });
+      setSuccess('Template updated successfully');
+      fetchTemplates();
     } catch (err) {
       setError(t('common.error'));
     }
@@ -146,15 +136,9 @@ export default function GlobalAutomationPage() {
   const handleDeleteTemplate = async (id: string) => {
     if (!confirm('Are you sure you want to delete this template?')) return;
     try {
-      const response = await fetch(`http://localhost:7000/api/global/automation/templates/${id}`, {
-        method: 'DELETE',
-      });
-      if (response.ok) {
-        setSuccess('Template deleted successfully');
-        fetchTemplates();
-      } else {
-        setError(t('common.error'));
-      }
+      await deleteGlobalTemplate(id, userId);
+      setSuccess('Template deleted successfully');
+      fetchTemplates();
     } catch (err) {
       setError(t('common.error'));
     }
