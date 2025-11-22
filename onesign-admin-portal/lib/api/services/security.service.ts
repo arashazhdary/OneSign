@@ -682,6 +682,63 @@ export class SecurityService {
     );
     return response.data;
   }
+
+  // Policies Management
+
+  /**
+   * Get policies
+   */
+  async getPolicies(tenantId: string, enabled?: boolean): Promise<any[]> {
+    const params: any = { tenantId };
+    if (enabled !== undefined) params.enabled = enabled;
+    const response = await this.client.get<any[]>('/api/tenant/policies', params);
+    return response.data;
+  }
+
+  /**
+   * Create policy
+   */
+  async createPolicy(tenantId: string, data: any): Promise<any> {
+    const response = await this.client.post<any>('/api/tenant/policies', { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Update policy
+   */
+  async updatePolicy(tenantId: string, policyId: string, data: any): Promise<any> {
+    const response = await this.client.put<any>(`/api/tenant/policies/${policyId}`, { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Delete policy
+   */
+  async deletePolicy(tenantId: string, policyId: string): Promise<void> {
+    await this.client.delete(`/api/tenant/policies/${policyId}`, { params: { tenantId } });
+  }
+
+  /**
+   * Evaluate policy
+   */
+  async evaluatePolicy(tenantId: string, policyId: string, context: any): Promise<any> {
+    const response = await this.client.post<any>(`/api/tenant/policies/${policyId}/evaluate`, {
+      tenantId,
+      ...context
+    });
+    return response.data;
+  }
+
+  /**
+   * Assign policy to entity
+   */
+  async assignPolicy(tenantId: string, policyId: string, entityType: string, entityId: string): Promise<void> {
+    await this.client.post(`/api/tenant/policies/${policyId}/assign`, {
+      tenantId,
+      entityType,
+      entityId
+    });
+  }
 }
 
 // Export singleton instance

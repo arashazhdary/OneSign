@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { securityService } from '@/lib/api/services';
 
 interface Policy {
   id: string;
@@ -70,12 +71,8 @@ export default function PoliciesPage() {
 
     try {
       setLoading(true);
-      const url = `http://localhost:7000/api/tenant/policies?tenantId=${tenantId}${filterEnabled !== null ? `&enabled=${filterEnabled}` : ''}`;
-      const response = await fetch(url);
-      if (response.ok) {
-        const data = await response.json();
-        setPolicies(Array.isArray(data) ? data : []);
-      }
+      const data = await securityService.getPolicies(tenantId, filterEnabled ?? undefined);
+      setPolicies(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching policies:', error);
     } finally {
@@ -90,33 +87,22 @@ export default function PoliciesPage() {
     if (!tenantId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/policies?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenantId,
-          name: policyName,
-          description: policyDescription,
-          policyType: policyType,
-          rules: JSON.parse(policyRules),
-          enabled
-        })
+      await securityService.createPolicy(tenantId, {
+        name: policyName,
+        description: policyDescription,
+        policyType: policyType,
+        rules: JSON.parse(policyRules),
+        enabled
       });
-
-      if (response.ok) {
-        setShowCreateModal(false);
-        setPolicyName('');
-        setPolicyDescription('');
-        setPolicyRules('{}');
-        setEnabled(true);
-        setSuccess(t('tenant.policies.policyCreated') || 'Policy created successfully');
-        fetchPolicies();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (error) {
-      setError(t('common.error'));
+      setShowCreateModal(false);
+      setPolicyName('');
+      setPolicyDescription('');
+      setPolicyRules('{}');
+      setEnabled(true);
+      setSuccess(t('tenant.policies.policyCreated') || 'Policy created successfully');
+      fetchPolicies();
+    } catch (error: any) {
+      setError(error?.message || t('common.error'));
       console.error('Error creating policy:', error);
     }
   };
@@ -128,34 +114,22 @@ export default function PoliciesPage() {
     if (!tenantId || !selectedPolicy) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/policies/${selectedPolicy.id}?tenantId=${tenantId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: selectedPolicy.id,
-          tenantId,
-          name: policyName,
-          description: policyDescription,
-          policyType: policyType,
-          rules: JSON.parse(policyRules),
-          enabled
-        })
+      await securityService.updatePolicy(tenantId, selectedPolicy.id, {
+        name: policyName,
+        description: policyDescription,
+        policyType: policyType,
+        rules: JSON.parse(policyRules),
+        enabled
       });
-
-      if (response.ok) {
-        setShowEditModal(false);
-        setSelectedPolicy(null);
-        setPolicyName('');
-        setPolicyDescription('');
-        setPolicyRules('{}');
-        setSuccess(t('tenant.policies.policyUpdated') || 'Policy updated successfully');
-        fetchPolicies();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (error) {
-      setError(t('common.error'));
+      setShowEditModal(false);
+      setSelectedPolicy(null);
+      setPolicyName('');
+      setPolicyDescription('');
+      setPolicyRules('{}');
+      setSuccess(t('tenant.policies.policyUpdated') || 'Policy updated successfully');
+      fetchPolicies();
+    } catch (error: any) {
+      setError(error?.message || t('common.error'));
       console.error('Error updating policy:', error);
     }
   };
@@ -167,19 +141,11 @@ export default function PoliciesPage() {
     if (!tenantId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/policies/${policyId}?tenantId=${tenantId}`, {
-        method: 'DELETE'
-      });
-
-      if (response.ok) {
-        setSuccess(t('tenant.policies.policyDeleted') || 'Policy deleted successfully');
-        fetchPolicies();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (error) {
-      setError(t('common.error'));
+      await securityService.deletePolicy(tenantId, policyId);
+      setSuccess(t('tenant.policies.policyDeleted') || 'Policy deleted successfully');
+      fetchPolicies();
+    } catch (error: any) {
+      setError(error?.message || t('common.error'));
       console.error('Error deleting policy:', error);
     }
   };
@@ -191,26 +157,14 @@ export default function PoliciesPage() {
     if (!tenantId || !selectedPolicy) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/policies/evaluate?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          policyId: selectedPolicy.id,
-          userId: evaluateUserId,
-          resource: evaluateResource,
-          action: evaluateAction
-        })
+      const data = await securityService.evaluatePolicy(tenantId, selectedPolicy.id, {
+        userId: evaluateUserId,
+        resource: evaluateResource,
+        action: evaluateAction
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        setEvaluationResult(data);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (error) {
-      setError(t('common.error'));
+      setEvaluationResult(data);
+    } catch (error: any) {
+      setError(error?.message || t('common.error'));
       console.error('Error evaluating policy:', error);
     }
   };
@@ -222,27 +176,13 @@ export default function PoliciesPage() {
     if (!tenantId || !selectedPolicy) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/policies/assign?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          policyId: selectedPolicy.id,
-          entityType: assignEntityType,
-          entityId: assignEntityId
-        })
-      });
-
-      if (response.ok) {
-        setShowAssignModal(false);
-        setSelectedPolicy(null);
-        setAssignEntityId('');
-        setSuccess(t('tenant.policies.policyAssigned') || 'Policy assigned successfully');
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (error) {
-      setError(t('common.error'));
+      await securityService.assignPolicy(tenantId, selectedPolicy.id, assignEntityType, assignEntityId);
+      setShowAssignModal(false);
+      setSelectedPolicy(null);
+      setAssignEntityId('');
+      setSuccess(t('tenant.policies.policyAssigned') || 'Policy assigned successfully');
+    } catch (error: any) {
+      setError(error?.message || t('common.error'));
       console.error('Error assigning policy:', error);
     }
   };

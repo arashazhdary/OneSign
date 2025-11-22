@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { platformService } from '@/lib/api/services';
 
 interface TenantSettings {
   logoUrl?: string;
@@ -37,15 +38,12 @@ export default function TenantSettingsPage() {
 
   const fetchSettings = async () => {
     if (!tenantId) return;
-    
+
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/settings?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setSettings(data);
-        setLogoUrl(data.logoUrl || '');
-        setPrimaryColor(data.primaryColor || '');
-      }
+      const data = await platformService.getSettings(tenantId);
+      setSettings(data);
+      setLogoUrl(data.logoUrl || '');
+      setPrimaryColor(data.primaryColor || '');
     } catch (error) {
       console.error('Error fetching settings:', error);
     } finally {
@@ -62,25 +60,14 @@ export default function TenantSettingsPage() {
     if (!tenantId) return;
     
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/settings/branding?tenantId=${tenantId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          logoUrl: logoUrl || null,
-          primaryColor: primaryColor || null
-        })
+      const data = await platformService.updateBrandingSettings(tenantId, {
+        logoUrl: logoUrl || null,
+        primaryColor: primaryColor || null
       });
-
-      if (response.ok) {
-        const data = await response.json();
-        setSettings(data);
-        setSuccess(t('tenant.settings.brandingUpdated'));
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (error) {
-      setError(t('common.error'));
+      setSettings(data);
+      setSuccess(t('tenant.settings.brandingUpdated'));
+    } catch (error: any) {
+      setError(error?.message || t('common.error'));
       console.error('Error updating branding:', error);
     } finally {
       setSaving(false);

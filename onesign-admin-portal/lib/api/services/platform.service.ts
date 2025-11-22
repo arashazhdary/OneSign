@@ -626,6 +626,24 @@ export class PlatformService {
     const response = await this.client.get<any[]>('/api/tenant/scope-groups', { tenantId });
     return response.data;
   }
+
+  // Tenant Settings Management
+
+  /**
+   * Get tenant settings
+   */
+  async getSettings(tenantId: string): Promise<any> {
+    const response = await this.client.get<any>('/api/tenant/settings', { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Update tenant branding settings
+   */
+  async updateBrandingSettings(tenantId: string, data: any): Promise<any> {
+    const response = await this.client.put<any>('/api/tenant/settings/branding', { ...data, tenantId });
+    return response.data;
+  }
 }
 
 // Export singleton instance
