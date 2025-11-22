@@ -381,6 +381,46 @@ export class PlatformService {
     const response = await this.client.get(`/api/health/${serviceName}`);
     return response.data;
   }
+
+  // Cryptography Management
+
+  /**
+   * Get all keysets
+   */
+  async getCryptoKeysets(): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/global/crypto/keysets');
+    return response.data;
+  }
+
+  /**
+   * Get keyset by ID with versions
+   */
+  async getCryptoKeyset(keysetId: string): Promise<any> {
+    const response = await this.client.get<any>(`/api/global/crypto/keysets/${keysetId}`);
+    return response.data;
+  }
+
+  /**
+   * Rollover key manually
+   */
+  async rolloverCryptoKey(keysetId: string): Promise<void> {
+    await this.client.post(`/api/global/crypto/keysets/${keysetId}/rollover`, {});
+  }
+
+  /**
+   * Revoke key version
+   */
+  async revokeCryptoKeyVersion(versionId: string): Promise<void> {
+    await this.client.post(`/api/global/crypto/keyversions/${versionId}/revoke`, {});
+  }
+
+  /**
+   * Get key rotation policies
+   */
+  async getCryptoRotationPolicies(): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/global/crypto/rotation-policies');
+    return response.data;
+  }
 }
 
 // Export singleton instance

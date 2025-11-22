@@ -380,6 +380,214 @@ export class SecurityService {
       : `/api/global/security/conditional-access/${policyId}`;
     await this.client.delete(endpoint, { params: { tenantId } });
   }
+
+  // Adaptive Security
+
+  /**
+   * Get adaptive security policies
+   */
+  async getAdaptiveSecurityPolicies(tenantId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>(
+      '/api/tenant/adaptive-security/policies',
+      { tenantId }
+    );
+    return response.data;
+  }
+
+  /**
+   * Get adaptive security policy by ID
+   */
+  async getAdaptiveSecurityPolicyById(tenantId: string, policyId: string): Promise<any> {
+    const response = await this.client.get<any>(
+      `/api/tenant/adaptive-security/policies/${policyId}`,
+      { tenantId }
+    );
+    return response.data;
+  }
+
+  /**
+   * Create adaptive security policy
+   */
+  async createAdaptiveSecurityPolicy(tenantId: string, data: any): Promise<any> {
+    const response = await this.client.post<any>(
+      '/api/tenant/adaptive-security/policies',
+      { ...data, tenantId }
+    );
+    return response.data;
+  }
+
+  /**
+   * Update adaptive security policy
+   */
+  async updateAdaptiveSecurityPolicy(tenantId: string, policyId: string, data: any): Promise<any> {
+    const response = await this.client.put<any>(
+      `/api/tenant/adaptive-security/policies/${policyId}`,
+      { ...data, tenantId }
+    );
+    return response.data;
+  }
+
+  /**
+   * Delete adaptive security policy
+   */
+  async deleteAdaptiveSecurityPolicy(tenantId: string, policyId: string): Promise<void> {
+    await this.client.delete(`/api/tenant/adaptive-security/policies/${policyId}`, {
+      params: { tenantId },
+    });
+  }
+
+  /**
+   * Enable adaptive security policy
+   */
+  async enableAdaptiveSecurityPolicy(tenantId: string, policyId: string): Promise<void> {
+    await this.client.post(`/api/tenant/adaptive-security/policies/${policyId}/enable`, {
+      tenantId,
+    });
+  }
+
+  /**
+   * Disable adaptive security policy
+   */
+  async disableAdaptiveSecurityPolicy(tenantId: string, policyId: string): Promise<void> {
+    await this.client.post(`/api/tenant/adaptive-security/policies/${policyId}/disable`, {
+      tenantId,
+    });
+  }
+
+  /**
+   * Get adaptive security signals
+   */
+  async getAdaptiveSecuritySignals(tenantId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>(
+      '/api/tenant/adaptive-security/signals',
+      { tenantId }
+    );
+    return response.data;
+  }
+
+  /**
+   * Process adaptive security signal
+   */
+  async processAdaptiveSecuritySignal(tenantId: string, data: any): Promise<void> {
+    await this.client.post('/api/tenant/adaptive-security/signals', {
+      ...data,
+      tenantId,
+    });
+  }
+
+  /**
+   * Get user security context
+   */
+  async getUserSecurityContext(tenantId: string, userId: string): Promise<any> {
+    const response = await this.client.get<any>(
+      `/api/tenant/adaptive-security/users/${userId}/context`,
+      { tenantId }
+    );
+    return response.data;
+  }
+
+  /**
+   * Update user security context
+   */
+  async updateUserSecurityContext(tenantId: string, userId: string, data: any): Promise<any> {
+    const response = await this.client.put<any>(
+      `/api/tenant/adaptive-security/users/${userId}/context`,
+      { ...data, tenantId }
+    );
+    return response.data;
+  }
+
+  // MFA Management
+
+  /**
+   * Create MFA challenge
+   */
+  async createMFAChallenge(tenantId: string, data: any): Promise<any> {
+    const response = await this.client.post<any>(
+      '/api/tenant/mfa/challenge',
+      { ...data, tenantId }
+    );
+    return response.data;
+  }
+
+  /**
+   * Check MFA requirement
+   */
+  async checkMFARequirement(tenantId: string, userId: string): Promise<any> {
+    const response = await this.client.get<any>(
+      '/api/tenant/mfa/check-requirement',
+      { tenantId, userId }
+    );
+    return response.data;
+  }
+
+  /**
+   * Get user MFA methods
+   */
+  async getUserMFAMethods(tenantId: string, userId?: string): Promise<any[]> {
+    const response = await this.client.get<any[]>(
+      '/api/tenant/mfa/methods',
+      { tenantId, userId }
+    );
+    return response.data;
+  }
+
+  /**
+   * Delete MFA method
+   */
+  async deleteMFAMethod(tenantId: string, methodId: string): Promise<void> {
+    await this.client.delete(`/api/tenant/mfa/methods/${methodId}`, {
+      params: { tenantId },
+    });
+  }
+
+  // Trusted Devices
+
+  /**
+   * Get trusted devices
+   */
+  async getTrustedDevices(tenantId: string, userId?: string): Promise<any[]> {
+    const response = await this.client.get<any[]>(
+      '/api/tenant/trusted-devices',
+      { tenantId, userId }
+    );
+    return response.data;
+  }
+
+  /**
+   * Check device trust
+   */
+  async checkDeviceTrust(tenantId: string, deviceFingerprint: string): Promise<any> {
+    const response = await this.client.get<any>(
+      '/api/tenant/trusted-devices/check',
+      { tenantId, deviceFingerprint }
+    );
+    return response.data;
+  }
+
+  // Security Policy - Org Unit Rules
+
+  /**
+   * Get org unit MFA rules
+   */
+  async getOrgUnitMFARules(tenantId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>(
+      '/api/tenant/security/policy/org-unit-rules',
+      { tenantId }
+    );
+    return response.data;
+  }
+
+  /**
+   * Update org unit MFA rules
+   */
+  async updateOrgUnitMFARules(tenantId: string, data: any): Promise<any> {
+    const response = await this.client.put<any>(
+      '/api/tenant/security/policy/org-unit-rules',
+      { ...data, tenantId }
+    );
+    return response.data;
+  }
 }
 
 // Export singleton instance
