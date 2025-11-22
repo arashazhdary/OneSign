@@ -192,6 +192,26 @@ export async function sendNotification(
   return response.json();
 }
 
+export async function sendNotificationDirect(
+  tenantId: string,
+  data: {
+    recipientId?: string;
+    channel: string;
+    subject?: string;
+    body?: string;
+    templateId?: string;
+    variables?: Record<string, string>;
+  }
+): Promise<NotificationDto> {
+  const response = await fetch(`${API_BASE}/api/tenant/notifications?tenantId=${tenantId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...data, tenantId }),
+  });
+  if (!response.ok) throw new Error('Failed to send notification');
+  return response.json();
+}
+
 export async function retryNotification(
   id: string,
   tenantId: string

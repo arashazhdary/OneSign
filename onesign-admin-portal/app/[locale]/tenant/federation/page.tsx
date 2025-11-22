@@ -7,6 +7,7 @@ import LoadingOverlay from '@/app/components/LoadingOverlay';
 import Modal from '@/app/components/Modal';
 import StatusBadge from '@/app/components/StatusBadge';
 import DataTable, { Column } from '@/app/components/DataTable';
+import { platformService } from '@/lib/api/services/platform.service';
 
 interface SAMLProvider {
   id: string;
@@ -116,50 +117,20 @@ export default function FederationPage() {
   };
 
   const fetchSAMLProviders = async () => {
-    const response = await fetch(
-      `http://localhost:7000/api/tenant/federation/saml-providers?tenantId=${tenantId}`,
-      {
-        credentials: 'include',
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch SAML providers');
-    }
-
-    const data = await response.json();
+    if (!tenantId) return;
+    const data = await platformService.getSAMLProviders(tenantId);
     setSamlProviders(data);
   };
 
   const fetchOIDCProviders = async () => {
-    const response = await fetch(
-      `http://localhost:7000/api/tenant/federation/oidc-providers?tenantId=${tenantId}`,
-      {
-        credentials: 'include',
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch OIDC providers');
-    }
-
-    const data = await response.json();
+    if (!tenantId) return;
+    const data = await platformService.getOIDCProviders(tenantId);
     setOidcProviders(data);
   };
 
   const fetchSCIMTokens = async () => {
-    const response = await fetch(
-      `http://localhost:7000/api/tenant/federation/scim-tokens?tenantId=${tenantId}`,
-      {
-        credentials: 'include',
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch SCIM tokens');
-    }
-
-    const data = await response.json();
+    if (!tenantId) return;
+    const data = await platformService.getSCIMTokens(tenantId);
     setScimTokens(data);
   };
 
@@ -169,36 +140,26 @@ export default function FederationPage() {
       return;
     }
 
+    if (!tenantId) return;
+
     setSubmitting(true);
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/federation/saml-providers?tenantId=${tenantId}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            name: samlName,
-            entityId: samlEntityId,
-            ssoUrl: samlSsoUrl,
-            certificate: samlCertificate,
-            enabled: samlEnabled,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to create SAML provider');
-      }
+      await platformService.createSAMLProvider(tenantId, {
+        name: samlName,
+        entityId: samlEntityId,
+        ssoUrl: samlSsoUrl,
+        certificate: samlCertificate,
+        enabled: samlEnabled,
+      });
 
       setSuccess('SAML provider created successfully');
       setShowCreateModal(false);
       resetSAMLForm();
       fetchSAMLProviders();
-    } catch (err) {
-      setError(t('common.error'));
+    } catch (err: any) {
+      setError(err?.message || t('common.error'));
     } finally {
       setSubmitting(false);
     }
@@ -210,40 +171,30 @@ export default function FederationPage() {
       return;
     }
 
+    if (!tenantId) return;
+
     setSubmitting(true);
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/federation/oidc-providers?tenantId=${tenantId}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            name: oidcName,
-            issuer: oidcIssuer,
-            clientId: oidcClientId,
-            clientSecret: oidcClientSecret,
-            authorizationEndpoint: oidcAuthEndpoint,
-            tokenEndpoint: oidcTokenEndpoint,
-            userInfoEndpoint: oidcUserInfoEndpoint,
-            jwksUri: oidcJwksUri,
-            enabled: oidcEnabled,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to create OIDC provider');
-      }
+      await platformService.createOIDCProvider(tenantId, {
+        name: oidcName,
+        issuer: oidcIssuer,
+        clientId: oidcClientId,
+        clientSecret: oidcClientSecret,
+        authorizationEndpoint: oidcAuthEndpoint,
+        tokenEndpoint: oidcTokenEndpoint,
+        userInfoEndpoint: oidcUserInfoEndpoint,
+        jwksUri: oidcJwksUri,
+        enabled: oidcEnabled,
+      });
 
       setSuccess('OIDC provider created successfully');
       setShowCreateModal(false);
       resetOIDCForm();
       fetchOIDCProviders();
-    } catch (err) {
-      setError(t('common.error'));
+    } catch (err: any) {
+      setError(err?.message || t('common.error'));
     } finally {
       setSubmitting(false);
     }
@@ -255,131 +206,88 @@ export default function FederationPage() {
       return;
     }
 
+    if (!tenantId) return;
+
     setSubmitting(true);
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/federation/scim-tokens?tenantId=${tenantId}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            name: scimName,
-            expiresAt: scimExpiresAt || null,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to create SCIM token');
-      }
-
-      const data = await response.json();
+      const data = await platformService.createSCIMToken(tenantId, {
+        name: scimName,
+        expiresAt: scimExpiresAt || null,
+      });
       setSuccess(`SCIM token created successfully. Token: ${data.token}`);
       setShowCreateModal(false);
       resetSCIMForm();
       fetchSCIMTokens();
-    } catch (err) {
-      setError(t('common.error'));
+    } catch (err: any) {
+      setError(err?.message || t('common.error'));
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleUpdateProvider = async () => {
-    if (!selectedItem) return;
+    if (!selectedItem || !tenantId) return;
 
     setSubmitting(true);
     setError('');
     setSuccess('');
     try {
-      const endpoint =
-        activeTab === 'saml'
-          ? `saml-providers/${selectedItem.id}`
-          : `oidc-providers/${selectedItem.id}`;
-
-      const body =
-        activeTab === 'saml'
-          ? {
-              name: samlName,
-              entityId: samlEntityId,
-              ssoUrl: samlSsoUrl,
-              certificate: samlCertificate,
-              enabled: samlEnabled,
-            }
-          : {
-              name: oidcName,
-              issuer: oidcIssuer,
-              clientId: oidcClientId,
-              clientSecret: oidcClientSecret,
-              authorizationEndpoint: oidcAuthEndpoint,
-              tokenEndpoint: oidcTokenEndpoint,
-              userInfoEndpoint: oidcUserInfoEndpoint,
-              jwksUri: oidcJwksUri,
-              enabled: oidcEnabled,
-            };
-
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/federation/${endpoint}?tenantId=${tenantId}`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify(body),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to update provider');
+      if (activeTab === 'saml') {
+        await platformService.updateSAMLProvider(tenantId, selectedItem.id, {
+          name: samlName,
+          entityId: samlEntityId,
+          ssoUrl: samlSsoUrl,
+          certificate: samlCertificate,
+          enabled: samlEnabled,
+        });
+      } else {
+        await platformService.updateOIDCProvider(tenantId, selectedItem.id, {
+          name: oidcName,
+          issuer: oidcIssuer,
+          clientId: oidcClientId,
+          clientSecret: oidcClientSecret,
+          authorizationEndpoint: oidcAuthEndpoint,
+          tokenEndpoint: oidcTokenEndpoint,
+          userInfoEndpoint: oidcUserInfoEndpoint,
+          jwksUri: oidcJwksUri,
+          enabled: oidcEnabled,
+        });
       }
 
       setSuccess('Provider updated successfully');
       setShowEditModal(false);
       setSelectedItem(null);
       fetchData();
-    } catch (err) {
-      setError(t('common.error'));
+    } catch (err: any) {
+      setError(err?.message || t('common.error'));
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!selectedItem) return;
+    if (!selectedItem || !tenantId) return;
 
     setSubmitting(true);
     setError('');
     setSuccess('');
     try {
-      let endpoint = '';
       if (activeTab === 'saml') {
-        endpoint = `saml-providers/${selectedItem.id}`;
+        await platformService.deleteSAMLProvider(tenantId, selectedItem.id);
       } else if (activeTab === 'oidc') {
-        endpoint = `oidc-providers/${selectedItem.id}`;
+        await platformService.deleteOIDCProvider(tenantId, selectedItem.id);
       } else if (activeTab === 'scim') {
-        endpoint = `scim-tokens/${selectedItem.id}`;
-      }
-
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/federation/${endpoint}?tenantId=${tenantId}`,
-        {
-          method: 'DELETE',
-          credentials: 'include',
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to delete item');
+        await platformService.deleteSCIMToken(tenantId, selectedItem.id);
       }
 
       setSuccess('Item deleted successfully');
       setShowDeleteModal(false);
       setSelectedItem(null);
       fetchData();
-    } catch (err) {
-      setError(t('common.error'));
+    } catch (err: any) {
+      setError(err?.message || t('common.error'));
     } finally {
       setSubmitting(false);
     }

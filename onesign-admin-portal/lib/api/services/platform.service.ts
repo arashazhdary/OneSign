@@ -656,11 +656,143 @@ export class PlatformService {
   }
 
   /**
+   * Get tenant branding configuration
+   */
+  async getBranding(tenantId: string): Promise<any> {
+    const response = await this.client.get<any>('/api/tenant/branding', { tenantId });
+    return response.data;
+  }
+
+  /**
    * Update tenant branding settings
+   */
+  async updateBranding(tenantId: string, data: any): Promise<any> {
+    const response = await this.client.put<any>('/api/tenant/branding', { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Update tenant branding settings (legacy)
    */
   async updateBrandingSettings(tenantId: string, data: any): Promise<any> {
     const response = await this.client.put<any>('/api/tenant/settings/branding', { ...data, tenantId });
     return response.data;
+  }
+
+  // Federation Management
+
+  /**
+   * Get SAML providers
+   */
+  async getSAMLProviders(tenantId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/tenant/federation/saml-providers', { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Create SAML provider
+   */
+  async createSAMLProvider(tenantId: string, data: any): Promise<any> {
+    const response = await this.client.post<any>('/api/tenant/federation/saml-providers', { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Update SAML provider
+   */
+  async updateSAMLProvider(tenantId: string, providerId: string, data: any): Promise<any> {
+    const response = await this.client.put<any>(`/api/tenant/federation/saml-providers/${providerId}`, { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Delete SAML provider
+   */
+  async deleteSAMLProvider(tenantId: string, providerId: string): Promise<void> {
+    await this.client.delete(`/api/tenant/federation/saml-providers/${providerId}`, { params: { tenantId } });
+  }
+
+  /**
+   * Get OIDC providers
+   */
+  async getOIDCProviders(tenantId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/tenant/federation/oidc-providers', { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Create OIDC provider
+   */
+  async createOIDCProvider(tenantId: string, data: any): Promise<any> {
+    const response = await this.client.post<any>('/api/tenant/federation/oidc-providers', { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Update OIDC provider
+   */
+  async updateOIDCProvider(tenantId: string, providerId: string, data: any): Promise<any> {
+    const response = await this.client.put<any>(`/api/tenant/federation/oidc-providers/${providerId}`, { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Delete OIDC provider
+   */
+  async deleteOIDCProvider(tenantId: string, providerId: string): Promise<void> {
+    await this.client.delete(`/api/tenant/federation/oidc-providers/${providerId}`, { params: { tenantId } });
+  }
+
+  /**
+   * Get SCIM tokens
+   */
+  async getSCIMTokens(tenantId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/tenant/federation/scim-tokens', { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Create SCIM token
+   */
+  async createSCIMToken(tenantId: string, data: any): Promise<any> {
+    const response = await this.client.post<any>('/api/tenant/federation/scim-tokens', { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Delete SCIM token
+   */
+  async deleteSCIMToken(tenantId: string, tokenId: string): Promise<void> {
+    await this.client.delete(`/api/tenant/federation/scim-tokens/${tokenId}`, { params: { tenantId } });
+  }
+
+  // Delegated Admins Management
+
+  /**
+   * Get delegated admins
+   */
+  async getDelegatedAdmins(tenantId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/tenant/delegated-admins', { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Create delegated admin
+   */
+  async createDelegatedAdmin(tenantId: string, data: {
+    tenantUserId: string;
+    orgUnitId: string;
+    scopeType: number;
+  }): Promise<any> {
+    const response = await this.client.post<any>('/api/tenant/delegated-admins', { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Delete delegated admin
+   */
+  async deleteDelegatedAdmin(tenantId: string, id: string): Promise<void> {
+    await this.client.delete(`/api/tenant/delegated-admins/${id}`, { params: { tenantId } });
   }
 }
 

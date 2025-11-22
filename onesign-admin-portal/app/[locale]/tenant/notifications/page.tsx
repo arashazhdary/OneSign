@@ -3,6 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import {
+  getNotificationTemplates,
+  getNotifications,
+  createNotificationTemplate,
+  sendNotificationDirect,
+  NotificationTemplateDto,
+  NotificationDto,
+} from '@/lib/api/notifications';
 
 interface NotificationTemplate {
   id: string;
@@ -77,11 +85,8 @@ export default function NotificationsPage() {
     if (!tenantId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/notifications/templates?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setTemplates(Array.isArray(data) ? data : []);
-      }
+      const data = await getNotificationTemplates(tenantId);
+      setTemplates(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching templates:', error);
     }
@@ -91,11 +96,8 @@ export default function NotificationsPage() {
     if (!tenantId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/notifications?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setNotifications(Array.isArray(data) ? data : []);
-      }
+      const data = await getNotifications(tenantId);
+      setNotifications(Array.isArray(data.items) ? data.items : []);
     } catch (error) {
       console.error('Error fetching notifications:', error);
     }
@@ -108,32 +110,28 @@ export default function NotificationsPage() {
     if (!tenantId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/notifications/templates?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenantId,
-          name: templateName,
-          subject: templateSubject,
-          body: templateBody,
-          templateType: templateType,
-          channel: templateChannel
-        })
+      await createNotificationTemplate({
+        tenantId,
+        userId: '', // TODO: Add current user ID
+        name: templateName,
+        description: '',
+        category: 'Custom',
+        type: templateChannel as any,
+        subjectTemplate: templateSubject,
+        bodyTemplate: templateBody,
+        htmlTemplate: '',
+        variables: [],
+        isActive: true,
       });
 
-      if (response.ok) {
-        setShowTemplateModal(false);
-        setTemplateName('');
-        setTemplateSubject('');
-        setTemplateBody('');
-        setSuccess(t('tenant.notifications.templateCreated') || 'Template created successfully');
-        fetchTemplates();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (error) {
-      setError(t('common.error'));
+      setShowTemplateModal(false);
+      setTemplateName('');
+      setTemplateSubject('');
+      setTemplateBody('');
+      setSuccess(t('tenant.notifications.templateCreated') || 'Template created successfully');
+      fetchTemplates();
+    } catch (error: any) {
+      setError(error.message || t('common.error'));
       console.error('Error creating template:', error);
     }
   };
@@ -145,40 +143,30 @@ export default function NotificationsPage() {
     if (!tenantId) return;
 
     try {
-      const body: any = {
-        tenantId,
+      const requestData: any = {
         recipientId: sendRecipientId,
         channel: sendChannel
       };
 
       if (useTemplate && selectedTemplateId) {
-        body.templateId = selectedTemplateId;
-        body.variables = {}; // Would need to collect template variables
+        requestData.templateId = selectedTemplateId;
+        requestData.variables = {}; // Would need to collect template variables
       } else {
-        body.subject = sendSubject;
-        body.body = sendBody;
+        requestData.subject = sendSubject;
+        requestData.body = sendBody;
       }
 
-      const response = await fetch(`http://localhost:7000/api/tenant/notifications?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
+      await sendNotificationDirect(tenantId, requestData);
 
-      if (response.ok) {
-        setSendRecipientId('');
-        setSendSubject('');
-        setSendBody('');
-        setUseTemplate(false);
-        setSelectedTemplateId('');
-        setSuccess(t('tenant.notifications.notificationSent') || 'Notification sent successfully');
-        fetchNotifications();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (error) {
-      setError(t('common.error'));
+      setSendRecipientId('');
+      setSendSubject('');
+      setSendBody('');
+      setUseTemplate(false);
+      setSelectedTemplateId('');
+      setSuccess(t('tenant.notifications.notificationSent') || 'Notification sent successfully');
+      fetchNotifications();
+    } catch (error: any) {
+      setError(error.message || t('common.error'));
       console.error('Error sending notification:', error);
     }
   };

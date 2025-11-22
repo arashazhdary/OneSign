@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
 import { getCurrentUserScope, CurrentUserScopeDto } from '@/lib/api/users';
+import { platformService } from '@/lib/api/services/platform.service';
+import { usersService } from '@/lib/api/services/users.service';
 
 interface DelegatedAdmin {
   id: string;
@@ -70,33 +72,17 @@ export default function DelegatedAdminsPage() {
   const loadData = async (tid: string) => {
     try {
       setLoading(true);
-      const [adminsRes, treeRes, usersRes] = await Promise.all([
-        fetch(`http://localhost:7000/api/tenant/delegated-admins?tenantId=${tid}`, {
-          headers: { 'Accept-Language': locale }
-        }),
-        fetch(`http://localhost:7000/api/tenant/org-units/tree?tenantId=${tid}`, {
-          headers: { 'Accept-Language': locale }
-        }),
-        fetch(`http://localhost:7000/api/tenant/users?tenantId=${tid}&pageSize=1000`, {
-          headers: { 'Accept-Language': locale }
-        })
+      const [admins, tree, usersData] = await Promise.all([
+        platformService.getDelegatedAdmins(tid),
+        platformService.getOrgUnitsTree(tid),
+        usersService.getUsers({ tenantId: tid, pageSize: 1000 })
       ]);
 
-      if (adminsRes.ok) {
-        const admins = await adminsRes.json();
-        setDelegatedAdmins(admins);
-      }
+      setDelegatedAdmins(admins);
+      setOrgTree(tree);
 
-      if (treeRes.ok) {
-        const tree = await treeRes.json();
-        setOrgTree(tree);
-      }
-
-      if (usersRes.ok) {
-        const usersData = await usersRes.json();
-        const adminUsers = usersData.items?.filter((u: any) => u.isAdmin) || [];
-        setTenantUsers(adminUsers.map((u: any) => ({ id: u.id, email: u.email })));
-      }
+      const adminUsers = usersData.items?.filter((u: any) => u.isAdmin) || [];
+      setTenantUsers(adminUsers.map((u: any) => ({ id: u.id, email: u.email })));
     } catch (err) {
       setError(t('common.error'));
     } finally {
@@ -117,50 +103,29 @@ export default function DelegatedAdminsPage() {
 
   const handleCreate = async () => {
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/delegated-admins?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept-Language': locale
-        },
-        body: JSON.stringify({
-          tenantUserId: selectedUserId,
-          orgUnitId: selectedOrgUnitId,
-          scopeType: selectedScopeType
-        })
+      await platformService.createDelegatedAdmin(tenantId, {
+        tenantUserId: selectedUserId,
+        orgUnitId: selectedOrgUnitId,
+        scopeType: selectedScopeType
       });
-      if (response.ok) {
-        setShowCreateModal(false);
-        setSelectedUserId('');
-        setSelectedOrgUnitId('');
-        setSelectedScopeType(2);
-        loadData(tenantId);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+
+      setShowCreateModal(false);
+      setSelectedUserId('');
+      setSelectedOrgUnitId('');
+      setSelectedScopeType(2);
+      loadData(tenantId);
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm(t('tenant.delegatedAdmins.confirmRemove'))) return;
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/delegated-admins/${id}?tenantId=${tenantId}`, {
-        method: 'DELETE',
-        headers: {
-          'Accept-Language': locale
-        }
-      });
-      if (response.ok) {
-        loadData(tenantId);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.deleteDelegatedAdmin(tenantId, id);
+      loadData(tenantId);
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     }
   };
 

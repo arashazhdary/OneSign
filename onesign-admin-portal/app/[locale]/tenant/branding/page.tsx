@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { platformService } from '@/lib/api/services/platform.service';
 
 interface BrandingConfig {
   logoLightUrl?: string;
@@ -97,13 +98,11 @@ export default function BrandingCustomizationPage() {
   const fetchBranding = async () => {
     if (!tenantId) return;
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/branding?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setBranding({ ...branding, ...data });
-      }
-    } catch (error) {
+      const data = await platformService.getBranding(tenantId);
+      setBranding({ ...branding, ...data });
+    } catch (error: any) {
       console.error('Error fetching branding:', error);
+      setError(error?.message || 'Failed to fetch branding');
     } finally {
       setLoading(false);
     }
@@ -117,22 +116,11 @@ export default function BrandingCustomizationPage() {
     setSaving(true);
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/branding?tenantId=${tenantId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(branding),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setBranding({ ...branding, ...data });
-        setSuccess('Branding saved successfully');
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || 'Failed to save branding');
-      }
-    } catch (error) {
-      setError('Failed to save branding');
+      const data = await platformService.updateBranding(tenantId, branding);
+      setBranding({ ...branding, ...data });
+      setSuccess('Branding saved successfully');
+    } catch (error: any) {
+      setError(error?.message || 'Failed to save branding');
       console.error('Error saving branding:', error);
     } finally {
       setSaving(false);

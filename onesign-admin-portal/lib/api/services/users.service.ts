@@ -357,6 +357,55 @@ export class UsersService {
       secondaryOrgUnitIds,
     });
   }
+
+  // Account Management
+
+  /**
+   * Get current user's account profile
+   */
+  async getAccountProfile(tenantId: string): Promise<any> {
+    const response = await this.client.get('/api/tenant/account/profile', { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Update current user's account profile
+   */
+  async updateAccountProfile(tenantId: string, data: any): Promise<any> {
+    const response = await this.client.put('/api/tenant/account/profile', {
+      ...data,
+      tenantId,
+    });
+    return response.data;
+  }
+
+  /**
+   * Get current user's active sessions
+   */
+  async getAccountSessions(tenantId: string): Promise<any[]> {
+    const response = await this.client.get('/api/tenant/account/sessions', { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Change current user's password
+   */
+  async changePassword(tenantId: string, currentPassword: string, newPassword: string): Promise<void> {
+    await this.client.post('/api/tenant/account/change-password', {
+      tenantId,
+      currentPassword,
+      newPassword,
+    });
+  }
+
+  /**
+   * Revoke a user session
+   */
+  async revokeSession(tenantId: string, sessionId: string): Promise<void> {
+    await this.client.delete(`/api/tenant/account/sessions/${sessionId}`, {
+      params: { tenantId },
+    });
+  }
 }
 
 // Export singleton instance
