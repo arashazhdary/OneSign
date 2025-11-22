@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { platformService } from '@/lib/api/services';
 
 interface KeySet {
   id: string;
@@ -70,14 +71,8 @@ export default function CryptographyManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/crypto/keysets');
-      if (response.ok) {
-        const data = await response.json();
-        setKeySets(data.items || data || []);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      const data = await platformService.getCryptoKeysets();
+      setKeySets(data.items || data || []);
     } catch (err) {
       setError(t('common.error'));
     } finally {
@@ -88,14 +83,8 @@ export default function CryptographyManagementPage() {
   const getKeySet = async (id: string) => {
     setError('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/crypto/keysets/${id}`);
-      if (response.ok) {
-        const data = await response.json();
-        return data;
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      const data = await platformService.getCryptoKeyset(id);
+      return data;
     } catch (err) {
       setError(t('common.error'));
     }

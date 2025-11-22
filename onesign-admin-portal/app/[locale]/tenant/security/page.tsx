@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { securityService } from '@/lib/api/services';
 
 interface SecurityPolicy {
   id: string;
@@ -72,27 +73,20 @@ export default function SecurityCenterPage() {
     setLoading(true);
     try {
       // Fetch security policy
-      const policyRes = await fetch(`http://localhost:7000/api/tenant/security/policy?tenantId=${tenantId}`, {
-        credentials: 'include',
-      });
-      if (policyRes.ok) {
-        const policyData = await policyRes.json();
-        setPolicy(policyData);
-        setMfaRequirement(policyData.mfaRequirement);
-        setAllowTrustedDevices(policyData.allowTrustedDevices);
-        setTrustedDeviceExpireDays(policyData.trustedDeviceExpireDays);
-        setSessionTimeoutMinutes(policyData.sessionTimeoutMinutes);
-        setMaxFailedLoginAttempts(policyData.maxFailedLoginAttempts);
+      const policyData = await securityService.getPolicies(tenantId);
+      if (policyData && policyData.length > 0) {
+        const policy = policyData[0];
+        setPolicy(policy);
+        setMfaRequirement(policy.mfaRequirement);
+        setAllowTrustedDevices(policy.allowTrustedDevices);
+        setTrustedDeviceExpireDays(policy.trustedDeviceExpireDays);
+        setSessionTimeoutMinutes(policy.sessionTimeoutMinutes);
+        setMaxFailedLoginAttempts(policy.maxFailedLoginAttempts);
       }
 
       // Fetch org unit rules
-      const rulesRes = await fetch(`http://localhost:7000/api/tenant/security/policy/org-unit-rules?tenantId=${tenantId}`, {
-        credentials: 'include',
-      });
-      if (rulesRes.ok) {
-        const rulesData = await rulesRes.json();
-        setOrgUnitRules(rulesData || []);
-      }
+      const rulesData = await securityService.getOrgUnitMFARules(tenantId);
+      setOrgUnitRules(rulesData || []);
 
       // Fetch MFA methods (would need userId - skip for now)
       // Fetch trusted devices (would need userId - skip for now)
