@@ -455,12 +455,34 @@ export class SecurityService {
   }
 
   /**
+   * Get adaptive security dashboard
+   */
+  async getAdaptiveSecurityDashboard(tenantId: string): Promise<any> {
+    const response = await this.client.get<any>(
+      '/api/tenant/adaptive-security/dashboard',
+      { tenantId }
+    );
+    return response.data;
+  }
+
+  /**
    * Get adaptive security signals
    */
   async getAdaptiveSecuritySignals(tenantId: string): Promise<any[]> {
     const response = await this.client.get<any[]>(
       '/api/tenant/adaptive-security/signals',
       { tenantId }
+    );
+    return response.data;
+  }
+
+  /**
+   * Update adaptive security signal
+   */
+  async updateAdaptiveSecuritySignal(tenantId: string, signalId: string, data: any): Promise<any> {
+    const response = await this.client.put<any>(
+      `/api/tenant/adaptive-security/signals/${signalId}`,
+      { ...data, tenantId }
     );
     return response.data;
   }
@@ -473,6 +495,59 @@ export class SecurityService {
       ...data,
       tenantId,
     });
+  }
+
+  /**
+   * Get high-risk users
+   */
+  async getHighRiskUsers(tenantId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>(
+      '/api/tenant/adaptive-security/high-risk-users',
+      { tenantId }
+    );
+    return response.data;
+  }
+
+  /**
+   * Get security contexts
+   */
+  async getSecurityContexts(tenantId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>(
+      '/api/tenant/adaptive-security/contexts',
+      { tenantId }
+    );
+    return response.data;
+  }
+
+  /**
+   * Refresh user security context
+   */
+  async refreshUserSecurityContext(tenantId: string, userId: string): Promise<void> {
+    await this.client.post(`/api/tenant/adaptive-security/contexts/${userId}/refresh`, {
+      tenantId,
+    });
+  }
+
+  /**
+   * Get user risk score
+   */
+  async getUserRiskScore(tenantId: string, userId: string): Promise<any> {
+    const response = await this.client.get<any>(
+      `/api/tenant/adaptive-security/users/${userId}/risk-score`,
+      { tenantId }
+    );
+    return response.data;
+  }
+
+  /**
+   * Evaluate user risk
+   */
+  async evaluateUserRisk(tenantId: string, userId: string): Promise<any> {
+    const response = await this.client.post<any>(
+      '/api/tenant/adaptive-security/evaluate',
+      { userId, tenantId }
+    );
+    return response.data;
   }
 
   /**

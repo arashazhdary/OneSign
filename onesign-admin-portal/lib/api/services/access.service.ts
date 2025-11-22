@@ -50,7 +50,7 @@ export class AccessService {
    * Get break-glass accounts
    */
   async getBreakGlassAccounts(tenantId: string): Promise<any[]> {
-    const response = await this.client.get<any[]>('/api/tenant/privileged-access/breakglass-accounts', { tenantId });
+    const response = await this.client.get<any[]>('/api/tenant/privileged-access/break-glass', { tenantId });
     return response.data;
   }
 
@@ -58,8 +58,15 @@ export class AccessService {
    * Create break-glass account
    */
   async createBreakGlassAccount(tenantId: string, data: any): Promise<any> {
-    const response = await this.client.post<any>('/api/tenant/privileged-access/breakglass-accounts', { ...data, tenantId });
+    const response = await this.client.post<any>('/api/tenant/privileged-access/break-glass', { ...data, tenantId });
     return response.data;
+  }
+
+  /**
+   * Activate break-glass account
+   */
+  async activateBreakGlassAccount(tenantId: string, accountId: string): Promise<void> {
+    await this.client.post(`/api/tenant/privileged-access/break-glass/${accountId}/activate`, { tenantId });
   }
 
   /**
@@ -88,8 +95,8 @@ export class AccessService {
   /**
    * Get privileged access sessions
    */
-  async getPrivilegedSessions(tenantId: string): Promise<any[]> {
-    const response = await this.client.get<any[]>('/api/tenant/privileged-access/sessions', { tenantId });
+  async getPrivilegedSessions(tenantId: string, status?: string): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/tenant/privileged-access/sessions', { tenantId, status });
     return response.data;
   }
 
@@ -98,6 +105,14 @@ export class AccessService {
    */
   async revokePrivilegedSession(tenantId: string, sessionId: string): Promise<void> {
     await this.client.post(`/api/tenant/privileged-access/sessions/${sessionId}/revoke`, { tenantId });
+  }
+
+  /**
+   * Get privileged access requests
+   */
+  async getPrivilegedAccessRequests(tenantId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/tenant/privileged-access/requests', { tenantId });
+    return response.data;
   }
 }
 
