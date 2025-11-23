@@ -18,6 +18,7 @@ export { HuntingService, huntingService } from './hunting.service';
 export { AccessService, accessService } from './access.service';
 export { LifecycleService, lifecycleService } from './lifecycle.service';
 export { ChangeManagementService, changeManagementService } from './change-management.service';
+export { ObservabilityService, observabilityService } from './observability.service';
 
 // Export all services as a single object
 export const services = {
@@ -35,4 +36,5 @@ export const services = {
   access: accessService,
   lifecycle: lifecycleService,
   changeManagement: changeManagementService,
+  observability: observabilityService,
 };
