@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { governanceService } from '@/lib/api/services';
 import DataTable, { Column } from '@/app/components/DataTable';
 import Modal from '@/app/components/Modal';
 import StatusBadge from '@/app/components/StatusBadge';
@@ -63,16 +64,8 @@ export default function GovernanceCampaignsPage() {
   const fetchCampaigns = async () => {
     if (!tenantId) return;
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/governance/campaigns?tenantId=${tenantId}`,
-        {
-          headers: { 'Accept-Language': locale }
-        }
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setCampaigns(data);
-      }
+      const data = await governanceService.getCampaigns(tenantId);
+      setCampaigns(data);
     } catch (err) {
       console.error('Error fetching campaigns:', err);
     } finally {
@@ -87,33 +80,18 @@ export default function GovernanceCampaignsPage() {
     if (!tenantId) return;
 
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/governance/campaigns?tenantId=${tenantId}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept-Language': locale
-          },
-          body: JSON.stringify({
-            name,
-            description,
-            targetType,
-            startDate,
-            endDate
-          })
-        }
-      );
+      await governanceService.createCampaign(tenantId, {
+        name,
+        description,
+        targetType,
+        startDate,
+        endDate
+      });
 
-      if (response.ok) {
-        setSuccess(t('tenant.governance.campaignCreated'));
-        setShowCreateModal(false);
-        resetForm();
-        fetchCampaigns();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      setSuccess(t('tenant.governance.campaignCreated'));
+      setShowCreateModal(false);
+      resetForm();
+      fetchCampaigns();
     } catch (err) {
       setError(t('common.error'));
       console.error('Error creating campaign:', err);

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { usersService } from '@/lib/api/services/users.service';
 
 interface AccountProfile {
   id: string;
@@ -68,20 +69,16 @@ export default function TenantAccountPage() {
   const fetchProfile = async () => {
     if (!tenantId) return;
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/account/profile?tenantId=${tenantId}`, {
-        headers: { 'Accept-Language': locale }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setProfile(data);
-        setFirstName(data.firstName);
-        setLastName(data.lastName);
-        setPhoneNumber(data.phoneNumber || '');
-        setTimezone(data.timezone || 'UTC');
-        setLanguage(data.language || 'en');
-      }
-    } catch (err) {
+      const data = await usersService.getAccountProfile(tenantId);
+      setProfile(data);
+      setFirstName(data.firstName);
+      setLastName(data.lastName);
+      setPhoneNumber(data.phoneNumber || '');
+      setTimezone(data.timezone || 'UTC');
+      setLanguage(data.language || 'en');
+    } catch (err: any) {
       console.error('Error fetching profile:', err);
+      setError(err?.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -90,15 +87,11 @@ export default function TenantAccountPage() {
   const fetchSessions = async () => {
     if (!tenantId) return;
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/account/sessions?tenantId=${tenantId}`, {
-        headers: { 'Accept-Language': locale }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setSessions(data);
-      }
-    } catch (err) {
+      const data = await usersService.getAccountSessions(tenantId);
+      setSessions(data);
+    } catch (err: any) {
       console.error('Error fetching sessions:', err);
+      setError(err?.message || t('common.error'));
     }
   };
 
@@ -109,31 +102,18 @@ export default function TenantAccountPage() {
     if (!tenantId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/account/profile?tenantId=${tenantId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept-Language': locale
-        },
-        body: JSON.stringify({
-          firstName,
-          lastName,
-          phoneNumber,
-          timezone,
-          language
-        })
+      await usersService.updateAccountProfile(tenantId, {
+        firstName,
+        lastName,
+        phoneNumber,
+        timezone,
+        language
       });
-
-      if (response.ok) {
-        setSuccess(t('tenant.account.profileUpdated'));
-        setEditMode(false);
-        fetchProfile();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      setSuccess(t('tenant.account.profileUpdated'));
+      setEditMode(false);
+      fetchProfile();
+    } catch (err: any) {
+      setError(err?.message || t('common.error'));
       console.error('Error updating profile:', err);
     }
   };
@@ -151,29 +131,13 @@ export default function TenantAccountPage() {
     if (!tenantId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/account/change-password?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept-Language': locale
-        },
-        body: JSON.stringify({
-          currentPassword,
-          newPassword
-        })
-      });
-
-      if (response.ok) {
-        setSuccess(t('tenant.account.passwordChanged'));
-        setCurrentPassword('');
-        setNewPassword('');
-        setConfirmPassword('');
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await usersService.changePassword(tenantId, currentPassword, newPassword);
+      setSuccess(t('tenant.account.passwordChanged'));
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err: any) {
+      setError(err?.message || t('common.error'));
       console.error('Error changing password:', err);
     }
   };
@@ -186,20 +150,11 @@ export default function TenantAccountPage() {
     if (!tenantId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/account/sessions/${sessionId}?tenantId=${tenantId}`, {
-        method: 'DELETE',
-        headers: { 'Accept-Language': locale }
-      });
-
-      if (response.ok) {
-        setSuccess(t('tenant.account.sessionRevoked'));
-        fetchSessions();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await usersService.revokeSession(tenantId, sessionId);
+      setSuccess(t('tenant.account.sessionRevoked'));
+      fetchSessions();
+    } catch (err: any) {
+      setError(err?.message || t('common.error'));
       console.error('Error revoking session:', err);
     }
   };

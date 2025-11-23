@@ -14,6 +14,11 @@ export { AutomationService, automationService } from './automation.service';
 export { CopilotService, copilotService } from './copilot.service';
 export { PlatformService, platformService } from './platform.service';
 export { BillingService, billingService } from './billing.service';
+export { HuntingService, huntingService } from './hunting.service';
+export { AccessService, accessService } from './access.service';
+export { LifecycleService, lifecycleService } from './lifecycle.service';
+export { ChangeManagementService, changeManagementService } from './change-management.service';
+export { ObservabilityService, observabilityService } from './observability.service';
 
 // Export all services as a single object
 export const services = {
@@ -27,4 +32,9 @@ export const services = {
   copilot: copilotService,
   platform: platformService,
   billing: billingService,
+  hunting: huntingService,
+  access: accessService,
+  lifecycle: lifecycleService,
+  changeManagement: changeManagementService,
+  observability: observabilityService,
 };

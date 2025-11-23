@@ -321,6 +321,119 @@ export class BillingService {
     const response = await this.client.get('/api/tenant/billing/tax-info', { tenantId });
     return response.data;
   }
+
+  // Usage Summary (Tenant Level)
+
+  /**
+   * Get billing summary for tenant
+   */
+  async getBillingSummary(tenantId: string): Promise<any> {
+    const response = await this.client.get('/api/tenant/billing/summary', {
+      tenantId,
+    });
+    return response.data;
+  }
+
+  /**
+   * Get quota status for tenant
+   */
+  async getQuotaStatus(tenantId: string): Promise<any> {
+    const response = await this.client.get('/api/tenant/billing/quota-status', {
+      tenantId,
+    });
+    return response.data;
+  }
+
+  /**
+   * Request upgrade to higher plan
+   */
+  async requestUpgrade(tenantId: string, targetPlanId: string, comments?: string): Promise<any> {
+    const response = await this.client.post('/api/tenant/billing/upgrade-requests', {
+      tenantId,
+      targetPlanId,
+      comments,
+    });
+    return response.data;
+  }
+
+  // Global Billing Endpoints (Admin Level)
+
+  /**
+   * Get all plans (global)
+   */
+  async getGlobalPlans(): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/global/billing/plans');
+    return response.data;
+  }
+
+  /**
+   * Create new plan (global)
+   */
+  async createGlobalPlan(planData: any): Promise<any> {
+    const response = await this.client.post('/api/global/billing/plans', planData);
+    return response.data;
+  }
+
+  /**
+   * Update plan (global)
+   */
+  async updateGlobalPlan(planId: string, planData: any): Promise<any> {
+    const response = await this.client.put(`/api/global/billing/plans/${planId}`, planData);
+    return response.data;
+  }
+
+  /**
+   * Get all tenant subscriptions (global)
+   */
+  async getGlobalTenantSubscriptions(): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/global/billing/tenants');
+    return response.data;
+  }
+
+  /**
+   * Assign subscription to tenant (global)
+   */
+  async assignSubscriptionToTenant(tenantId: string, planId: string): Promise<any> {
+    const response = await this.client.post(
+      `/api/global/billing/tenants/${tenantId}/subscription`,
+      { planId }
+    );
+    return response.data;
+  }
+
+  /**
+   * Get global usage data
+   */
+  async getGlobalUsageData(): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/global/billing/usage');
+    return response.data;
+  }
+
+  /**
+   * Get global revenue data
+   */
+  async getGlobalRevenueData(): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/global/billing/revenue');
+    return response.data;
+  }
+
+  /**
+   * Get all invoices (global)
+   */
+  async getGlobalInvoices(): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/global/billing/invoices');
+    return response.data;
+  }
+
+  /**
+   * Generate invoice for tenant (global)
+   */
+  async generateInvoice(tenantId: string): Promise<any> {
+    const response = await this.client.post('/api/global/billing/invoices/generate', {
+      tenantId,
+    });
+    return response.data;
+  }
 }
 
 // Export singleton instance

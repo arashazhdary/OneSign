@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { getTenantId, setTenantId } from '@/lib/tenant-context';
 import { usersService } from '@/lib/api/services/users.service';
+import { platformService } from '@/lib/api/services';
 import type { TenantUserDto, CurrentUserScopeDto } from '@/lib/api/types/users';
 
 type TenantUser = TenantUserDto;
@@ -101,13 +102,8 @@ export default function TenantUsersPage() {
   const fetchOrgTree = async () => {
     if (!tenantId) return;
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/org-units/tree?tenantId=${tenantId}`, {
-        headers: { 'Accept-Language': locale }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setOrgTree(data);
-      }
+      const data = await platformService.getOrgUnitsTree(tenantId);
+      setOrgTree(data);
     } catch (error) {
       console.error('Error fetching org tree:', error);
     }
@@ -164,19 +160,11 @@ export default function TenantUsersPage() {
     if (!tenantId) return;
     
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/users/${userId}/status?tenantId=${tenantId}`, {
-        method: 'PATCH'
-      });
-
-      if (response.ok) {
-        setSuccess(t('tenant.users.userDisabled'));
-        fetchUsers();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (error) {
-      setError(t('common.error'));
+      await usersService.updateUserStatus(tenantId, userId);
+      setSuccess(t('tenant.users.userDisabled'));
+      fetchUsers();
+    } catch (error: any) {
+      setError(error?.message || t('common.error'));
       console.error('Error disabling user:', error);
     }
   };
@@ -184,14 +172,9 @@ export default function TenantUsersPage() {
   const handleAssignOrgUnits = async (user: TenantUser) => {
     setSelectedUserForOrgUnits(user);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/users/${user.id}/org-units?tenantId=${tenantId}`, {
-        headers: { 'Accept-Language': locale }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setPrimaryOrgUnitId(data.primaryOrgUnitId || '');
-        setSecondaryOrgUnitIds(data.secondaryOrgUnitIds || []);
-      }
+      const data = await usersService.getUserOrgUnits(tenantId, user.id);
+      setPrimaryOrgUnitId(data.primaryOrgUnitId || '');
+      setSecondaryOrgUnitIds(data.secondaryOrgUnitIds || []);
     } catch (error) {
       console.error('Error fetching user org units:', error);
     }
@@ -204,29 +187,18 @@ export default function TenantUsersPage() {
     setSuccess('');
     
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/users/${selectedUserForOrgUnits.id}/org-units?tenantId=${tenantId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept-Language': locale
-        },
-        body: JSON.stringify({
-          primaryOrgUnitId,
-          secondaryOrgUnitIds
-        })
-      });
-
-      if (response.ok) {
-        setSuccess(t('tenant.userOrgUnits.orgUnitsAssigned'));
-        setShowAssignOrgUnitsModal(false);
-        setSelectedUserForOrgUnits(null);
-        fetchUsers();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (error) {
-      setError(t('common.error'));
+      await usersService.updateUserOrgUnits(
+        tenantId,
+        selectedUserForOrgUnits.id,
+        primaryOrgUnitId,
+        secondaryOrgUnitIds
+      );
+      setSuccess(t('tenant.userOrgUnits.orgUnitsAssigned'));
+      setShowAssignOrgUnitsModal(false);
+      setSelectedUserForOrgUnits(null);
+      fetchUsers();
+    } catch (error: any) {
+      setError(error?.message || t('common.error'));
       console.error('Error assigning org units:', error);
     }
   };

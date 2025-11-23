@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { platformService } from '@/lib/api/services';
 import DataTable, { Column } from '@/app/components/DataTable';
 import StatusBadge from '@/app/components/StatusBadge';
 import ActionButton from '@/app/components/ActionButton';
@@ -106,11 +107,8 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/webhooks?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setWebhooks(data || []);
-      }
+      const data = await platformService.getWebhooks(tenantId);
+      setWebhooks(data || []);
     } catch (err) {
       console.error('Error fetching webhooks:', err);
     } finally {
@@ -122,11 +120,8 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/login-hooks?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setLoginHooks(data || []);
-      }
+      const data = await platformService.getLoginHooks(tenantId);
+      setLoginHooks(data || []);
     } catch (err) {
       console.error('Error fetching login hooks:', err);
     } finally {
@@ -138,11 +133,8 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/token-rules?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setTokenRules(data || []);
-      }
+      const data = await platformService.getTokenRules(tenantId);
+      setTokenRules(data || []);
     } catch (err) {
       console.error('Error fetching token rules:', err);
     } finally {
@@ -154,11 +146,8 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/event-types?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setEventTypes(data || []);
-      }
+      const data = await platformService.getEventTypes(tenantId);
+      setEventTypes(data || []);
     } catch (err) {
       console.error('Error fetching event types:', err);
     } finally {
@@ -171,17 +160,11 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/webhooks?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(webhookForm)
-      });
-      if (response.ok) {
-        setSuccess('Webhook created successfully');
-        setShowWebhookModal(false);
-        fetchWebhooks();
-        setWebhookForm({ url: '', eventTypes: [], isEnabled: true });
-      }
+      await platformService.createWebhook(tenantId, webhookForm);
+      setSuccess('Webhook created successfully');
+      setShowWebhookModal(false);
+      fetchWebhooks();
+      setWebhookForm({ url: '', eventTypes: [], isEnabled: true });
     } catch (err) {
       setError('Failed to create webhook');
     } finally {
@@ -193,17 +176,11 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/webhooks/${id}?tenantId=${tenantId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if (response.ok) {
-        setSuccess('Webhook updated successfully');
-        setEditingWebhook(null);
-        setShowWebhookModal(false);
-        fetchWebhooks();
-      }
+      await platformService.updateWebhook(tenantId, id, data);
+      setSuccess('Webhook updated successfully');
+      setEditingWebhook(null);
+      setShowWebhookModal(false);
+      fetchWebhooks();
     } catch (err) {
       setError('Failed to update webhook');
     } finally {
@@ -215,13 +192,9 @@ export default function ExtensibilityPage() {
     if (!tenantId || !confirm('Are you sure you want to delete this webhook?')) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/webhooks/${id}?tenantId=${tenantId}`, {
-        method: 'DELETE'
-      });
-      if (response.ok) {
-        setSuccess('Webhook deleted successfully');
-        fetchWebhooks();
-      }
+      await platformService.deleteWebhook(tenantId, id);
+      setSuccess('Webhook deleted successfully');
+      fetchWebhooks();
     } catch (err) {
       setError('Failed to delete webhook');
     } finally {
@@ -233,12 +206,8 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/webhooks/${id}/test?tenantId=${tenantId}`, {
-        method: 'POST'
-      });
-      if (response.ok) {
-        setSuccess('Test event sent successfully');
-      }
+      await platformService.testWebhook(tenantId, id);
+      setSuccess('Test event sent successfully');
     } catch (err) {
       setError('Failed to send test event');
     } finally {
@@ -251,16 +220,10 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/login-hooks?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(loginHookForm)
-      });
-      if (response.ok) {
-        setSuccess('Login hook created successfully');
-        setShowLoginHookModal(false);
-        fetchLoginHooks();
-      }
+      await platformService.createLoginHook(tenantId, loginHookForm);
+      setSuccess('Login hook created successfully');
+      setShowLoginHookModal(false);
+      fetchLoginHooks();
     } catch (err) {
       setError('Failed to create login hook');
     } finally {
@@ -272,17 +235,11 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/login-hooks/${id}?tenantId=${tenantId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if (response.ok) {
-        setSuccess('Login hook updated successfully');
-        setEditingLoginHook(null);
-        setShowLoginHookModal(false);
-        fetchLoginHooks();
-      }
+      await platformService.updateLoginHook(tenantId, id, data);
+      setSuccess('Login hook updated successfully');
+      setEditingLoginHook(null);
+      setShowLoginHookModal(false);
+      fetchLoginHooks();
     } catch (err) {
       setError('Failed to update login hook');
     } finally {
@@ -294,13 +251,9 @@ export default function ExtensibilityPage() {
     if (!tenantId || !confirm('Are you sure you want to delete this login hook?')) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/login-hooks/${id}?tenantId=${tenantId}`, {
-        method: 'DELETE'
-      });
-      if (response.ok) {
-        setSuccess('Login hook deleted successfully');
-        fetchLoginHooks();
-      }
+      await platformService.deleteLoginHook(tenantId, id);
+      setSuccess('Login hook deleted successfully');
+      fetchLoginHooks();
     } catch (err) {
       setError('Failed to delete login hook');
     } finally {
@@ -313,16 +266,10 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/token-rules?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(tokenRuleForm)
-      });
-      if (response.ok) {
-        setSuccess('Token rule created successfully');
-        setShowTokenRuleModal(false);
-        fetchTokenRules();
-      }
+      await platformService.createTokenRule(tenantId, tokenRuleForm);
+      setSuccess('Token rule created successfully');
+      setShowTokenRuleModal(false);
+      fetchTokenRules();
     } catch (err) {
       setError('Failed to create token rule');
     } finally {
@@ -334,17 +281,11 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/token-rules/${id}?tenantId=${tenantId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if (response.ok) {
-        setSuccess('Token rule updated successfully');
-        setEditingTokenRule(null);
-        setShowTokenRuleModal(false);
-        fetchTokenRules();
-      }
+      await platformService.updateTokenRule(tenantId, id, data);
+      setSuccess('Token rule updated successfully');
+      setEditingTokenRule(null);
+      setShowTokenRuleModal(false);
+      fetchTokenRules();
     } catch (err) {
       setError('Failed to update token rule');
     } finally {
@@ -356,13 +297,9 @@ export default function ExtensibilityPage() {
     if (!tenantId || !confirm('Are you sure you want to delete this token rule?')) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/extensibility/token-rules/${id}?tenantId=${tenantId}`, {
-        method: 'DELETE'
-      });
-      if (response.ok) {
-        setSuccess('Token rule deleted successfully');
-        fetchTokenRules();
-      }
+      await platformService.deleteTokenRule(tenantId, id);
+      setSuccess('Token rule deleted successfully');
+      fetchTokenRules();
     } catch (err) {
       setError('Failed to delete token rule');
     } finally {

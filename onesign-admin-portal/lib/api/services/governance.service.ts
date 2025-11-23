@@ -251,6 +251,99 @@ export class GovernanceService {
   async deleteDataClassification(classificationId: string): Promise<void> {
     await this.client.delete(`/api/global/governance/data-classifications/${classificationId}`);
   }
+
+  // Access Review Campaigns
+
+  /**
+   * Get access review campaigns
+   */
+  async getCampaigns(tenantId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/tenant/governance/campaigns', { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Create access review campaign
+   */
+  async createCampaign(tenantId: string, data: any): Promise<any> {
+    const response = await this.client.post<any>('/api/tenant/governance/campaigns', { ...data, tenantId });
+    return response.data;
+  }
+
+  // Audit Search
+
+  /**
+   * Search global audit logs
+   */
+  async searchGlobalAudit(data: any): Promise<any> {
+    const response = await this.client.post<any>('/api/global/observability/audit/search', data);
+    return response.data;
+  }
+
+  /**
+   * Get global audit event by ID
+   */
+  async getGlobalAuditEvent(id: string): Promise<any> {
+    const response = await this.client.get<any>(`/api/global/observability/audit/${id}`);
+    return response.data;
+  }
+
+  /**
+   * Search tenant audit logs
+   */
+  async searchTenantAudit(tenantId: string, data: any): Promise<any> {
+    const response = await this.client.post<any>('/api/tenant/observability/audit/search', { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Get tenant audit event by ID
+   */
+  async getTenantAuditEvent(tenantId: string, id: string): Promise<any> {
+    const response = await this.client.get<any>(`/api/tenant/observability/audit/${id}`, { tenantId });
+    return response.data;
+  }
+
+  // Privacy & Data Subject Requests
+
+  /**
+   * Get data subject requests (GDPR/CCPA)
+   */
+  async getDataSubjectRequests(tenantId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/tenant/privacy/data-requests', { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Create data subject request
+   */
+  async createDataSubjectRequest(tenantId: string, data: any): Promise<any> {
+    const response = await this.client.post<any>('/api/tenant/privacy/data-requests', { ...data, tenantId });
+    return response.data;
+  }
+
+  /**
+   * Execute data subject request
+   */
+  async executeDataSubjectRequest(tenantId: string, id: string): Promise<void> {
+    await this.client.post(`/api/tenant/privacy/data-requests/${id}/execute`, { tenantId });
+  }
+
+  /**
+   * Get data retention policies
+   */
+  async getRetentionPolicies(tenantId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/tenant/privacy/retention-policies', { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Update data retention policy
+   */
+  async updateRetentionPolicy(tenantId: string, category: string, data: any): Promise<any> {
+    const response = await this.client.put<any>(`/api/tenant/privacy/retention-policies/${category}`, { ...data, tenantId });
+    return response.data;
+  }
 }
 
 // Export singleton instance

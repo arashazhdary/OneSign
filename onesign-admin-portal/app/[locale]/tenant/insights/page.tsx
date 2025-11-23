@@ -201,13 +201,9 @@ export default function TenantInsightsPage() {
         reportType: 'SecuritySummary',
         frequency: 'Weekly',
         recipients: '',
-          isActive: true,
-        });
-        fetchReportSubscriptions();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+        isActive: true,
+      });
+      fetchReportSubscriptions();
     } catch (err) {
       setError(t('common.error'));
     }
@@ -215,28 +211,21 @@ export default function TenantInsightsPage() {
 
   const handleUpdateReport = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingReport) return;
+    if (!editingReport || !tenantId) return;
     setError('');
     setSuccess('');
 
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/insights/report-subscriptions/${editingReport.id}?tenantId=${tenantId}`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(editingReport),
-        }
-      );
+      await InsightsAPI.updateReportSubscription(tenantId, editingReport.id, {
+        reportType: editingReport.reportType as InsightsAPI.ReportType,
+        cronOrFrequency: editingReport.frequency,
+        emailRecipients: editingReport.recipients,
+        isActive: editingReport.isActive,
+      });
 
-      if (response.ok) {
-        setSuccess('Report subscription updated successfully');
-        setEditingReport(null);
-        fetchReportSubscriptions();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      setSuccess('Report subscription updated successfully');
+      setEditingReport(null);
+      fetchReportSubscriptions();
     } catch (err) {
       setError(t('common.error'));
     }
@@ -244,100 +233,76 @@ export default function TenantInsightsPage() {
 
   const handleDeleteReport = async (id: string) => {
     if (!confirm('Are you sure you want to delete this report subscription?')) return;
+    if (!tenantId) return;
     setError('');
     setSuccess('');
 
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/insights/report-subscriptions/${id}?tenantId=${tenantId}`,
-        {
-          method: 'DELETE',
-        }
-      );
-
-      if (response.ok) {
-        setSuccess('Report subscription deleted successfully');
-        fetchReportSubscriptions();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      await InsightsAPI.deleteReportSubscription(tenantId, id);
+      setSuccess('Report subscription deleted successfully');
+      fetchReportSubscriptions();
     } catch (err) {
       setError(t('common.error'));
     }
   };
 
   const handleToggleReportStatus = async (report: ReportSubscription) => {
+    if (!tenantId) return;
     setError('');
     setSuccess('');
 
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/insights/report-subscriptions/${report.id}/toggle?tenantId=${tenantId}`,
-        {
-          method: 'PATCH',
-        }
-      );
+      await InsightsAPI.updateReportSubscription(tenantId, report.id, {
+        reportType: report.reportType as InsightsAPI.ReportType,
+        cronOrFrequency: report.cronOrFrequency,
+        emailRecipients: report.emailRecipients,
+        isActive: !report.isActive,
+      });
 
-      if (response.ok) {
-        setSuccess(`Report subscription ${report.isActive ? 'disabled' : 'enabled'} successfully`);
-        fetchReportSubscriptions();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      setSuccess(`Report subscription ${report.isActive ? 'disabled' : 'enabled'} successfully`);
+      fetchReportSubscriptions();
     } catch (err) {
       setError(t('common.error'));
     }
   };
 
-  // GET /api/tenant/insights/export/overview - خروجی Excel overview
+  // Export overview using InsightsAPI
   const handleExportOverview = async () => {
+    if (!tenantId) return;
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/insights/export/overview?tenantId=${tenantId}`,
-        { method: 'GET' }
-      );
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `insights-overview-${new Date().toISOString().split('T')[0]}.xlsx`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        setSuccess('Overview exported successfully');
-      } else {
-        setError('Failed to export overview');
-      }
+      const now = new Date();
+      const from = new Date(now.setDate(now.getDate() - 30)).toISOString();
+      const to = new Date().toISOString();
+
+      const blob = await InsightsAPI.exportTenantInsightsOverview(tenantId, from, to, 'xlsx');
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `insights-overview-${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      setSuccess('Overview exported successfully');
     } catch (err) {
       setError(t('common.error'));
     }
   };
 
-  // GET /api/tenant/insights/export/users - خروجی Excel user security posture
+  // Export users using InsightsAPI
   const handleExportUsers = async () => {
+    if (!tenantId) return;
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/insights/export/users?tenantId=${tenantId}`,
-        { method: 'GET' }
-      );
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `user-security-posture-${new Date().toISOString().split('T')[0]}.xlsx`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        setSuccess('User security posture exported successfully');
-      } else {
-        setError('Failed to export user security posture');
-      }
+      const blob = await InsightsAPI.exportUserSecurityPosture(tenantId, 'xlsx');
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `user-security-posture-${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      setSuccess('User security posture exported successfully');
     } catch (err) {
       setError(t('common.error'));
     }

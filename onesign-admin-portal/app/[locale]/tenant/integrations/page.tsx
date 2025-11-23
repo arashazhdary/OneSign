@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { platformService } from '@/lib/api/services';
 
 interface Integration {
   id: string;
@@ -145,11 +146,8 @@ export default function IntegrationHubPage() {
   const fetchIntegrations = async () => {
     if (!tenantId) return;
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/integrations?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setIntegrations(data.items || []);
-      }
+      const data = await platformService.getIntegrations(tenantId);
+      setIntegrations(data.items || data || []);
     } catch (error) {
       console.error('Error fetching integrations:', error);
     } finally {
@@ -160,11 +158,8 @@ export default function IntegrationHubPage() {
   const fetchSyncLogs = async () => {
     if (!tenantId) return;
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/integrations/sync-logs?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setSyncLogs(data.items || []);
-      }
+      const data = await platformService.getAllIntegrationSyncLogs(tenantId);
+      setSyncLogs(data.items || data || []);
     } catch (error) {
       console.error('Error fetching sync logs:', error);
     }
@@ -198,22 +193,12 @@ export default function IntegrationHubPage() {
     };
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/integrations?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (response.ok) {
-        setSuccess('Integration configured successfully');
-        setShowConfigureModal(false);
-        fetchIntegrations();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || 'Failed to configure integration');
-      }
-    } catch (error) {
-      setError('Failed to configure integration');
+      await platformService.createIntegration({ ...payload, tenantId });
+      setSuccess('Integration configured successfully');
+      setShowConfigureModal(false);
+      fetchIntegrations();
+    } catch (error: any) {
+      setError(error?.message || 'Failed to configure integration');
       console.error('Error configuring integration:', error);
     }
   };
@@ -224,20 +209,10 @@ export default function IntegrationHubPage() {
     setShowTestModal(true);
 
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/integrations/${integration.id}/test?tenantId=${tenantId}`,
-        { method: 'POST' }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setTestResult(`✅ Connection successful!\n\n${JSON.stringify(data, null, 2)}`);
-      } else {
-        const data = await response.json();
-        setTestResult(`❌ Connection failed\n\n${data.errorMessage || 'Unknown error'}`);
-      }
-    } catch (error) {
-      setTestResult(`❌ Connection failed\n\n${error}`);
+      const data = await platformService.testIntegration(integration.id, tenantId);
+      setTestResult(`✅ Connection successful!\n\n${JSON.stringify(data, null, 2)}`);
+    } catch (error: any) {
+      setTestResult(`❌ Connection failed\n\n${error?.message || 'Unknown error'}`);
       console.error('Error testing connection:', error);
     }
   };
@@ -247,47 +222,25 @@ export default function IntegrationHubPage() {
     setSuccess('');
 
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/integrations/${integrationId}/sync?tenantId=${tenantId}`,
-        { method: 'POST' }
-      );
-
-      if (response.ok) {
-        setSuccess('Sync started successfully');
-        setTimeout(() => {
-          fetchIntegrations();
-          fetchSyncLogs();
-        }, 1000);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || 'Failed to start sync');
-      }
-    } catch (error) {
-      setError('Failed to start sync');
+      await platformService.syncIntegration(integrationId, tenantId);
+      setSuccess('Sync started successfully');
+      setTimeout(() => {
+        fetchIntegrations();
+        fetchSyncLogs();
+      }, 1000);
+    } catch (error: any) {
+      setError(error?.message || 'Failed to start sync');
       console.error('Error starting sync:', error);
     }
   };
 
   const handleToggleIntegration = async (integration: Integration) => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/integrations/${integration.id}/status?tenantId=${tenantId}`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ isActive: !integration.isActive }),
-        }
-      );
-
-      if (response.ok) {
-        setSuccess(`Integration ${integration.isActive ? 'disabled' : 'enabled'} successfully`);
-        fetchIntegrations();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || 'Failed to update integration status');
-      }
-    } catch (error) {
-      setError('Failed to update integration status');
+      await platformService.updateIntegration(integration.id, { isActive: !integration.isActive }, tenantId);
+      setSuccess(`Integration ${integration.isActive ? 'disabled' : 'enabled'} successfully`);
+      fetchIntegrations();
+    } catch (error: any) {
+      setError(error?.message || 'Failed to update integration status');
       console.error('Error updating integration status:', error);
     }
   };
@@ -296,20 +249,11 @@ export default function IntegrationHubPage() {
     if (!confirm('Are you sure you want to delete this integration?')) return;
 
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/integrations/${integrationId}?tenantId=${tenantId}`,
-        { method: 'DELETE' }
-      );
-
-      if (response.ok) {
-        setSuccess('Integration deleted successfully');
-        fetchIntegrations();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || 'Failed to delete integration');
-      }
-    } catch (error) {
-      setError('Failed to delete integration');
+      await platformService.deleteIntegration(integrationId, tenantId);
+      setSuccess('Integration deleted successfully');
+      fetchIntegrations();
+    } catch (error: any) {
+      setError(error?.message || 'Failed to delete integration');
       console.error('Error deleting integration:', error);
     }
   };

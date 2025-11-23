@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { securityService } from '@/lib/api/services';
 import DataTable, { Column } from '@/app/components/DataTable';
 import StatusBadge from '@/app/components/StatusBadge';
 import ActionButton from '@/app/components/ActionButton';
@@ -104,11 +105,8 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/adaptive-security/policies?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setPolicies(data || []);
-      }
+      const data = await securityService.getAdaptiveSecurityPolicies(tenantId);
+      setPolicies(data || []);
     } catch (err) {
       console.error('Error fetching policies:', err);
       setError('Failed to fetch policies');
@@ -121,11 +119,8 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/adaptive-security/signals?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setSignals(data || []);
-      }
+      const data = await securityService.getAdaptiveSecuritySignals(tenantId);
+      setSignals(data || []);
     } catch (err) {
       console.error('Error fetching signals:', err);
       setError('Failed to fetch signals');
@@ -138,11 +133,8 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/adaptive-security/contexts?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setContexts(data || []);
-      }
+      const data = await securityService.getSecurityContexts(tenantId);
+      setContexts(data || []);
     } catch (err) {
       console.error('Error fetching contexts:', err);
       setError('Failed to fetch contexts');
@@ -155,11 +147,8 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/adaptive-security/dashboard?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setDashboardData(data);
-      }
+      const data = await securityService.getAdaptiveSecurityDashboard(tenantId);
+      setDashboardData(data);
     } catch (err) {
       console.error('Error fetching dashboard:', err);
       setError('Failed to fetch dashboard');
@@ -172,11 +161,8 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/adaptive-security/high-risk-users?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setHighRiskUsers(data || []);
-      }
+      const data = await securityService.getHighRiskUsers(tenantId);
+      setHighRiskUsers(data || []);
     } catch (err) {
       console.error('Error fetching high-risk users:', err);
       setError('Failed to fetch high-risk users');
@@ -189,12 +175,9 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId || !userId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/adaptive-security/users/${userId}/risk-score?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setUserRiskScore(data.riskScore);
-        setSuccess(`Risk score for user ${userId}: ${data.riskScore}`);
-      }
+      const data = await securityService.getUserRiskScore(tenantId, userId);
+      setUserRiskScore(data.riskScore);
+      setSuccess(`Risk score for user ${userId}: ${data.riskScore}`);
     } catch (err) {
       console.error('Error fetching user risk score:', err);
       setError('Failed to fetch user risk score');
@@ -207,19 +190,10 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/adaptive-security/policies/${policyId}?tenantId=${tenantId}`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        }
-      );
-      if (response.ok) {
-        setSuccess('Policy updated successfully');
-        fetchPolicies();
-        setEditingPolicy(null);
-      }
+      await securityService.updateAdaptiveSecurityPolicy(tenantId, policyId, data);
+      setSuccess('Policy updated successfully');
+      fetchPolicies();
+      setEditingPolicy(null);
     } catch (err) {
       setError('Failed to update policy');
     } finally {
@@ -231,16 +205,9 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId || !confirm('Are you sure you want to delete this policy?')) return;
     setLoading(true);
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/adaptive-security/policies/${policyId}?tenantId=${tenantId}`,
-        {
-          method: 'DELETE'
-        }
-      );
-      if (response.ok) {
-        setSuccess('Policy deleted successfully');
-        fetchPolicies();
-      }
+      await securityService.deleteAdaptiveSecurityPolicy(tenantId, policyId);
+      setSuccess('Policy deleted successfully');
+      fetchPolicies();
     } catch (err) {
       setError('Failed to delete policy');
     } finally {
@@ -252,16 +219,9 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/adaptive-security/policies/${policyId}/enable?tenantId=${tenantId}`,
-        {
-          method: 'POST'
-        }
-      );
-      if (response.ok) {
-        setSuccess('Policy enabled successfully');
-        fetchPolicies();
-      }
+      await securityService.enableAdaptiveSecurityPolicy(tenantId, policyId);
+      setSuccess('Policy enabled successfully');
+      fetchPolicies();
     } catch (err) {
       setError('Failed to enable policy');
     } finally {
@@ -273,16 +233,9 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/adaptive-security/policies/${policyId}/disable?tenantId=${tenantId}`,
-        {
-          method: 'POST'
-        }
-      );
-      if (response.ok) {
-        setSuccess('Policy disabled successfully');
-        fetchPolicies();
-      }
+      await securityService.disableAdaptiveSecurityPolicy(tenantId, policyId);
+      setSuccess('Policy disabled successfully');
+      fetchPolicies();
     } catch (err) {
       setError('Failed to disable policy');
     } finally {
@@ -294,19 +247,9 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId || !userId) return;
     setLoading(true);
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/adaptive-security/evaluate?tenantId=${tenantId}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId })
-        }
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setSuccess(`User evaluated. Risk score: ${data.riskScore}`);
-        fetchContexts();
-      }
+      const data = await securityService.evaluateUserRisk(tenantId, userId);
+      setSuccess(`User evaluated. Risk score: ${data.riskScore}`);
+      fetchContexts();
     } catch (err) {
       setError('Failed to evaluate user');
     } finally {
@@ -318,19 +261,10 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/adaptive-security/signals/${signalId}?tenantId=${tenantId}`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        }
-      );
-      if (response.ok) {
-        setSuccess('Signal updated successfully');
-        fetchSignals();
-        setShowSignalModal(false);
-      }
+      await securityService.updateAdaptiveSecuritySignal(tenantId, signalId, data);
+      setSuccess('Signal updated successfully');
+      fetchSignals();
+      setShowSignalModal(false);
     } catch (err) {
       setError('Failed to update signal');
     } finally {
@@ -342,16 +276,9 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/adaptive-security/contexts/${userId}/refresh?tenantId=${tenantId}`,
-        {
-          method: 'POST'
-        }
-      );
-      if (response.ok) {
-        setSuccess('Context refreshed successfully');
-        fetchContexts();
-      }
+      await securityService.refreshUserSecurityContext(tenantId, userId);
+      setSuccess('Context refreshed successfully');
+      fetchContexts();
     } catch (err) {
       setError('Failed to refresh context');
     } finally {

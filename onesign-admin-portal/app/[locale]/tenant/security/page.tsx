@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { securityService } from '@/lib/api/services';
 
 interface SecurityPolicy {
   id: string;
@@ -72,27 +73,20 @@ export default function SecurityCenterPage() {
     setLoading(true);
     try {
       // Fetch security policy
-      const policyRes = await fetch(`http://localhost:7000/api/tenant/security/policy?tenantId=${tenantId}`, {
-        credentials: 'include',
-      });
-      if (policyRes.ok) {
-        const policyData = await policyRes.json();
-        setPolicy(policyData);
-        setMfaRequirement(policyData.mfaRequirement);
-        setAllowTrustedDevices(policyData.allowTrustedDevices);
-        setTrustedDeviceExpireDays(policyData.trustedDeviceExpireDays);
-        setSessionTimeoutMinutes(policyData.sessionTimeoutMinutes);
-        setMaxFailedLoginAttempts(policyData.maxFailedLoginAttempts);
+      const policyData = await securityService.getPolicies(tenantId);
+      if (policyData && policyData.length > 0) {
+        const policy = policyData[0];
+        setPolicy(policy);
+        setMfaRequirement(policy.mfaRequirement);
+        setAllowTrustedDevices(policy.allowTrustedDevices);
+        setTrustedDeviceExpireDays(policy.trustedDeviceExpireDays);
+        setSessionTimeoutMinutes(policy.sessionTimeoutMinutes);
+        setMaxFailedLoginAttempts(policy.maxFailedLoginAttempts);
       }
 
       // Fetch org unit rules
-      const rulesRes = await fetch(`http://localhost:7000/api/tenant/security/policy/org-unit-rules?tenantId=${tenantId}`, {
-        credentials: 'include',
-      });
-      if (rulesRes.ok) {
-        const rulesData = await rulesRes.json();
-        setOrgUnitRules(rulesData || []);
-      }
+      const rulesData = await securityService.getOrgUnitMFARules(tenantId);
+      setOrgUnitRules(rulesData || []);
 
       // Fetch MFA methods (would need userId - skip for now)
       // Fetch trusted devices (would need userId - skip for now)
@@ -107,22 +101,13 @@ export default function SecurityCenterPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/security/policy?tenantId=${tenantId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          mfaRequirement,
-          allowTrustedDevices,
-          trustedDeviceExpireDays,
-          sessionTimeoutMinutes,
-          maxFailedLoginAttempts,
-        }),
+      await securityService.updateSecurityPolicy(tenantId, {
+        mfaRequirement,
+        allowTrustedDevices,
+        trustedDeviceExpireDays,
+        sessionTimeoutMinutes,
+        maxFailedLoginAttempts,
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to update policy');
-      }
 
       setSuccess(t('security.policyUpdated'));
       await fetchSecurityData();
@@ -137,16 +122,7 @@ export default function SecurityCenterPage() {
       const userId = 'current-user-id'; // Should be from auth context
       const userEmail = 'user@example.com'; // Should be from auth context
 
-      const response = await fetch(`http://localhost:7000/api/tenant/mfa/totp/begin?userId=${userId}&userEmail=${userEmail}`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to begin TOTP enrollment');
-      }
-
-      const data = await response.json();
+      const data = await securityService.beginTotpEnrollment(userId, userEmail);
       setTotpSecret(data.secret);
       setTotpQrCode(data.qrCodeUri);
       setShowTotpEnrollment(true);
@@ -161,19 +137,7 @@ export default function SecurityCenterPage() {
     try {
       const userId = 'current-user-id'; // Should be from auth context
 
-      const response = await fetch(`http://localhost:7000/api/tenant/mfa/totp/confirm?userId=${userId}&tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          secret: totpSecret,
-          code: totpCode,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Invalid TOTP code');
-      }
+      await securityService.confirmTotpEnrollment(userId, tenantId, totpSecret, totpCode);
 
       setSuccess(t('security.totpEnrolled'));
       setShowTotpEnrollment(false);
@@ -189,16 +153,7 @@ export default function SecurityCenterPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/security/policy/org-unit-rules?tenantId=${tenantId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(orgUnitRules),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update org unit rules');
-      }
+      await securityService.updateOrgUnitMFARules(tenantId, orgUnitRules);
 
       setSuccess(t('security.orgUnitRulesUpdated') || 'Org unit rules updated successfully');
       setShowOrgUnitRulesModal(false);

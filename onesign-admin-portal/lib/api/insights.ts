@@ -374,6 +374,83 @@ export async function deleteGlobalReportSubscription(id: string): Promise<void> 
   if (!response.ok) throw new Error('Failed to delete global report subscription');
 }
 
+export async function getGlobalPlatformOverview(params?: {
+  from?: string;
+  to?: string;
+}): Promise<any> {
+  const searchParams = new URLSearchParams();
+  if (params?.from) searchParams.append('from', params.from);
+  if (params?.to) searchParams.append('to', params.to);
+
+  const response = await fetch(`${API_BASE}/api/global/insights/platform-overview?${searchParams}`);
+  if (!response.ok) throw new Error('Failed to fetch global platform overview');
+  return response.json();
+}
+
+export async function getGlobalTenantUsage(params?: {
+  from?: string;
+  to?: string;
+  page?: number;
+  pageSize?: number;
+}): Promise<any> {
+  const searchParams = new URLSearchParams();
+  if (params?.from) searchParams.append('from', params.from);
+  if (params?.to) searchParams.append('to', params.to);
+  if (params?.page) searchParams.append('page', params.page.toString());
+  if (params?.pageSize) searchParams.append('pageSize', params.pageSize.toString());
+
+  const response = await fetch(`${API_BASE}/api/global/insights/tenant-usage?${searchParams}`);
+  if (!response.ok) throw new Error('Failed to fetch global tenant usage');
+  return response.json();
+}
+
+export async function getGlobalHighRiskUsers(params?: {
+  minRiskScore?: number;
+  page?: number;
+  pageSize?: number;
+}): Promise<any> {
+  const searchParams = new URLSearchParams();
+  if (params?.minRiskScore) searchParams.append('minRiskScore', params.minRiskScore.toString());
+  if (params?.page) searchParams.append('page', params.page.toString());
+  if (params?.pageSize) searchParams.append('pageSize', params.pageSize.toString());
+
+  const response = await fetch(`${API_BASE}/api/global/insights/high-risk-users?${searchParams}`);
+  if (!response.ok) throw new Error('Failed to fetch global high risk users');
+  return response.json();
+}
+
+export async function getGlobalSystemHealth(): Promise<any> {
+  const response = await fetch(`${API_BASE}/api/global/insights/system-health`);
+  if (!response.ok) throw new Error('Failed to fetch global system health');
+  return response.json();
+}
+
+export async function getGlobalSystemAlerts(params?: {
+  severity?: string;
+  acknowledged?: boolean;
+  page?: number;
+  pageSize?: number;
+}): Promise<any> {
+  const searchParams = new URLSearchParams();
+  if (params?.severity) searchParams.append('severity', params.severity);
+  if (params?.acknowledged !== undefined) searchParams.append('acknowledged', params.acknowledged.toString());
+  if (params?.page) searchParams.append('page', params.page.toString());
+  if (params?.pageSize) searchParams.append('pageSize', params.pageSize.toString());
+
+  const response = await fetch(`${API_BASE}/api/global/insights/system-alerts?${searchParams}`);
+  if (!response.ok) throw new Error('Failed to fetch global system alerts');
+  return response.json();
+}
+
+export async function acknowledgeGlobalSystemAlert(id: string, userId: string): Promise<void> {
+  const response = await fetch(`${API_BASE}/api/global/insights/system-alerts/${id}/acknowledge`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId }),
+  });
+  if (!response.ok) throw new Error('Failed to acknowledge global system alert');
+}
+
 // Constants
 export const REPORT_TYPES: ReportType[] = [
   'SecurityOverview',

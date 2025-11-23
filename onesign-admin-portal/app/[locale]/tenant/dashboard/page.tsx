@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { usersService } from '@/lib/api/services/users.service';
+import { applicationsService } from '@/lib/api/services/applications.service';
+import { securityService } from '@/lib/api/services/security.service';
 
 export default function TenantDashboardPage() {
   const t = useTranslations();
@@ -31,29 +34,20 @@ export default function TenantDashboardPage() {
 
   const fetchStats = async () => {
     if (!tenantId) return;
-    
+
     try {
       // Fetch users count
-      const usersResponse = await fetch(`http://localhost:7000/api/tenant/users?tenantId=${tenantId}&pageNumber=1&pageSize=1`);
-      if (usersResponse.ok) {
-        const usersData = await usersResponse.json();
-        setStats(prev => ({ ...prev, totalUsers: usersData.totalCount || 0 }));
-      }
+      const usersData = await usersService.getUsers({ tenantId, pageNumber: 1, pageSize: 1 });
+      setStats(prev => ({ ...prev, totalUsers: usersData.totalCount || 0 }));
 
       // Fetch applications count
-      const appsResponse = await fetch(`http://localhost:7000/api/tenant/applications?tenantId=${tenantId}&pageNumber=1&pageSize=1`);
-      if (appsResponse.ok) {
-        const appsData = await appsResponse.json();
-        setStats(prev => ({ ...prev, totalApplications: appsData.totalCount || 0 }));
-      }
+      const appsData = await applicationsService.getApplications({ tenantId, pageNumber: 1, pageSize: 1 });
+      setStats(prev => ({ ...prev, totalApplications: appsData.totalCount || 0 }));
 
       // Fetch recent audit events count
-      const auditResponse = await fetch(`http://localhost:7000/api/tenant/audit?tenantId=${tenantId}&pageNumber=1&pageSize=1`);
-      if (auditResponse.ok) {
-        const auditData = await auditResponse.json();
-        setStats(prev => ({ ...prev, recentActivity: auditData.totalCount || 0 }));
-      }
-    } catch (error) {
+      const auditData = await securityService.getAuditLogs({ tenantId, pageNumber: 1, pageSize: 1 });
+      setStats(prev => ({ ...prev, recentActivity: auditData.totalCount || 0 }));
+    } catch (error: any) {
       console.error('Error fetching stats:', error);
     } finally {
       setLoading(false);

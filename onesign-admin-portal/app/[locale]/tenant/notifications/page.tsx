@@ -3,30 +3,76 @@
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import {
+  getNotificationTemplates,
+  getNotifications,
+  createNotificationTemplate,
+  updateNotificationTemplate,
+  deleteNotificationTemplate,
+  sendNotification,
+  getNotificationChannels,
+  createNotificationChannel,
+  updateNotificationChannel,
+  deleteNotificationChannel,
+  getNotificationPreferences,
+  updateNotificationPreference,
+  getNotificationStats,
+  retryNotification,
+  NotificationTemplateDto,
+  NotificationDto,
+  NotificationChannelDto,
+  NotificationPreferenceDto,
+  NotificationStatsDto,
+  NotificationType,
+  NotificationCategory,
+  NotificationPriority,
+  NotificationStatus,
+  NOTIFICATION_TYPES,
+  NOTIFICATION_CATEGORIES,
+  NOTIFICATION_PRIORITIES,
+  getStatusColor,
+  getPriorityColor,
+  getTypeIcon,
+} from '@/lib/api/notifications';
 
-interface NotificationTemplate {
+type TabType = 'settings' | 'templates' | 'history' | 'rules';
+
+interface NotificationRule {
   id: string;
   name: string;
-  subject: string;
-  body: string;
-  templateType: string;
-  channel: string;
-  variables: string[];
+  description: string;
+  eventType: string;
+  conditions: string[];
+  notificationType: NotificationType;
+  templateId?: string;
+  isActive: boolean;
   createdAt: string;
 }
 
-interface Notification {
-  id: string;
-  recipientId: string;
-  recipientEmail: string;
-  subject: string;
-  body: string;
-  channel: string;
-  status: string;
-  sentAt: string;
-  deliveredAt?: string;
-  error?: string;
-}
+// Mock data for rules (since there's no API endpoint yet)
+const mockRules: NotificationRule[] = [
+  {
+    id: '1',
+    name: 'Failed Login Alert',
+    description: 'Notify admin on 3 failed login attempts',
+    eventType: 'FailedLogin',
+    conditions: ['attemptCount >= 3'],
+    notificationType: 'Email',
+    isActive: true,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: '2',
+    name: 'New User Registration',
+    description: 'Send welcome notification to new users',
+    eventType: 'UserRegistered',
+    conditions: [],
+    notificationType: 'Email',
+    templateId: 'welcome-template',
+    isActive: true,
+    createdAt: new Date().toISOString(),
+  },
+];
 
 export default function NotificationsPage() {
   const t = useTranslations();
@@ -35,28 +81,54 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [activeTab, setActiveTab] = useState<'templates' | 'history' | 'send'>('templates');
+  const [activeTab, setActiveTab] = useState<TabType>('settings');
 
-  // Templates
-  const [templates, setTemplates] = useState<NotificationTemplate[]>([]);
+  // Settings Tab State
+  const [channels, setChannels] = useState<NotificationChannelDto[]>([]);
+  const [preferences, setPreferences] = useState<NotificationPreferenceDto[]>([]);
+  const [showChannelModal, setShowChannelModal] = useState(false);
+  const [editingChannel, setEditingChannel] = useState<NotificationChannelDto | null>(null);
+  const [channelType, setChannelType] = useState<NotificationType>('Email');
+  const [channelName, setChannelName] = useState('');
+  const [channelConfig, setChannelConfig] = useState('');
+  const [channelEnabled, setChannelEnabled] = useState(true);
+
+  // Templates Tab State
+  const [templates, setTemplates] = useState<NotificationTemplateDto[]>([]);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<NotificationTemplateDto | null>(null);
+  const [previewTemplate, setPreviewTemplate] = useState<NotificationTemplateDto | null>(null);
   const [templateName, setTemplateName] = useState('');
+  const [templateDescription, setTemplateDescription] = useState('');
+  const [templateCategory, setTemplateCategory] = useState<NotificationCategory>('Custom');
+  const [templateType, setTemplateType] = useState<NotificationType>('Email');
   const [templateSubject, setTemplateSubject] = useState('');
   const [templateBody, setTemplateBody] = useState('');
-  const [templateType, setTemplateType] = useState('Email');
-  const [templateChannel, setTemplateChannel] = useState('Email');
+  const [templateHtml, setTemplateHtml] = useState('');
+  const [templateVariables, setTemplateVariables] = useState('');
+  const [templateActive, setTemplateActive] = useState(true);
 
-  // History
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [historyFilter, setHistoryFilter] = useState<string>('all');
+  // History Tab State
+  const [notifications, setNotifications] = useState<NotificationDto[]>([]);
+  const [stats, setStats] = useState<NotificationStatsDto | null>(null);
+  const [historyPage, setHistoryPage] = useState(1);
+  const [historyPageSize] = useState(20);
+  const [historyTotalPages, setHistoryTotalPages] = useState(1);
+  const [historyStatusFilter, setHistoryStatusFilter] = useState<NotificationStatus | ''>('');
+  const [historyTypeFilter, setHistoryTypeFilter] = useState<NotificationType | ''>('');
+  const [historyCategoryFilter, setHistoryCategoryFilter] = useState<NotificationCategory | ''>('');
+  const [selectedNotification, setSelectedNotification] = useState<NotificationDto | null>(null);
 
-  // Send Notification
-  const [sendRecipientId, setSendRecipientId] = useState('');
-  const [sendSubject, setSendSubject] = useState('');
-  const [sendBody, setSendBody] = useState('');
-  const [sendChannel, setSendChannel] = useState('Email');
-  const [useTemplate, setUseTemplate] = useState(false);
-  const [selectedTemplateId, setSelectedTemplateId] = useState('');
+  // Rules Tab State
+  const [rules, setRules] = useState<NotificationRule[]>(mockRules);
+  const [showRuleModal, setShowRuleModal] = useState(false);
+  const [editingRule, setEditingRule] = useState<NotificationRule | null>(null);
+  const [ruleName, setRuleName] = useState('');
+  const [ruleDescription, setRuleDescription] = useState('');
+  const [ruleEventType, setRuleEventType] = useState('');
+  const [ruleNotificationType, setRuleNotificationType] = useState<NotificationType>('Email');
+  const [ruleTemplateId, setRuleTemplateId] = useState('');
+  const [ruleActive, setRuleActive] = useState(true);
 
   useEffect(() => {
     const contextTenantId = getTenantId();
@@ -65,183 +137,391 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     if (tenantId) {
-      setLoading(true);
-      Promise.all([
-        fetchTemplates(),
-        fetchNotifications()
-      ]).finally(() => setLoading(false));
+      loadTabData();
     }
-  }, [tenantId]);
+  }, [tenantId, activeTab]);
 
-  const fetchTemplates = async () => {
-    if (!tenantId) return;
-
+  const loadTabData = async () => {
+    setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/notifications/templates?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setTemplates(Array.isArray(data) ? data : []);
+      switch (activeTab) {
+        case 'settings':
+          await Promise.all([fetchChannels(), fetchPreferences()]);
+          break;
+        case 'templates':
+          await fetchTemplates();
+          break;
+        case 'history':
+          await Promise.all([fetchNotifications(), fetchStats()]);
+          break;
+        case 'rules':
+          // Rules are mock data for now
+          break;
       }
-    } catch (error) {
-      console.error('Error fetching templates:', error);
+    } catch (err) {
+      console.error('Error loading data:', err);
+      setError(t('common.error') || 'Failed to load data');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const fetchNotifications = async () => {
+  // Settings Tab Functions
+  const fetchChannels = async () => {
     if (!tenantId) return;
-
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/notifications?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setNotifications(Array.isArray(data) ? data : []);
-      }
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
+      const data = await getNotificationChannels(tenantId);
+      setChannels(data);
+    } catch (err) {
+      console.error('Error fetching channels:', err);
     }
   };
 
-  const handleCreateTemplate = async (e: React.FormEvent) => {
+  const fetchPreferences = async () => {
+    if (!tenantId) return;
+    try {
+      // Using a mock user ID for demo purposes
+      const userId = '00000000-0000-0000-0000-000000000001';
+      const data = await getNotificationPreferences(userId, tenantId);
+      setPreferences(data);
+    } catch (err) {
+      console.error('Error fetching preferences:', err);
+    }
+  };
+
+  const handleSaveChannel = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
     if (!tenantId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/notifications/templates?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenantId,
-          name: templateName,
-          subject: templateSubject,
-          body: templateBody,
-          templateType: templateType,
-          channel: templateChannel
-        })
-      });
-
-      if (response.ok) {
-        setShowTemplateModal(false);
-        setTemplateName('');
-        setTemplateSubject('');
-        setTemplateBody('');
-        setSuccess(t('tenant.notifications.templateCreated') || 'Template created successfully');
-        fetchTemplates();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
+      let config: Record<string, any> = {};
+      if (channelConfig) {
+        try {
+          config = JSON.parse(channelConfig);
+        } catch {
+          config = { value: channelConfig };
+        }
       }
-    } catch (error) {
-      setError(t('common.error'));
-      console.error('Error creating template:', error);
-    }
-  };
 
-  const handleSendNotification = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-    if (!tenantId) return;
-
-    try {
-      const body: any = {
+      const channelData = {
         tenantId,
-        recipientId: sendRecipientId,
-        channel: sendChannel
+        userId: '00000000-0000-0000-0000-000000000001',
+        type: channelType,
+        name: channelName,
+        configuration: config,
       };
 
-      if (useTemplate && selectedTemplateId) {
-        body.templateId = selectedTemplateId;
-        body.variables = {}; // Would need to collect template variables
+      if (editingChannel) {
+        await updateNotificationChannel(editingChannel.id, channelData);
+        setSuccess('Channel updated successfully');
       } else {
-        body.subject = sendSubject;
-        body.body = sendBody;
+        await createNotificationChannel(channelData);
+        setSuccess('Channel created successfully');
       }
 
-      const response = await fetch(`http://localhost:7000/api/tenant/notifications?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
-      });
-
-      if (response.ok) {
-        setSendRecipientId('');
-        setSendSubject('');
-        setSendBody('');
-        setUseTemplate(false);
-        setSelectedTemplateId('');
-        setSuccess(t('tenant.notifications.notificationSent') || 'Notification sent successfully');
-        fetchNotifications();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (error) {
-      setError(t('common.error'));
-      console.error('Error sending notification:', error);
+      setShowChannelModal(false);
+      resetChannelForm();
+      fetchChannels();
+    } catch (err: any) {
+      setError(err.message || 'Failed to save channel');
     }
   };
 
-  const getFilteredNotifications = () => {
-    if (historyFilter === 'all') return notifications;
-    return notifications.filter(n => n.status.toLowerCase() === historyFilter.toLowerCase());
-  };
+  const handleDeleteChannel = async (channelId: string) => {
+    if (!tenantId || !confirm('Are you sure you want to delete this channel?')) return;
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'sent':
-      case 'delivered':
-        return 'bg-green-100 text-green-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'failed':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+    setError('');
+    setSuccess('');
+    try {
+      await deleteNotificationChannel(channelId, tenantId, '00000000-0000-0000-0000-000000000001');
+      setSuccess('Channel deleted successfully');
+      fetchChannels();
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete channel');
     }
   };
 
-  if (loading) {
+  const resetChannelForm = () => {
+    setEditingChannel(null);
+    setChannelName('');
+    setChannelType('Email');
+    setChannelConfig('');
+    setChannelEnabled(true);
+  };
+
+  const openEditChannel = (channel: NotificationChannelDto) => {
+    setEditingChannel(channel);
+    setChannelName(channel.name);
+    setChannelType(channel.type);
+    setChannelConfig(JSON.stringify(channel.configuration, null, 2));
+    setChannelEnabled(channel.isEnabled);
+    setShowChannelModal(true);
+  };
+
+  // Templates Tab Functions
+  const fetchTemplates = async () => {
+    if (!tenantId) return;
+    try {
+      const data = await getNotificationTemplates(tenantId);
+      setTemplates(data);
+    } catch (err) {
+      console.error('Error fetching templates:', err);
+    }
+  };
+
+  const handleSaveTemplate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    if (!tenantId) return;
+
+    try {
+      const variables = templateVariables.split(',').map(v => v.trim()).filter(v => v);
+      const templateData = {
+        tenantId,
+        userId: '00000000-0000-0000-0000-000000000001',
+        name: templateName,
+        description: templateDescription,
+        category: templateCategory,
+        type: templateType,
+        subjectTemplate: templateSubject,
+        bodyTemplate: templateBody,
+        htmlTemplate: templateHtml || undefined,
+        variables,
+        isActive: templateActive,
+      };
+
+      if (editingTemplate) {
+        await updateNotificationTemplate(editingTemplate.id, templateData);
+        setSuccess('Template updated successfully');
+      } else {
+        await createNotificationTemplate(templateData);
+        setSuccess('Template created successfully');
+      }
+
+      setShowTemplateModal(false);
+      resetTemplateForm();
+      fetchTemplates();
+    } catch (err: any) {
+      setError(err.message || 'Failed to save template');
+    }
+  };
+
+  const handleDeleteTemplate = async (templateId: string) => {
+    if (!tenantId || !confirm('Are you sure you want to delete this template?')) return;
+
+    setError('');
+    setSuccess('');
+    try {
+      await deleteNotificationTemplate(templateId, tenantId, '00000000-0000-0000-0000-000000000001');
+      setSuccess('Template deleted successfully');
+      fetchTemplates();
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete template');
+    }
+  };
+
+  const resetTemplateForm = () => {
+    setEditingTemplate(null);
+    setTemplateName('');
+    setTemplateDescription('');
+    setTemplateCategory('Custom');
+    setTemplateType('Email');
+    setTemplateSubject('');
+    setTemplateBody('');
+    setTemplateHtml('');
+    setTemplateVariables('');
+    setTemplateActive(true);
+  };
+
+  const openEditTemplate = (template: NotificationTemplateDto) => {
+    setEditingTemplate(template);
+    setTemplateName(template.name);
+    setTemplateDescription(template.description || '');
+    setTemplateCategory(template.category);
+    setTemplateType(template.type);
+    setTemplateSubject(template.subjectTemplate);
+    setTemplateBody(template.bodyTemplate);
+    setTemplateHtml(template.htmlTemplate || '');
+    setTemplateVariables(template.variables.join(', '));
+    setTemplateActive(template.isActive);
+    setShowTemplateModal(true);
+  };
+
+  // History Tab Functions
+  const fetchNotifications = async () => {
+    if (!tenantId) return;
+    try {
+      const params: any = {
+        page: historyPage,
+        pageSize: historyPageSize,
+      };
+      if (historyStatusFilter) params.status = historyStatusFilter;
+      if (historyTypeFilter) params.type = historyTypeFilter;
+      if (historyCategoryFilter) params.category = historyCategoryFilter;
+
+      const data = await getNotifications(tenantId, params);
+      setNotifications(data.items);
+      setHistoryTotalPages(data.totalPages);
+    } catch (err) {
+      console.error('Error fetching notifications:', err);
+    }
+  };
+
+  const fetchStats = async () => {
+    if (!tenantId) return;
+    try {
+      const data = await getNotificationStats(tenantId);
+      setStats(data);
+    } catch (err) {
+      console.error('Error fetching stats:', err);
+    }
+  };
+
+  const handleRetryNotification = async (notificationId: string) => {
+    if (!tenantId) return;
+    setError('');
+    setSuccess('');
+    try {
+      await retryNotification(notificationId, tenantId);
+      setSuccess('Notification retry initiated');
+      fetchNotifications();
+    } catch (err: any) {
+      setError(err.message || 'Failed to retry notification');
+    }
+  };
+
+  // Rules Tab Functions
+  const handleSaveRule = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    const newRule: NotificationRule = {
+      id: editingRule?.id || Date.now().toString(),
+      name: ruleName,
+      description: ruleDescription,
+      eventType: ruleEventType,
+      conditions: [],
+      notificationType: ruleNotificationType,
+      templateId: ruleTemplateId || undefined,
+      isActive: ruleActive,
+      createdAt: editingRule?.createdAt || new Date().toISOString(),
+    };
+
+    if (editingRule) {
+      setRules(rules.map(r => r.id === editingRule.id ? newRule : r));
+      setSuccess('Rule updated successfully');
+    } else {
+      setRules([...rules, newRule]);
+      setSuccess('Rule created successfully');
+    }
+
+    setShowRuleModal(false);
+    resetRuleForm();
+  };
+
+  const handleDeleteRule = (ruleId: string) => {
+    if (!confirm('Are you sure you want to delete this rule?')) return;
+    setRules(rules.filter(r => r.id !== ruleId));
+    setSuccess('Rule deleted successfully');
+  };
+
+  const handleToggleRule = (ruleId: string) => {
+    setRules(rules.map(r =>
+      r.id === ruleId ? { ...r, isActive: !r.isActive } : r
+    ));
+  };
+
+  const resetRuleForm = () => {
+    setEditingRule(null);
+    setRuleName('');
+    setRuleDescription('');
+    setRuleEventType('');
+    setRuleNotificationType('Email');
+    setRuleTemplateId('');
+    setRuleActive(true);
+  };
+
+  const openEditRule = (rule: NotificationRule) => {
+    setEditingRule(rule);
+    setRuleName(rule.name);
+    setRuleDescription(rule.description);
+    setRuleEventType(rule.eventType);
+    setRuleNotificationType(rule.notificationType);
+    setRuleTemplateId(rule.templateId || '');
+    setRuleActive(rule.isActive);
+    setShowRuleModal(true);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString(locale);
+  };
+
+  const getStatusBadgeClass = (status: NotificationStatus) => {
+    const color = getStatusColor(status);
+    return `bg-${color}-100 text-${color}-800`;
+  };
+
+  if (loading && activeTab === 'settings' && channels.length === 0) {
     return <div className="p-8">{t('common.loading')}</div>;
   }
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold mb-6">{t('tenant.notifications.title') || 'Notification Center'}</h1>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-900">
+          {t('tenant.notifications.title') || 'Notification Management'}
+        </h1>
+        <p className="mt-2 text-gray-600">
+          Configure notification channels, templates, and delivery rules
+        </p>
+      </div>
 
       {/* Tabs */}
       <div className="border-b border-gray-200 mb-6">
         <nav className="-mb-px flex space-x-8">
           <button
+            onClick={() => setActiveTab('settings')}
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'settings'
+                ? 'border-indigo-500 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Settings
+          </button>
+          <button
             onClick={() => setActiveTab('templates')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'templates'
                 ? 'border-indigo-500 text-indigo-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            {t('tenant.notifications.templates') || 'Templates'}
-          </button>
-          <button
-            onClick={() => setActiveTab('send')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'send'
-                ? 'border-indigo-500 text-indigo-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            {t('tenant.notifications.send') || 'Send Notification'}
+            Templates
           </button>
           <button
             onClick={() => setActiveTab('history')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'history'
                 ? 'border-indigo-500 text-indigo-600'
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            {t('tenant.notifications.history') || 'History'}
+            History
+          </button>
+          <button
+            onClick={() => setActiveTab('rules')}
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'rules'
+                ? 'border-indigo-500 text-indigo-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Rules
           </button>
         </nav>
       </div>
@@ -258,289 +538,898 @@ export default function NotificationsPage() {
         </div>
       )}
 
-      {/* Templates Tab */}
-      {activeTab === 'templates' && (
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">{t('tenant.notifications.templates') || 'Notification Templates'}</h2>
-            <button
-              onClick={() => setShowTemplateModal(true)}
-              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-            >
-              {t('tenant.notifications.createTemplate') || 'Create Template'}
-            </button>
+      {/* Settings Tab */}
+      {activeTab === 'settings' && (
+        <div className="space-y-6">
+          {/* Notification Channels */}
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Notification Channels</h2>
+                <p className="text-sm text-gray-500">Configure email, SMS, webhook, and other notification channels</p>
+              </div>
+              <button
+                onClick={() => {
+                  resetChannelForm();
+                  setShowChannelModal(true);
+                }}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+              >
+                Add Channel
+              </button>
+            </div>
+            <div className="p-6">
+              {channels.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">No channels configured yet</p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {channels.map((channel) => (
+                    <div key={channel.id} className="border border-gray-200 rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h3 className="font-medium text-gray-900">{channel.name}</h3>
+                          <p className="text-sm text-gray-500">{channel.type}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-1 text-xs rounded ${
+                            channel.isEnabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {channel.isEnabled ? 'Enabled' : 'Disabled'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="mt-3 flex gap-2">
+                        <button
+                          onClick={() => openEditChannel(channel)}
+                          className="text-indigo-600 hover:text-indigo-900 text-sm"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteChannel(channel.id)}
+                          className="text-red-600 hover:text-red-900 text-sm"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.notifications.name') || 'Name'}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.notifications.type') || 'Type'}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.notifications.channel') || 'Channel'}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.notifications.created') || 'Created'}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {templates.map((template) => (
-                  <tr key={template.id}>
-                    <td className="px-6 py-4 text-sm">
-                      <div className="font-medium text-gray-900">{template.name}</div>
-                      <div className="text-gray-500 text-xs">{template.subject}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{template.templateType}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{template.channel}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(template.createdAt).toLocaleDateString(locale)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <button className="text-indigo-600 hover:text-indigo-900 mr-3">{t('common.edit')}</button>
-                      <button className="text-red-600 hover:text-red-900">{t('common.delete')}</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {templates.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                {t('tenant.notifications.noTemplates') || 'No templates found'}
-              </div>
-            )}
+          {/* User Preferences */}
+          <div className="bg-white shadow rounded-lg">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">Notification Preferences</h2>
+              <p className="text-sm text-gray-500">Configure default notification preferences by category</p>
+            </div>
+            <div className="p-6">
+              {preferences.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">No preferences configured yet</p>
+              ) : (
+                <div className="space-y-4">
+                  {preferences.map((pref) => (
+                    <div key={pref.id} className="flex justify-between items-center py-3 border-b border-gray-100">
+                      <div>
+                        <h3 className="font-medium text-gray-900">{pref.category}</h3>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={pref.emailEnabled}
+                            onChange={() => {/* Handle update */}}
+                            className="rounded"
+                          />
+                          <span className="text-sm">Email</span>
+                        </label>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={pref.smsEnabled}
+                            onChange={() => {/* Handle update */}}
+                            className="rounded"
+                          />
+                          <span className="text-sm">SMS</span>
+                        </label>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={pref.inAppEnabled}
+                            onChange={() => {/* Handle update */}}
+                            className="rounded"
+                          />
+                          <span className="text-sm">In-App</span>
+                        </label>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
 
-      {/* Send Notification Tab */}
-      {activeTab === 'send' && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">{t('tenant.notifications.sendNotification') || 'Send Notification'}</h2>
-          <form onSubmit={handleSendNotification}>
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">{t('tenant.notifications.recipientId') || 'Recipient User ID'}</label>
-              <input
-                type="text"
-                required
-                className="w-full px-3 py-2 border rounded"
-                value={sendRecipientId}
-                onChange={(e) => setSendRecipientId(e.target.value)}
-                placeholder="User ID or Email"
-              />
+      {/* Templates Tab */}
+      {activeTab === 'templates' && (
+        <div className="bg-white shadow rounded-lg">
+          <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Notification Templates</h2>
+              <p className="text-sm text-gray-500">Create and manage reusable notification templates</p>
             </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">{t('tenant.notifications.channel') || 'Channel'}</label>
-              <select
-                className="w-full px-3 py-2 border rounded"
-                value={sendChannel}
-                onChange={(e) => setSendChannel(e.target.value)}
-              >
-                <option value="Email">Email</option>
-                <option value="SMS">SMS</option>
-                <option value="Push">Push Notification</option>
-                <option value="InApp">In-App</option>
-              </select>
-            </div>
-
-            <div className="mb-4">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  className="mr-2"
-                  checked={useTemplate}
-                  onChange={(e) => setUseTemplate(e.target.checked)}
-                />
-                {t('tenant.notifications.useTemplate') || 'Use Template'}
-              </label>
-            </div>
-
-            {useTemplate ? (
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('tenant.notifications.selectTemplate') || 'Select Template'}</label>
-                <select
-                  className="w-full px-3 py-2 border rounded"
-                  value={selectedTemplateId}
-                  onChange={(e) => setSelectedTemplateId(e.target.value)}
-                  required
-                >
-                  <option value="">{t('tenant.notifications.selectTemplatePlaceholder') || 'Choose a template...'}</option>
-                  {templates.map((template) => (
-                    <option key={template.id} value={template.id}>{template.name}</option>
-                  ))}
-                </select>
-              </div>
-            ) : (
-              <>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">{t('tenant.notifications.subject') || 'Subject'}</label>
-                  <input
-                    type="text"
-                    required
-                    className="w-full px-3 py-2 border rounded"
-                    value={sendSubject}
-                    onChange={(e) => setSendSubject(e.target.value)}
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">{t('tenant.notifications.body') || 'Body'}</label>
-                  <textarea
-                    required
-                    className="w-full px-3 py-2 border rounded"
-                    rows={6}
-                    value={sendBody}
-                    onChange={(e) => setSendBody(e.target.value)}
-                  />
-                </div>
-              </>
-            )}
-
-            <button type="submit" className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700">
-              {t('tenant.notifications.send') || 'Send Notification'}
+            <button
+              onClick={() => {
+                resetTemplateForm();
+                setShowTemplateModal(true);
+              }}
+              className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+            >
+              Create Template
             </button>
-          </form>
+          </div>
+          <div className="overflow-x-auto">
+            {templates.length === 0 ? (
+              <p className="text-gray-500 text-center py-12">No templates found</p>
+            ) : (
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {templates.map((template) => (
+                    <tr key={template.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <div className="text-sm font-medium text-gray-900">{template.name}</div>
+                        <div className="text-sm text-gray-500">{template.description}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{template.type}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{template.category}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 text-xs rounded ${
+                          template.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {template.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatDate(template.createdAt)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm space-x-3">
+                        <button
+                          onClick={() => setPreviewTemplate(template)}
+                          className="text-blue-600 hover:text-blue-900"
+                        >
+                          Preview
+                        </button>
+                        <button
+                          onClick={() => openEditTemplate(template)}
+                          className="text-indigo-600 hover:text-indigo-900"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTemplate(template.id)}
+                          className="text-red-600 hover:text-red-900"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
         </div>
       )}
 
       {/* History Tab */}
       {activeTab === 'history' && (
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">{t('tenant.notifications.history') || 'Notification History'}</h2>
-            <select
-              className="px-3 py-2 border rounded"
-              value={historyFilter}
-              onChange={(e) => setHistoryFilter(e.target.value)}
-            >
-              <option value="all">{t('common.all') || 'All'}</option>
-              <option value="sent">{t('tenant.notifications.sent') || 'Sent'}</option>
-              <option value="delivered">{t('tenant.notifications.delivered') || 'Delivered'}</option>
-              <option value="pending">{t('tenant.notifications.pending') || 'Pending'}</option>
-              <option value="failed">{t('tenant.notifications.failed') || 'Failed'}</option>
-            </select>
+        <div className="space-y-6">
+          {/* Stats */}
+          {stats && (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="bg-white shadow rounded-lg p-4">
+                <div className="text-sm text-gray-500">Total Sent</div>
+                <div className="text-2xl font-bold text-gray-900">{stats.totalSent}</div>
+              </div>
+              <div className="bg-white shadow rounded-lg p-4">
+                <div className="text-sm text-gray-500">Delivered</div>
+                <div className="text-2xl font-bold text-green-600">{stats.totalDelivered}</div>
+              </div>
+              <div className="bg-white shadow rounded-lg p-4">
+                <div className="text-sm text-gray-500">Failed</div>
+                <div className="text-2xl font-bold text-red-600">{stats.totalFailed}</div>
+              </div>
+              <div className="bg-white shadow rounded-lg p-4">
+                <div className="text-sm text-gray-500">Delivery Rate</div>
+                <div className="text-2xl font-bold text-indigo-600">{stats.deliveryRate.toFixed(1)}%</div>
+              </div>
+            </div>
+          )}
+
+          {/* Filters */}
+          <div className="bg-white shadow rounded-lg p-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <select
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  value={historyStatusFilter}
+                  onChange={(e) => {
+                    setHistoryStatusFilter(e.target.value as NotificationStatus | '');
+                    setHistoryPage(1);
+                  }}
+                >
+                  <option value="">All Statuses</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Sent">Sent</option>
+                  <option value="Delivered">Delivered</option>
+                  <option value="Failed">Failed</option>
+                  <option value="Bounced">Bounced</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                <select
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  value={historyTypeFilter}
+                  onChange={(e) => {
+                    setHistoryTypeFilter(e.target.value as NotificationType | '');
+                    setHistoryPage(1);
+                  }}
+                >
+                  <option value="">All Types</option>
+                  {NOTIFICATION_TYPES.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                <select
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  value={historyCategoryFilter}
+                  onChange={(e) => {
+                    setHistoryCategoryFilter(e.target.value as NotificationCategory | '');
+                    setHistoryPage(1);
+                  }}
+                >
+                  <option value="">All Categories</option>
+                  {NOTIFICATION_CATEGORIES.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.notifications.recipient') || 'Recipient'}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.notifications.subject') || 'Subject'}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.notifications.channel') || 'Channel'}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.notifications.status') || 'Status'}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.notifications.sentAt') || 'Sent At'}</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {getFilteredNotifications().map((notification) => (
-                  <tr key={notification.id}>
-                    <td className="px-6 py-4 text-sm">
-                      <div className="font-medium text-gray-900">{notification.recipientEmail}</div>
-                      <div className="text-gray-500 text-xs">{notification.recipientId}</div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
-                      {notification.subject}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{notification.channel}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(notification.status)}`}>
-                        {notification.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(notification.sentAt).toLocaleString(locale)}
-                    </td>
-                  </tr>
+          {/* Notifications Table */}
+          <div className="bg-white shadow rounded-lg overflow-hidden">
+            {notifications.length === 0 ? (
+              <p className="text-gray-500 text-center py-12">No notifications found</p>
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Recipient</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subject</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Priority</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sent At</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {notifications.map((notification) => (
+                        <tr key={notification.id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {notification.recipientEmail || notification.recipientPhone || 'N/A'}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-sm text-gray-900 max-w-xs truncate">{notification.subject}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{notification.type}</td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 py-1 text-xs rounded bg-${getStatusColor(notification.status)}-100 text-${getStatusColor(notification.status)}-800`}>
+                              {notification.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 py-1 text-xs rounded bg-${getPriorityColor(notification.priority)}-100 text-${getPriorityColor(notification.priority)}-800`}>
+                              {notification.priority}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {notification.sentAt ? formatDate(notification.sentAt) : 'Not sent'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm space-x-3">
+                            <button
+                              onClick={() => setSelectedNotification(notification)}
+                              className="text-indigo-600 hover:text-indigo-900"
+                            >
+                              View
+                            </button>
+                            {notification.status === 'Failed' && (
+                              <button
+                                onClick={() => handleRetryNotification(notification.id)}
+                                className="text-green-600 hover:text-green-900"
+                              >
+                                Retry
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination */}
+                <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200">
+                  <button
+                    onClick={() => setHistoryPage(historyPage - 1)}
+                    disabled={historyPage === 1}
+                    className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-sm text-gray-700">
+                    Page {historyPage} of {historyTotalPages}
+                  </span>
+                  <button
+                    onClick={() => setHistoryPage(historyPage + 1)}
+                    disabled={historyPage >= historyTotalPages}
+                    className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Rules Tab */}
+      {activeTab === 'rules' && (
+        <div className="bg-white shadow rounded-lg">
+          <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Notification Rules</h2>
+              <p className="text-sm text-gray-500">Configure automated notification triggers based on events</p>
+            </div>
+            <button
+              onClick={() => {
+                resetRuleForm();
+                setShowRuleModal(true);
+              }}
+              className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+            >
+              Create Rule
+            </button>
+          </div>
+          <div className="p-6">
+            {rules.length === 0 ? (
+              <p className="text-gray-500 text-center py-8">No rules configured yet</p>
+            ) : (
+              <div className="space-y-4">
+                {rules.map((rule) => (
+                  <div key={rule.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3">
+                          <h3 className="font-medium text-gray-900">{rule.name}</h3>
+                          <span className={`px-2 py-1 text-xs rounded ${
+                            rule.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {rule.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-500 mt-1">{rule.description}</p>
+                        <div className="mt-2 flex gap-4 text-sm text-gray-600">
+                          <span>Event: <strong>{rule.eventType}</strong></span>
+                          <span>Type: <strong>{rule.notificationType}</strong></span>
+                          {rule.templateId && <span>Template: <strong>{rule.templateId}</strong></span>}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleToggleRule(rule.id)}
+                          className={`px-3 py-1 text-sm rounded ${
+                            rule.isActive
+                              ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              : 'bg-green-100 text-green-700 hover:bg-green-200'
+                          }`}
+                        >
+                          {rule.isActive ? 'Disable' : 'Enable'}
+                        </button>
+                        <button
+                          onClick={() => openEditRule(rule)}
+                          className="text-indigo-600 hover:text-indigo-900 text-sm"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteRule(rule.id)}
+                          className="text-red-600 hover:text-red-900 text-sm"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-            {getFilteredNotifications().length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                {t('tenant.notifications.noNotifications') || 'No notifications found'}
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* Create Template Modal */}
-      {showTemplateModal && (
+      {/* Channel Modal */}
+      {showChannelModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">{t('tenant.notifications.createTemplate') || 'Create Template'}</h2>
-            <form onSubmit={handleCreateTemplate}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('tenant.notifications.name') || 'Name'}</label>
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-xl font-semibold">
+                {editingChannel ? 'Edit Channel' : 'Add Channel'}
+              </h2>
+            </div>
+            <form onSubmit={handleSaveChannel} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Channel Name</label>
                 <input
                   type="text"
                   required
-                  className="w-full px-3 py-2 border rounded"
-                  value={templateName}
-                  onChange={(e) => setTemplateName(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  value={channelName}
+                  onChange={(e) => setChannelName(e.target.value)}
+                  placeholder="e.g., Primary Email Server"
                 />
               </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('tenant.notifications.type') || 'Type'}</label>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Channel Type</label>
                 <select
-                  className="w-full px-3 py-2 border rounded"
-                  value={templateType}
-                  onChange={(e) => setTemplateType(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  value={channelType}
+                  onChange={(e) => setChannelType(e.target.value as NotificationType)}
                 >
-                  <option value="Email">Email</option>
-                  <option value="SMS">SMS</option>
-                  <option value="Push">Push</option>
-                  <option value="InApp">In-App</option>
+                  {NOTIFICATION_TYPES.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
                 </select>
               </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('tenant.notifications.channel') || 'Channel'}</label>
-                <select
-                  className="w-full px-3 py-2 border rounded"
-                  value={templateChannel}
-                  onChange={(e) => setTemplateChannel(e.target.value)}
-                >
-                  <option value="Email">Email</option>
-                  <option value="SMS">SMS</option>
-                  <option value="Push">Push</option>
-                  <option value="InApp">In-App</option>
-                </select>
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('tenant.notifications.subject') || 'Subject'}</label>
-                <input
-                  type="text"
-                  required
-                  className="w-full px-3 py-2 border rounded"
-                  value={templateSubject}
-                  onChange={(e) => setTemplateSubject(e.target.value)}
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('tenant.notifications.body') || 'Body'}</label>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Configuration (JSON)
+                </label>
                 <textarea
-                  required
-                  className="w-full px-3 py-2 border rounded font-mono text-sm"
-                  rows={8}
-                  value={templateBody}
-                  onChange={(e) => setTemplateBody(e.target.value)}
-                  placeholder="Use {{variableName}} for variables"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 font-mono text-sm"
+                  rows={6}
+                  value={channelConfig}
+                  onChange={(e) => setChannelConfig(e.target.value)}
+                  placeholder='{"host": "smtp.example.com", "port": 587}'
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  {t('tenant.notifications.templateHint') || 'Use {{variableName}} syntax for dynamic content'}
+                  Enter configuration as JSON object
                 </p>
               </div>
-              <div className="flex gap-2">
-                <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded">
-                  {t('common.create')}
+              <div className="flex gap-3">
+                <button
+                  type="submit"
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowChannelModal(false)}
+                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Template Modal */}
+      {showTemplateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-xl font-semibold">
+                {editingTemplate ? 'Edit Template' : 'Create Template'}
+              </h2>
+            </div>
+            <form onSubmit={handleSaveTemplate} className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Template Name</label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    value={templateName}
+                    onChange={(e) => setTemplateName(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+                  <select
+                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    value={templateType}
+                    onChange={(e) => setTemplateType(e.target.value as NotificationType)}
+                  >
+                    {NOTIFICATION_TYPES.map(type => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  value={templateDescription}
+                  onChange={(e) => setTemplateDescription(e.target.value)}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                  <select
+                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    value={templateCategory}
+                    onChange={(e) => setTemplateCategory(e.target.value as NotificationCategory)}
+                  >
+                    {NOTIFICATION_CATEGORIES.map(cat => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Variables (comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full border border-gray-300 rounded-md px-3 py-2"
+                    value={templateVariables}
+                    onChange={(e) => setTemplateVariables(e.target.value)}
+                    placeholder="userName, actionUrl, date"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Subject Template</label>
+                <input
+                  type="text"
+                  required
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  value={templateSubject}
+                  onChange={(e) => setTemplateSubject(e.target.value)}
+                  placeholder="Welcome {{userName}}!"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Body Template</label>
+                <textarea
+                  required
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 font-mono text-sm"
+                  rows={6}
+                  value={templateBody}
+                  onChange={(e) => setTemplateBody(e.target.value)}
+                  placeholder="Hello {{userName}}, welcome to our platform!"
+                />
+              </div>
+              {templateType === 'Email' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    HTML Template (optional)
+                  </label>
+                  <textarea
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 font-mono text-sm"
+                    rows={6}
+                    value={templateHtml}
+                    onChange={(e) => setTemplateHtml(e.target.value)}
+                    placeholder="<html><body>Hello {{userName}}</body></html>"
+                  />
+                </div>
+              )}
+              <div>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={templateActive}
+                    onChange={(e) => setTemplateActive(e.target.checked)}
+                    className="rounded"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Active</span>
+                </label>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="submit"
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+                >
+                  Save Template
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowTemplateModal(false)}
-                  className="bg-gray-300 px-4 py-2 rounded"
+                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
                 >
-                  {t('common.cancel')}
+                  Cancel
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Template Preview Modal */}
+      {previewTemplate && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Template Preview</h2>
+              <button
+                onClick={() => setPreviewTemplate(null)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                Close
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <h3 className="font-medium text-gray-900 mb-2">{previewTemplate.name}</h3>
+                <p className="text-sm text-gray-500">{previewTemplate.description}</p>
+              </div>
+              <div className="border-t border-gray-200 pt-4">
+                <div className="mb-4">
+                  <label className="text-sm font-medium text-gray-700">Subject:</label>
+                  <div className="mt-1 p-3 bg-gray-50 rounded border border-gray-200">
+                    {previewTemplate.subjectTemplate}
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <label className="text-sm font-medium text-gray-700">Body:</label>
+                  <div className="mt-1 p-3 bg-gray-50 rounded border border-gray-200 whitespace-pre-wrap">
+                    {previewTemplate.bodyTemplate}
+                  </div>
+                </div>
+                {previewTemplate.htmlTemplate && (
+                  <div className="mb-4">
+                    <label className="text-sm font-medium text-gray-700">HTML:</label>
+                    <div className="mt-1 p-3 bg-gray-50 rounded border border-gray-200 font-mono text-xs">
+                      {previewTemplate.htmlTemplate}
+                    </div>
+                  </div>
+                )}
+                {previewTemplate.variables.length > 0 && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Variables:</label>
+                    <div className="mt-1 flex flex-wrap gap-2">
+                      {previewTemplate.variables.map((v) => (
+                        <span key={v} className="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded">
+                          {v}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Rule Modal */}
+      {showRuleModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-xl font-semibold">
+                {editingRule ? 'Edit Rule' : 'Create Rule'}
+              </h2>
+            </div>
+            <form onSubmit={handleSaveRule} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Rule Name</label>
+                <input
+                  type="text"
+                  required
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  value={ruleName}
+                  onChange={(e) => setRuleName(e.target.value)}
+                  placeholder="e.g., Failed Login Alert"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  rows={3}
+                  value={ruleDescription}
+                  onChange={(e) => setRuleDescription(e.target.value)}
+                  placeholder="Describe when this rule should trigger"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Event Type</label>
+                <input
+                  type="text"
+                  required
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  value={ruleEventType}
+                  onChange={(e) => setRuleEventType(e.target.value)}
+                  placeholder="e.g., FailedLogin, UserRegistered"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Notification Type</label>
+                <select
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  value={ruleNotificationType}
+                  onChange={(e) => setRuleNotificationType(e.target.value as NotificationType)}
+                >
+                  {NOTIFICATION_TYPES.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Template (optional)
+                </label>
+                <select
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                  value={ruleTemplateId}
+                  onChange={(e) => setRuleTemplateId(e.target.value)}
+                >
+                  <option value="">None - Use custom message</option>
+                  {templates.map(template => (
+                    <option key={template.id} value={template.id}>{template.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={ruleActive}
+                    onChange={(e) => setRuleActive(e.target.checked)}
+                    className="rounded"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Active</span>
+                </label>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="submit"
+                  className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+                >
+                  Save Rule
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowRuleModal(false)}
+                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Notification Detail Modal */}
+      {selectedNotification && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Notification Details</h2>
+              <button
+                onClick={() => setSelectedNotification(null)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                Close
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Type</label>
+                  <div className="mt-1 text-gray-900">{selectedNotification.type}</div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Category</label>
+                  <div className="mt-1 text-gray-900">{selectedNotification.category}</div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Status</label>
+                  <div className="mt-1">
+                    <span className={`px-2 py-1 text-xs rounded bg-${getStatusColor(selectedNotification.status)}-100 text-${getStatusColor(selectedNotification.status)}-800`}>
+                      {selectedNotification.status}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Priority</label>
+                  <div className="mt-1">
+                    <span className={`px-2 py-1 text-xs rounded bg-${getPriorityColor(selectedNotification.priority)}-100 text-${getPriorityColor(selectedNotification.priority)}-800`}>
+                      {selectedNotification.priority}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Recipient</label>
+                <div className="mt-1 text-gray-900">
+                  {selectedNotification.recipientEmail || selectedNotification.recipientPhone || 'N/A'}
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Subject</label>
+                <div className="mt-1 text-gray-900">{selectedNotification.subject}</div>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Message</label>
+                <div className="mt-1 p-3 bg-gray-50 rounded border border-gray-200 whitespace-pre-wrap text-gray-900">
+                  {selectedNotification.message}
+                </div>
+              </div>
+              {selectedNotification.failureReason && (
+                <div>
+                  <label className="text-sm font-medium text-red-500">Failure Reason</label>
+                  <div className="mt-1 p-3 bg-red-50 rounded border border-red-200 text-red-900">
+                    {selectedNotification.failureReason}
+                  </div>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Created</label>
+                  <div className="mt-1 text-gray-900">{formatDate(selectedNotification.createdAt)}</div>
+                </div>
+                {selectedNotification.sentAt && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Sent</label>
+                    <div className="mt-1 text-gray-900">{formatDate(selectedNotification.sentAt)}</div>
+                  </div>
+                )}
+                {selectedNotification.deliveredAt && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Delivered</label>
+                    <div className="mt-1 text-gray-900">{formatDate(selectedNotification.deliveredAt)}</div>
+                  </div>
+                )}
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Retry Count</label>
+                  <div className="mt-1 text-gray-900">{selectedNotification.retryCount}</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

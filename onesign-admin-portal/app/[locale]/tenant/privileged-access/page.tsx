@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getTenantId } from '@/lib/tenant-context';
+import { accessService } from '@/lib/api/services';
 import DataTable, { Column } from '@/app/components/DataTable';
 import StatusBadge from '@/app/components/StatusBadge';
 import ActionButton from '@/app/components/ActionButton';
@@ -97,11 +98,8 @@ export default function PrivilegedAccessPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/privileged-access/sessions?tenantId=${tenantId}&status=Active`);
-      if (response.ok) {
-        const data = await response.json();
-        setSessions(data || []);
-      }
+      const data = await accessService.getPrivilegedSessions(tenantId, 'Active');
+      setSessions(data || []);
     } catch (err) {
       console.error('Error fetching sessions:', err);
     } finally {
@@ -113,11 +111,8 @@ export default function PrivilegedAccessPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/privileged-access/break-glass?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setBreakGlassAccounts(data || []);
-      }
+      const data = await accessService.getBreakGlassAccounts(tenantId);
+      setBreakGlassAccounts(data || []);
     } catch (err) {
       console.error('Error fetching break-glass accounts:', err);
     } finally {
@@ -129,11 +124,8 @@ export default function PrivilegedAccessPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/privileged-access/requests?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setAccessRequests(data || []);
-      }
+      const data = await accessService.getPrivilegedAccessRequests(tenantId);
+      setAccessRequests(data || []);
     } catch (err) {
       console.error('Error fetching access requests:', err);
     } finally {
@@ -145,11 +137,8 @@ export default function PrivilegedAccessPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/privileged-access/dashboard?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setDashboardData(data);
-      }
+      const data = await accessService.getPrivilegedAccessDashboard(tenantId);
+      setDashboardData(data);
     } catch (err) {
       console.error('Error fetching dashboard:', err);
     } finally {
@@ -161,11 +150,8 @@ export default function PrivilegedAccessPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/privileged-access/jit/grants?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setJitGrants(data || []);
-      }
+      const data = await accessService.getJITGrants(tenantId);
+      setJitGrants(data || []);
     } catch (err) {
       console.error('Error fetching JIT grants:', err);
     } finally {
@@ -178,17 +164,11 @@ export default function PrivilegedAccessPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/privileged-access/jit/request?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestForm)
-      });
-      if (response.ok) {
-        setSuccess('JIT access requested successfully');
-        setShowRequestModal(false);
-        fetchAccessRequests();
-        setRequestForm({ resourceType: '', resourceId: '', reason: '', duration: 3600 });
-      }
+      await accessService.requestJITAccess(tenantId, requestForm);
+      setSuccess('JIT access requested successfully');
+      setShowRequestModal(false);
+      fetchAccessRequests();
+      setRequestForm({ resourceType: '', resourceId: '', reason: '', duration: 3600 });
     } catch (err) {
       setError('Failed to request JIT access');
     } finally {
@@ -200,13 +180,9 @@ export default function PrivilegedAccessPage() {
     if (!tenantId || !confirm('Are you sure you want to revoke this grant?')) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/privileged-access/jit/grants/${grantId}/revoke?tenantId=${tenantId}`, {
-        method: 'POST'
-      });
-      if (response.ok) {
-        setSuccess('Grant revoked successfully');
-        fetchJITGrants();
-      }
+      await accessService.revokeJITGrant(tenantId, grantId);
+      setSuccess('Grant revoked successfully');
+      fetchJITGrants();
     } catch (err) {
       setError('Failed to revoke grant');
     } finally {
@@ -218,13 +194,9 @@ export default function PrivilegedAccessPage() {
     if (!tenantId || !confirm('Are you sure you want to revoke this session?')) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/privileged-access/sessions/${sessionId}/revoke?tenantId=${tenantId}`, {
-        method: 'POST'
-      });
-      if (response.ok) {
-        setSuccess('Session revoked successfully');
-        fetchSessions();
-      }
+      await accessService.revokePrivilegedSession(tenantId, sessionId);
+      setSuccess('Session revoked successfully');
+      fetchSessions();
     } catch (err) {
       setError('Failed to revoke session');
     } finally {
@@ -236,13 +208,9 @@ export default function PrivilegedAccessPage() {
     if (!tenantId || !confirm('Are you sure you want to activate this break-glass account? This action will be audited.')) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/privileged-access/break-glass/${accountId}/activate?tenantId=${tenantId}`, {
-        method: 'POST'
-      });
-      if (response.ok) {
-        setSuccess('Break-glass account activated');
-        fetchBreakGlassAccounts();
-      }
+      await accessService.activateBreakGlassAccount(tenantId, accountId);
+      setSuccess('Break-glass account activated');
+      fetchBreakGlassAccounts();
     } catch (err) {
       setError('Failed to activate break-glass account');
     } finally {

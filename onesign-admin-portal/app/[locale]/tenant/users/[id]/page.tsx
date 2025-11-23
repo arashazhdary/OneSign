@@ -7,6 +7,7 @@ import { getTenantId } from '@/lib/tenant-context';
 import LoadingOverlay from '@/app/components/LoadingOverlay';
 import Modal from '@/app/components/Modal';
 import StatusBadge from '@/app/components/StatusBadge';
+import { usersService } from '@/lib/api/services/users.service';
 
 interface UserProfile {
   id: string;
@@ -162,18 +163,7 @@ export default function UserProfilePage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/users/${userId}/profile?tenantId=${tenantId}`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch user profile');
-      }
-
-      const data = await response.json();
+      const data = await usersService.getUserProfile(tenantId, userId);
       setProfile(data);
       setFirstName(data.firstName || '');
       setLastName(data.lastName || '');
@@ -188,17 +178,8 @@ export default function UserProfilePage() {
 
   const fetchActivities = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/users/${userId}/activities?tenantId=${tenantId}&pageSize=50`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setActivities(data);
-      }
+      const data = await usersService.getUserActivities(tenantId, userId, 50);
+      setActivities(data);
     } catch (err) {
       console.error('Failed to fetch activities:', err);
     }
@@ -206,17 +187,8 @@ export default function UserProfilePage() {
 
   const fetchLifecycleEvents = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/users/${userId}/lifecycle?tenantId=${tenantId}`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setLifecycleEvents(data);
-      }
+      const data = await usersService.getUserLifecycle(tenantId, userId);
+      setLifecycleEvents(data);
     } catch (err) {
       console.error('Failed to fetch lifecycle events:', err);
     }
@@ -224,17 +196,8 @@ export default function UserProfilePage() {
 
   const fetchRiskAssessment = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/users/${userId}/risk-assessment?tenantId=${tenantId}`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setRiskAssessment(data);
-      }
+      const data = await usersService.getUserRiskAssessment(tenantId, userId);
+      setRiskAssessment(data);
     } catch (err) {
       console.error('Failed to fetch risk assessment:', err);
     }
@@ -242,17 +205,8 @@ export default function UserProfilePage() {
 
   const fetchAccessPackages = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/users/${userId}/access-packages?tenantId=${tenantId}`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setAccessPackages(data);
-      }
+      const data = await usersService.getUserAccessPackages(tenantId, userId);
+      setAccessPackages(data);
     } catch (err) {
       console.error('Failed to fetch access packages:', err);
     }
@@ -260,17 +214,8 @@ export default function UserProfilePage() {
 
   const fetchPrivilegedSessions = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/users/${userId}/privileged-sessions?tenantId=${tenantId}`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setPrivilegedSessions(data);
-      }
+      const data = await usersService.getUserPrivilegedSessions(tenantId, userId);
+      setPrivilegedSessions(data);
     } catch (err) {
       console.error('Failed to fetch privileged sessions:', err);
     }
@@ -278,17 +223,8 @@ export default function UserProfilePage() {
 
   const fetchAuditTrail = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/users/${userId}/audit-trail?tenantId=${tenantId}&pageSize=50`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setAuditTrail(data);
-      }
+      const data = await usersService.getUserAuditTrail(tenantId, userId, 50);
+      setAuditTrail(data);
     } catch (err) {
       console.error('Failed to fetch audit trail:', err);
     }
@@ -299,25 +235,12 @@ export default function UserProfilePage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/users/${userId}/profile?tenantId=${tenantId}`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            firstName,
-            lastName,
-            displayName,
-            phoneNumber: phoneNumber || null,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to update profile');
-      }
-
+      await usersService.updateUserProfile(tenantId, userId, {
+        firstName,
+        lastName,
+        displayName,
+        phoneNumber: phoneNumber || null,
+      });
       setSuccess('Profile updated successfully');
       setShowEditModal(false);
       setIsEditMode(false);

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import * as observabilityApi from '@/lib/api/observability';
 
 interface AuditEvent {
   id: string;
@@ -59,19 +60,13 @@ export default function GlobalObservabilityPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/observability/audit/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...searchRequest, page, pageSize }),
+      const data = await observabilityApi.searchGlobalAuditEvents({
+        ...searchRequest,
+        pageNumber: page,
+        pageSize,
       });
-      if (response.ok) {
-        const data = await response.json();
-        setAuditEvents(data.items || []);
-        setTotalEvents(data.totalCount || 0);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      setAuditEvents(data.events || []);
+      setTotalEvents(data.totalCount || 0);
     } catch (err) {
       setError(t('common.error'));
     } finally {
@@ -84,14 +79,8 @@ export default function GlobalObservabilityPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/observability/audit/${selectedEventId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setEventDetail(data);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      const data = await observabilityApi.getGlobalAuditEvent(selectedEventId);
+      setEventDetail(data);
     } catch (err) {
       setError(t('common.error'));
     } finally {

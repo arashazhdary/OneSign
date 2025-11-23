@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { platformService, applicationsService } from '@/lib/api/services';
 
 interface Scope {
   id: string;
@@ -82,11 +83,8 @@ export default function ScopeManagementPage() {
   const fetchScopes = async () => {
     if (!tenantId) return;
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/scopes?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setScopes(data.items || []);
-      }
+      const data = await platformService.getScopes(tenantId);
+      setScopes(data.items || data || []);
     } catch (error) {
       console.error('Error fetching scopes:', error);
     } finally {
@@ -97,11 +95,8 @@ export default function ScopeManagementPage() {
   const fetchScopeGroups = async () => {
     if (!tenantId) return;
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/scope-groups?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setScopeGroups(data.items || []);
-      }
+      const data = await platformService.getScopeGroups(tenantId);
+      setScopeGroups(data.items || data || []);
     } catch (error) {
       console.error('Error fetching scope groups:', error);
     }
@@ -110,11 +105,8 @@ export default function ScopeManagementPage() {
   const fetchApplications = async () => {
     if (!tenantId) return;
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/applications?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setApplications(data.items || []);
-      }
+      const data = await applicationsService.getApplications({ tenantId, pageNumber: 1, pageSize: 1000 });
+      setApplications(data.items || []);
     } catch (error) {
       console.error('Error fetching applications:', error);
     }
@@ -138,28 +130,17 @@ export default function ScopeManagementPage() {
     };
 
     try {
-      const method = editingScope ? 'PUT' : 'POST';
-      const url = editingScope
-        ? `http://localhost:7000/api/tenant/scopes/${editingScope.id}?tenantId=${tenantId}`
-        : `http://localhost:7000/api/tenant/scopes?tenantId=${tenantId}`;
-
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (response.ok) {
-        setSuccess(editingScope ? 'Scope updated successfully' : 'Scope created successfully');
-        setShowCreateModal(false);
-        resetForm();
-        fetchScopes();
+      if (editingScope) {
+        await platformService.updateScope(tenantId, editingScope.id, payload);
       } else {
-        const data = await response.json();
-        setError(data.errorMessage || 'Failed to save scope');
+        await platformService.createScope(tenantId, payload);
       }
-    } catch (error) {
-      setError('Failed to save scope');
+      setSuccess(editingScope ? 'Scope updated successfully' : 'Scope created successfully');
+      setShowCreateModal(false);
+      resetForm();
+      fetchScopes();
+    } catch (error: any) {
+      setError(error?.message || 'Failed to save scope');
       console.error('Error saving scope:', error);
     }
   };
@@ -183,44 +164,22 @@ export default function ScopeManagementPage() {
     setSuccess('');
 
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/scopes/${scopeId}?tenantId=${tenantId}`,
-        { method: 'DELETE' }
-      );
-
-      if (response.ok) {
-        setSuccess('Scope deleted successfully');
-        fetchScopes();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || 'Failed to delete scope');
-      }
-    } catch (error) {
-      setError('Failed to delete scope');
+      await platformService.deleteScope(tenantId, scopeId);
+      setSuccess('Scope deleted successfully');
+      fetchScopes();
+    } catch (error: any) {
+      setError(error?.message || 'Failed to delete scope');
       console.error('Error deleting scope:', error);
     }
   };
 
   const handleToggleScopeStatus = async (scope: Scope) => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/scopes/${scope.id}/status?tenantId=${tenantId}`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ isEnabled: !scope.isEnabled }),
-        }
-      );
-
-      if (response.ok) {
-        setSuccess(`Scope ${scope.isEnabled ? 'disabled' : 'enabled'} successfully`);
-        fetchScopes();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || 'Failed to update scope status');
-      }
-    } catch (error) {
-      setError('Failed to update scope status');
+      await platformService.updateScopeStatus(tenantId, scope.id, !scope.isEnabled);
+      setSuccess(`Scope ${scope.isEnabled ? 'disabled' : 'enabled'} successfully`);
+      fetchScopes();
+    } catch (error: any) {
+      setError(error?.message || 'Failed to update scope status');
       console.error('Error updating scope status:', error);
     }
   };

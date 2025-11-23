@@ -7,6 +7,7 @@ import { getTenantId } from '@/lib/tenant-context';
 import LoadingOverlay from '@/app/components/LoadingOverlay';
 import Modal from '@/app/components/Modal';
 import StatusBadge from '@/app/components/StatusBadge';
+import { accessService } from '@/lib/api/services/access.service';
 
 interface AccessRequest {
   id: string;
@@ -115,18 +116,7 @@ export default function AccessRequestDetailPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/access-requests/${requestId}?tenantId=${tenantId}`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch access request');
-      }
-
-      const data = await response.json();
+      const data = await accessService.getAccessRequestById(tenantId, requestId);
       setRequest(data);
     } catch (err) {
       setError(t('common.error'));
@@ -137,17 +127,8 @@ export default function AccessRequestDetailPage() {
 
   const fetchTimeline = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/access-requests/${requestId}/timeline?tenantId=${tenantId}`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setTimeline(data);
-      }
+      const data = await accessService.getAccessRequestTimeline(tenantId, requestId);
+      setTimeline(data);
     } catch (err) {
       console.error('Failed to fetch timeline:', err);
     }
@@ -155,17 +136,8 @@ export default function AccessRequestDetailPage() {
 
   const fetchAuditTrail = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/access-requests/${requestId}/audit-trail?tenantId=${tenantId}`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setAuditTrail(data);
-      }
+      const data = await accessService.getAccessRequestAuditTrail(tenantId, requestId);
+      setAuditTrail(data);
     } catch (err) {
       console.error('Failed to fetch audit trail:', err);
     }
@@ -181,20 +153,11 @@ export default function AccessRequestDetailPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/access-requests/${requestId}/${approvalDecision === 'approved' ? 'approve' : 'reject'}?tenantId=${tenantId}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ comments: approvalComment }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to ${approvalDecision === 'approved' ? 'approve' : 'reject'} request`);
+      if (approvalDecision === 'approved') {
+        await accessService.approveAccessRequest(tenantId, requestId, approvalComment);
+      } else {
+        await accessService.rejectAccessRequest(tenantId, requestId, approvalComment);
       }
-
       setSuccess(`Request ${approvalDecision} successfully`);
       setShowApprovalModal(false);
       setApprovalDecision('');
@@ -218,20 +181,7 @@ export default function AccessRequestDetailPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/access-requests/${requestId}/comments?tenantId=${tenantId}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ content: newComment }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to add comment');
-      }
-
+      await accessService.addAccessRequestComment(tenantId, requestId, newComment);
       setSuccess('Comment added successfully');
       setShowCommentModal(false);
       setNewComment('');
@@ -250,18 +200,7 @@ export default function AccessRequestDetailPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/access-requests/${requestId}/withdraw?tenantId=${tenantId}`,
-        {
-          method: 'POST',
-          credentials: 'include',
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to withdraw request');
-      }
-
+      await accessService.withdrawAccessRequest(tenantId, requestId);
       setSuccess('Request withdrawn successfully');
       fetchRequest();
     } catch (err) {

@@ -7,6 +7,7 @@ import StatusBadge from '@/app/components/StatusBadge';
 import ActionButton from '@/app/components/ActionButton';
 import Modal from '@/app/components/Modal';
 import LoadingOverlay from '@/app/components/LoadingOverlay';
+import { platformService } from '@/lib/api/services/platform.service';
 
 interface APIKey {
   id: string;
@@ -43,13 +44,11 @@ export default function APIKeysPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/api-keys?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setApiKeys(data || []);
-      }
-    } catch (err) {
+      const data = await platformService.getApiKeys(tenantId);
+      setApiKeys(data || []);
+    } catch (err: any) {
       console.error('Error fetching API keys:', err);
+      setError(err?.message || 'Failed to fetch API keys');
     } finally {
       setLoading(false);
     }
@@ -60,20 +59,18 @@ export default function APIKeysPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/api-keys?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form)
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setSuccess(`API Key created: ${data.key}`);
-        setShowModal(false);
-        fetchAPIKeys();
-        setForm({ name: '', expiresAt: '' });
-      }
-    } catch (err) {
-      setError('Failed to create API key');
+      const data = await platformService.createApiKey(
+        tenantId,
+        form.name,
+        [],
+        form.expiresAt || undefined
+      );
+      setSuccess(`API Key created: ${data.key}`);
+      setShowModal(false);
+      fetchAPIKeys();
+      setForm({ name: '', expiresAt: '' });
+    } catch (err: any) {
+      setError(err?.message || 'Failed to create API key');
     } finally {
       setLoading(false);
     }
@@ -83,15 +80,11 @@ export default function APIKeysPage() {
     if (!tenantId || !confirm('Are you sure you want to revoke this API key?')) return;
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/api-keys/${id}/revoke?tenantId=${tenantId}`, {
-        method: 'POST'
-      });
-      if (response.ok) {
-        setSuccess('API key revoked successfully');
-        fetchAPIKeys();
-      }
-    } catch (err) {
-      setError('Failed to revoke API key');
+      await platformService.revokeApiKey(tenantId, id);
+      setSuccess('API key revoked successfully');
+      fetchAPIKeys();
+    } catch (err: any) {
+      setError(err?.message || 'Failed to revoke API key');
     } finally {
       setLoading(false);
     }

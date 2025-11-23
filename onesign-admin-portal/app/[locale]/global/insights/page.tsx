@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import * as insightsApi from '@/lib/api/insights';
 
 type Tab = 'platform-overview' | 'high-risk-users' | 'risky-tenants' | 'system-health' | 'report-subscriptions';
 
@@ -154,54 +155,31 @@ export default function GlobalInsightsPage() {
 
   const fetchPlatformOverview = async () => {
     // Fetch platform stats
-    const statsResponse = await fetch(
-      'http://localhost:7000/api/global/insights/platform-overview'
-    );
-    if (statsResponse.ok) {
-      const data = await statsResponse.json();
-      setPlatformStats(data);
-    }
+    const data = await insightsApi.getGlobalPlatformOverview();
+    setPlatformStats(data);
 
     // Fetch tenant usage breakdown
-    const tenantStatsResponse = await fetch(
-      'http://localhost:7000/api/global/insights/tenant-usage'
-    );
-    if (tenantStatsResponse.ok) {
-      const data = await tenantStatsResponse.json();
-      setTenantUsageStats(data.items || []);
-    }
+    const tenantData = await insightsApi.getGlobalTenantUsage();
+    setTenantUsageStats(tenantData.items || []);
   };
 
   const fetchHighRiskUsers = async () => {
-    const riskFilter = riskLevelFilter !== 'all' ? `&riskLevel=${riskLevelFilter}` : '';
-    const response = await fetch(
-      `http://localhost:7000/api/global/insights/high-risk-users?pageNumber=${riskPageNumber}&pageSize=${pageSize}&sortBy=${riskSortBy}&sortDesc=${riskSortDesc}${riskFilter}`
-    );
-    if (response.ok) {
-      const data = await response.json();
-      setHighRiskUsers(data.items || []);
-      setRiskTotalCount(data.totalCount || 0);
-    }
+    const data = await insightsApi.getGlobalHighRiskUsers({
+      page: riskPageNumber,
+      pageSize,
+    });
+    setHighRiskUsers(data.items || []);
+    setRiskTotalCount(data.totalCount || 0);
   };
 
   const fetchSystemHealth = async () => {
     // Fetch health metrics
-    const metricsResponse = await fetch(
-      'http://localhost:7000/api/global/insights/system-health'
-    );
-    if (metricsResponse.ok) {
-      const data = await metricsResponse.json();
-      setHealthMetrics(data.services || []);
-    }
+    const healthData = await insightsApi.getGlobalSystemHealth();
+    setHealthMetrics(healthData.services || []);
 
     // Fetch system alerts
-    const alertsResponse = await fetch(
-      'http://localhost:7000/api/global/insights/system-alerts?acknowledged=false'
-    );
-    if (alertsResponse.ok) {
-      const data = await alertsResponse.json();
-      setSystemAlerts(data.items || []);
-    }
+    const alertsData = await insightsApi.getGlobalSystemAlerts({ acknowledged: false });
+    setSystemAlerts(alertsData.items || []);
   };
 
   const handleAcknowledgeAlert = async (alertId: string) => {
@@ -209,20 +187,9 @@ export default function GlobalInsightsPage() {
     setSuccess('');
 
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/global/insights/system-alerts/${alertId}/acknowledge`,
-        {
-          method: 'POST',
-        }
-      );
-
-      if (response.ok) {
-        setSuccess('Alert acknowledged');
-        fetchSystemHealth();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      await insightsApi.acknowledgeGlobalSystemAlert(alertId, 'current-user-id');
+      setSuccess('Alert acknowledged');
+      fetchSystemHealth();
     } catch (err) {
       setError(t('common.error'));
     }
@@ -240,11 +207,8 @@ export default function GlobalInsightsPage() {
 
   const fetchTenantsOverview = async () => {
     try {
-      const response = await fetch('http://localhost:7000/api/global/insights/tenants/overview');
-      if (response.ok) {
-        const data = await response.json();
-        return data;
-      }
+      const data = await insightsApi.getGlobalTenantsOverview();
+      return data;
     } catch (err) {
       console.error('Error fetching tenants overview:', err);
     }
@@ -252,11 +216,8 @@ export default function GlobalInsightsPage() {
 
   const fetchRiskyTenants = async () => {
     try {
-      const response = await fetch('http://localhost:7000/api/global/insights/tenants/risky');
-      if (response.ok) {
-        const data = await response.json();
-        setRiskyTenants(data.items || []);
-      }
+      const data = await insightsApi.getRiskyTenants();
+      setRiskyTenants(data.tenants || data.items || []);
     } catch (err) {
       console.error('Error fetching risky tenants:', err);
     }
@@ -267,21 +228,16 @@ export default function GlobalInsightsPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/insights/export/tenants');
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `tenants-export-${new Date().toISOString()}.xlsx`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        setSuccess('Tenants exported successfully');
-      } else {
-        throw new Error('Failed to export tenants');
-      }
+      const blob = await insightsApi.exportGlobalTenantsOverview();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `tenants-export-${new Date().toISOString()}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      setSuccess('Tenants exported successfully');
     } catch (err) {
       setError('Failed to export tenants');
     } finally {
@@ -291,11 +247,8 @@ export default function GlobalInsightsPage() {
 
   const fetchReportSubscriptions = async () => {
     try {
-      const response = await fetch('http://localhost:7000/api/global/insights/report-subscriptions');
-      if (response.ok) {
-        const data = await response.json();
-        setReportSubscriptions(data.items || []);
-      }
+      const data = await insightsApi.getGlobalReportSubscriptions();
+      setReportSubscriptions(data.subscriptions || data.items || []);
     } catch (err) {
       console.error('Error fetching report subscriptions:', err);
     }
@@ -306,32 +259,31 @@ export default function GlobalInsightsPage() {
     setError('');
     setSuccess('');
     try {
-      const url = editingSubscription
-        ? `http://localhost:7000/api/global/insights/report-subscriptions/${editingSubscription.id}`
-        : `http://localhost:7000/api/global/insights/report-subscriptions`;
-      const method = editingSubscription ? 'PUT' : 'POST';
+      const payload = {
+        reportType: subscriptionForm.reportType as any,
+        cronOrFrequency: subscriptionForm.frequency,
+        emailRecipients: subscriptionForm.recipients,
+        isActive: subscriptionForm.isActive,
+      };
 
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(subscriptionForm),
-      });
-
-      if (response.ok) {
-        setSuccess(editingSubscription ? 'Subscription updated successfully' : 'Subscription created successfully');
-        setShowSubscriptionModal(false);
-        setEditingSubscription(null);
-        setSubscriptionForm({
-          name: '',
-          reportType: 'Platform Overview',
-          frequency: 'Weekly',
-          recipients: [],
-          isActive: true,
-        });
-        fetchReportSubscriptions();
+      if (editingSubscription) {
+        await insightsApi.updateGlobalReportSubscription(editingSubscription.id, payload);
+        setSuccess('Subscription updated successfully');
       } else {
-        throw new Error('Failed to save subscription');
+        await insightsApi.createGlobalReportSubscription(payload);
+        setSuccess('Subscription created successfully');
       }
+
+      setShowSubscriptionModal(false);
+      setEditingSubscription(null);
+      setSubscriptionForm({
+        name: '',
+        reportType: 'Platform Overview',
+        frequency: 'Weekly',
+        recipients: [],
+        isActive: true,
+      });
+      fetchReportSubscriptions();
     } catch (err) {
       setError('Failed to save subscription');
     }
@@ -340,15 +292,9 @@ export default function GlobalInsightsPage() {
   const handleDeleteSubscription = async (id: string) => {
     if (!confirm('Are you sure you want to delete this subscription?')) return;
     try {
-      const response = await fetch(`http://localhost:7000/api/global/insights/report-subscriptions/${id}`, {
-        method: 'DELETE',
-      });
-      if (response.ok) {
-        setSuccess('Subscription deleted successfully');
-        fetchReportSubscriptions();
-      } else {
-        throw new Error('Failed to delete subscription');
-      }
+      await insightsApi.deleteGlobalReportSubscription(id);
+      setSuccess('Subscription deleted successfully');
+      fetchReportSubscriptions();
     } catch (err) {
       setError('Failed to delete subscription');
     }

@@ -326,6 +326,183 @@ export class UsersService {
     const response = await this.client.post<BulkInviteResponse>('/api/tenant/users/import', formData);
     return response.data;
   }
+
+  /**
+   * Update user status (enable/disable)
+   */
+  async updateUserStatus(tenantId: string, userId: string): Promise<void> {
+    await this.client.patch(`/api/tenant/users/${userId}/status`, { tenantId });
+  }
+
+  /**
+   * Get user's org units
+   */
+  async getUserOrgUnits(tenantId: string, userId: string): Promise<any> {
+    const response = await this.client.get(`/api/tenant/users/${userId}/org-units`, { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Update user's org units
+   */
+  async updateUserOrgUnits(
+    tenantId: string,
+    userId: string,
+    primaryOrgUnitId: string,
+    secondaryOrgUnitIds: string[]
+  ): Promise<void> {
+    await this.client.put(`/api/tenant/users/${userId}/org-units`, {
+      tenantId,
+      primaryOrgUnitId,
+      secondaryOrgUnitIds,
+    });
+  }
+
+  // Account Management
+
+  /**
+   * Get current user's account profile
+   */
+  async getAccountProfile(tenantId: string): Promise<any> {
+    const response = await this.client.get('/api/tenant/account/profile', { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Update current user's account profile
+   */
+  async updateAccountProfile(tenantId: string, data: any): Promise<any> {
+    const response = await this.client.put('/api/tenant/account/profile', {
+      ...data,
+      tenantId,
+    });
+    return response.data;
+  }
+
+  /**
+   * Get current user's active sessions
+   */
+  async getAccountSessions(tenantId: string): Promise<any[]> {
+    const response = await this.client.get('/api/tenant/account/sessions', { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Change current user's password
+   */
+  async changePassword(tenantId: string, currentPassword: string, newPassword: string): Promise<void> {
+    await this.client.post('/api/tenant/account/change-password', {
+      tenantId,
+      currentPassword,
+      newPassword,
+    });
+  }
+
+  /**
+   * Revoke a user session
+   */
+  async revokeSession(tenantId: string, sessionId: string): Promise<void> {
+    await this.client.delete(`/api/tenant/account/sessions/${sessionId}`, {
+      params: { tenantId },
+    });
+  }
+
+  // User Profile Details
+
+  /**
+   * Get user profile
+   */
+  async getUserProfile(tenantId: string, userId: string): Promise<any> {
+    const response = await this.client.get(`/api/tenant/users/${userId}/profile`, { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Update user profile
+   */
+  async updateUserProfile(tenantId: string, userId: string, data: any): Promise<any> {
+    const response = await this.client.put(`/api/tenant/users/${userId}/profile`, {
+      ...data,
+      tenantId,
+    });
+    return response.data;
+  }
+
+  /**
+   * Get user activities
+   */
+  async getUserActivities(tenantId: string, userId: string, pageSize?: number): Promise<any[]> {
+    const response = await this.client.get(`/api/tenant/users/${userId}/activities`, {
+      tenantId,
+      pageSize,
+    });
+    return response.data;
+  }
+
+  /**
+   * Get user lifecycle events
+   */
+  async getUserLifecycle(tenantId: string, userId: string): Promise<any[]> {
+    const response = await this.client.get(`/api/tenant/users/${userId}/lifecycle`, { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Get user risk assessment
+   */
+  async getUserRiskAssessment(tenantId: string, userId: string): Promise<any> {
+    const response = await this.client.get(`/api/tenant/users/${userId}/risk-assessment`, {
+      tenantId,
+    });
+    return response.data;
+  }
+
+  /**
+   * Get user access packages
+   */
+  async getUserAccessPackages(tenantId: string, userId: string): Promise<any[]> {
+    const response = await this.client.get(`/api/tenant/users/${userId}/access-packages`, {
+      tenantId,
+    });
+    return response.data;
+  }
+
+  /**
+   * Get user privileged sessions
+   */
+  async getUserPrivilegedSessions(tenantId: string, userId: string): Promise<any[]> {
+    const response = await this.client.get(`/api/tenant/users/${userId}/privileged-sessions`, {
+      tenantId,
+    });
+    return response.data;
+  }
+
+  /**
+   * Get user audit trail
+   */
+  async getUserAuditTrail(tenantId: string, userId: string, pageSize?: number): Promise<any[]> {
+    const response = await this.client.get(`/api/tenant/users/${userId}/audit-trail`, {
+      tenantId,
+      pageSize,
+    });
+    return response.data;
+  }
+
+  // ==================== OpenID Connect Endpoints ====================
+
+  /**
+   * Get user info from OpenID Connect userinfo endpoint
+   * Note: This endpoint requires a valid access token with Authorization header
+   */
+  async getUserInfo(accessToken: string): Promise<any> {
+    const response = await this.client.get<any>('/api/connect/userinfo', {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Accept': 'application/json',
+      },
+    } as any);
+    return response.data;
+  }
 }
 
 // Export singleton instance

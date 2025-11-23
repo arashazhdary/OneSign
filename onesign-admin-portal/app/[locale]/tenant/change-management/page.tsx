@@ -6,6 +6,7 @@ import { getTenantId } from '@/lib/tenant-context';
 import Modal from '@/app/components/Modal';
 import StatusBadge from '@/app/components/StatusBadge';
 import LoadingSpinner from '@/app/components/LoadingSpinner';
+import { changeManagementService } from '@/lib/api/services/change-management.service';
 
 interface ChangeSet {
   id: string;
@@ -212,16 +213,15 @@ export default function TenantChangeManagementPage() {
   };
 
   const fetchChangeSets = async () => {
-    let url = `http://localhost:7000/api/tenant/change-management/change-sets?tenantId=${tenantId}&page=${page}&pageSize=${pageSize}`;
-    if (statusFilter !== 'All') {
-      url += `&status=${statusFilter}`;
-    }
-    const response = await fetch(url);
-    if (response.ok) {
-      const data = await response.json();
+    try {
+      const data = await changeManagementService.getTenantChangeSets(tenantId, {
+        page,
+        pageSize,
+        status: statusFilter !== 'All' ? statusFilter : undefined,
+      });
       setChangeSets(data.items || []);
       setTotalItems(data.totalCount || 0);
-    } else {
+    } catch (err) {
       // Mock data for development
       const mockData: ChangeSet[] = [
         {
@@ -265,13 +265,14 @@ export default function TenantChangeManagementPage() {
   };
 
   const fetchPendingApprovals = async () => {
-    const url = `http://localhost:7000/api/tenant/change-management/pending-approvals?tenantId=${tenantId}&userId=${userId}&page=${page}&pageSize=${pageSize}`;
-    const response = await fetch(url);
-    if (response.ok) {
-      const data = await response.json();
+    try {
+      const data = await changeManagementService.getTenantPendingApprovals(tenantId, userId, {
+        page,
+        pageSize,
+      });
       setPendingApprovals(data.items || []);
       setTotalItems(data.totalCount || 0);
-    } else {
+    } catch (err) {
       // Mock data
       const mockData: PendingApproval[] = [
         {
@@ -290,12 +291,10 @@ export default function TenantChangeManagementPage() {
   };
 
   const fetchApprovalRules = async () => {
-    const url = `http://localhost:7000/api/tenant/change-management/approval-rules?tenantId=${tenantId}`;
-    const response = await fetch(url);
-    if (response.ok) {
-      const data = await response.json();
+    try {
+      const data = await changeManagementService.getTenantApprovalRules(tenantId);
       setApprovalRules(data || []);
-    } else {
+    } catch (err) {
       // Mock data
       const mockData: ApprovalRule[] = [
         {
@@ -323,12 +322,10 @@ export default function TenantChangeManagementPage() {
 
   // 1. GET /api/tenant/changesets/{id} - جزئیات ChangeSet
   const fetchChangeSetDetails = async (id: string) => {
-    const url = `http://localhost:7000/api/tenant/changesets/${id}?tenantId=${tenantId}`;
-    const response = await fetch(url);
-    if (response.ok) {
-      const data = await response.json();
+    try {
+      const data = await changeManagementService.getTenantChangeSet(tenantId, id);
       setChangeSetDetails(data);
-    } else {
+    } catch (err) {
       // Mock data
       const mockData: ChangeSetDetails = {
         ...selectedChangeSet!,
@@ -364,33 +361,24 @@ export default function TenantChangeManagementPage() {
   const handleSimulate = async (id: string) => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/changesets/${id}/simulate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantId }),
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setSimulationResult(data);
-        setSuccess('Simulation completed successfully');
-      } else {
-        // Mock data
-        const mockResult: SimulationResult = {
-          success: true,
-          warnings: ['Some users may experience temporary access delays'],
-          errors: [],
-          affectedEntities: [
-            { type: 'User', id: 'u1', name: 'John Doe', change: 'Permissions updated' },
-            { type: 'User', id: 'u2', name: 'Jane Smith', change: 'Permissions updated' },
-            { type: 'Group', id: 'g1', name: 'Finance Team', change: 'Members added' },
-          ],
-          estimatedDuration: '2 minutes',
-        };
-        setSimulationResult(mockResult);
-        setSuccess('Simulation completed (mock data)');
-      }
+      const data = await changeManagementService.simulateTenantChangeSet(tenantId, id);
+      setSimulationResult(data);
+      setSuccess('Simulation completed successfully');
     } catch (err) {
-      setError('Simulation failed');
+      // Mock data
+      const mockResult: SimulationResult = {
+        success: true,
+        warnings: ['Some users may experience temporary access delays'],
+        errors: [],
+        affectedEntities: [
+          { type: 'User', id: 'u1', name: 'John Doe', change: 'Permissions updated' },
+          { type: 'User', id: 'u2', name: 'Jane Smith', change: 'Permissions updated' },
+          { type: 'Group', id: 'g1', name: 'Finance Team', change: 'Members added' },
+        ],
+        estimatedDuration: '2 minutes',
+      };
+      setSimulationResult(mockResult);
+      setSuccess('Simulation completed (mock data)');
     } finally {
       setLoading(false);
     }
@@ -398,12 +386,10 @@ export default function TenantChangeManagementPage() {
 
   // 3. GET /api/tenant/changesets/{id}/execution-log - لاگ اجرا
   const fetchExecutionLogs = async (id: string) => {
-    const url = `http://localhost:7000/api/tenant/changesets/${id}/execution-log?tenantId=${tenantId}`;
-    const response = await fetch(url);
-    if (response.ok) {
-      const data = await response.json();
+    try {
+      const data = await changeManagementService.getTenantExecutionLog(tenantId, id);
       setExecutionLogs(data || []);
-    } else {
+    } catch (err) {
       // Mock data
       const mockLogs: ExecutionLog[] = [
         {
@@ -440,22 +426,15 @@ export default function TenantChangeManagementPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/change-sets/${selectedChangeSet.id}/schedule`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenantId,
-          userId,
-          ...scheduleData,
-        }),
-      });
-      if (response.ok) {
-        setSuccess('Change set scheduled successfully');
-        setShowScheduleModal(false);
-        fetchData();
-      } else {
-        throw new Error('Failed to schedule');
-      }
+      await changeManagementService.scheduleTenantChangeSet(
+        tenantId,
+        selectedChangeSet.id,
+        userId,
+        scheduleData
+      );
+      setSuccess('Change set scheduled successfully');
+      setShowScheduleModal(false);
+      fetchData();
     } catch (err) {
       setError('Failed to schedule change set');
     } finally {
@@ -469,18 +448,10 @@ export default function TenantChangeManagementPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/changesets/${selectedChangeSet.id}/execute`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantId, userId }),
-      });
-      if (response.ok) {
-        setSuccess('Change set executed successfully');
-        setShowExecuteModal(false);
-        fetchData();
-      } else {
-        throw new Error('Failed to execute');
-      }
+      await changeManagementService.executeTenantChangeSet(tenantId, selectedChangeSet.id, userId);
+      setSuccess('Change set executed successfully');
+      setShowExecuteModal(false);
+      fetchData();
     } catch (err) {
       setError('Failed to execute change set');
     } finally {
@@ -494,18 +465,10 @@ export default function TenantChangeManagementPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/change-sets/${selectedChangeSet.id}/rollback`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantId, userId }),
-      });
-      if (response.ok) {
-        setSuccess('Change set rolled back successfully');
-        setShowRollbackModal(false);
-        fetchData();
-      } else {
-        throw new Error('Failed to rollback');
-      }
+      await changeManagementService.rollbackTenantChangeSet(tenantId, selectedChangeSet.id, userId);
+      setSuccess('Change set rolled back successfully');
+      setShowRollbackModal(false);
+      fetchData();
     } catch (err) {
       setError('Failed to rollback change set');
     } finally {
@@ -519,19 +482,16 @@ export default function TenantChangeManagementPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/change-sets/${selectedChangeSet.id}/approve`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantId, userId, comment: approvalComment }),
-      });
-      if (response.ok) {
-        setSuccess('Change set approved');
-        setShowApprovalModal(false);
-        setApprovalComment('');
-        fetchData();
-      } else {
-        throw new Error('Failed to approve');
-      }
+      await changeManagementService.approveTenantChangeSet(
+        tenantId,
+        selectedChangeSet.id,
+        userId,
+        approvalComment
+      );
+      setSuccess('Change set approved');
+      setShowApprovalModal(false);
+      setApprovalComment('');
+      fetchData();
     } catch (err) {
       setError('Failed to approve change set');
     } finally {
@@ -548,19 +508,16 @@ export default function TenantChangeManagementPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/change-sets/${selectedChangeSet.id}/reject`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantId, userId, reason: rejectReason }),
-      });
-      if (response.ok) {
-        setSuccess('Change set rejected');
-        setShowRejectModal(false);
-        setRejectReason('');
-        fetchData();
-      } else {
-        throw new Error('Failed to reject');
-      }
+      await changeManagementService.rejectTenantChangeSet(
+        tenantId,
+        selectedChangeSet.id,
+        userId,
+        rejectReason
+      );
+      setSuccess('Change set rejected');
+      setShowRejectModal(false);
+      setRejectReason('');
+      fetchData();
     } catch (err) {
       setError('Failed to reject change set');
     } finally {
@@ -570,12 +527,10 @@ export default function TenantChangeManagementPage() {
 
   // 9. GET /api/tenant/changesets/{id}/approvals - لیست تاییدکنندگان
   const fetchApprovals = async (id: string) => {
-    const url = `http://localhost:7000/api/tenant/changesets/${id}/approvals?tenantId=${tenantId}`;
-    const response = await fetch(url);
-    if (response.ok) {
-      const data = await response.json();
+    try {
+      const data = await changeManagementService.getTenantApprovals(tenantId, id);
       setApprovals(data || []);
-    } else {
+    } catch (err) {
       // Mock data
       const mockApprovals: Approval[] = [
         {
@@ -603,12 +558,10 @@ export default function TenantChangeManagementPage() {
 
   // 10. GET /api/tenant/changesets/{id}/impact - تحلیل تاثیرات
   const fetchImpactAnalysis = async (id: string) => {
-    const url = `http://localhost:7000/api/tenant/changesets/${id}/impact?tenantId=${tenantId}`;
-    const response = await fetch(url);
-    if (response.ok) {
-      const data = await response.json();
+    try {
+      const data = await changeManagementService.getTenantImpactAnalysis(tenantId, id);
       setImpactAnalysis(data);
-    } else {
+    } catch (err) {
       // Mock data
       const mockImpact: ImpactAnalysis = {
         riskLevel: 'Medium',
@@ -638,19 +591,16 @@ export default function TenantChangeManagementPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/changesets/${selectedChangeSet.id}/clone`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantId, userId, name: cloneName }),
-      });
-      if (response.ok) {
-        setSuccess('Change set cloned successfully');
-        setShowCloneModal(false);
-        setCloneName('');
-        fetchData();
-      } else {
-        throw new Error('Failed to clone');
-      }
+      await changeManagementService.cloneTenantChangeSet(
+        tenantId,
+        selectedChangeSet.id,
+        userId,
+        cloneName
+      );
+      setSuccess('Change set cloned successfully');
+      setShowCloneModal(false);
+      setCloneName('');
+      fetchData();
     } catch (err) {
       setError('Failed to clone change set');
     } finally {
@@ -660,12 +610,10 @@ export default function TenantChangeManagementPage() {
 
   // 12. GET /api/tenant/changesets/templates - قالب‌های آماده
   const fetchTemplates = async () => {
-    const url = `http://localhost:7000/api/tenant/changesets/templates?tenantId=${tenantId}`;
-    const response = await fetch(url);
-    if (response.ok) {
-      const data = await response.json();
+    try {
+      const data = await changeManagementService.getTenantTemplates(tenantId);
       setTemplates(data || []);
-    } else {
+    } catch (err) {
       // Mock data
       const mockTemplates: Template[] = [
         {
@@ -719,29 +667,17 @@ export default function TenantChangeManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch('http://localhost:7000/api/tenant/change-management/change-sets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenantId,
-          userId,
-          ...newChangeSet,
-        }),
+      await changeManagementService.createTenantChangeSet(tenantId, userId, newChangeSet);
+      setSuccess('Change set created successfully');
+      setShowCreateModal(false);
+      setNewChangeSet({
+        name: '',
+        description: '',
+        targetModule: 'Users',
+        changesJson: '{}',
+        scheduledAt: '',
       });
-      if (response.ok) {
-        setSuccess('Change set created successfully');
-        setShowCreateModal(false);
-        setNewChangeSet({
-          name: '',
-          description: '',
-          targetModule: 'Users',
-          changesJson: '{}',
-          scheduledAt: '',
-        });
-        fetchData();
-      } else {
-        throw new Error('Failed to create change set');
-      }
+      fetchData();
     } catch (err) {
       setError(t('common.error'));
     }
@@ -750,17 +686,9 @@ export default function TenantChangeManagementPage() {
   // POST /api/tenant/change-sets/{id}/submit - ارسال change set
   const handleSubmitForReview = async (changeSet: ChangeSet) => {
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/change-sets/${changeSet.id}/submit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantId, userId }),
-      });
-      if (response.ok) {
-        setSuccess('Change set submitted for review');
-        fetchData();
-      } else {
-        throw new Error('Failed to submit');
-      }
+      await changeManagementService.submitTenantChangeSet(tenantId, changeSet.id, userId);
+      setSuccess('Change set submitted for review');
+      fetchData();
     } catch (err) {
       setError(t('common.error'));
     }
@@ -768,17 +696,9 @@ export default function TenantChangeManagementPage() {
 
   const handleApprove = async (approval: PendingApproval) => {
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/change-management/approvals/${approval.id}/approve`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantId, userId, comment: '' }),
-      });
-      if (response.ok) {
-        setSuccess('Change set approved');
-        fetchData();
-      } else {
-        throw new Error('Failed to approve');
-      }
+      await changeManagementService.approveTenantApproval(tenantId, approval.id, userId, '');
+      setSuccess('Change set approved');
+      fetchData();
     } catch (err) {
       setError(t('common.error'));
     }
@@ -789,17 +709,9 @@ export default function TenantChangeManagementPage() {
     if (!reason) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/change-management/approvals/${approval.id}/reject`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantId, userId, reason }),
-      });
-      if (response.ok) {
-        setSuccess('Change set rejected');
-        fetchData();
-      } else {
-        throw new Error('Failed to reject');
-      }
+      await changeManagementService.rejectTenantApproval(tenantId, approval.id, userId, reason);
+      setSuccess('Change set rejected');
+      fetchData();
     } catch (err) {
       setError(t('common.error'));
     }
@@ -810,17 +722,9 @@ export default function TenantChangeManagementPage() {
     if (!confirm('Are you sure you want to apply this change set? This action cannot be undone.')) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/change-sets/${changeSet.id}/apply`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantId, userId }),
-      });
-      if (response.ok) {
-        setSuccess('Change set applied successfully');
-        fetchData();
-      } else {
-        throw new Error('Failed to apply');
-      }
+      await changeManagementService.applyTenantChangeSet(tenantId, changeSet.id, userId);
+      setSuccess('Change set applied successfully');
+      fetchData();
     } catch (err) {
       setError(t('common.error'));
     }
@@ -830,15 +734,9 @@ export default function TenantChangeManagementPage() {
     if (!confirm('Are you sure you want to delete this change set?')) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/change-management/change-sets/${id}?tenantId=${tenantId}`, {
-        method: 'DELETE',
-      });
-      if (response.ok) {
-        setSuccess('Change set deleted');
-        fetchData();
-      } else {
-        throw new Error('Failed to delete');
-      }
+      await changeManagementService.deleteTenantChangeSet(tenantId, id);
+      setSuccess('Change set deleted');
+      fetchData();
     } catch (err) {
       setError(t('common.error'));
     }
@@ -849,28 +747,17 @@ export default function TenantChangeManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch('http://localhost:7000/api/tenant/change-management/approval-rules', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenantId,
-          ...newRule,
-        }),
+      await changeManagementService.createTenantApprovalRule(tenantId, newRule);
+      setSuccess('Approval rule created successfully');
+      setShowRuleModal(false);
+      setNewRule({
+        name: '',
+        targetModule: 'Users',
+        requiredApprovers: 1,
+        approverRoles: ['Admin'],
+        isActive: true,
       });
-      if (response.ok) {
-        setSuccess('Approval rule created successfully');
-        setShowRuleModal(false);
-        setNewRule({
-          name: '',
-          targetModule: 'Users',
-          requiredApprovers: 1,
-          approverRoles: ['Admin'],
-          isActive: true,
-        });
-        fetchData();
-      } else {
-        throw new Error('Failed to create rule');
-      }
+      fetchData();
     } catch (err) {
       setError(t('common.error'));
     }
@@ -878,17 +765,9 @@ export default function TenantChangeManagementPage() {
 
   const handleToggleRule = async (rule: ApprovalRule) => {
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/change-management/approval-rules/${rule.id}/toggle`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantId, isActive: !rule.isActive }),
-      });
-      if (response.ok) {
-        setSuccess(`Rule ${rule.isActive ? 'disabled' : 'enabled'}`);
-        fetchData();
-      } else {
-        throw new Error('Failed to toggle rule');
-      }
+      await changeManagementService.toggleTenantApprovalRule(tenantId, rule.id, !rule.isActive);
+      setSuccess(`Rule ${rule.isActive ? 'disabled' : 'enabled'}`);
+      fetchData();
     } catch (err) {
       setError(t('common.error'));
     }

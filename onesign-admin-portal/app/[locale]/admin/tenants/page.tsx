@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { platformService } from '@/lib/api/services/platform.service';
 
 interface Tenant {
   id: string;
@@ -26,11 +27,8 @@ export default function AdminTenantsPage() {
 
   const fetchTenants = async () => {
     try {
-      const response = await fetch('http://localhost:7000/api/admin/tenants?pageNumber=1&pageSize=100');
-      if (response.ok) {
-        const data = await response.json();
-        setTenants(data.items || []);
-      }
+      const data = await platformService.getAdminTenants(1, 100);
+      setTenants(data.items || []);
     } catch (error) {
       console.error('Error fetching tenants:', error);
     } finally {
@@ -43,27 +41,17 @@ export default function AdminTenantsPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch('http://localhost:7000/api/admin/tenants', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: newTenantName,
-          slug: newTenantSlug
-        })
+      await platformService.createAdminTenant({
+        name: newTenantName,
+        slug: newTenantSlug
       });
-
-      if (response.ok) {
-        setShowCreateModal(false);
-        setNewTenantName('');
-        setNewTenantSlug('');
-        setSuccess(t('admin.tenants.tenantCreated'));
-        fetchTenants();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (error) {
-      setError(t('common.error'));
+      setShowCreateModal(false);
+      setNewTenantName('');
+      setNewTenantSlug('');
+      setSuccess(t('admin.tenants.tenantCreated'));
+      fetchTenants();
+    } catch (error: any) {
+      setError(error.errorMessage || t('common.error'));
       console.error('Error creating tenant:', error);
     }
   };
@@ -72,23 +60,11 @@ export default function AdminTenantsPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/admin/tenants/${tenantId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status: newStatus
-        })
-      });
-
-      if (response.ok) {
-        setSuccess(t('admin.tenants.statusUpdated'));
-        fetchTenants();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (error) {
-      setError(t('common.error'));
+      await platformService.updateAdminTenantStatus(tenantId, newStatus);
+      setSuccess(t('admin.tenants.statusUpdated'));
+      fetchTenants();
+    } catch (error: any) {
+      setError(error.errorMessage || t('common.error'));
       console.error('Error updating tenant status:', error);
     }
   };

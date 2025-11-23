@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { incidentsService, securityService } from '@/lib/api/services';
 import {
   LineChart,
   Line,
@@ -95,47 +96,47 @@ export default function SecurityAnalyticsDashboard() {
 
     setLoading(true);
     try {
-      // Fetch incidents
-      const incidentsResponse = await fetch(
-        `http://localhost:7000/api/tenant/incidents?tenantId=${tenantId}&pageNumber=1&pageSize=100`
-      );
-      if (incidentsResponse.ok) {
-        const incidentsData = await incidentsResponse.json();
-        setStats(prev => ({
-          ...prev,
-          totalIncidents: incidentsData.totalCount || 0,
-          activeThreats: incidentsData.items?.filter((i: any) => i.status === 'Open').length || 0
-        }));
+      // Fetch incidents using incidentsService
+      const incidentsData = await incidentsService.getIncidents({
+        tenantId,
+        pageNumber: 1,
+        pageSize: 100
+      });
 
-        // Generate trend data
-        generateIncidentTrend(incidentsData.items || []);
-      }
+      setStats(prev => ({
+        ...prev,
+        totalIncidents: incidentsData.totalCount || 0,
+        activeThreats: incidentsData.items?.filter((i: any) => i.status === 'Open').length || 0
+      }));
 
-      // Fetch risk events
-      const riskResponse = await fetch(
-        `http://localhost:7000/api/tenant/risk-events?tenantId=${tenantId}&pageNumber=1&pageSize=100`
-      );
-      if (riskResponse.ok) {
-        const riskData = await riskResponse.json();
-        setStats(prev => ({
-          ...prev,
-          riskEvents: riskData.totalCount || 0,
-          highRiskUsers: riskData.items?.filter((r: any) => r.riskScore > 70).length || 0
-        }));
+      // Generate trend data
+      generateIncidentTrend(incidentsData.items || []);
 
-        // Generate risk distribution
-        generateRiskDistribution(riskData.items || []);
-        generateRiskCategories(riskData.items || []);
-      }
+      // Fetch risk events using securityService
+      const riskData = await securityService.getRiskEvents({
+        tenantId,
+        pageNumber: 1,
+        pageSize: 100
+      });
 
-      // Fetch audit events for timeline
-      const auditResponse = await fetch(
-        `http://localhost:7000/api/tenant/audit?tenantId=${tenantId}&pageNumber=1&pageSize=10`
-      );
-      if (auditResponse.ok) {
-        const auditData = await auditResponse.json();
-        generateSecurityEvents(auditData.items || []);
-      }
+      setStats(prev => ({
+        ...prev,
+        riskEvents: riskData.totalCount || 0,
+        highRiskUsers: riskData.items?.filter((r: any) => r.riskScore > 70).length || 0
+      }));
+
+      // Generate risk distribution
+      generateRiskDistribution(riskData.items || []);
+      generateRiskCategories(riskData.items || []);
+
+      // Fetch audit logs using securityService
+      const auditData = await securityService.getAuditLogs({
+        tenantId,
+        pageNumber: 1,
+        pageSize: 10
+      });
+
+      generateSecurityEvents(auditData.items || []);
 
       // Calculate security score
       calculateSecurityScore();

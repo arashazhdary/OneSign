@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { platformService } from '@/lib/api/services';
 
 interface KeySet {
   id: string;
@@ -70,14 +71,8 @@ export default function CryptographyManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/crypto/keysets');
-      if (response.ok) {
-        const data = await response.json();
-        setKeySets(data.items || data || []);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      const data = await platformService.getCryptoKeysets();
+      setKeySets(data.items || data || []);
     } catch (err) {
       setError(t('common.error'));
     } finally {
@@ -88,14 +83,8 @@ export default function CryptographyManagementPage() {
   const getKeySet = async (id: string) => {
     setError('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/crypto/keysets/${id}`);
-      if (response.ok) {
-        const data = await response.json();
-        return data;
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      const data = await platformService.getCryptoKeyset(id);
+      return data;
     } catch (err) {
       setError(t('common.error'));
     }
@@ -105,16 +94,9 @@ export default function CryptographyManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/crypto/keysets/${id}/rollover`, {
-        method: 'POST',
-      });
-      if (response.ok) {
-        setSuccess('Keyset rollover initiated successfully');
-        fetchKeySets();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      await platformService.rolloverCryptoKey(id);
+      setSuccess('Keyset rollover initiated successfully');
+      fetchKeySets();
     } catch (err) {
       setError(t('common.error'));
     }
@@ -124,16 +106,9 @@ export default function CryptographyManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/crypto/keyversions/${versionId}/revoke`, {
-        method: 'POST',
-      });
-      if (response.ok) {
-        setSuccess('Key version revoked successfully');
-        fetchKeySets();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      await platformService.revokeCryptoKeyVersion(versionId);
+      setSuccess('Key version revoked successfully');
+      fetchKeySets();
     } catch (err) {
       setError(t('common.error'));
     }
@@ -143,14 +118,8 @@ export default function CryptographyManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/crypto/rotation-policies');
-      if (response.ok) {
-        const data = await response.json();
-        setRotationPolicies(data.policies || data || []);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      const data = await platformService.getCryptoRotationPolicies();
+      setRotationPolicies(data || []);
     } catch (err) {
       setError(t('common.error'));
     } finally {
@@ -168,20 +137,11 @@ export default function CryptographyManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/crypto/key-sets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newKeySet),
-      });
-      if (response.ok) {
-        setSuccess('Key set created successfully');
-        setShowCreateKeySetModal(false);
-        setNewKeySet({ name: '', algorithm: 'RSA', keySize: 2048, purpose: '' });
-        fetchKeySets();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      await platformService.createCryptoKeyset(newKeySet);
+      setSuccess('Key set created successfully');
+      setShowCreateKeySetModal(false);
+      setNewKeySet({ name: '', algorithm: 'RSA', keySize: 2048, purpose: '' });
+      fetchKeySets();
     } catch (err) {
       setError(t('common.error'));
     } finally {
@@ -198,16 +158,9 @@ export default function CryptographyManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/crypto/key-sets/${keySetId}/rotate`, {
-        method: 'POST',
-      });
-      if (response.ok) {
-        setSuccess('Key rotation started successfully');
-        fetchKeySets();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      await platformService.rotateCryptoKey(keySetId);
+      setSuccess('Key rotation started successfully');
+      fetchKeySets();
     } catch (err) {
       setError(t('common.error'));
     } finally {
@@ -225,27 +178,18 @@ export default function CryptographyManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/crypto/rotation-policies', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newPolicy),
+      await platformService.updateCryptoRotationPolicy(newPolicy);
+      setSuccess('Rotation policy updated successfully');
+      setShowCreatePolicyModal(false);
+      setNewPolicy({
+        name: '',
+        rotationInterval: 90,
+        rotationUnit: 'Days',
+        autoRotate: true,
+        gracePeriod: 7,
+        notifyBefore: 14,
       });
-      if (response.ok) {
-        setSuccess('Rotation policy updated successfully');
-        setShowCreatePolicyModal(false);
-        setNewPolicy({
-          name: '',
-          rotationInterval: 90,
-          rotationUnit: 'Days',
-          autoRotate: true,
-          gracePeriod: 7,
-          notifyBefore: 14,
-        });
-        fetchRotationPolicies();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      fetchRotationPolicies();
     } catch (err) {
       setError(t('common.error'));
     } finally {

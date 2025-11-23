@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { huntingService } from '@/lib/api/services/hunting.service';
 
 // Types
 interface GlobalQueryTemplate {
@@ -175,47 +176,25 @@ export default function GlobalHuntingPage() {
     setError('');
     try {
       if (activeTab === 'templates') {
-        const response = await fetch(
-          `http://localhost:7000/api/global/hunting/templates`,
-          { credentials: 'include' }
-        );
-        if (!response.ok) throw new Error('Failed to fetch templates');
-        const data = await response.json();
+        const data = await huntingService.getGlobalTemplates();
         setTemplates(data);
       } else if (activeTab === 'scheduled') {
-        const response = await fetch(
-          `http://localhost:7000/api/global/hunting/scheduled-hunts`,
-          { credentials: 'include' }
-        );
-        if (!response.ok) throw new Error('Failed to fetch scheduled hunts');
-        const data = await response.json();
+        const data = await huntingService.getGlobalScheduledHunts();
         setScheduledHunts(data);
       } else if (activeTab === 'results') {
-        let url = `http://localhost:7000/api/global/hunting/results?page=${resultsPage}&pageSize=20`;
-        if (statusFilter) url += `&status=${statusFilter}`;
-        if (tenantFilter) url += `&tenantId=${tenantFilter}`;
+        const params: any = { page: resultsPage, pageSize: 20 };
+        if (statusFilter) params.status = statusFilter;
+        if (tenantFilter) params.tenantId = tenantFilter;
 
-        const response = await fetch(url, { credentials: 'include' });
-        if (!response.ok) throw new Error('Failed to fetch results');
-        const data = await response.json();
+        const data = await huntingService.getGlobalHuntResults(params);
         setResults(data.items || []);
         setTotalResults(data.totalCount || 0);
       } else if (activeTab === 'saved-queries') {
-        const response = await fetch(
-          `http://localhost:7000/api/global/hunting/saved-queries`,
-          { credentials: 'include' }
-        );
-        if (!response.ok) throw new Error('Failed to fetch saved queries');
-        const data = await response.json();
+        const data = await huntingService.getGlobalSavedQueries();
         setSavedQueries(data);
       } else if (activeTab === 'hunt-runs') {
         if (selectedScheduledHunt) {
-          const response = await fetch(
-            `http://localhost:7000/api/global/hunting/scheduled-hunts/${selectedScheduledHunt}/runs`,
-            { credentials: 'include' }
-          );
-          if (!response.ok) throw new Error('Failed to fetch hunt runs');
-          const data = await response.json();
+          const data = await huntingService.getGlobalHuntRuns(selectedScheduledHunt);
           setHuntRuns(data);
         }
       }
@@ -232,24 +211,20 @@ export default function GlobalHuntingPage() {
     setError('');
     setSuccess('');
     try {
-      const url = editingTemplate
-        ? `http://localhost:7000/api/global/hunting/templates/${editingTemplate.id}`
-        : `http://localhost:7000/api/global/hunting/templates`;
-      const method = editingTemplate ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
+      if (editingTemplate) {
+        await huntingService.updateGlobalTemplate(editingTemplate.id, {
           userId,
           ...templateForm,
-        }),
-      });
+        });
+        setSuccess('Template updated successfully');
+      } else {
+        await huntingService.createGlobalTemplate({
+          userId,
+          ...templateForm,
+        });
+        setSuccess('Template created successfully');
+      }
 
-      if (!response.ok) throw new Error('Failed to save template');
-
-      setSuccess(editingTemplate ? 'Template updated successfully' : 'Template created successfully');
       setShowTemplateModal(false);
       setEditingTemplate(null);
       setTemplateForm({
@@ -271,29 +246,24 @@ export default function GlobalHuntingPage() {
     setError('');
     setSuccess('');
     try {
-      const url = editingSchedule
-        ? `http://localhost:7000/api/global/hunting/scheduled/${editingSchedule.id}`
-        : `http://localhost:7000/api/global/hunting/scheduled`;
-      const method = editingSchedule ? 'PUT' : 'POST';
+      const data = {
+        userId,
+        name: scheduleForm.name,
+        templateId: scheduleForm.templateId,
+        scheduleSpec: scheduleForm.scheduleSpec === 'Custom' ? scheduleForm.customCron : scheduleForm.scheduleSpec,
+        targetAllTenants: scheduleForm.targetAllTenants,
+        targetTenantIds: scheduleForm.targetAllTenants ? [] : scheduleForm.targetTenantIds,
+        isEnabled: scheduleForm.isEnabled,
+      };
 
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          userId,
-          name: scheduleForm.name,
-          templateId: scheduleForm.templateId,
-          scheduleSpec: scheduleForm.scheduleSpec === 'Custom' ? scheduleForm.customCron : scheduleForm.scheduleSpec,
-          targetAllTenants: scheduleForm.targetAllTenants,
-          targetTenantIds: scheduleForm.targetAllTenants ? [] : scheduleForm.targetTenantIds,
-          isEnabled: scheduleForm.isEnabled,
-        }),
-      });
+      if (editingSchedule) {
+        await huntingService.updateGlobalScheduled(editingSchedule.id, data);
+        setSuccess('Schedule updated successfully');
+      } else {
+        await huntingService.createGlobalScheduledHunt(data);
+        setSuccess('Schedule created successfully');
+      }
 
-      if (!response.ok) throw new Error('Failed to save scheduled hunt');
-
-      setSuccess(editingSchedule ? 'Schedule updated successfully' : 'Schedule created successfully');
       setShowScheduleModal(false);
       setEditingSchedule(null);
       setScheduleForm({
@@ -314,11 +284,7 @@ export default function GlobalHuntingPage() {
   const handleDeleteTemplate = async (id: string) => {
     if (!confirm('Are you sure you want to delete this template?')) return;
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/global/hunting/templates/${id}`,
-        { method: 'DELETE', credentials: 'include' }
-      );
-      if (!response.ok) throw new Error('Failed to delete template');
+      await huntingService.deleteGlobalTemplate(id);
       setSuccess('Template deleted successfully');
       fetchData();
     } catch (err) {
@@ -329,11 +295,7 @@ export default function GlobalHuntingPage() {
   const handleDeleteSchedule = async (id: string) => {
     if (!confirm('Are you sure you want to delete this scheduled hunt?')) return;
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/global/hunting/scheduled/${id}`,
-        { method: 'DELETE', credentials: 'include' }
-      );
-      if (!response.ok) throw new Error('Failed to delete scheduled hunt');
+      await huntingService.deleteGlobalScheduled(id);
       setSuccess('Scheduled hunt deleted successfully');
       fetchData();
     } catch (err) {
@@ -343,17 +305,13 @@ export default function GlobalHuntingPage() {
 
   const handleTogglePublish = async (template: GlobalQueryTemplate) => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/global/hunting/templates/${template.id}/${template.isPublished ? 'unpublish' : 'publish'}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ userId }),
-        }
-      );
-      if (!response.ok) throw new Error('Failed to toggle publish');
-      setSuccess(template.isPublished ? 'Template unpublished' : 'Template published');
+      if (template.isPublished) {
+        await huntingService.unpublishGlobalTemplate(template.id, userId);
+        setSuccess('Template unpublished');
+      } else {
+        await huntingService.publishGlobalTemplate(template.id, userId);
+        setSuccess('Template published');
+      }
       fetchData();
     } catch (err) {
       setError(t('common.error'));
@@ -362,16 +320,11 @@ export default function GlobalHuntingPage() {
 
   const handleToggleSchedule = async (hunt: CrossTenantScheduledHunt) => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/global/hunting/scheduled/${hunt.id}/${hunt.isEnabled ? 'disable' : 'enable'}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ userId }),
-        }
-      );
-      if (!response.ok) throw new Error('Failed to toggle schedule');
+      if (hunt.isEnabled) {
+        await huntingService.disableGlobalScheduledHunt(hunt.id, userId);
+      } else {
+        await huntingService.enableGlobalScheduledHunt(hunt.id, userId);
+      }
       fetchData();
     } catch (err) {
       setError(t('common.error'));
@@ -380,16 +333,7 @@ export default function GlobalHuntingPage() {
 
   const handleRunNow = async (huntId: string) => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/global/hunting/scheduled/${huntId}/run`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ userId }),
-        }
-      );
-      if (!response.ok) throw new Error('Failed to trigger run');
+      await huntingService.runGlobalScheduledHuntNow(huntId, userId);
       setSuccess('Cross-tenant hunt triggered successfully');
       setActiveTab('results');
       fetchData();
@@ -403,24 +347,19 @@ export default function GlobalHuntingPage() {
     setError('');
     setSuccess('');
     try {
-      const url = editingSavedQuery
-        ? `http://localhost:7000/api/global/hunting/saved-queries/${editingSavedQuery.id}`
-        : `http://localhost:7000/api/global/hunting/saved-queries`;
-      const method = editingSavedQuery ? 'PUT' : 'POST';
+      const data = {
+        userId,
+        ...savedQueryForm,
+      };
 
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          userId,
-          ...savedQueryForm,
-        }),
-      });
+      if (editingSavedQuery) {
+        await huntingService.updateGlobalSavedQuery(editingSavedQuery.id, data);
+        setSuccess('Query updated successfully');
+      } else {
+        await huntingService.createGlobalSavedQuery(data);
+        setSuccess('Query saved successfully');
+      }
 
-      if (!response.ok) throw new Error('Failed to save query');
-
-      setSuccess(editingSavedQuery ? 'Query updated successfully' : 'Query saved successfully');
       setShowSavedQueryModal(false);
       setEditingSavedQuery(null);
       setSavedQueryForm({
@@ -438,11 +377,7 @@ export default function GlobalHuntingPage() {
   const handleDeleteSavedQuery = async (id: string) => {
     if (!confirm('Are you sure you want to delete this saved query?')) return;
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/global/hunting/saved-queries/${id}`,
-        { method: 'DELETE', credentials: 'include' }
-      );
-      if (!response.ok) throw new Error('Failed to delete saved query');
+      await huntingService.deleteGlobalSavedQuery(id);
       setSuccess('Saved query deleted successfully');
       fetchData();
     } catch (err) {
@@ -457,25 +392,13 @@ export default function GlobalHuntingPage() {
     setQueryResults(null);
     setLoading(true);
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/global/hunting/query`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            userId,
-            oqlExpression: queryExecutorForm.oqlExpression,
-            datasetType: queryExecutorForm.datasetType,
-            tenantIds: queryExecutorForm.targetAllTenants ? [] : queryExecutorForm.tenantIds,
-            targetAllTenants: queryExecutorForm.targetAllTenants,
-          }),
-        }
-      );
-
-      if (!response.ok) throw new Error('Failed to execute query');
-
-      const data = await response.json();
+      const data = await huntingService.executeGlobalQuery({
+        userId,
+        oqlExpression: queryExecutorForm.oqlExpression,
+        datasetType: queryExecutorForm.datasetType,
+        tenantIds: queryExecutorForm.targetAllTenants ? [] : queryExecutorForm.tenantIds,
+        targetAllTenants: queryExecutorForm.targetAllTenants,
+      });
       setQueryResults(data);
       setSuccess('Query executed successfully');
     } catch (err) {

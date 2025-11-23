@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { lifecycleService } from '@/lib/api/services';
 
 interface AccessPackage {
   id: string;
@@ -103,11 +104,8 @@ export default function LifecyclePage() {
     if (!tenantId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/lifecycle/access-packages?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setAccessPackages(Array.isArray(data) ? data : []);
-      }
+      const data = await lifecycleService.getAccessPackages(tenantId);
+      setAccessPackages(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching access packages:', error);
     }
@@ -117,11 +115,8 @@ export default function LifecyclePage() {
     if (!tenantId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/lifecycle/policies?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setLifecyclePolicies(Array.isArray(data) ? data : []);
-      }
+      const data = await lifecycleService.getLifecyclePolicies(tenantId);
+      setLifecyclePolicies(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching lifecycle policies:', error);
     }
@@ -131,11 +126,8 @@ export default function LifecyclePage() {
     if (!tenantId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/lifecycle/processing-status?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setHRSyncStatus(data);
-      }
+      const data = await lifecycleService.getProcessingStatus(tenantId);
+      setHRSyncStatus(data);
     } catch (error) {
       console.error('Error fetching HR sync status:', error);
     }
@@ -145,11 +137,8 @@ export default function LifecyclePage() {
     if (!tenantId || !selectedUserId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/lifecycle/users/${selectedUserId}/timeline?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setUserTimeline(Array.isArray(data) ? data : []);
-      }
+      const data = await lifecycleService.getUserTimeline(tenantId, selectedUserId);
+      setUserTimeline(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching user timeline:', error);
     }
@@ -159,11 +148,8 @@ export default function LifecyclePage() {
     if (!tenantId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/lifecycle/events?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setLifecycleEvents(Array.isArray(data) ? data : []);
-      }
+      const data = await lifecycleService.getLifecycleEvents(tenantId);
+      setLifecycleEvents(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching lifecycle events:', error);
     }
@@ -176,32 +162,22 @@ export default function LifecyclePage() {
     if (!tenantId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/lifecycle/access-packages?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenantId,
-          name: packageName,
-          description: packageDescription,
-          roles: packageRoles.split(',').map(r => r.trim()).filter(r => r),
-          durationDays: packageDuration,
-          requiresApproval: packageApprovalRequired
-        })
+      await lifecycleService.createAccessPackage(tenantId, {
+        name: packageName,
+        description: packageDescription,
+        roles: packageRoles.split(',').map(r => r.trim()).filter(r => r),
+        durationDays: packageDuration,
+        requiresApproval: packageApprovalRequired
       });
 
-      if (response.ok) {
-        setShowPackageModal(false);
-        setPackageName('');
-        setPackageDescription('');
-        setPackageRoles('');
-        setPackageDuration(30);
-        setPackageApprovalRequired(true);
-        setSuccess(t('tenant.lifecycle.packageCreated') || 'Access package created successfully');
-        fetchAccessPackages();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      setShowPackageModal(false);
+      setPackageName('');
+      setPackageDescription('');
+      setPackageRoles('');
+      setPackageDuration(30);
+      setPackageApprovalRequired(true);
+      setSuccess(t('tenant.lifecycle.packageCreated') || 'Access package created successfully');
+      fetchAccessPackages();
     } catch (error) {
       setError(t('common.error'));
       console.error('Error creating access package:', error);
@@ -215,29 +191,19 @@ export default function LifecyclePage() {
     if (!tenantId) return;
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/lifecycle/policies?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenantId,
-          name: policyName,
-          trigger: policyTrigger,
-          actions: policyActions.split(',').map(a => a.trim()).filter(a => a),
-          enabled: policyEnabled
-        })
+      await lifecycleService.createLifecyclePolicy(tenantId, {
+        name: policyName,
+        trigger: policyTrigger,
+        actions: policyActions.split(',').map(a => a.trim()).filter(a => a),
+        enabled: policyEnabled
       });
 
-      if (response.ok) {
-        setShowPolicyModal(false);
-        setPolicyName('');
-        setPolicyActions('');
-        setPolicyEnabled(true);
-        setSuccess(t('tenant.lifecycle.policyCreated') || 'Lifecycle policy created successfully');
-        fetchLifecyclePolicies();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      setShowPolicyModal(false);
+      setPolicyName('');
+      setPolicyActions('');
+      setPolicyEnabled(true);
+      setSuccess(t('tenant.lifecycle.policyCreated') || 'Lifecycle policy created successfully');
+      fetchLifecyclePolicies();
     } catch (error) {
       setError(t('common.error'));
       console.error('Error creating lifecycle policy:', error);
@@ -251,20 +217,9 @@ export default function LifecyclePage() {
     setIsSyncing(true);
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/lifecycle/hr/sync?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantId })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setSuccess(t('tenant.lifecycle.hrSyncTriggered') || `HR Sync triggered successfully. ${data} records processed.`);
-        fetchHRSyncStatus();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      const data = await lifecycleService.syncWithHR(tenantId);
+      setSuccess(t('tenant.lifecycle.hrSyncTriggered') || `HR Sync triggered successfully. ${data} records processed.`);
+      fetchHRSyncStatus();
     } catch (error) {
       setError(t('common.error'));
       console.error('Error triggering HR sync:', error);

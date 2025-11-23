@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import Modal from '@/app/components/Modal';
 import DataTable, { Column } from '@/app/components/DataTable';
+import { platformService } from '@/lib/api/services';
 
 type TargetAudience = 'all' | 'specific' | 'percentage';
 
@@ -73,16 +74,10 @@ export default function FeatureFlagsPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/feature-flags');
-      if (response.ok) {
-        const data = await response.json();
-        setFlags(data.flags || []);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      const data = await platformService.getFeatureFlags();
+      setFlags(data.flags || []);
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -90,14 +85,11 @@ export default function FeatureFlagsPage() {
 
   const fetchHistory = async (flagId: string) => {
     try {
-      const response = await fetch(`http://localhost:7000/api/global/feature-flags/${flagId}/history`);
-      if (response.ok) {
-        const data = await response.json();
-        setHistory(data.history || []);
-        setIsHistoryModalOpen(true);
-      }
-    } catch (err) {
-      setError('Failed to fetch history');
+      const data = await platformService.getFeatureFlagHistory(flagId);
+      setHistory(data.history || []);
+      setIsHistoryModalOpen(true);
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch history');
     }
   };
 
@@ -106,20 +98,11 @@ export default function FeatureFlagsPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/feature-flags/${flag.id}/toggle`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ enabled: newState })
-      });
-      if (response.ok) {
-        setSuccess(`Feature flag "${flag.name}" ${newState ? 'enabled' : 'disabled'} successfully`);
-        fetchFlags();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.toggleFeatureFlag(flag.id, newState);
+      setSuccess(`Feature flag "${flag.name}" ${newState ? 'enabled' : 'disabled'} successfully`);
+      fetchFlags();
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
       setConfirmToggle(null);
@@ -159,23 +142,13 @@ export default function FeatureFlagsPage() {
         };
       }
 
-      const response = await fetch('http://localhost:7000/api/global/feature-flags', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (response.ok) {
-        setSuccess('Feature flag created successfully');
-        setIsCreateModalOpen(false);
-        resetForm();
-        fetchFlags();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.createFeatureFlag(payload);
+      setSuccess('Feature flag created successfully');
+      setIsCreateModalOpen(false);
+      resetForm();
+      fetchFlags();
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -187,18 +160,11 @@ export default function FeatureFlagsPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/feature-flags/${flagId}`, {
-        method: 'DELETE'
-      });
-      if (response.ok) {
-        setSuccess('Feature flag deleted successfully');
-        fetchFlags();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.deleteFeatureFlag(flagId);
+      setSuccess('Feature flag deleted successfully');
+      fetchFlags();
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }

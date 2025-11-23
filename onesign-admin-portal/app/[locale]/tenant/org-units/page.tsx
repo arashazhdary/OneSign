@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
 import { getCurrentUserScope, CurrentUserScopeDto } from '@/lib/api/users';
+import { platformService } from '@/lib/api/services';
 
 interface OrgUnitTreeNode {
   id: string;
@@ -60,20 +61,11 @@ export default function OrgUnitsPage() {
   const fetchTree = async (tid: string) => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:7000/api/tenant/org-units/tree?tenantId=${tid}`, {
-        headers: {
-          'Accept-Language': locale
-        }
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setTree(data);
-        // Expand root nodes by default
-        const rootIds = data.map((node: OrgUnitTreeNode) => node.id);
-        setExpandedNodes(new Set(rootIds));
-      } else {
-        setError(t('common.error'));
-      }
+      const data = await platformService.getOrgUnitsTree(tid);
+      setTree(data);
+      // Expand root nodes by default
+      const rootIds = data.map((node: OrgUnitTreeNode) => node.id);
+      setExpandedNodes(new Set(rootIds));
     } catch (err) {
       setError(t('common.error'));
     } finally {
@@ -93,102 +85,55 @@ export default function OrgUnitsPage() {
 
   const handleCreate = async () => {
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/org-units?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept-Language': locale
-        },
-        body: JSON.stringify({
-          parentId: newParentId || null,
-          name: newOrgUnitName
-        })
+      await platformService.createOrgUnit({
+        tenantId,
+        parentId: newParentId || null,
+        name: newOrgUnitName
       });
-      if (response.ok) {
-        setShowCreateModal(false);
-        setNewOrgUnitName('');
-        setNewParentId(null);
-        fetchTree(tenantId);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      setShowCreateModal(false);
+      setNewOrgUnitName('');
+      setNewParentId(null);
+      fetchTree(tenantId);
+    } catch (err: any) {
+      setError(err?.message || t('common.error'));
     }
   };
 
   const handleUpdate = async () => {
     if (!selectedNode) return;
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/org-units/${selectedNode.id}?tenantId=${tenantId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept-Language': locale
-        },
-        body: JSON.stringify({
-          name: newOrgUnitName
-        })
+      await platformService.updateOrgUnit(tenantId, selectedNode.id, {
+        name: newOrgUnitName
       });
-      if (response.ok) {
-        setShowEditModal(false);
-        setSelectedNode(null);
-        setNewOrgUnitName('');
-        fetchTree(tenantId);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      setShowEditModal(false);
+      setSelectedNode(null);
+      setNewOrgUnitName('');
+      fetchTree(tenantId);
+    } catch (err: any) {
+      setError(err?.message || t('common.error'));
     }
   };
 
   const handleMove = async () => {
     if (!selectedNode) return;
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/org-units/${selectedNode.id}/move?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept-Language': locale
-        },
-        body: JSON.stringify({
-          newParentId: newParentId || null
-        })
-      });
-      if (response.ok) {
-        setShowMoveModal(false);
-        setSelectedNode(null);
-        setNewParentId(null);
-        fetchTree(tenantId);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.moveOrgUnit(tenantId, selectedNode.id, newParentId || null);
+      setShowMoveModal(false);
+      setSelectedNode(null);
+      setNewParentId(null);
+      fetchTree(tenantId);
+    } catch (err: any) {
+      setError(err?.message || t('common.error'));
     }
   };
 
   const handleDelete = async (node: OrgUnitTreeNode) => {
     if (!confirm(t('tenant.orgUnits.confirmDelete'))) return;
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/org-units/${node.id}?tenantId=${tenantId}`, {
-        method: 'DELETE',
-        headers: {
-          'Accept-Language': locale
-        }
-      });
-      if (response.ok) {
-        fetchTree(tenantId);
-      } else {
-        const errorData = await response.json();
-        alert(errorData.errorMessage || t('tenant.orgUnits.cannotDelete'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.deleteOrgUnit(tenantId, node.id);
+      fetchTree(tenantId);
+    } catch (err: any) {
+      alert(err?.message || t('tenant.orgUnits.cannotDelete'));
     }
   };
 

@@ -365,6 +365,73 @@ export class IncidentsService {
     );
     return response.data;
   }
+
+  // Incident Details
+
+  /**
+   * Get incident timeline
+   */
+  async getIncidentTimeline(tenantId: string, incidentId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>(
+      `/api/tenant/incidents/${incidentId}/timeline`,
+      { tenantId }
+    );
+    return response.data;
+  }
+
+  /**
+   * Get related incidents
+   */
+  async getRelatedIncidents(tenantId: string, incidentId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>(
+      `/api/tenant/incidents/${incidentId}/related`,
+      { tenantId }
+    );
+    return response.data;
+  }
+
+  /**
+   * Add linked entity to incident
+   */
+  async addLinkedEntity(
+    tenantId: string,
+    incidentId: string,
+    entityType: string,
+    entityId: string,
+    entityName: string
+  ): Promise<any> {
+    const response = await this.client.post(
+      `/api/tenant/incidents/${incidentId}/entities`,
+      { tenantId, entityType, entityId, entityName }
+    );
+    return response.data;
+  }
+
+  /**
+   * Execute playbook on incident
+   */
+  async executePlaybook(tenantId: string, incidentId: string, playbookId: string): Promise<any> {
+    const response = await this.client.post(
+      `/api/tenant/incidents/${incidentId}/playbook`,
+      { tenantId, playbookId }
+    );
+    return response.data;
+  }
+
+  /**
+   * Get playbooks
+   */
+  async getPlaybooks(tenantId: string): Promise<any[]> {
+    const response = await this.client.get<any[]>('/api/tenant/playbooks', { tenantId });
+    return response.data;
+  }
+
+  /**
+   * Add note to incident (alias for addComment for consistency)
+   */
+  async addNote(tenantId: string, incidentId: string, content: string): Promise<any> {
+    return this.addComment(tenantId, incidentId, content);
+  }
 }
 
 // Export singleton instance

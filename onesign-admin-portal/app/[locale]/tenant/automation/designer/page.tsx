@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, DragEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import * as AutomationAPI from '@/lib/api/automation';
 
 interface WorkflowAction {
   id: string;
@@ -10,24 +11,6 @@ interface WorkflowAction {
   name: string;
   icon: string;
   color: string;
-}
-
-interface WorkflowStep {
-  id: string;
-  type: string;
-  name: string;
-  x: number;
-  y: number;
-  config: Record<string, any>;
-  connections: string[];
-}
-
-interface Workflow {
-  id?: string;
-  name: string;
-  description: string;
-  steps: WorkflowStep[];
-  isActive: boolean;
 }
 
 const AVAILABLE_ACTIONS: WorkflowAction[] = [
@@ -47,16 +30,16 @@ export default function WorkflowDesignerPage() {
   const t = useTranslations();
   const canvasRef = useRef<HTMLDivElement>(null);
   const [tenantId, setTenantIdState] = useState<string | null>(null);
-  const [workflow, setWorkflow] = useState<Workflow>({
+  const [workflow, setWorkflow] = useState<AutomationAPI.Workflow>({
     name: 'New Workflow',
     description: '',
     steps: [],
     isActive: false,
   });
-  const [selectedStep, setSelectedStep] = useState<WorkflowStep | null>(null);
+  const [selectedStep, setSelectedStep] = useState<AutomationAPI.WorkflowStep | null>(null);
   const [draggedAction, setDraggedAction] = useState<WorkflowAction | null>(null);
   const [connectingFrom, setConnectingFrom] = useState<string | null>(null);
-  const [workflows, setWorkflows] = useState<Workflow[]>([]);
+  const [workflows, setWorkflows] = useState<AutomationAPI.Workflow[]>([]);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showLoadModal, setShowLoadModal] = useState(false);
   const [testResults, setTestResults] = useState<string>('');
@@ -78,11 +61,8 @@ export default function WorkflowDesignerPage() {
   const loadWorkflows = async () => {
     if (!tenantId) return;
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/workflows?tenantId=${tenantId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setWorkflows(data.items || []);
-      }
+      const data = await AutomationAPI.getWorkflowsForDesigner(tenantId);
+      setWorkflows(data.items || []);
     } catch (error) {
       console.error('Error loading workflows:', error);
     }
@@ -104,7 +84,7 @@ export default function WorkflowDesignerPage() {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    const newStep: WorkflowStep = {
+    const newStep: AutomationAPI.WorkflowStep = {
       id: `step-${Date.now()}`,
       type: draggedAction.type,
       name: draggedAction.name,
@@ -122,7 +102,7 @@ export default function WorkflowDesignerPage() {
     setDraggedAction(null);
   };
 
-  const handleStepClick = (step: WorkflowStep) => {
+  const handleStepClick = (step: AutomationAPI.WorkflowStep) => {
     if (connectingFrom) {
       // Create connection
       setWorkflow((prev) => ({
@@ -176,34 +156,18 @@ export default function WorkflowDesignerPage() {
     setSuccess('');
 
     try {
-      const method = workflow.id ? 'PUT' : 'POST';
-      const url = workflow.id
-        ? `http://localhost:7000/api/tenant/workflows/${workflow.id}?tenantId=${tenantId}`
-        : `http://localhost:7000/api/tenant/workflows?tenantId=${tenantId}`;
-
-      const response = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(workflow),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setWorkflow(data);
-        setSuccess('Workflow saved successfully');
-        setShowSaveModal(false);
-        loadWorkflows();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || 'Failed to save workflow');
-      }
-    } catch (error) {
-      setError('Failed to save workflow');
+      const data = await AutomationAPI.saveWorkflow(workflow, tenantId);
+      setWorkflow(data);
+      setSuccess('Workflow saved successfully');
+      setShowSaveModal(false);
+      loadWorkflows();
+    } catch (error: any) {
+      setError(error?.message || 'Failed to save workflow');
       console.error('Error saving workflow:', error);
     }
   };
 
-  const handleLoadWorkflow = (wf: Workflow) => {
+  const handleLoadWorkflow = (wf: AutomationAPI.Workflow) => {
     setWorkflow(wf);
     setShowLoadModal(false);
     setSelectedStep(null);
@@ -215,21 +179,10 @@ export default function WorkflowDesignerPage() {
     setShowTestModal(true);
 
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/workflows/test?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(workflow),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setTestResults(JSON.stringify(data, null, 2));
-      } else {
-        const data = await response.json();
-        setTestResults(`Error: ${data.errorMessage || 'Test failed'}`);
-      }
-    } catch (error) {
-      setTestResults(`Error: ${error}`);
+      const data = await AutomationAPI.testWorkflowDesigner(workflow, tenantId);
+      setTestResults(JSON.stringify(data, null, 2));
+    } catch (error: any) {
+      setTestResults(`Error: ${error?.message || 'Test failed'}`);
       console.error('Error testing workflow:', error);
     }
   };
@@ -243,21 +196,11 @@ export default function WorkflowDesignerPage() {
     if (!confirm('Deploy this workflow? It will become active.')) return;
 
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/workflows/${workflow.id}/deploy?tenantId=${tenantId}`,
-        { method: 'POST' }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setWorkflow(data);
-        setSuccess('Workflow deployed successfully');
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || 'Failed to deploy workflow');
-      }
-    } catch (error) {
-      setError('Failed to deploy workflow');
+      const data = await AutomationAPI.deployWorkflow(workflow.id, tenantId);
+      setWorkflow(data);
+      setSuccess('Workflow deployed successfully');
+    } catch (error: any) {
+      setError(error?.message || 'Failed to deploy workflow');
       console.error('Error deploying workflow:', error);
     }
   };

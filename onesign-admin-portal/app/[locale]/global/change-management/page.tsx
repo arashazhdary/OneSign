@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import Modal from '@/app/components/Modal';
 import StatusBadge from '@/app/components/StatusBadge';
 import LoadingSpinner from '@/app/components/LoadingSpinner';
+import { changeManagementService } from '@/lib/api/services/change-management.service';
 
 interface ChangeSet {
   id: string;
@@ -214,20 +215,19 @@ export default function GlobalChangeManagementPage() {
   };
 
   const fetchAllChangeSets = async () => {
-    let url = `http://localhost:7000/api/global/change-management/change-sets?page=${page}&pageSize=${pageSize}`;
+    const params: any = { page, pageSize };
     if (statusFilter !== 'All') {
-      url += `&status=${statusFilter}`;
+      params.status = statusFilter;
     }
     if (tenantFilter) {
-      url += `&tenantId=${tenantFilter}`;
+      params.tenantId = tenantFilter;
     }
-    const response = await fetch(url);
-    if (response.ok) {
-      const data = await response.json();
+    try {
+      const data = await changeManagementService.getGlobalChangeSets(params);
       setChangeSets(data.items || []);
       setTotalItems(data.totalCount || 0);
-    } else {
-      // Mock data
+    } catch (err) {
+      // Mock data on error
       const mockData: ChangeSet[] = [
         {
           id: '1',
@@ -264,13 +264,11 @@ export default function GlobalChangeManagementPage() {
 
   // Endpoint implementations (similar to tenant page)
   const fetchChangeSetDetails = async (id: string) => {
-    const url = `http://localhost:7000/api/global/change-sets/${id}`;
-    const response = await fetch(url);
-    if (response.ok) {
-      const data = await response.json();
+    try {
+      const data = await changeManagementService.getGlobalChangeSet(id);
       setChangeSetDetails(data);
-    } else {
-      // Mock data
+    } catch (err) {
+      // Mock data on error
       const mockData: ChangeSetDetails = {
         ...selectedChangeSet!,
         changes: [
@@ -296,45 +294,34 @@ export default function GlobalChangeManagementPage() {
   const handleSimulate = async (id: string) => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/global/change-sets/${id}/simulate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setSimulationResult(data);
-        setSuccess('Simulation completed successfully');
-      } else {
-        // Mock data
-        const mockResult: SimulationResult = {
-          success: true,
-          warnings: ['Some users may experience temporary access delays'],
-          errors: [],
-          affectedEntities: [
-            { type: 'User', id: 'u1', name: 'John Doe', change: 'Permissions updated' },
-            { type: 'User', id: 'u2', name: 'Jane Smith', change: 'Permissions updated' },
-          ],
-          estimatedDuration: '2 minutes',
-        };
-        setSimulationResult(mockResult);
-        setSuccess('Simulation completed (mock data)');
-      }
+      const data = await changeManagementService.simulateGlobalChangeSet(id, userId);
+      setSimulationResult(data);
+      setSuccess('Simulation completed successfully');
     } catch (err) {
-      setError('Simulation failed');
+      // Mock data on error
+      const mockResult: SimulationResult = {
+        success: true,
+        warnings: ['Some users may experience temporary access delays'],
+        errors: [],
+        affectedEntities: [
+          { type: 'User', id: 'u1', name: 'John Doe', change: 'Permissions updated' },
+          { type: 'User', id: 'u2', name: 'Jane Smith', change: 'Permissions updated' },
+        ],
+        estimatedDuration: '2 minutes',
+      };
+      setSimulationResult(mockResult);
+      setSuccess('Simulation completed (mock data)');
     } finally {
       setLoading(false);
     }
   };
 
   const fetchExecutionLogs = async (id: string) => {
-    const url = `http://localhost:7000/api/global/change-sets/${id}/execution-log`;
-    const response = await fetch(url);
-    if (response.ok) {
-      const data = await response.json();
+    try {
+      const data = await changeManagementService.getGlobalExecutionLog(id);
       setExecutionLogs(data || []);
-    } else {
-      // Mock data
+    } catch (err) {
+      // Mock data on error
       const mockLogs: ExecutionLog[] = [
         {
           id: '1',
@@ -354,21 +341,13 @@ export default function GlobalChangeManagementPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/global/change-sets/${selectedChangeSet.id}/schedule`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          ...scheduleData,
-        }),
+      await changeManagementService.scheduleGlobalChangeSet(selectedChangeSet.id, {
+        userId,
+        ...scheduleData,
       });
-      if (response.ok) {
-        setSuccess('Change set scheduled successfully');
-        setShowScheduleModal(false);
-        fetchData();
-      } else {
-        throw new Error('Failed to schedule');
-      }
+      setSuccess('Change set scheduled successfully');
+      setShowScheduleModal(false);
+      fetchData();
     } catch (err) {
       setError('Failed to schedule change set');
     } finally {
@@ -381,18 +360,10 @@ export default function GlobalChangeManagementPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/global/change-sets/${selectedChangeSet.id}/apply`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
-      });
-      if (response.ok) {
-        setSuccess('Change set applied successfully');
-        setShowExecuteModal(false);
-        fetchData();
-      } else {
-        throw new Error('Failed to apply');
-      }
+      await changeManagementService.applyGlobalChangeSet(selectedChangeSet.id, userId);
+      setSuccess('Change set applied successfully');
+      setShowExecuteModal(false);
+      fetchData();
     } catch (err) {
       setError('Failed to apply change set');
     } finally {
@@ -405,18 +376,10 @@ export default function GlobalChangeManagementPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/global/change-sets/${selectedChangeSet.id}/rollback`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
-      });
-      if (response.ok) {
-        setSuccess('Change set rolled back successfully');
-        setShowRollbackModal(false);
-        fetchData();
-      } else {
-        throw new Error('Failed to rollback');
-      }
+      await changeManagementService.rollbackGlobalChangeSet(selectedChangeSet.id, userId);
+      setSuccess('Change set rolled back successfully');
+      setShowRollbackModal(false);
+      fetchData();
     } catch (err) {
       setError('Failed to rollback change set');
     } finally {
@@ -429,19 +392,11 @@ export default function GlobalChangeManagementPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/global/change-sets/${selectedChangeSet.id}/approve`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, comment: approvalComment }),
-      });
-      if (response.ok) {
-        setSuccess('Change set approved');
-        setShowApprovalModal(false);
-        setApprovalComment('');
-        fetchData();
-      } else {
-        throw new Error('Failed to approve');
-      }
+      await changeManagementService.approveGlobalChangeSet(selectedChangeSet.id, userId, approvalComment);
+      setSuccess('Change set approved');
+      setShowApprovalModal(false);
+      setApprovalComment('');
+      fetchData();
     } catch (err) {
       setError('Failed to approve change set');
     } finally {
@@ -457,19 +412,11 @@ export default function GlobalChangeManagementPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/global/change-sets/${selectedChangeSet.id}/reject`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, reason: rejectReason }),
-      });
-      if (response.ok) {
-        setSuccess('Change set rejected');
-        setShowRejectModal(false);
-        setRejectReason('');
-        fetchData();
-      } else {
-        throw new Error('Failed to reject');
-      }
+      await changeManagementService.rejectGlobalChangeSet(selectedChangeSet.id, userId, rejectReason);
+      setSuccess('Change set rejected');
+      setShowRejectModal(false);
+      setRejectReason('');
+      fetchData();
     } catch (err) {
       setError('Failed to reject change set');
     } finally {
@@ -482,17 +429,9 @@ export default function GlobalChangeManagementPage() {
 
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:7000/api/global/change-sets/${selectedChangeSet.id}/submit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId }),
-      });
-      if (response.ok) {
-        setSuccess('Change set submitted for review');
-        fetchData();
-      } else {
-        throw new Error('Failed to submit');
-      }
+      await changeManagementService.submitGlobalChangeSet(selectedChangeSet.id, userId);
+      setSuccess('Change set submitted for review');
+      fetchData();
     } catch (err) {
       setError('Failed to submit change set');
     } finally {
@@ -501,13 +440,11 @@ export default function GlobalChangeManagementPage() {
   };
 
   const fetchApprovals = async (id: string) => {
-    const url = `http://localhost:7000/api/global/change-sets/${id}/approvals`;
-    const response = await fetch(url);
-    if (response.ok) {
-      const data = await response.json();
+    try {
+      const data = await changeManagementService.getGlobalApprovals(id);
       setApprovals(data || []);
-    } else {
-      // Mock data
+    } catch (err) {
+      // Mock data on error
       const mockApprovals: Approval[] = [
         {
           id: '1',
@@ -524,13 +461,11 @@ export default function GlobalChangeManagementPage() {
   };
 
   const fetchImpactAnalysis = async (id: string) => {
-    const url = `http://localhost:7000/api/global/change-sets/${id}/impact`;
-    const response = await fetch(url);
-    if (response.ok) {
-      const data = await response.json();
+    try {
+      const data = await changeManagementService.getGlobalImpactAnalysis(id);
       setImpactAnalysis(data);
-    } else {
-      // Mock data
+    } catch (err) {
+      // Mock data on error
       const mockImpact: ImpactAnalysis = {
         riskLevel: 'Medium',
         affectedUsers: 42,
@@ -549,13 +484,11 @@ export default function GlobalChangeManagementPage() {
   };
 
   const fetchTemplates = async () => {
-    const url = `http://localhost:7000/api/global/changesets/templates`;
-    const response = await fetch(url);
-    if (response.ok) {
-      const data = await response.json();
+    try {
+      const data = await changeManagementService.getGlobalTemplates();
       setTemplates(data || []);
-    } else {
-      // Mock data
+    } catch (err) {
+      // Mock data on error
       const mockTemplates: Template[] = [
         {
           id: '1',
@@ -573,13 +506,11 @@ export default function GlobalChangeManagementPage() {
   };
 
   const fetchGlobalRules = async () => {
-    const url = `http://localhost:7000/api/global/change-management/approval-rules`;
-    const response = await fetch(url);
-    if (response.ok) {
-      const data = await response.json();
+    try {
+      const data = await changeManagementService.getGlobalApprovalRules();
       setGlobalRules(data || []);
-    } else {
-      // Mock data
+    } catch (err) {
+      // Mock data on error
       const mockData: GlobalApprovalRule[] = [
         {
           id: '1',
@@ -598,17 +529,16 @@ export default function GlobalChangeManagementPage() {
   };
 
   const fetchChangeHistory = async () => {
-    let url = `http://localhost:7000/api/global/change-management/history?page=${page}&pageSize=${pageSize}`;
+    const params: any = { page, pageSize };
     if (tenantFilter) {
-      url += `&tenantId=${tenantFilter}`;
+      params.tenantId = tenantFilter;
     }
-    const response = await fetch(url);
-    if (response.ok) {
-      const data = await response.json();
+    try {
+      const data = await changeManagementService.getGlobalChangeHistory(params);
       setChangeHistory(data.items || []);
       setTotalItems(data.totalCount || 0);
-    } else {
-      // Mock data
+    } catch (err) {
+      // Mock data on error
       const mockData: ChangeHistory[] = [
         {
           id: '1',
@@ -632,30 +562,22 @@ export default function GlobalChangeManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/change-management/approval-rules', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId,
-          ...newRule,
-        }),
+      await changeManagementService.createGlobalApprovalRule({
+        userId,
+        ...newRule,
       });
-      if (response.ok) {
-        setSuccess('Global approval rule created successfully');
-        setShowRuleModal(false);
-        setNewRule({
-          name: '',
-          targetModule: 'Users',
-          requiredApprovers: 2,
-          approverRoles: ['GlobalAdmin', 'SecurityAdmin'],
-          isEnforced: true,
-          tenantCanOverride: false,
-          isActive: true,
-        });
-        fetchData();
-      } else {
-        throw new Error('Failed to create rule');
-      }
+      setSuccess('Global approval rule created successfully');
+      setShowRuleModal(false);
+      setNewRule({
+        name: '',
+        targetModule: 'Users',
+        requiredApprovers: 2,
+        approverRoles: ['GlobalAdmin', 'SecurityAdmin'],
+        isEnforced: true,
+        tenantCanOverride: false,
+        isActive: true,
+      });
+      fetchData();
     } catch (err) {
       setError(t('common.error'));
     }
@@ -663,17 +585,9 @@ export default function GlobalChangeManagementPage() {
 
   const handleToggleRule = async (rule: GlobalApprovalRule) => {
     try {
-      const response = await fetch(`http://localhost:7000/api/global/change-management/approval-rules/${rule.id}/toggle`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, isActive: !rule.isActive }),
-      });
-      if (response.ok) {
-        setSuccess(`Rule ${rule.isActive ? 'disabled' : 'enabled'}`);
-        fetchData();
-      } else {
-        throw new Error('Failed to toggle rule');
-      }
+      await changeManagementService.toggleGlobalApprovalRule(rule.id, userId, !rule.isActive);
+      setSuccess(`Rule ${rule.isActive ? 'disabled' : 'enabled'}`);
+      fetchData();
     } catch (err) {
       setError(t('common.error'));
     }
@@ -681,17 +595,9 @@ export default function GlobalChangeManagementPage() {
 
   const handleEnforceRule = async (rule: GlobalApprovalRule) => {
     try {
-      const response = await fetch(`http://localhost:7000/api/global/change-management/approval-rules/${rule.id}/enforce`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, isEnforced: !rule.isEnforced }),
-      });
-      if (response.ok) {
-        setSuccess(`Rule ${rule.isEnforced ? 'unenforced' : 'enforced'} globally`);
-        fetchData();
-      } else {
-        throw new Error('Failed to enforce rule');
-      }
+      await changeManagementService.enforceGlobalApprovalRule(rule.id, userId, !rule.isEnforced);
+      setSuccess(`Rule ${rule.isEnforced ? 'unenforced' : 'enforced'} globally`);
+      fetchData();
     } catch (err) {
       setError(t('common.error'));
     }

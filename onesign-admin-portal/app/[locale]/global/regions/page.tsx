@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { platformService } from '@/lib/api/services';
 
 interface Region {
   id: string;
@@ -125,16 +126,10 @@ export default function MultiRegionManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/regions');
-      if (response.ok) {
-        const data = await response.json();
-        setRegions(data.items || data || []);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      const data = await platformService.getRegions();
+      setRegions(data.items || data || []);
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -144,11 +139,8 @@ export default function MultiRegionManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/regions/${regionId}/health`);
-      if (response.ok) {
-        const data = await response.json();
-        setRegionHealth(data);
-      }
+      const data = await platformService.getRegionHealth(regionId);
+      setRegionHealth(data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -160,13 +152,10 @@ export default function MultiRegionManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/regions/backups');
-      if (response.ok) {
-        const data = await response.json();
-        setBackups(data.items || data || []);
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      const data = await platformService.getRegionBackups();
+      setBackups(data.items || data || []);
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -176,13 +165,10 @@ export default function MultiRegionManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/regions/data-residency');
-      if (response.ok) {
-        const data = await response.json();
-        setResidencyRules(data.rules || data || []);
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      const data = await platformService.getDataResidencyRules();
+      setResidencyRules(data.rules || data || []);
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -192,13 +178,10 @@ export default function MultiRegionManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/regions/dr/status');
-      if (response.ok) {
-        const data = await response.json();
-        setDRStatus(data);
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      const data = await platformService.getDRStatus();
+      setDRStatus(data);
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -214,22 +197,13 @@ export default function MultiRegionManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/regions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newRegion),
-      });
-      if (response.ok) {
-        setSuccess('Region created successfully');
-        setShowCreateModal(false);
-        setNewRegion({ name: '', code: '', location: '', dataCenter: '' });
-        fetchRegions();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.createRegion(newRegion);
+      setSuccess('Region created successfully');
+      setShowCreateModal(false);
+      setNewRegion({ name: '', code: '', location: '', dataCenter: '' });
+      fetchRegions();
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -240,18 +214,11 @@ export default function MultiRegionManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/regions/${regionId}/activate`, {
-        method: 'POST',
-      });
-      if (response.ok) {
-        setSuccess('Region activated successfully');
-        fetchRegions();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.activateRegion(regionId);
+      setSuccess('Region activated successfully');
+      fetchRegions();
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -262,18 +229,11 @@ export default function MultiRegionManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/regions/${regionId}/deactivate`, {
-        method: 'POST',
-      });
-      if (response.ok) {
-        setSuccess('Region deactivated successfully');
-        fetchRegions();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.deactivateRegion(regionId);
+      setSuccess('Region deactivated successfully');
+      fetchRegions();
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -288,18 +248,11 @@ export default function MultiRegionManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/regions/${regionId}`, {
-        method: 'DELETE',
-      });
-      if (response.ok) {
-        setSuccess('Region deleted successfully');
-        fetchRegions();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.deleteRegion(regionId);
+      setSuccess('Region deleted successfully');
+      fetchRegions();
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -315,20 +268,11 @@ export default function MultiRegionManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/regions/backups', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ regionId: selectedRegion }),
-      });
-      if (response.ok) {
-        setSuccess('Backup created successfully');
-        fetchBackups();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.createRegionBackup(selectedRegion);
+      setSuccess('Backup created successfully');
+      fetchBackups();
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -343,17 +287,10 @@ export default function MultiRegionManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/regions/backups/${backupId}/restore`, {
-        method: 'POST',
-      });
-      if (response.ok) {
-        setSuccess('Backup restore started successfully');
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.restoreRegionBackup(backupId);
+      setSuccess('Backup restore started successfully');
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -369,27 +306,18 @@ export default function MultiRegionManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/regions/${updateRegionData.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: updateRegionData.name,
-          code: updateRegionData.code,
-          location: updateRegionData.location,
-          dataCenter: updateRegionData.dataCenter,
-        }),
+      await platformService.updateRegion(updateRegionData.id, {
+        name: updateRegionData.name,
+        code: updateRegionData.code,
+        location: updateRegionData.location,
+        dataCenter: updateRegionData.dataCenter,
       });
-      if (response.ok) {
-        setSuccess('Region updated successfully');
-        setShowUpdateRegionModal(false);
-        setUpdateRegionData({ id: '', name: '', code: '', location: '', dataCenter: '' });
-        fetchRegions();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      setSuccess('Region updated successfully');
+      setShowUpdateRegionModal(false);
+      setUpdateRegionData({ id: '', name: '', code: '', location: '', dataCenter: '' });
+      fetchRegions();
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -399,13 +327,10 @@ export default function MultiRegionManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/regions/${regionId}/backups`);
-      if (response.ok) {
-        const data = await response.json();
-        setBackups(data.items || data || []);
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      const data = await platformService.getRegionBackupsById(regionId);
+      setBackups(data.items || data || []);
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -416,19 +341,11 @@ export default function MultiRegionManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/regions/${regionId}/backups`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (response.ok) {
-        setSuccess('Region backup created successfully');
-        fetchRegionBackups(regionId);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.createRegionBackupById(regionId);
+      setSuccess('Region backup created successfully');
+      fetchRegionBackups(regionId);
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -438,13 +355,10 @@ export default function MultiRegionManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/regions/tenants/data-residency`);
-      if (response.ok) {
-        const data = await response.json();
-        setTenantDataResidency(data.items || data || []);
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      const data = await platformService.getTenantDataResidency();
+      setTenantDataResidency(data.items || data || []);
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -455,13 +369,10 @@ export default function MultiRegionManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/regions/tenants/${selectedTenant}/backups`);
-      if (response.ok) {
-        const data = await response.json();
-        setTenantBackups(data.items || data || []);
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      const data = await platformService.getTenantBackups(selectedTenant);
+      setTenantBackups(data.items || data || []);
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -477,19 +388,11 @@ export default function MultiRegionManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/regions/tenants/${selectedTenant}/backups`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (response.ok) {
-        setSuccess('Tenant backup created successfully');
-        fetchTenantBackups();
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.createTenantBackup(selectedTenant);
+      setSuccess('Tenant backup created successfully');
+      fetchTenantBackups();
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -504,18 +407,10 @@ export default function MultiRegionManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/global/regions/tenants/${tenantId}/restore`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (response.ok) {
-        setSuccess('Tenant restore started successfully');
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      await platformService.restoreTenant(tenantId);
+      setSuccess('Tenant restore started successfully');
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -525,13 +420,10 @@ export default function MultiRegionManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:7000/api/global/regions/dr-dashboard');
-      if (response.ok) {
-        const data = await response.json();
-        setDRStatus(data);
-      }
-    } catch (err) {
-      setError(t('common.error'));
+      const data = await platformService.getDRDashboard();
+      setDRStatus(data);
+    } catch (err: any) {
+      setError(err.message || t('common.error'));
     } finally {
       setLoading(false);
     }

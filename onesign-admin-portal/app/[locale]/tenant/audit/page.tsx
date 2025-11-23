@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { securityService } from '@/lib/api/services';
 
 interface AuditEvent {
   id: string;
@@ -38,17 +39,14 @@ export default function TenantAuditPage() {
 
   const fetchAuditEvents = async () => {
     if (!tenantId) return;
-    
+
     try {
-      let url = `http://localhost:7000/api/tenant/audit?tenantId=${tenantId}&pageNumber=1&pageSize=100`;
-      if (fromDate) url += `&fromDate=${fromDate}`;
-      if (toDate) url += `&toDate=${toDate}`;
-      
-      const response = await fetch(url);
-      if (response.ok) {
-        const data = await response.json();
-        setEvents(data.items || []);
-      }
+      const params: any = { tenantId, pageNumber: 1, pageSize: 100 };
+      if (fromDate) params.fromDate = fromDate;
+      if (toDate) params.toDate = toDate;
+
+      const data = await securityService.getAuditLogs(params);
+      setEvents(data.items || []);
     } catch (error) {
       console.error('Error fetching audit events:', error);
     } finally {

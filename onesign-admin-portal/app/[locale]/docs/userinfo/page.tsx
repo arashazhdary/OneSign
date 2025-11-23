@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { usersService } from '@/lib/api/services/users.service';
 
 export default function UserInfoDocumentationPage() {
   const t = useTranslations();
@@ -18,14 +19,7 @@ export default function UserInfoDocumentationPage() {
 
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:7000/api/connect/userinfo', {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Accept': 'application/json'
-        }
-      });
-
-      const data = await res.json();
+      const data = await usersService.getUserInfo(accessToken);
       setResponse(JSON.stringify(data, null, 2));
     } catch (err: any) {
       setResponse(`Error: ${err.message}`);

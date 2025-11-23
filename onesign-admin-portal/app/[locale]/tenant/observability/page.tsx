@@ -3,42 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import * as ObservabilityAPI from '@/lib/api/observability';
 
-interface AuditEvent {
-  id: string;
-  timestamp: string;
-  eventType: string;
-  action: string;
-  actorId: string;
-  actorEmail: string;
-  resourceType: string;
-  resourceId: string;
-  ipAddress: string;
-  userAgent: string;
-  success: boolean;
-  errorMessage?: string;
-  metadata: any;
-}
-
-interface AuditSearchFilter {
-  tenantId: string;
-  startDate?: string;
-  endDate?: string;
-  eventType?: string;
-  action?: string;
-  actorId?: string;
-  resourceType?: string;
-  resourceId?: string;
-  success?: boolean;
-  ipAddress?: string;
-}
-
-interface SearchResult {
-  events: AuditEvent[];
-  totalCount: number;
-  pageNumber: number;
-  pageSize: number;
-}
 
 export default function ObservabilityPage() {
   const t = useTranslations();
@@ -60,8 +26,8 @@ export default function ObservabilityPage() {
   const [ipAddress, setIpAddress] = useState('');
 
   // Results
-  const [searchResults, setSearchResults] = useState<SearchResult | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<AuditEvent | null>(null);
+  const [searchResults, setSearchResults] = useState<ObservabilityAPI.AuditSearchResult | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<ObservabilityAPI.AuditEvent | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
   // Pagination
@@ -91,7 +57,7 @@ export default function ObservabilityPage() {
     if (!tenantId) return;
 
     try {
-      const filter: AuditSearchFilter = {
+      const filter: ObservabilityAPI.AuditSearchFilter = {
         tenantId,
         startDate: startDate ? new Date(startDate).toISOString() : undefined,
         endDate: endDate ? new Date(endDate).toISOString() : undefined,
@@ -101,26 +67,13 @@ export default function ObservabilityPage() {
         resourceType: resourceType || undefined,
         resourceId: resourceId || undefined,
         success: successFilter !== null ? successFilter : undefined,
-        ipAddress: ipAddress || undefined
+        ipAddress: ipAddress || undefined,
+        pageNumber,
+        pageSize
       };
 
-      const response = await fetch(`http://localhost:7000/api/tenant/observability/audit/search?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...filter,
-          pageNumber,
-          pageSize
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setSearchResults(data);
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      const data = await ObservabilityAPI.searchAuditEvents(tenantId, filter);
+      setSearchResults(data);
     } catch (error) {
       setError(t('common.error'));
       console.error('Error searching audit events:', error);
@@ -135,7 +88,7 @@ export default function ObservabilityPage() {
     if (!tenantId) return;
 
     try {
-      const filter: AuditSearchFilter = {
+      const filter: Omit<ObservabilityAPI.AuditSearchFilter, 'pageNumber' | 'pageSize'> = {
         tenantId,
         startDate: startDate ? new Date(startDate).toISOString() : undefined,
         endDate: endDate ? new Date(endDate).toISOString() : undefined,
@@ -148,35 +101,23 @@ export default function ObservabilityPage() {
         ipAddress: ipAddress || undefined
       };
 
-      const response = await fetch(`http://localhost:7000/api/tenant/observability/audit/export?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(filter)
-      });
-
-      if (response.ok) {
-        // In a real implementation, this would trigger a file download
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `audit-log-${new Date().toISOString()}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        setSuccess(t('tenant.observability.exportSuccess') || 'Audit logs exported successfully');
-      } else {
-        const data = await response.json();
-        setError(data.errorMessage || t('common.error'));
-      }
+      const blob = await ObservabilityAPI.exportAuditLogs(tenantId, filter);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `audit-log-${new Date().toISOString()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      setSuccess(t('tenant.observability.exportSuccess') || 'Audit logs exported successfully');
     } catch (error) {
       setError(t('common.error'));
       console.error('Error exporting audit logs:', error);
     }
   };
 
-  const handleViewDetails = async (event: AuditEvent) => {
+  const handleViewDetails = async (event: ObservabilityAPI.AuditEvent) => {
     setSelectedEvent(event);
     setShowDetailModal(true);
   };

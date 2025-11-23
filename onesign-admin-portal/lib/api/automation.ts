@@ -249,6 +249,39 @@ export async function unenforceTemplate(id: string, userId: string): Promise<voi
   if (!response.ok) throw new Error('Failed to unenforce template');
 }
 
+export async function getGlobalTemplate(id: string): Promise<AutomationWorkflowDto> {
+  const response = await fetch(`${API_BASE}/api/global/automation/templates/${id}`);
+  if (!response.ok) throw new Error('Failed to fetch global template');
+  return response.json();
+}
+
+export async function updateGlobalTemplate(id: string, data: {
+  userId: string;
+  name: string;
+  description?: string;
+  severity: string;
+  tenantCanDisable: boolean;
+  tenantCanOverrideConditions: boolean;
+  triggers: { eventType: string; sourceModule: string }[];
+  conditions: { expressionType: string; expression: string; order: number }[];
+  actions: { actionType: string; order: number; configJson: string; isCritical: boolean }[];
+}): Promise<AutomationWorkflowDto> {
+  const response = await fetch(`${API_BASE}/api/global/automation/templates/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error('Failed to update global template');
+  return response.json();
+}
+
+export async function deleteGlobalTemplate(id: string, userId: string): Promise<void> {
+  const response = await fetch(`${API_BASE}/api/global/automation/templates/${id}?userId=${userId}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete global template');
+}
+
 export const EVENT_TYPES = [
   'Auth.SignInSucceeded',
   'Auth.SignInFailed',
@@ -271,3 +304,320 @@ export const ACTION_TYPES = [
   'InvokeWebhook',
   'PushEventToQueue',
 ];
+
+// Additional DTOs
+export interface AvailableTrigger {
+  eventType: string;
+  sourceModule: string;
+  description: string;
+  samplePayload: string;
+}
+
+export interface WorkflowExecution {
+  id: string;
+  workflowId: string;
+  workflowName: string;
+  status: string;
+  startedAt: string;
+  completedAt?: string;
+  eventType: string;
+  actionsExecutedCount: number;
+  actionsFailedCount: number;
+  errorMessage?: string;
+}
+
+export interface WorkflowExecutionsResult {
+  items: WorkflowExecution[];
+  totalCount?: number;
+}
+
+export interface ExecutionDetail {
+  id: string;
+  workflowId: string;
+  workflowName: string;
+  status: string;
+  startedAt: string;
+  completedAt?: string;
+  eventType: string;
+  eventPayload: string;
+  actionsExecuted: {
+    actionType: string;
+    status: string;
+    executedAt: string;
+    errorMessage?: string;
+  }[];
+}
+
+export interface Workflow {
+  id?: string;
+  name: string;
+  description: string;
+  steps: WorkflowStep[];
+  isActive: boolean;
+}
+
+export interface WorkflowStep {
+  id: string;
+  type: string;
+  name: string;
+  x: number;
+  y: number;
+  config: Record<string, any>;
+  connections: string[];
+}
+
+// Additional API functions
+
+export async function getAvailableTriggers(tenantId: string): Promise<AvailableTrigger[]> {
+  const response = await fetch(
+    `${API_BASE}/api/tenant/automation/triggers/available?tenantId=${tenantId}`
+  );
+  if (!response.ok) throw new Error('Failed to fetch available triggers');
+  return response.json();
+}
+
+export async function getWorkflowExecutions(
+  tenantId: string,
+  workflowId: string
+): Promise<WorkflowExecutionsResult> {
+  const response = await fetch(
+    `${API_BASE}/api/tenant/automation/workflows/${workflowId}/executions?tenantId=${tenantId}`
+  );
+  if (!response.ok) throw new Error('Failed to fetch workflow executions');
+  return response.json();
+}
+
+export async function getExecutionDetail(
+  tenantId: string,
+  workflowId: string,
+  executionId: string
+): Promise<ExecutionDetail> {
+  const response = await fetch(
+    `${API_BASE}/api/tenant/automation/workflows/${workflowId}/executions/${executionId}?tenantId=${tenantId}`
+  );
+  if (!response.ok) throw new Error('Failed to fetch execution detail');
+  return response.json();
+}
+
+export async function testWorkflowWithPayload(
+  workflowId: string,
+  tenantId: string,
+  userId: string
+): Promise<{ result: string }> {
+  const response = await fetch(
+    `${API_BASE}/api/tenant/automation/workflows/${workflowId}/test?tenantId=${tenantId}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
+    }
+  );
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.errorMessage || 'Failed to test workflow');
+  }
+  return response.json();
+}
+
+export async function createTemplate(
+  tenantId: string,
+  data: {
+    name: string;
+    description?: string;
+    severity: string;
+    triggers: { eventType: string; sourceModule: string }[];
+    conditions: { expressionType: string; expression: string; order: number }[];
+    actions: { actionType: string; order: number; configJson: string; isCritical: boolean }[];
+    userId: string;
+  }
+): Promise<AutomationWorkflowDto> {
+  const response = await fetch(`${API_BASE}/api/tenant/automation/templates?tenantId=${tenantId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error('Failed to create template');
+  return response.json();
+}
+
+// Workflow Designer API functions
+
+export async function getWorkflowsForDesigner(
+  tenantId: string
+): Promise<{ items: Workflow[] }> {
+  const response = await fetch(`${API_BASE}/api/tenant/workflows?tenantId=${tenantId}`);
+  if (!response.ok) throw new Error('Failed to fetch workflows');
+  return response.json();
+}
+
+export async function saveWorkflow(
+  workflow: Workflow,
+  tenantId: string
+): Promise<Workflow> {
+  const method = workflow.id ? 'PUT' : 'POST';
+  const url = workflow.id
+    ? `${API_BASE}/api/tenant/workflows/${workflow.id}?tenantId=${tenantId}`
+    : `${API_BASE}/api/tenant/workflows?tenantId=${tenantId}`;
+
+  const response = await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(workflow),
+  });
+
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.errorMessage || 'Failed to save workflow');
+  }
+  return response.json();
+}
+
+export async function testWorkflowDesigner(
+  workflow: Workflow,
+  tenantId: string
+): Promise<any> {
+  const response = await fetch(`${API_BASE}/api/tenant/workflows/test?tenantId=${tenantId}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(workflow),
+  });
+
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.errorMessage || 'Test failed');
+  }
+  return response.json();
+}
+
+export async function deployWorkflow(
+  workflowId: string,
+  tenantId: string
+): Promise<Workflow> {
+  const response = await fetch(
+    `${API_BASE}/api/tenant/workflows/${workflowId}/deploy?tenantId=${tenantId}`,
+    { method: 'POST' }
+  );
+
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(data.errorMessage || 'Failed to deploy workflow');
+  }
+  return response.json();
+}
+
+// Workflow Detail Management
+
+/**
+ * Get workflow runs/execution history
+ */
+export async function getWorkflowRuns(
+  workflowId: string,
+  tenantId: string,
+  pageSize?: number
+): Promise<any[]> {
+  const params = new URLSearchParams({ tenantId });
+  if (pageSize) params.append('pageSize', pageSize.toString());
+
+  const response = await fetch(
+    `${API_BASE}/api/tenant/automation/workflows/${workflowId}/runs?${params}`,
+    { credentials: 'include' }
+  );
+  if (!response.ok) throw new Error('Failed to fetch workflow runs');
+  return response.json();
+}
+
+/**
+ * Get workflow logs
+ */
+export async function getWorkflowLogs(
+  workflowId: string,
+  tenantId: string,
+  pageSize?: number
+): Promise<any[]> {
+  const params = new URLSearchParams({ tenantId });
+  if (pageSize) params.append('pageSize', pageSize.toString());
+
+  const response = await fetch(
+    `${API_BASE}/api/tenant/automation/workflows/${workflowId}/logs?${params}`,
+    { credentials: 'include' }
+  );
+  if (!response.ok) throw new Error('Failed to fetch workflow logs');
+  return response.json();
+}
+
+/**
+ * Activate workflow
+ */
+export async function activateWorkflow(
+  workflowId: string,
+  tenantId: string
+): Promise<void> {
+  const response = await fetch(
+    `${API_BASE}/api/tenant/automation/workflows/${workflowId}/activate?tenantId=${tenantId}`,
+    {
+      method: 'POST',
+      credentials: 'include',
+    }
+  );
+  if (!response.ok) throw new Error('Failed to activate workflow');
+}
+
+/**
+ * Deactivate workflow
+ */
+export async function deactivateWorkflow(
+  workflowId: string,
+  tenantId: string
+): Promise<void> {
+  const response = await fetch(
+    `${API_BASE}/api/tenant/automation/workflows/${workflowId}/deactivate?tenantId=${tenantId}`,
+    {
+      method: 'POST',
+      credentials: 'include',
+    }
+  );
+  if (!response.ok) throw new Error('Failed to deactivate workflow');
+}
+
+/**
+ * Test workflow (detail page version)
+ */
+export async function testWorkflowDetail(
+  workflowId: string,
+  tenantId: string,
+  testData: any
+): Promise<any> {
+  const response = await fetch(
+    `${API_BASE}/api/tenant/automation/workflows/${workflowId}/test?tenantId=${tenantId}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ testData }),
+    }
+  );
+  if (!response.ok) throw new Error('Failed to test workflow');
+  return response.json();
+}
+
+/**
+ * Update workflow basic info (name and description only)
+ */
+export async function updateWorkflowBasicInfo(
+  workflowId: string,
+  tenantId: string,
+  name: string,
+  description: string
+): Promise<any> {
+  const response = await fetch(
+    `${API_BASE}/api/tenant/automation/workflows/${workflowId}?tenantId=${tenantId}`,
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ name, description }),
+    }
+  );
+  if (!response.ok) throw new Error('Failed to update workflow');
+  return response.json();
+}

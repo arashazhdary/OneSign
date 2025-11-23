@@ -7,6 +7,7 @@ import { getTenantId } from '@/lib/tenant-context';
 import LoadingOverlay from '@/app/components/LoadingOverlay';
 import Modal from '@/app/components/Modal';
 import StatusBadge from '@/app/components/StatusBadge';
+import { getWorkflow, getWorkflowRuns, getWorkflowLogs, activateWorkflow, deactivateWorkflow, testWorkflowDetail, updateWorkflowBasicInfo } from '@/lib/api/automation';
 
 interface Workflow {
   id: string;
@@ -125,18 +126,7 @@ export default function WorkflowDetailPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/automation/workflows/${workflowId}?tenantId=${tenantId}`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch workflow');
-      }
-
-      const data = await response.json();
+      const data = await getWorkflow(workflowId, tenantId);
       setWorkflow(data);
       setEditName(data.name);
       setEditDescription(data.description);
@@ -149,17 +139,8 @@ export default function WorkflowDetailPage() {
 
   const fetchRuns = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/automation/workflows/${workflowId}/runs?tenantId=${tenantId}&pageSize=20`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setRuns(data);
-      }
+      const data = await getWorkflowRuns(workflowId, tenantId, 20);
+      setRuns(data);
     } catch (err) {
       console.error('Failed to fetch runs:', err);
     }
@@ -167,17 +148,8 @@ export default function WorkflowDetailPage() {
 
   const fetchLogs = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/automation/workflows/${workflowId}/logs?tenantId=${tenantId}&pageSize=50`,
-        {
-          credentials: 'include',
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        setLogs(data);
-      }
+      const data = await getWorkflowLogs(workflowId, tenantId, 50);
+      setLogs(data);
     } catch (err) {
       console.error('Failed to fetch logs:', err);
     }
@@ -191,16 +163,10 @@ export default function WorkflowDetailPage() {
     setSuccess('');
     try {
       const action = workflow.isActive ? 'deactivate' : 'activate';
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/automation/workflows/${workflowId}/${action}?tenantId=${tenantId}`,
-        {
-          method: 'POST',
-          credentials: 'include',
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`Failed to ${action} workflow`);
+      if (workflow.isActive) {
+        await deactivateWorkflow(workflowId, tenantId);
+      } else {
+        await activateWorkflow(workflowId, tenantId);
       }
 
       setSuccess(`Workflow ${action}d successfully`);
@@ -224,21 +190,7 @@ export default function WorkflowDetailPage() {
         throw new Error('Invalid JSON format');
       }
 
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/automation/workflows/${workflowId}/test?tenantId=${tenantId}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ testData: parsedData }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to test workflow');
-      }
-
-      const result = await response.json();
+      await testWorkflowDetail(workflowId, tenantId, parsedData);
       setSuccess('Workflow test completed successfully');
       setShowTestModal(false);
       setActiveTab('runs');
@@ -255,22 +207,7 @@ export default function WorkflowDetailPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(
-        `http://localhost:7000/api/tenant/automation/workflows/${workflowId}?tenantId=${tenantId}`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            name: editName,
-            description: editDescription,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to update workflow');
-      }
+      await updateWorkflowBasicInfo(workflowId, tenantId, editName, editDescription);
 
       setSuccess('Workflow updated successfully');
       setShowEditModal(false);

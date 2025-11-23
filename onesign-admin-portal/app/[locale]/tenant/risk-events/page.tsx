@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { securityService } from '@/lib/api/services';
 
 interface RiskEvent {
   id: string;
@@ -49,24 +50,16 @@ export default function RiskEventsPage() {
     setLoading(true);
     setError('');
     try {
-      let url = `http://localhost:7000/api/tenant/risk-events?tenantId=${tenantId}&pageNumber=${pageNumber}&pageSize=${pageSize}`;
-      if (eventTypeFilter !== '') {
-        url += `&eventType=${eventTypeFilter}`;
-      }
-      if (riskLevelFilter !== '') {
-        url += `&riskLevel=${riskLevelFilter}`;
-      }
+      const params: any = {
+        tenantId,
+        pageNumber,
+        pageSize
+      };
+      if (eventTypeFilter !== '') params.eventType = eventTypeFilter;
+      if (riskLevelFilter !== '') params.riskLevel = riskLevelFilter;
 
-      const response = await fetch(url, {
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch risk events');
-      }
-
-      const data = await response.json();
-      setEvents(data);
+      const data = await securityService.getRiskEvents(params);
+      setEvents(data.items || data || []);
     } catch (err) {
       setError(t('common.error'));
     } finally {
@@ -109,24 +102,15 @@ export default function RiskEventsPage() {
     setError('');
     setSuccess('');
     try {
-      const response = await fetch(`http://localhost:7000/api/tenant/risk-events?tenantId=${tenantId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          userId: newEventUserId,
-          eventType: newEventType,
-          riskLevel: newRiskLevel,
-          ipAddress: newIpAddress || null,
-          userAgent: newUserAgent || null,
-          location: newLocation || null,
-          details: newDetails || null,
-        }),
+      await securityService.createRiskEvent(tenantId, {
+        userId: newEventUserId,
+        eventType: newEventType,
+        riskLevel: newRiskLevel,
+        ipAddress: newIpAddress || null,
+        userAgent: newUserAgent || null,
+        location: newLocation || null,
+        details: newDetails || null,
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to create risk event');
-      }
 
       setSuccess(t('riskEvents.eventCreated') || 'Risk event created successfully');
       setShowCreateModal(false);

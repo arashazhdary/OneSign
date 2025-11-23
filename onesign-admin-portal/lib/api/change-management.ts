@@ -466,3 +466,202 @@ export const ENTITY_TYPES = [
   'Federation',
   'Tenant',
 ];
+
+// Additional DTOs for the new endpoints
+
+export interface PendingApproval {
+  id: string;
+  changeSetId: string;
+  changeSetName: string;
+  requestedBy: string;
+  requestedAt: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  targetModule: string;
+}
+
+export interface ApprovalRule {
+  id: string;
+  name: string;
+  targetModule: string;
+  requiredApprovers: number;
+  approverRoles: string[];
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface ImpactAnalysis {
+  riskLevel: 'Low' | 'Medium' | 'High' | 'Critical';
+  affectedUsers: number;
+  affectedGroups: number;
+  affectedApplications: number;
+  dependencies: Array<{
+    type: string;
+    name: string;
+    impact: string;
+  }>;
+  recommendations: string[];
+}
+
+export interface ChangeSetTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  targetModule: string;
+  templateJson: string;
+  usageCount: number;
+  createdAt: string;
+}
+
+// Additional API functions
+
+export async function getPendingApprovals(
+  tenantId: string,
+  userId: string,
+  params?: {
+    page?: number;
+    pageSize?: number;
+  }
+): Promise<PagedResult<PendingApproval>> {
+  const searchParams = new URLSearchParams({ tenantId, userId });
+  if (params?.page) searchParams.append('page', params.page.toString());
+  if (params?.pageSize) searchParams.append('pageSize', params.pageSize.toString());
+
+  const response = await fetch(
+    `${API_BASE}/api/tenant/change-management/pending-approvals?${searchParams}`
+  );
+  if (!response.ok) throw new Error('Failed to fetch pending approvals');
+  return response.json();
+}
+
+export async function getApprovalRules(tenantId: string): Promise<ApprovalRule[]> {
+  const response = await fetch(
+    `${API_BASE}/api/tenant/change-management/approval-rules?tenantId=${tenantId}`
+  );
+  if (!response.ok) throw new Error('Failed to fetch approval rules');
+  return response.json();
+}
+
+export async function getApprovals(id: string, tenantId: string): Promise<ChangeApprovalDto[]> {
+  const response = await fetch(
+    `${API_BASE}/api/tenant/changesets/${id}/approvals?tenantId=${tenantId}`
+  );
+  if (!response.ok) throw new Error('Failed to fetch approvals');
+  return response.json();
+}
+
+export async function getImpactAnalysis(id: string, tenantId: string): Promise<ImpactAnalysis> {
+  const response = await fetch(
+    `${API_BASE}/api/tenant/changesets/${id}/impact?tenantId=${tenantId}`
+  );
+  if (!response.ok) throw new Error('Failed to fetch impact analysis');
+  return response.json();
+}
+
+export async function cloneChangeSet(
+  id: string,
+  data: {
+    tenantId: string;
+    userId: string;
+    name: string;
+  }
+): Promise<ChangeSetDetailDto> {
+  const response = await fetch(`${API_BASE}/api/tenant/changesets/${id}/clone`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error('Failed to clone change set');
+  return response.json();
+}
+
+export async function getChangeSetTemplates(tenantId: string): Promise<ChangeSetTemplate[]> {
+  const response = await fetch(
+    `${API_BASE}/api/tenant/changesets/templates?tenantId=${tenantId}`
+  );
+  if (!response.ok) throw new Error('Failed to fetch change set templates');
+  return response.json();
+}
+
+export async function createApprovalRule(data: {
+  tenantId: string;
+  name: string;
+  targetModule: string;
+  requiredApprovers: number;
+  approverRoles: string[];
+  isActive: boolean;
+}): Promise<ApprovalRule> {
+  const response = await fetch(`${API_BASE}/api/tenant/change-management/approval-rules`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error('Failed to create approval rule');
+  return response.json();
+}
+
+export async function toggleApprovalRule(
+  id: string,
+  data: {
+    tenantId: string;
+    isActive: boolean;
+  }
+): Promise<void> {
+  const response = await fetch(
+    `${API_BASE}/api/tenant/change-management/approval-rules/${id}/toggle`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }
+  );
+  if (!response.ok) throw new Error('Failed to toggle approval rule');
+}
+
+export async function approveApproval(
+  id: string,
+  data: {
+    tenantId: string;
+    userId: string;
+    comment: string;
+  }
+): Promise<void> {
+  const response = await fetch(
+    `${API_BASE}/api/tenant/change-management/approvals/${id}/approve`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }
+  );
+  if (!response.ok) throw new Error('Failed to approve');
+}
+
+export async function rejectApproval(
+  id: string,
+  data: {
+    tenantId: string;
+    userId: string;
+    reason: string;
+  }
+): Promise<void> {
+  const response = await fetch(
+    `${API_BASE}/api/tenant/change-management/approvals/${id}/reject`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }
+  );
+  if (!response.ok) throw new Error('Failed to reject');
+}
+
+export async function deleteChangeSet(id: string, tenantId: string): Promise<void> {
+  const response = await fetch(
+    `${API_BASE}/api/tenant/change-management/change-sets/${id}?tenantId=${tenantId}`,
+    {
+      method: 'DELETE',
+    }
+  );
+  if (!response.ok) throw new Error('Failed to delete change set');
+}
