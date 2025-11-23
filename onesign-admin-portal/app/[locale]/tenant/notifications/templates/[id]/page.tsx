@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { useAuth } from '@/app/contexts/AuthContext';
 import {
   NotificationTemplateDto,
   NotificationType,
@@ -27,6 +28,7 @@ type Tab = 'editor' | 'preview' | 'test' | 'versions' | 'settings';
 export default function NotificationTemplateEditorPage() {
   const params = useParams();
   const router = useRouter();
+  const { user } = useAuth();
   const templateId = params.id as string;
   const t = useTranslations();
   const [activeTab, setActiveTab] = useState<Tab>('editor');
@@ -189,7 +191,7 @@ export default function NotificationTemplateEditorPage() {
       // Update template via API
       await updateNotificationTemplate(templateId, {
         tenantId,
-        userId: '00000000-0000-0000-0000-000000000001', // TODO: Get from user context
+        userId: user?.id || '00000000-0000-0000-0000-000000000001',
         name,
         description,
         category,

@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { platformService } from '@/lib/api/services/platform.service';
 
 export interface Tenant {
   id: string;
@@ -42,27 +43,22 @@ export function TenantProvider({ children }: TenantProviderProps) {
   useEffect(() => {
     const loadTenants = async () => {
       try {
-        // TODO: Replace with actual API call
-        const response = await fetch('/api/tenants');
-        if (!response.ok) {
-          throw new Error('Failed to fetch tenants');
-        }
-
-        const data = await response.json();
-        setTenants(data);
+        // Use platformService to fetch tenants
+        const data = await platformService.getTenants();
+        setTenants(data as Tenant[]);
 
         // Load current tenant from localStorage
         const savedTenantId = localStorage.getItem('currentTenantId');
         if (savedTenantId) {
-          const tenant = data.find((t: Tenant) => t.id === savedTenantId);
+          const tenant = data.find((t) => t.id === savedTenantId);
           if (tenant) {
-            setCurrentTenant(tenant);
+            setCurrentTenant(tenant as Tenant);
           } else if (data.length > 0) {
-            setCurrentTenant(data[0]);
+            setCurrentTenant(data[0] as Tenant);
             localStorage.setItem('currentTenantId', data[0].id);
           }
         } else if (data.length > 0) {
-          setCurrentTenant(data[0]);
+          setCurrentTenant(data[0] as Tenant);
           localStorage.setItem('currentTenantId', data[0].id);
         }
       } catch (error) {
@@ -84,13 +80,8 @@ export function TenantProvider({ children }: TenantProviderProps) {
           throw new Error('Tenant not found');
         }
 
-        // TODO: Call API to switch tenant if needed
-        await fetch('/api/tenants/switch', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tenantId }),
-        });
-
+        // No specific API needed for switching - just update local state
+        // The tenant context is managed on the client side
         setCurrentTenant(tenant);
         localStorage.setItem('currentTenantId', tenantId);
       } catch (error) {
@@ -106,20 +97,15 @@ export function TenantProvider({ children }: TenantProviderProps) {
   const refreshTenants = useCallback(async () => {
     setIsLoading(true);
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch('/api/tenants');
-      if (!response.ok) {
-        throw new Error('Failed to fetch tenants');
-      }
-
-      const data = await response.json();
-      setTenants(data);
+      // Use platformService to refresh tenants
+      const data = await platformService.getTenants();
+      setTenants(data as Tenant[]);
 
       // Update current tenant if it still exists
       if (currentTenant) {
-        const updatedTenant = data.find((t: Tenant) => t.id === currentTenant.id);
+        const updatedTenant = data.find((t) => t.id === currentTenant.id);
         if (updatedTenant) {
-          setCurrentTenant(updatedTenant);
+          setCurrentTenant(updatedTenant as Tenant);
         }
       }
     } catch (error) {

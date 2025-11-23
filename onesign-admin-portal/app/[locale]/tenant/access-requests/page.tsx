@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { useAuth } from '@/app/contexts/AuthContext';
 import LoadingOverlay from '@/app/components/LoadingOverlay';
 import Modal from '@/app/components/Modal';
 import StatusBadge from '@/app/components/StatusBadge';
@@ -15,6 +16,7 @@ type Tab = 'pending' | 'approved' | 'rejected' | 'all';
 
 export default function AccessRequestsPage() {
   const t = useTranslations();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('pending');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -40,6 +42,7 @@ export default function AccessRequestsPage() {
   const pageSize = 20;
 
   const tenantId = getTenantId();
+  const userId = user?.id || '00000000-0000-0000-0000-000000000001';
 
   useEffect(() => {
     fetchRequests();
@@ -77,7 +80,7 @@ export default function AccessRequestsPage() {
     try {
       await AccessRequestsAPI.createAccessRequest({
         tenantId,
-        userId: 'current-user-id', // TODO: Get from auth context
+        userId,
         requestType: 'ApplicationAccess',
         targetResourceId: resourceId,
         targetResourceType: resourceType,
@@ -106,13 +109,13 @@ export default function AccessRequestsPage() {
       if (approve) {
         await AccessRequestsAPI.approveAccessRequest(selectedRequest.id, {
           tenantId,
-          userId: 'current-user-id', // TODO: Get from auth context
+          userId,
           comments: reviewerComment || undefined,
         });
       } else {
         await AccessRequestsAPI.rejectAccessRequest(selectedRequest.id, {
           tenantId,
-          userId: 'current-user-id', // TODO: Get from auth context
+          userId,
           comments: reviewerComment,
         });
       }
