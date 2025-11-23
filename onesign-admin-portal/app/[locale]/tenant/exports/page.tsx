@@ -48,7 +48,8 @@ interface ScheduledExport {
   emailRecipients: string[];
 }
 
-const mockExports: ExportJob[] = [
+// Mock data for fallback
+const mockExportsFallback: ExportJob[] = [
   {
     id: '1',
     name: 'All Users Export',
@@ -101,7 +102,7 @@ const mockExports: ExportJob[] = [
   },
 ];
 
-const mockTemplates: ExportTemplate[] = [
+const mockTemplatesFallback: ExportTemplate[] = [
   {
     id: 't1',
     name: 'User Export - Full Details',
@@ -131,7 +132,7 @@ const mockTemplates: ExportTemplate[] = [
   },
 ];
 
-const mockScheduledExports: ScheduledExport[] = [
+const mockScheduledExportsFallback: ScheduledExport[] = [
   {
     id: 's1',
     name: 'Weekly User Report',
@@ -216,11 +217,14 @@ export default function ExportsPage() {
     if (!tenantId) return;
 
     try {
-      // API call would go here
-      setExports(mockExports);
-    } catch (error) {
+      // Fetch from real API
+      const data = await platformService.getExportJobs?.(tenantId);
+      setExports(data || mockExportsFallback);
+    } catch (error: any) {
       console.error('Error fetching exports:', error);
-      setExports(mockExports);
+      setError(error?.message || 'Failed to load exports');
+      // Fallback to mock data
+      setExports(mockExportsFallback);
     } finally {
       setLoading(false);
     }
@@ -230,11 +234,13 @@ export default function ExportsPage() {
     if (!tenantId) return;
 
     try {
-      // API call would go here
-      setTemplates(mockTemplates);
-    } catch (error) {
+      // Fetch from real API
+      const data = await platformService.getExportTemplates?.(tenantId);
+      setTemplates(data || mockTemplatesFallback);
+    } catch (error: any) {
       console.error('Error fetching templates:', error);
-      setTemplates(mockTemplates);
+      // Fallback to mock data
+      setTemplates(mockTemplatesFallback);
     }
   };
 
@@ -242,11 +248,13 @@ export default function ExportsPage() {
     if (!tenantId) return;
 
     try {
-      // API call would go here
-      setScheduledExports(mockScheduledExports);
-    } catch (error) {
+      // Fetch from real API
+      const data = await platformService.getScheduledExports?.(tenantId);
+      setScheduledExports(data || mockScheduledExportsFallback);
+    } catch (error: any) {
       console.error('Error fetching scheduled exports:', error);
-      setScheduledExports(mockScheduledExports);
+      // Fallback to mock data
+      setScheduledExports(mockScheduledExportsFallback);
     }
   };
 

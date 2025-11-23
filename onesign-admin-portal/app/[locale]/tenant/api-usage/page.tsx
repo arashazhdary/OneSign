@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
-import { platformService } from '@/lib/api/services';
+import { billingService } from '@/lib/api/services';
 
 interface ApiUsageStats {
   period: string;
@@ -37,7 +37,8 @@ interface UsageChartData {
   errors: number;
 }
 
-const mockStats: ApiUsageStats[] = [
+// Mock data for fallback
+const mockStatsFallback: ApiUsageStats[] = [
   {
     period: 'Today',
     totalCalls: 12543,
@@ -64,7 +65,7 @@ const mockStats: ApiUsageStats[] = [
   },
 ];
 
-const mockEndpoints: EndpointUsage[] = [
+const mockEndpointsFallback: EndpointUsage[] = [
   {
     endpoint: '/api/tenant/users',
     method: 'GET',
@@ -107,7 +108,7 @@ const mockEndpoints: EndpointUsage[] = [
   },
 ];
 
-const mockRateLimits: RateLimit[] = [
+const mockRateLimitsFallback: RateLimit[] = [
   {
     name: 'API Calls per Hour',
     limit: 10000,
@@ -131,7 +132,7 @@ const mockRateLimits: RateLimit[] = [
   },
 ];
 
-const mockChartData: UsageChartData[] = [
+const mockChartDataFallback: UsageChartData[] = [
   { date: '2025-11-17', calls: 11234, errors: 145 },
   { date: '2025-11-18', calls: 12456, errors: 178 },
   { date: '2025-11-19', calls: 13123, errors: 203 },
@@ -172,17 +173,58 @@ export default function ApiUsagePage() {
     if (!tenantId) return;
 
     try {
-      // API calls would go here
-      setStats(mockStats);
-      setEndpoints(mockEndpoints);
-      setRateLimits(mockRateLimits);
-      setChartData(mockChartData);
-    } catch (error) {
+      // Fetch from real API
+      const usageData = await billingService.getUsageMetrics(tenantId);
+
+      // Map API response to component state
+      if (usageData) {
+        // Transform usage metrics to stats format
+        const transformedStats: ApiUsageStats[] = [
+          {
+            period: 'Today',
+            totalCalls: usageData.apiCalls?.today || 0,
+            successCalls: usageData.apiCalls?.today - (usageData.errors?.today || 0) || 0,
+            errorCalls: usageData.errors?.today || 0,
+            avgResponseTime: usageData.avgResponseTime?.today || 0,
+            totalCost: usageData.cost?.today || 0,
+          },
+          {
+            period: 'This Week',
+            totalCalls: usageData.apiCalls?.week || 0,
+            successCalls: usageData.apiCalls?.week - (usageData.errors?.week || 0) || 0,
+            errorCalls: usageData.errors?.week || 0,
+            avgResponseTime: usageData.avgResponseTime?.week || 0,
+            totalCost: usageData.cost?.week || 0,
+          },
+          {
+            period: 'This Month',
+            totalCalls: usageData.apiCalls?.month || 0,
+            successCalls: usageData.apiCalls?.month - (usageData.errors?.month || 0) || 0,
+            errorCalls: usageData.errors?.month || 0,
+            avgResponseTime: usageData.avgResponseTime?.month || 0,
+            totalCost: usageData.cost?.month || 0,
+          },
+        ];
+
+        setStats(transformedStats.length > 0 ? transformedStats : mockStatsFallback);
+        setEndpoints(usageData.endpoints || mockEndpointsFallback);
+        setRateLimits(usageData.rateLimits || mockRateLimitsFallback);
+        setChartData(usageData.chartData || mockChartDataFallback);
+      } else {
+        // Fallback to mock data if no data returned
+        setStats(mockStatsFallback);
+        setEndpoints(mockEndpointsFallback);
+        setRateLimits(mockRateLimitsFallback);
+        setChartData(mockChartDataFallback);
+      }
+    } catch (error: any) {
       console.error('Error fetching API usage data:', error);
-      setStats(mockStats);
-      setEndpoints(mockEndpoints);
-      setRateLimits(mockRateLimits);
-      setChartData(mockChartData);
+      setError(error?.message || 'Failed to load API usage data');
+      // Fallback to mock data on error
+      setStats(mockStatsFallback);
+      setEndpoints(mockEndpointsFallback);
+      setRateLimits(mockRateLimitsFallback);
+      setChartData(mockChartDataFallback);
     } finally {
       setLoading(false);
     }

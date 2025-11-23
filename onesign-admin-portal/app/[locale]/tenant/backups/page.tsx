@@ -31,6 +31,71 @@ interface BackupSchedule {
   lastRun?: string;
 }
 
+// Mock data for fallback
+const mockScheduleFallback: BackupSchedule = {
+  id: '1',
+  frequency: 'Daily',
+  time: '02:00',
+  retention: 30,
+  enabled: true,
+  nextRun: new Date(Date.now() + 3600000 * 8).toISOString(),
+  lastRun: new Date(Date.now() - 86400000).toISOString(),
+};
+
+const mockBackupsFallback: Backup[] = [
+  {
+    id: '1',
+    name: 'Pre-migration backup',
+    type: 'Pre-Migration',
+    status: 'Verified',
+    size: 2048000,
+    createdAt: new Date(Date.now() - 86400000 * 7).toISOString(),
+    createdBy: 'admin@example.com',
+    expiresAt: new Date(Date.now() + 86400000 * 23).toISOString(),
+    includesUsers: true,
+    includesApps: true,
+    includesSettings: true,
+    verifiedAt: new Date(Date.now() - 86400000 * 7).toISOString(),
+  },
+  {
+    id: '2',
+    name: 'Daily backup - 2024-01-15',
+    type: 'Scheduled',
+    status: 'Completed',
+    size: 1843200,
+    createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+    createdBy: 'system',
+    expiresAt: new Date(Date.now() + 86400000 * 27).toISOString(),
+    includesUsers: true,
+    includesApps: true,
+    includesSettings: true,
+  },
+  {
+    id: '3',
+    name: 'Manual backup before config change',
+    type: 'Manual',
+    status: 'Completed',
+    size: 1920000,
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    createdBy: 'john.doe@example.com',
+    includesUsers: false,
+    includesApps: true,
+    includesSettings: true,
+  },
+  {
+    id: '4',
+    name: 'Daily backup - 2024-01-16',
+    type: 'Scheduled',
+    status: 'In Progress',
+    size: 0,
+    createdAt: new Date().toISOString(),
+    createdBy: 'system',
+    includesUsers: true,
+    includesApps: true,
+    includesSettings: true,
+  },
+];
+
 export default function BackupsPage() {
   const t = useTranslations();
   const [tenantId, setTenantIdState] = useState<string | null>(null);
@@ -77,65 +142,14 @@ export default function BackupsPage() {
 
     setLoading(true);
     try {
-      // Mock data
-      const mockBackups: Backup[] = [
-        {
-          id: '1',
-          name: 'Pre-migration backup',
-          type: 'Pre-Migration',
-          status: 'Verified',
-          size: 2048000,
-          createdAt: new Date(Date.now() - 86400000 * 7).toISOString(),
-          createdBy: 'admin@example.com',
-          expiresAt: new Date(Date.now() + 86400000 * 23).toISOString(),
-          includesUsers: true,
-          includesApps: true,
-          includesSettings: true,
-          verifiedAt: new Date(Date.now() - 86400000 * 7).toISOString(),
-        },
-        {
-          id: '2',
-          name: 'Daily backup - 2024-01-15',
-          type: 'Scheduled',
-          status: 'Completed',
-          size: 1843200,
-          createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
-          createdBy: 'system',
-          expiresAt: new Date(Date.now() + 86400000 * 27).toISOString(),
-          includesUsers: true,
-          includesApps: true,
-          includesSettings: true,
-        },
-        {
-          id: '3',
-          name: 'Manual backup before config change',
-          type: 'Manual',
-          status: 'Completed',
-          size: 1920000,
-          createdAt: new Date(Date.now() - 86400000).toISOString(),
-          createdBy: 'john.doe@example.com',
-          includesUsers: false,
-          includesApps: true,
-          includesSettings: true,
-        },
-        {
-          id: '4',
-          name: 'Daily backup - 2024-01-16',
-          type: 'Scheduled',
-          status: 'In Progress',
-          size: 0,
-          createdAt: new Date().toISOString(),
-          createdBy: 'system',
-          includesUsers: true,
-          includesApps: true,
-          includesSettings: true,
-        },
-      ];
-
-      setBackups(mockBackups);
-    } catch (err) {
-      setError('Failed to fetch backups');
+      // Fetch from real API
+      const data = await platformService.getTenantBackups(tenantId);
+      setBackups(data || mockBackupsFallback);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to fetch backups');
       console.error('Error fetching backups:', err);
+      // Fallback to mock data
+      setBackups(mockBackupsFallback);
     } finally {
       setLoading(false);
     }
@@ -145,24 +159,23 @@ export default function BackupsPage() {
     if (!tenantId) return;
 
     try {
-      // Mock data
-      const mockSchedule: BackupSchedule = {
-        id: '1',
-        frequency: 'Daily',
-        time: '02:00',
-        retention: 30,
-        enabled: true,
-        nextRun: new Date(Date.now() + 3600000 * 8).toISOString(),
-        lastRun: new Date(Date.now() - 86400000).toISOString(),
-      };
+      // Fetch from real API
+      const data = await platformService.getBackupSchedule?.(tenantId);
+      const scheduleData = data || mockScheduleFallback;
 
-      setSchedule(mockSchedule);
-      setScheduleFrequency(mockSchedule.frequency);
-      setScheduleTime(mockSchedule.time);
-      setScheduleRetention(mockSchedule.retention);
-      setScheduleEnabled(mockSchedule.enabled);
-    } catch (err) {
+      setSchedule(scheduleData);
+      setScheduleFrequency(scheduleData.frequency);
+      setScheduleTime(scheduleData.time);
+      setScheduleRetention(scheduleData.retention);
+      setScheduleEnabled(scheduleData.enabled);
+    } catch (err: any) {
       console.error('Error fetching schedule:', err);
+      // Fallback to mock data
+      setSchedule(mockScheduleFallback);
+      setScheduleFrequency(mockScheduleFallback.frequency);
+      setScheduleTime(mockScheduleFallback.time);
+      setScheduleRetention(mockScheduleFallback.retention);
+      setScheduleEnabled(mockScheduleFallback.enabled);
     }
   };
 

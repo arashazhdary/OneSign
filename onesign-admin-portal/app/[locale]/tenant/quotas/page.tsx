@@ -61,8 +61,21 @@ export default function QuotasPage() {
     setError('');
 
     try {
-      // Mock data
-      const mockQuotas: Quota[] = [
+      // Fetch from real API
+      const quotaData = await billingService.getQuotaStatus(tenantId);
+      setQuotas(quotaData.quotas || mockQuotasFallback);
+    } catch (err: any) {
+      console.error('Error fetching quotas:', err);
+      setError(err?.message || 'Failed to load quotas');
+      // Fallback to mock data
+      setQuotas(mockQuotasFallback);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Mock data for fallback
+  const mockQuotasFallback: Quota[] = [
         {
           id: '1',
           resourceType: 'users',
@@ -146,15 +159,6 @@ export default function QuotasPage() {
           criticalThreshold: 95,
         },
       ];
-
-      setQuotas(mockQuotas);
-    } catch (err) {
-      setError('Failed to fetch quotas');
-      console.error('Error fetching quotas:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchQuotaHistory = (quota: Quota) => {
     // Mock historical data

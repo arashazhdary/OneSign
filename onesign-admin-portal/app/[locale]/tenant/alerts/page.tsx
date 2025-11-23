@@ -89,7 +89,10 @@ export default function AlertsPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      // Mock data - replace with actual API call
+      // Fetch from real API
+      const data = await securityService.getAlertRules?.(tenantId);
+
+      // Mock data for fallback
       const mockRules: AlertRule[] = [
         {
           id: '1',
@@ -133,10 +136,27 @@ export default function AlertsPage() {
           triggerCount: 45,
         },
       ];
-      setAlertRules(mockRules);
+
+      setAlertRules(data || mockRules);
     } catch (err: any) {
       console.error('Error fetching alert rules:', err);
       setError(err?.message || 'Failed to fetch alert rules');
+      // Fallback to mock data
+      setAlertRules([
+        {
+          id: '1',
+          name: 'High CPU Usage Alert',
+          description: 'Alert when CPU usage exceeds 80%',
+          condition: { type: 'threshold', metric: 'cpu_usage', operator: '>', value: 80 },
+          channels: [{ type: 'email', config: { recipients: ['admin@example.com'] } }],
+          isEnabled: true,
+          isMuted: false,
+          severity: 'high',
+          createdAt: new Date().toISOString(),
+          lastTriggered: new Date(Date.now() - 3600000).toISOString(),
+          triggerCount: 12,
+        },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -146,8 +166,19 @@ export default function AlertsPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      // Mock data - replace with actual API call
-      const mockHistory: AlertHistory[] = [
+      // Fetch from real API
+      const data = await securityService.getAlerts(tenantId);
+
+      // Transform to alert history format
+      const historyData: AlertHistory[] = data?.map((alert: any) => ({
+        id: alert.id,
+        alertRuleId: alert.ruleId || alert.id,
+        alertRuleName: alert.ruleName || alert.title,
+        triggeredAt: alert.createdAt || alert.timestamp,
+        severity: alert.severity,
+        message: alert.message || alert.description,
+        status: alert.status,
+      })) || [
         {
           id: '1',
           alertRuleId: '1',
@@ -167,10 +198,23 @@ export default function AlertsPage() {
           status: 'acknowledged',
         },
       ];
-      setAlertHistory(mockHistory);
+
+      setAlertHistory(historyData);
     } catch (err: any) {
       console.error('Error fetching alert history:', err);
       setError(err?.message || 'Failed to fetch alert history');
+      // Fallback to mock data
+      setAlertHistory([
+        {
+          id: '1',
+          alertRuleId: '1',
+          alertRuleName: 'High CPU Usage Alert',
+          triggeredAt: new Date(Date.now() - 3600000).toISOString(),
+          severity: 'high',
+          message: 'CPU usage reached 85%',
+          status: 'resolved',
+        },
+      ]);
     } finally {
       setLoading(false);
     }

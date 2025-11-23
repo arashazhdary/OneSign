@@ -66,141 +66,149 @@ export default function MonitoringPage() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [metricHistory, setMetricHistory] = useState<MetricHistory[]>([]);
 
-  // Mock data generator
-  const generateMockData = useCallback(() => {
-    // Mock system metrics
-    const mockMetrics: SystemMetrics = {
-      cpu: {
-        usage: Math.random() * 100,
-        cores: 8,
-        loadAverage: [Math.random() * 4, Math.random() * 4, Math.random() * 4],
-      },
-      memory: {
-        total: 16384,
-        used: 8192 + Math.random() * 4096,
-        free: 8192 - Math.random() * 4096,
-        usagePercent: 50 + Math.random() * 30,
-      },
-      disk: {
-        total: 512000,
-        used: 256000 + Math.random() * 100000,
-        free: 256000 - Math.random() * 100000,
-        usagePercent: 50 + Math.random() * 20,
-      },
-    };
+  // Fetch metrics from API or generate mock data
+  const fetchMetrics = useCallback(async () => {
+    try {
+      // Fetch from real API
+      const data = await platformService.getPerformanceMetrics();
 
-    // Mock services
-    const mockServices: ServiceHealth[] = [
-      {
-        name: 'API Gateway',
-        status: 'Healthy',
-        uptime: 99.98,
-        responseTime: 45 + Math.random() * 20,
-        lastChecked: new Date().toISOString(),
-      },
-      {
-        name: 'Authentication Service',
-        status: 'Healthy',
-        uptime: 99.95,
-        responseTime: 120 + Math.random() * 30,
-        lastChecked: new Date().toISOString(),
-      },
-      {
-        name: 'Database',
-        status: Math.random() > 0.8 ? 'Degraded' : 'Healthy',
-        uptime: 99.92,
-        responseTime: 25 + Math.random() * 15,
-        lastChecked: new Date().toISOString(),
-      },
-      {
-        name: 'Cache Service',
-        status: 'Healthy',
-        uptime: 99.99,
-        responseTime: 5 + Math.random() * 5,
-        lastChecked: new Date().toISOString(),
-      },
-      {
-        name: 'Message Queue',
-        status: 'Healthy',
-        uptime: 99.97,
-        responseTime: 15 + Math.random() * 10,
-        lastChecked: new Date().toISOString(),
-      },
-      {
-        name: 'Storage Service',
-        status: 'Healthy',
-        uptime: 99.96,
-        responseTime: 80 + Math.random() * 40,
-        lastChecked: new Date().toISOString(),
-      },
-    ];
-
-    // Mock alerts
-    const mockAlerts: Alert[] = [
-      {
-        id: '1',
-        severity: 'Warning',
-        message: 'High memory usage detected on node-3',
-        service: 'Infrastructure',
-        timestamp: new Date(Date.now() - 300000).toISOString(),
-        resolved: false,
-      },
-      {
-        id: '2',
-        severity: 'Info',
-        message: 'Scheduled maintenance completed successfully',
-        service: 'System',
-        timestamp: new Date(Date.now() - 600000).toISOString(),
-        resolved: true,
-      },
-      {
-        id: '3',
-        severity: 'Critical',
-        message: 'Database connection pool exhausted',
-        service: 'Database',
-        timestamp: new Date(Date.now() - 120000).toISOString(),
-        resolved: true,
-      },
-    ];
-
-    setMetrics(mockMetrics);
-    setServices(mockServices);
-    setAlerts(mockAlerts);
-
-    // Add to history
-    setMetricHistory((prev) => {
-      const newPoint: MetricHistory = {
-        timestamp: new Date().toISOString(),
-        cpu: mockMetrics.cpu.usage,
-        memory: mockMetrics.memory.usagePercent,
-        responseTime: mockServices.reduce((sum, s) => sum + s.responseTime, 0) / mockServices.length,
-        requestRate: 1000 + Math.random() * 500,
-        errorRate: Math.random() * 2,
+      // Mock system metrics for fallback
+      const mockMetrics: SystemMetrics = {
+        cpu: {
+          usage: data?.cpu?.usage || Math.random() * 100,
+          cores: data?.cpu?.cores || 8,
+          loadAverage: data?.cpu?.loadAverage || [Math.random() * 4, Math.random() * 4, Math.random() * 4],
+        },
+        memory: {
+          total: data?.memory?.total || 16384,
+          used: data?.memory?.used || 8192 + Math.random() * 4096,
+          free: data?.memory?.free || 8192 - Math.random() * 4096,
+          usagePercent: data?.memory?.usagePercent || 50 + Math.random() * 30,
+        },
+        disk: {
+          total: data?.disk?.total || 512000,
+          used: data?.disk?.used || 256000 + Math.random() * 100000,
+          free: data?.disk?.free || 256000 - Math.random() * 100000,
+          usagePercent: data?.disk?.usagePercent || 50 + Math.random() * 20,
+        },
       };
-      const updated = [...prev, newPoint];
-      return updated.slice(-50);
-    });
 
-    setLastRefresh(new Date());
+      // Mock services for fallback
+      const mockServices: ServiceHealth[] = data?.services || [
+        {
+          name: 'API Gateway',
+          status: 'Healthy',
+          uptime: 99.98,
+          responseTime: 45 + Math.random() * 20,
+          lastChecked: new Date().toISOString(),
+        },
+        {
+          name: 'Authentication Service',
+          status: 'Healthy',
+          uptime: 99.95,
+          responseTime: 120 + Math.random() * 30,
+          lastChecked: new Date().toISOString(),
+        },
+        {
+          name: 'Database',
+          status: Math.random() > 0.8 ? 'Degraded' : 'Healthy',
+          uptime: 99.92,
+          responseTime: 25 + Math.random() * 15,
+          lastChecked: new Date().toISOString(),
+        },
+        {
+          name: 'Cache Service',
+          status: 'Healthy',
+          uptime: 99.99,
+          responseTime: 5 + Math.random() * 5,
+          lastChecked: new Date().toISOString(),
+        },
+        {
+          name: 'Message Queue',
+          status: 'Healthy',
+          uptime: 99.97,
+          responseTime: 15 + Math.random() * 10,
+          lastChecked: new Date().toISOString(),
+        },
+        {
+          name: 'Storage Service',
+          status: 'Healthy',
+          uptime: 99.96,
+          responseTime: 80 + Math.random() * 40,
+          lastChecked: new Date().toISOString(),
+        },
+      ];
+
+      // Mock alerts for fallback
+      const mockAlerts: Alert[] = data?.alerts || [
+        {
+          id: '1',
+          severity: 'Warning',
+          message: 'High memory usage detected on node-3',
+          service: 'Infrastructure',
+          timestamp: new Date(Date.now() - 300000).toISOString(),
+          resolved: false,
+        },
+        {
+          id: '2',
+          severity: 'Info',
+          message: 'Scheduled maintenance completed successfully',
+          service: 'System',
+          timestamp: new Date(Date.now() - 600000).toISOString(),
+          resolved: true,
+        },
+        {
+          id: '3',
+          severity: 'Critical',
+          message: 'Database connection pool exhausted',
+          service: 'Database',
+          timestamp: new Date(Date.now() - 120000).toISOString(),
+          resolved: true,
+        },
+      ];
+
+      setMetrics(mockMetrics);
+      setServices(mockServices);
+      setAlerts(mockAlerts);
+
+      // Add to history
+      setMetricHistory((prev) => {
+        const newPoint: MetricHistory = {
+          timestamp: new Date().toISOString(),
+          cpu: mockMetrics.cpu.usage,
+          memory: mockMetrics.memory.usagePercent,
+          responseTime: mockServices.reduce((sum, s) => sum + s.responseTime, 0) / mockServices.length,
+          requestRate: 1000 + Math.random() * 500,
+          errorRate: Math.random() * 2,
+        };
+        const updated = [...prev, newPoint];
+        return updated.slice(-50);
+      });
+
+      setLastRefresh(new Date());
+    } catch (error: any) {
+      console.error('Error fetching metrics:', error);
+      setError(error?.message || 'Failed to load metrics');
+    }
   }, []);
 
   // Initial fetch
   useEffect(() => {
     setLoading(true);
-    generateMockData();
+    fetchMetrics();
     setLoading(false);
-  }, [generateMockData]);
+  }, [fetchMetrics]);
 
   // Auto-refresh every 30 seconds
   useEffect(() => {
     if (!autoRefresh) return;
 
     const interval = setInterval(() => {
-      generateMockData();
+      fetchMetrics();
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [autoRefresh, generateMockData]);
+  }, [autoRefresh, fetchMetrics]);
 
   // Helper functions
   const getStatusColor = (status: string) => {

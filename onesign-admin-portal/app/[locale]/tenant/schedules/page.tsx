@@ -99,8 +99,36 @@ export default function SchedulesPage() {
     setError('');
 
     try {
-      // Mock data
-      const mockSchedules: ScheduledJob[] = [
+      // Fetch from real API
+      const workflows = await automationService.getWorkflows(tenantId);
+      // Map workflows to ScheduledJob format
+      const mappedSchedules = workflows.map((w: any) => ({
+        id: w.id,
+        name: w.name,
+        description: w.description || '',
+        jobType: w.trigger?.type || 'custom',
+        cronExpression: w.trigger?.schedule || '0 0 * * *',
+        enabled: w.enabled,
+        nextRun: w.nextRun || new Date().toISOString(),
+        lastRun: w.lastRun,
+        lastStatus: w.lastStatus,
+        createdAt: w.createdAt,
+        createdBy: w.createdBy || 'system',
+        executionCount: w.executionCount || 0,
+      }));
+      setSchedules(mappedSchedules);
+    } catch (err: any) {
+      console.error('Error fetching schedules:', err);
+      setError(err?.message || 'Failed to load schedules');
+      // Fallback to mock data
+      setSchedules(mockSchedulesFallback);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Mock data for fallback
+  const mockSchedulesFallback: ScheduledJob[] = [
         {
           id: '1',
           name: 'Daily User Sync',

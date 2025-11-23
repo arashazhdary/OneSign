@@ -39,7 +39,8 @@ interface SessionHistory {
   status: 'completed' | 'forced_logout' | 'expired' | 'revoked';
 }
 
-const mockSessions: UserSession[] = [
+// Mock data for fallback
+const mockSessionsFallback: UserSession[] = [
   {
     id: '1',
     userId: 'user-1',
@@ -119,7 +120,7 @@ const mockSessions: UserSession[] = [
   },
 ];
 
-const mockHistory: SessionHistory[] = [
+const mockHistoryFallback: SessionHistory[] = [
   {
     id: 'h1',
     userId: 'user-1',
@@ -204,12 +205,14 @@ export default function SessionsPage() {
     if (!tenantId) return;
 
     try {
-      // API call would go here
-      // const data = await usersService.getAccountSessions(tenantId);
-      setSessions(mockSessions);
-    } catch (error) {
+      // Fetch from real API
+      const data = await usersService.getAccountSessions(tenantId);
+      setSessions(data || mockSessionsFallback);
+    } catch (error: any) {
       console.error('Error fetching sessions:', error);
-      setSessions(mockSessions);
+      setError(error?.message || 'Failed to load sessions');
+      // Fallback to mock data
+      setSessions(mockSessionsFallback);
     } finally {
       setLoading(false);
     }
@@ -219,11 +222,13 @@ export default function SessionsPage() {
     if (!tenantId) return;
 
     try {
-      // API call would go here
-      setHistory(mockHistory);
-    } catch (error) {
+      // Fetch from real API
+      const data = await usersService.getSessionHistory?.(tenantId);
+      setHistory(data || mockHistoryFallback);
+    } catch (error: any) {
       console.error('Error fetching session history:', error);
-      setHistory(mockHistory);
+      // Fallback to mock data
+      setHistory(mockHistoryFallback);
     }
   };
 

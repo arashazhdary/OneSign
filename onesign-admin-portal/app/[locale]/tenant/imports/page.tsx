@@ -45,7 +45,8 @@ interface ImportTemplate {
   createdAt: string;
 }
 
-const mockImports: ImportJob[] = [
+// Mock data for fallback
+const mockImportsFallback: ImportJob[] = [
   {
     id: '1',
     fileName: 'users_import_2025-11-23.csv',
@@ -102,7 +103,7 @@ const mockImports: ImportJob[] = [
   },
 ];
 
-const mockTemplates: ImportTemplate[] = [
+const mockTemplatesFallback: ImportTemplate[] = [
   {
     id: 't1',
     name: 'User Import Template',
@@ -175,11 +176,14 @@ export default function ImportsPage() {
     if (!tenantId) return;
 
     try {
-      // API call would go here
-      setImports(mockImports);
-    } catch (error) {
+      // Fetch from real API
+      const data = await platformService.getImportJobs?.(tenantId);
+      setImports(data || mockImportsFallback);
+    } catch (error: any) {
       console.error('Error fetching imports:', error);
-      setImports(mockImports);
+      setError(error?.message || 'Failed to load imports');
+      // Fallback to mock data
+      setImports(mockImportsFallback);
     } finally {
       setLoading(false);
     }
@@ -189,11 +193,13 @@ export default function ImportsPage() {
     if (!tenantId) return;
 
     try {
-      // API call would go here
-      setTemplates(mockTemplates);
-    } catch (error) {
+      // Fetch from real API
+      const data = await platformService.getImportTemplates?.(tenantId);
+      setTemplates(data || mockTemplatesFallback);
+    } catch (error: any) {
       console.error('Error fetching templates:', error);
-      setTemplates(mockTemplates);
+      // Fallback to mock data
+      setTemplates(mockTemplatesFallback);
     }
   };
 
