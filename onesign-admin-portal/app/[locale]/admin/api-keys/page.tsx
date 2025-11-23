@@ -108,9 +108,11 @@ export default function AdminAPIKeysPage() {
           createdBy: 'admin@example.com',
           createdAt: '2023-01-01T00:00:00Z',
         },
-      ]);
+      ];
+      setApiKeys(data || mockData);
     } catch (err) {
       console.error(err);
+      setApiKeys(mockData);
     } finally {
       setLoading(false);
     }

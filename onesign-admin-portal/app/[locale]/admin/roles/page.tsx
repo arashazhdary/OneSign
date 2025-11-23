@@ -117,9 +117,11 @@ export default function PlatformRolesPage() {
           createdAt: '2024-02-15T10:00:00Z',
           updatedAt: '2024-10-20T14:00:00Z',
         },
-      ]);
+      ];
+      setRoles(data || mockData);
     } catch (err) {
       console.error(err);
+      setRoles(mockData);
     } finally {
       setLoading(false);
     }

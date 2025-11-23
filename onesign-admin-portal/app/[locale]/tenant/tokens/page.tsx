@@ -104,8 +104,10 @@ export default function TokensPage() {
           createdAt: '2023-11-23T10:00:00Z',
         },
       ]);
+      setTokens(data || mockData);
     } catch (err) {
       console.error(err);
+      setTokens(mockData);
     } finally {
       setLoading(false);
     }

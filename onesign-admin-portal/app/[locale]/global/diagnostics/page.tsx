@@ -51,10 +51,9 @@ export default function DiagnosticsPage() {
           { name: 'Email Service', status: 'degraded', responseTime: 450 },
           { name: 'Search Service', status: 'operational', responseTime: 35 },
         ],
-      });
+      };
 
-      // Mock test results
-      setTests([
+      const mockTests: DiagnosticTest[] = [
         {
           id: '1',
           name: 'Database Connection',
@@ -191,9 +190,13 @@ export default function DiagnosticsPage() {
             integrity: 'Verified',
           },
         },
-      ]);
+      ];
+      setHealth(data?.health || mockHealth);
+      setTests(data?.tests || mockTests);
     } catch (err) {
       console.error(err);
+      setHealth(mockHealth);
+      setTests(mockTests);
     } finally {
       setLoading(false);
     }

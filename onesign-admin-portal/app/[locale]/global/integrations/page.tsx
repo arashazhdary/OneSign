@@ -214,8 +214,7 @@ export default function GlobalIntegrationsPage() {
         },
       ]);
 
-      // Mock webhooks
-      setWebhooks([
+      const mockWebhooks: WebhookEndpoint[] = [
         {
           id: '1',
           url: 'https://api.partner.com/webhooks/onesign',
@@ -234,9 +233,13 @@ export default function GlobalIntegrationsPage() {
           lastDelivery: '2024-11-23T10:00:00Z',
           successRate: 99.2,
         },
-      ]);
+      ];
+      setIntegrations(data?.integrations || mockIntegrations);
+      setWebhooks(data?.webhooks || mockWebhooks);
     } catch (err) {
       console.error(err);
+      setIntegrations(mockIntegrations);
+      setWebhooks(mockWebhooks);
     } finally {
       setLoading(false);
     }

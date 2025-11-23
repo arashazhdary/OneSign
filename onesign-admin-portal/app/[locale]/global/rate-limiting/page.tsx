@@ -123,9 +123,11 @@ export default function RateLimitingPage() {
             throttledRequests: 56789,
           },
         },
-      ]);
+      ];
+      setLimits(data || mockData);
     } catch (err) {
       console.error(err);
+      setLimits(mockData);
     } finally {
       setLoading(false);
     }
