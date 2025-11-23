@@ -38,8 +38,8 @@ export default function DataRetentionPage() {
 
   const fetchData = async () => {
     try {
-      // Mock policies
-      setPolicies([
+      const data = await platformService.getRetentionPolicies?.();
+      const mockPolicies: RetentionPolicy[] = [
         {
           id: '1',
           name: 'Application Logs Retention',

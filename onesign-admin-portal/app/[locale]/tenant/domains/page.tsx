@@ -35,8 +35,8 @@ export default function CustomDomainsPage() {
 
   const fetchDomains = async () => {
     try {
-      // Mock data
-      setDomains([
+      const data = await platformService.getCustomDomains?.();
+      const mockData: CustomDomain[] = [
         {
           id: '1',
           domain: 'app.acmecorp.com',

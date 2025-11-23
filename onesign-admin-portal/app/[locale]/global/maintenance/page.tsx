@@ -35,8 +35,8 @@ export default function MaintenancePage() {
 
   const fetchWindows = async () => {
     try {
-      // Mock maintenance windows
-      setWindows([
+      const data = await platformService.getMaintenanceWindows?.();
+      const mockData: MaintenanceWindow[] = [
         {
           id: '1',
           title: 'Database Upgrade',
@@ -128,9 +128,11 @@ export default function MaintenancePage() {
           notes: 'Completed successfully',
           recurring: false,
         },
-      ]);
-    } catch (err) {
-      console.error(err);
+      ];
+      setWindows(data || mockData);
+    } catch (err: any) {
+      console.error('Error fetching maintenance windows:', err);
+      setWindows([]);
     } finally {
       setLoading(false);
     }

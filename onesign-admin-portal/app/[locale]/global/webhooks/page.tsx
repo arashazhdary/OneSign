@@ -52,8 +52,8 @@ export default function GlobalWebhooksPage() {
 
   const fetchData = async () => {
     try {
-      // Mock webhooks
-      setWebhooks([
+      const data = await platformService.getGlobalWebhooks?.();
+      const mockWebhooks: GlobalWebhook[] = [
         {
           id: '1',
           name: 'Global User Events',

@@ -28,8 +28,8 @@ export default function IPWhitelistPage() {
   const fetchWhitelist = async () => {
     setLoading(true);
     try {
-      // Mock data
-      setWhitelist([
+      const data = await securityService.getIPWhitelist?.();
+      const mockData: IPWhitelist[] = [
         {
           id: '1',
           ipAddress: '192.168.1.100',
@@ -50,9 +50,11 @@ export default function IPWhitelistPage() {
           accessCount: 856,
           isActive: true,
         },
-      ]);
-    } catch (err) {
-      console.error(err);
+      ];
+      setWhitelist(data || mockData);
+    } catch (err: any) {
+      console.error('Error fetching IP whitelist:', err);
+      setWhitelist([]);
     } finally {
       setLoading(false);
     }

@@ -33,8 +33,7 @@ export default function CertificatesPage() {
   const fetchCertificates = async () => {
     setLoading(true);
     try {
-      // const data = await platformService.getCertificates(tenantId);
-      // Mock data
+      const data = await platformService.getCertificates?.();
       const mockData: Certificate[] = [
         {
           id: '1',
@@ -61,9 +60,11 @@ export default function CertificatesPage() {
           fingerprint: 'SHA256:B2:C3:D4:...',
         },
       ];
-      setCertificates(mockData);
+      setCertificates(data || mockData);
     } catch (err: any) {
+      console.error('Error fetching certificates:', err);
       setError(err.message || 'Failed to load certificates');
+      setCertificates([]);
     } finally {
       setLoading(false);
     }

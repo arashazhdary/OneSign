@@ -40,8 +40,8 @@ export default function LicensesPage() {
 
   const fetchLicenses = async () => {
     try {
-      // Mock data
-      setLicenses([
+      const data = await platformService.getLicenses?.();
+      const mockData: License[] = [
         {
           id: '1',
           licenseKey: 'ONESIGN-ENT-2024-ABC123-DEF456',
