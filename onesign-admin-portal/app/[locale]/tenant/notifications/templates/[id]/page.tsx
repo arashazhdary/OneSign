@@ -10,6 +10,8 @@ import {
   NotificationCategory,
   NOTIFICATION_TYPES,
   NOTIFICATION_CATEGORIES,
+  getNotificationTemplate,
+  updateNotificationTemplate,
 } from '@/lib/api/notifications';
 
 interface TemplateVersion {
@@ -70,10 +72,38 @@ export default function NotificationTemplateEditorPage() {
   }, [activeTab]);
 
   const fetchTemplate = async () => {
+    if (!tenantId) return;
+
     setLoading(true);
     setError('');
     try {
-      // Mock data - replace with actual API call
+      // Fetch real template from API
+      const templateData = await getNotificationTemplate(templateId, tenantId);
+
+      if (templateData) {
+        setTemplate(templateData);
+        setName(templateData.name);
+        setDescription(templateData.description || '');
+        setCategory(templateData.category);
+        setType(templateData.type);
+        setSubject(templateData.subjectTemplate);
+        setBody(templateData.bodyTemplate);
+        setHtmlBody(templateData.htmlTemplate || '');
+        setVariables(templateData.variables);
+        setIsActive(templateData.isActive);
+
+        // Initialize test variable values
+        const initialValues: Record<string, string> = {};
+        templateData.variables.forEach(v => {
+          initialValues[v] = '';
+        });
+        setTestVariableValues(initialValues);
+      }
+    } catch (err: any) {
+      console.error('Error fetching template:', err);
+      setError(err?.message || 'Failed to load template');
+
+      // Fallback to mock data
       const mockTemplate: NotificationTemplateDto = {
         id: templateId,
         tenantId: tenantId || '',
@@ -82,8 +112,8 @@ export default function NotificationTemplateEditorPage() {
         category: 'User',
         type: 'Email',
         subjectTemplate: 'Welcome to {{companyName}}, {{userName}}!',
-        bodyTemplate: 'Hello {{userName}},\n\nWelcome to {{companyName}}! We\'re excited to have you on board.\n\nTo get started, please click the link below:\n{{actionUrl}}\n\nBest regards,\nThe {{companyName}} Team',
-        htmlTemplate: '<html><body><h1>Welcome to {{companyName}}, {{userName}}!</h1><p>Hello {{userName}},</p><p>Welcome to {{companyName}}! We\'re excited to have you on board.</p><p><a href="{{actionUrl}}">Get Started</a></p><p>Best regards,<br>The {{companyName}} Team</p></body></html>',
+        bodyTemplate: 'Hello {{userName}},\n\nWelcome to {{companyName}}! We\'re excited to have you on board.',
+        htmlTemplate: '<html><body><h1>Welcome!</h1></body></html>',
         variables: ['userName', 'companyName', 'actionUrl'],
         isActive: true,
         isGlobalTemplate: false,
@@ -101,15 +131,6 @@ export default function NotificationTemplateEditorPage() {
       setHtmlBody(mockTemplate.htmlTemplate || '');
       setVariables(mockTemplate.variables);
       setIsActive(mockTemplate.isActive);
-
-      // Initialize test variable values
-      const initialValues: Record<string, string> = {};
-      mockTemplate.variables.forEach(v => {
-        initialValues[v] = '';
-      });
-      setTestVariableValues(initialValues);
-    } catch (err) {
-      setError('Failed to load template');
     } finally {
       setLoading(false);
     }
@@ -148,6 +169,8 @@ export default function NotificationTemplateEditorPage() {
   };
 
   const handleSave = async () => {
+    if (!tenantId) return;
+
     setSaving(true);
     setError('');
     setSuccess('');
@@ -163,13 +186,26 @@ export default function NotificationTemplateEditorPage() {
         throw new Error('Body is required');
       }
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Update template via API
+      await updateNotificationTemplate(templateId, {
+        tenantId,
+        userId: '00000000-0000-0000-0000-000000000001', // TODO: Get from user context
+        name,
+        description,
+        category,
+        type,
+        subjectTemplate: subject,
+        bodyTemplate: body,
+        htmlTemplate: htmlBody,
+        variables,
+        isActive,
+      });
 
       setSuccess('Template saved successfully');
       fetchTemplate();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save template');
+    } catch (err: any) {
+      console.error('Error saving template:', err);
+      setError(err?.message || 'Failed to save template');
     } finally {
       setSaving(false);
     }

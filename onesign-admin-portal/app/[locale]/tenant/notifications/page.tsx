@@ -50,6 +50,13 @@ interface NotificationRule {
 }
 
 // Mock data for rules (since there's no API endpoint yet)
+// TODO: Add notification rules API endpoints to backend
+// Expected endpoints:
+//   - GET /api/tenant/notifications/rules
+//   - POST /api/tenant/notifications/rules
+//   - PUT /api/tenant/notifications/rules/:id
+//   - DELETE /api/tenant/notifications/rules/:id
+// Once available, import and use: getNotificationRules, createNotificationRule, etc.
 const mockRules: NotificationRule[] = [
   {
     id: '1',
