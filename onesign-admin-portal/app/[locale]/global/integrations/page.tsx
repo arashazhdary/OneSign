@@ -246,18 +246,32 @@ export default function GlobalIntegrationsPage() {
   };
 
   const handleToggleIntegration = async (integrationId: string) => {
-    // await platformService.toggleIntegration(integrationId);
-    fetchData();
+    try {
+      await platformService.toggleIntegration?.(integrationId);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to toggle integration:', error);
+    }
   };
 
   const handleTestIntegration = async (integrationId: string) => {
-    // await platformService.testIntegration(integrationId);
+    try {
+      await platformService.testIntegration?.(integrationId);
+      alert('Integration test successful!');
+    } catch (error) {
+      console.error('Failed to test integration:', error);
+      alert('Integration test failed. Check console for details.');
+    }
   };
 
   const handleDeleteIntegration = async (integrationId: string) => {
     if (!confirm('Remove this integration?')) return;
-    // await platformService.deleteIntegration(integrationId);
-    fetchData();
+    try {
+      await platformService.deleteIntegration?.(integrationId);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to delete integration:', error);
+    }
   };
 
   const getTypeBadge = (type: string) => {
