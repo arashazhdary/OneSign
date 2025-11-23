@@ -33,8 +33,8 @@ export default function RateLimitingPage() {
 
   const fetchLimits = async () => {
     try {
-      // Mock data
-      setLimits([
+      const data = await platformService.getRateLimits?.();
+      const mockData: RateLimit[] = [
         {
           id: '1',
           name: 'Global API Rate Limit',

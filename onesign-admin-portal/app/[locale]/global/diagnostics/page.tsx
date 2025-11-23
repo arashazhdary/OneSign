@@ -37,8 +37,8 @@ export default function DiagnosticsPage() {
 
   const fetchData = async () => {
     try {
-      // Mock health data
-      setHealth({
+      const data = await platformService.getDiagnostics?.();
+      const mockHealth: SystemHealth = {
         overall: 'healthy',
         score: 98,
         components: [

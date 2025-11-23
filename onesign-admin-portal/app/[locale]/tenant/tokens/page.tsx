@@ -32,8 +32,8 @@ export default function TokensPage() {
 
   const fetchTokens = async () => {
     try {
-      // Mock data
-      setTokens([
+      const data = await platformService.getTokens?.();
+      const mockData: Token[] = [
         {
           id: '1',
           name: 'Production API Key',

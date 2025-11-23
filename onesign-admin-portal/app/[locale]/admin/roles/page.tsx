@@ -27,8 +27,8 @@ export default function PlatformRolesPage() {
 
   const fetchRoles = async () => {
     try {
-      // Mock data
-      setRoles([
+      const data = await platformService.getPlatformRoles?.();
+      const mockData: PlatformRole[] = [
         {
           id: '1',
           name: 'Super Administrator',

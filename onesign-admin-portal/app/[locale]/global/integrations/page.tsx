@@ -47,8 +47,8 @@ export default function GlobalIntegrationsPage() {
 
   const fetchData = async () => {
     try {
-      // Mock integrations
-      setIntegrations([
+      const data = await platformService.getGlobalIntegrations?.();
+      const mockIntegrations: Integration[] = [
         {
           id: '1',
           name: 'Stripe Payment Gateway',

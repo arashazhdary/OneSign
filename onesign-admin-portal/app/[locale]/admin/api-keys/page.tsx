@@ -31,8 +31,8 @@ export default function AdminAPIKeysPage() {
 
   const fetchAPIKeys = async () => {
     try {
-      // Mock data
-      setApiKeys([
+      const data = await platformService.getAdminAPIKeys?.();
+      const mockData: AdminAPIKey[] = [
         {
           id: '1',
           name: 'Platform Management Key',
