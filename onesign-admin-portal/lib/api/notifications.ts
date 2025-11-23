@@ -477,3 +477,152 @@ export function getTypeIcon(type: NotificationType): string {
   };
   return icons[type] || 'bell';
 }
+
+// ============================================
+// Notification Rules API
+// ============================================
+
+export interface NotificationRuleDto {
+  id: string;
+  tenantId: string;
+  name: string;
+  description: string;
+  eventType: string;
+  conditions: string[];
+  notificationType: NotificationType;
+  templateId?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt?: string;
+  createdBy: string;
+}
+
+export interface CreateNotificationRuleDto {
+  tenantId: string;
+  userId: string;
+  name: string;
+  description: string;
+  eventType: string;
+  conditions: string[];
+  notificationType: NotificationType;
+  templateId?: string;
+  isActive: boolean;
+}
+
+/**
+ * Get notification rules for a tenant
+ * @param tenantId - Tenant ID
+ * @returns List of notification rules
+ */
+export async function getNotificationRules(tenantId: string): Promise<NotificationRuleDto[]> {
+  try {
+    const response = await fetch(`${API_BASE}/api/tenant/notifications/rules?tenantId=${tenantId}`);
+    if (!response.ok) throw new Error('Failed to fetch notification rules');
+    return await response.json();
+  } catch (error) {
+    console.warn('Notification rules API not available yet, using fallback');
+    throw error; // Let caller handle with fallback
+  }
+}
+
+/**
+ * Get a specific notification rule
+ * @param ruleId - Rule ID  
+ * @param tenantId - Tenant ID
+ * @returns Notification rule
+ */
+export async function getNotificationRule(ruleId: string, tenantId: string): Promise<NotificationRuleDto> {
+  try {
+    const response = await fetch(`${API_BASE}/api/tenant/notifications/rules/${ruleId}?tenantId=${tenantId}`);
+    if (!response.ok) throw new Error('Failed to fetch notification rule');
+    return await response.json();
+  } catch (error) {
+    console.warn('Notification rules API not available yet');
+    throw error;
+  }
+}
+
+/**
+ * Create a new notification rule
+ * @param data - Rule data
+ * @returns Created rule
+ */
+export async function createNotificationRule(data: CreateNotificationRuleDto): Promise<NotificationRuleDto> {
+  try {
+    const response = await fetch(`${API_BASE}/api/tenant/notifications/rules`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to create notification rule');
+    return await response.json();
+  } catch (error) {
+    console.warn('Notification rules API not available yet');
+    throw error;
+  }
+}
+
+/**
+ * Update a notification rule
+ * @param ruleId - Rule ID
+ * @param data - Updated rule data
+ * @returns Updated rule
+ */
+export async function updateNotificationRule(
+  ruleId: string,
+  data: Partial<CreateNotificationRuleDto>
+): Promise<NotificationRuleDto> {
+  try {
+    const response = await fetch(`${API_BASE}/api/tenant/notifications/rules/${ruleId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to update notification rule');
+    return await response.json();
+  } catch (error) {
+    console.warn('Notification rules API not available yet');
+    throw error;
+  }
+}
+
+/**
+ * Delete a notification rule
+ * @param ruleId - Rule ID
+ * @param tenantId - Tenant ID
+ */
+export async function deleteNotificationRule(ruleId: string, tenantId: string): Promise<void> {
+  try {
+    const response = await fetch(`${API_BASE}/api/tenant/notifications/rules/${ruleId}?tenantId=${tenantId}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) throw new Error('Failed to delete notification rule');
+  } catch (error) {
+    console.warn('Notification rules API not available yet');
+    throw error;
+  }
+}
+
+/**
+ * Toggle notification rule active status
+ * @param ruleId - Rule ID
+ * @param tenantId - Tenant ID
+ * @param isActive - New active status
+ */
+export async function toggleNotificationRule(
+  ruleId: string,
+  tenantId: string,
+  isActive: boolean
+): Promise<void> {
+  try {
+    const response = await fetch(`${API_BASE}/api/tenant/notifications/rules/${ruleId}/toggle`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tenantId, isActive }),
+    });
+    if (!response.ok) throw new Error('Failed to toggle notification rule');
+  } catch (error) {
+    console.warn('Notification rules API not available yet');
+    throw error;
+  }
+}
