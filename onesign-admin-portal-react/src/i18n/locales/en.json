@@ -25,10 +25,19 @@
     "logout": "Logout",
     "email": "Email",
     "password": "Password",
+    "emailAddress": "Email Address",
+    "emailPlaceholder": "admin@onesign.com",
+    "passwordPlaceholder": "Enter your password",
     "rememberMe": "Remember me",
     "forgotPassword": "Forgot password?",
     "welcomeBack": "Welcome Back",
-    "signInMessage": "Sign in to access your admin portal"
+    "signInMessage": "Sign in to access your admin portal",
+    "signIn": "Sign In",
+    "noAccount": "Don't have an account?",
+    "contactAdmin": "Contact Administrator",
+    "securityMessage": "Protected by enterprise-grade security",
+    "welcomeMessage": "Welcome back!",
+    "invalidCredentials": "Invalid credentials"
   },
   "nav": {
     "dashboard": "Dashboard",

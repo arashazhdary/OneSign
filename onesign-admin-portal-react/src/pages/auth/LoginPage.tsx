@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { LogIn, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import Button from '@/components/common/Button';
 import Input from '@/components/common/Input';
@@ -10,6 +11,7 @@ import { useAuthStore } from '@/stores/authStore';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { login } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -38,10 +40,10 @@ const LoginPage: React.FC = () => {
         }
       );
 
-      toast.success('Welcome back!');
+      toast.success(t('auth.welcomeMessage'));
       navigate('/admin/dashboard');
     } catch (error) {
-      toast.error('Invalid credentials');
+      toast.error(t('auth.invalidCredentials'));
     } finally {
       setIsLoading(false);
     }
@@ -50,7 +52,7 @@ const LoginPage: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Login - OneSign Admin Portal</title>
+        <title>{t('auth.login')} - OneSign Admin Portal</title>
       </Helmet>
 
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-primary-50 to-secondary-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 p-4">
@@ -87,10 +89,10 @@ const LoginPage: React.FC = () => {
               <span className="text-white font-bold text-3xl">OS</span>
             </motion.div>
             <h1 className="text-3xl font-bold text-gradient mb-2">
-              Welcome Back
+              {t('auth.welcomeBack')}
             </h1>
             <p className="text-slate-600 dark:text-slate-400">
-              Sign in to access your admin portal
+              {t('auth.signInMessage')}
             </p>
           </div>
 
@@ -104,8 +106,8 @@ const LoginPage: React.FC = () => {
             <form onSubmit={handleLogin} className="space-y-6">
               <Input
                 type="email"
-                label="Email Address"
-                placeholder="admin@onesign.com"
+                label={t('auth.emailAddress')}
+                placeholder={t('auth.emailPlaceholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 leftIcon={<Mail className="w-5 h-5" />}
@@ -114,8 +116,8 @@ const LoginPage: React.FC = () => {
 
               <Input
                 type={showPassword ? 'text' : 'password'}
-                label="Password"
-                placeholder="Enter your password"
+                label={t('auth.password')}
+                placeholder={t('auth.passwordPlaceholder')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 leftIcon={<Lock className="w-5 h-5" />}
@@ -142,14 +144,14 @@ const LoginPage: React.FC = () => {
                     className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
                   />
                   <span className="text-sm text-slate-700 dark:text-slate-300">
-                    Remember me
+                    {t('auth.rememberMe')}
                   </span>
                 </label>
                 <button
                   type="button"
                   className="text-sm text-primary-600 dark:text-primary-400 hover:underline"
                 >
-                  Forgot password?
+                  {t('auth.forgotPassword')}
                 </button>
               </div>
 
@@ -161,15 +163,15 @@ const LoginPage: React.FC = () => {
                 leftIcon={<LogIn className="w-5 h-5" />}
                 className="w-full"
               >
-                Sign In
+                {t('auth.signIn')}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                Don't have an account?{' '}
+                {t('auth.noAccount')}{' '}
                 <button className="text-primary-600 dark:text-primary-400 hover:underline font-medium">
-                  Contact Administrator
+                  {t('auth.contactAdmin')}
                 </button>
               </p>
             </div>
@@ -182,7 +184,7 @@ const LoginPage: React.FC = () => {
             transition={{ duration: 0.5, delay: 0.4 }}
             className="text-center text-sm text-slate-500 dark:text-slate-400 mt-6"
           >
-            Protected by enterprise-grade security
+            {t('auth.securityMessage')}
           </motion.p>
         </motion.div>
       </div>

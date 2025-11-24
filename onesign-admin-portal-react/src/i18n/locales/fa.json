@@ -25,10 +25,19 @@
     "logout": "خروج",
     "email": "ایمیل",
     "password": "رمز عبور",
+    "emailAddress": "آدرس ایمیل",
+    "emailPlaceholder": "admin@onesign.com",
+    "passwordPlaceholder": "رمز عبور خود را وارد کنید",
     "rememberMe": "مرا به خاطر بسپار",
     "forgotPassword": "رمز عبور را فراموش کرده‌اید؟",
     "welcomeBack": "خوش آمدید",
-    "signInMessage": "برای دسترسی به پورتال ادمین وارد شوید"
+    "signInMessage": "برای دسترسی به پورتال ادمین وارد شوید",
+    "signIn": "ورود",
+    "noAccount": "حساب کاربری ندارید؟",
+    "contactAdmin": "با مدیر سیستم تماس بگیرید",
+    "securityMessage": "محافظت شده توسط امنیت سازمانی",
+    "welcomeMessage": "خوش آمدید!",
+    "invalidCredentials": "اطلاعات ورود نامعتبر است"
   },
   "nav": {
     "dashboard": "داشبورد",
