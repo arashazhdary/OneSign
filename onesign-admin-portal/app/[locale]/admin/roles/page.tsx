@@ -128,15 +128,29 @@ export default function PlatformRolesPage() {
   };
 
   const handleCreate = async () => {
-    // await platformService.createPlatformRole({...});
-    setShowCreate(false);
-    fetchRoles();
+    try {
+      await platformService.createPlatformRole?.({
+        name: 'New Role',
+        description: '',
+        type: 'custom',
+        permissions: [],
+        isDefault: false,
+      });
+      setShowCreate(false);
+      fetchRoles();
+    } catch (error) {
+      console.error('Failed to create platform role:', error);
+    }
   };
 
   const handleDelete = async (roleId: string) => {
     if (!confirm('Delete this role? Users with this role will lose their permissions.')) return;
-    // await platformService.deletePlatformRole(roleId);
-    fetchRoles();
+    try {
+      await platformService.deletePlatformRole?.(roleId);
+      fetchRoles();
+    } catch (error) {
+      console.error('Failed to delete platform role:', error);
+    }
   };
 
   const getTypeBadge = (type: string) => {

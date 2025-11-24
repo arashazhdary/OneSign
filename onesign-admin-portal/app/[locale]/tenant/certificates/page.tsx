@@ -73,7 +73,7 @@ export default function CertificatesPage() {
   const handleUpload = async () => {
     if (!file) return;
     try {
-      // await platformService.uploadCertificate(tenantId, file);
+      await platformService.uploadCertificate?.('tenant-id', file);
       setShowUpload(false);
       setFile(null);
       fetchCertificates();
@@ -85,7 +85,7 @@ export default function CertificatesPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this certificate?')) return;
     try {
-      // await platformService.deleteCertificate(tenantId, id);
+      await platformService.deleteCertificate?.('tenant-id', id);
       fetchCertificates();
     } catch (err: any) {
       setError(err.message || 'Failed to delete certificate');

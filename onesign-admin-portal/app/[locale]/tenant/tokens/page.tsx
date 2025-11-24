@@ -114,21 +114,37 @@ export default function TokensPage() {
   };
 
   const handleCreate = async () => {
-    // await platformService.createToken(tenantId, { name, type, permissions });
-    setShowCreate(false);
-    fetchTokens();
+    try {
+      await platformService.createToken?.('tenant-id', {
+        name: 'New Token',
+        type: 'access',
+        permissions: ['read', 'write'],
+      });
+      setShowCreate(false);
+      fetchTokens();
+    } catch (error) {
+      console.error('Failed to create token:', error);
+    }
   };
 
   const handleRevoke = async (tokenId: string) => {
     if (!confirm('Revoke this token? This action cannot be undone.')) return;
-    // await platformService.revokeToken(tenantId, tokenId);
-    fetchTokens();
+    try {
+      await platformService.revokeToken?.('tenant-id', tokenId);
+      fetchTokens();
+    } catch (error) {
+      console.error('Failed to revoke token:', error);
+    }
   };
 
   const handleRotate = async (tokenId: string) => {
     if (!confirm('Rotate this token? The old token will be invalidated.')) return;
-    // await platformService.rotateToken(tenantId, tokenId);
-    fetchTokens();
+    try {
+      await platformService.rotateToken?.('tenant-id', tokenId);
+      fetchTokens();
+    } catch (error) {
+      console.error('Failed to rotate token:', error);
+    }
   };
 
   const handleCopy = (token: string) => {

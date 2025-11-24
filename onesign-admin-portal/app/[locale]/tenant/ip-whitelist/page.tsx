@@ -61,17 +61,25 @@ export default function IPWhitelistPage() {
   };
 
   const handleAdd = async () => {
-    // await securityService.addIPWhitelist(tenantId, { ipAddress: newIP, description });
-    setShowAdd(false);
-    setNewIP('');
-    setDescription('');
-    fetchWhitelist();
+    try {
+      await securityService.addIPWhitelist?.('tenant-id', { ipAddress: newIP, description });
+      setShowAdd(false);
+      setNewIP('');
+      setDescription('');
+      fetchWhitelist();
+    } catch (error) {
+      console.error('Failed to add IP to whitelist:', error);
+    }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Remove this IP from whitelist?')) return;
-    // await securityService.removeIPWhitelist(tenantId, id);
-    fetchWhitelist();
+    try {
+      await securityService.removeIPWhitelist?.('tenant-id', id);
+      fetchWhitelist();
+    } catch (error) {
+      console.error('Failed to remove IP from whitelist:', error);
+    }
   };
 
   if (loading) return <div className="p-6">Loading...</div>;

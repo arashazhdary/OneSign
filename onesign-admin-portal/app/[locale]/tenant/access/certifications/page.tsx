@@ -243,7 +243,7 @@ export default function AccessCertificationsPage() {
     setLoading(true);
     try {
       // Implement actual certification API call
-      // await governanceService.certifyItem(tenantId, itemId, action, notes);
+      await governanceService.certifyItem?.(tenantId || '', itemId, action, notes);
       setSuccess(`Access ${action === 'certify' ? 'certified' : 'revoked'} successfully`);
 
       // Update local state

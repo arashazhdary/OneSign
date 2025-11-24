@@ -179,24 +179,49 @@ export default function GlobalWebhooksPage() {
   };
 
   const handleCreate = async () => {
-    // await platformService.createGlobalWebhook({...});
-    setShowCreate(false);
-    fetchData();
+    try {
+      await platformService.createGlobalWebhook?.({
+        name: 'New Webhook',
+        url: 'https://example.com/webhook',
+        events: [],
+        secret: '',
+        isActive: true,
+        retryStrategy: 'exponential',
+        maxRetries: 3,
+        timeout: 5000,
+      });
+      setShowCreate(false);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to create global webhook:', error);
+    }
   };
 
   const handleToggle = async (webhookId: string) => {
-    // await platformService.toggleGlobalWebhook(webhookId);
-    fetchData();
+    try {
+      await platformService.toggleGlobalWebhook?.(webhookId);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to toggle global webhook:', error);
+    }
   };
 
   const handleTest = async (webhookId: string) => {
-    // await platformService.testGlobalWebhook(webhookId);
+    try {
+      await platformService.testGlobalWebhook?.(webhookId);
+    } catch (error) {
+      console.error('Failed to test global webhook:', error);
+    }
   };
 
   const handleDelete = async (webhookId: string) => {
     if (!confirm('Delete this webhook?')) return;
-    // await platformService.deleteGlobalWebhook(webhookId);
-    fetchData();
+    try {
+      await platformService.deleteGlobalWebhook?.(webhookId);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to delete global webhook:', error);
+    }
   };
 
   const getSuccessRate = (stats: GlobalWebhook['stats']) => {

@@ -204,16 +204,25 @@ export default function DiagnosticsPage() {
 
   const handleRunAll = async () => {
     setRunning(true);
-    // await platformService.runDiagnostics();
-    setTimeout(() => {
+    try {
+      await platformService.runDiagnostics?.();
+      setTimeout(() => {
+        setRunning(false);
+        fetchData();
+      }, 3000);
+    } catch (error) {
+      console.error('Failed to run diagnostics:', error);
       setRunning(false);
-      fetchData();
-    }, 3000);
+    }
   };
 
   const handleRunTest = async (testId: string) => {
-    // await platformService.runDiagnosticTest(testId);
-    fetchData();
+    try {
+      await platformService.runDiagnosticTest?.(testId);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to run diagnostic test:', error);
+    }
   };
 
   const getStatusBadge = (status: string) => {

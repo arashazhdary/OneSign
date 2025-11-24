@@ -123,31 +123,51 @@ export default function CustomDomainsPage() {
   };
 
   const handleAdd = async () => {
-    // await platformService.addCustomDomain(tenantId, { domain: newDomain, verificationMethod });
-    setShowAdd(false);
-    setNewDomain('');
-    fetchDomains();
+    try {
+      await platformService.addCustomDomain?.('tenant-id', { domain: newDomain, verificationMethod });
+      setShowAdd(false);
+      setNewDomain('');
+      fetchDomains();
+    } catch (error) {
+      console.error('Failed to add custom domain:', error);
+    }
   };
 
   const handleVerify = async (domainId: string) => {
-    // await platformService.verifyCustomDomain(tenantId, domainId);
-    fetchDomains();
+    try {
+      await platformService.verifyCustomDomain?.('tenant-id', domainId);
+      fetchDomains();
+    } catch (error) {
+      console.error('Failed to verify custom domain:', error);
+    }
   };
 
   const handleDelete = async (domainId: string) => {
     if (!confirm('Remove this custom domain?')) return;
-    // await platformService.deleteCustomDomain(tenantId, domainId);
-    fetchDomains();
+    try {
+      await platformService.deleteCustomDomain?.('tenant-id', domainId);
+      fetchDomains();
+    } catch (error) {
+      console.error('Failed to delete custom domain:', error);
+    }
   };
 
   const handleSetPrimary = async (domainId: string) => {
-    // await platformService.setPrimaryDomain(tenantId, domainId);
-    fetchDomains();
+    try {
+      await platformService.setPrimaryDomain?.('tenant-id', domainId);
+      fetchDomains();
+    } catch (error) {
+      console.error('Failed to set primary domain:', error);
+    }
   };
 
   const handleRenewSSL = async (domainId: string) => {
-    // await platformService.renewDomainSSL(tenantId, domainId);
-    fetchDomains();
+    try {
+      await platformService.renewDomainSSL?.('tenant-id', domainId);
+      fetchDomains();
+    } catch (error) {
+      console.error('Failed to renew SSL certificate:', error);
+    }
   };
 
   const getStatusBadge = (status: string) => {
