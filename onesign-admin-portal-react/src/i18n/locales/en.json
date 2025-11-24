@@ -209,6 +209,8 @@
     "integrations": "Integrations",
     "systemName": "System Name",
     "companyName": "Company Name",
+    "tenantName": "Tenant Name",
+    "contactEmail": "Contact Email",
     "timezone": "Timezone",
     "dateFormat": "Date Format",
     "timeFormat": "Time Format",

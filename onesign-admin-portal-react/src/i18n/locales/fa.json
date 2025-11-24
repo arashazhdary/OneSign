@@ -209,6 +209,8 @@
     "integrations": "یکپارچه‌سازی‌ها",
     "systemName": "نام سیستم",
     "companyName": "نام شرکت",
+    "tenantName": "نام سازمان",
+    "contactEmail": "ایمیل تماس",
     "timezone": "منطقه زمانی",
     "dateFormat": "فرمت تاریخ",
     "timeFormat": "فرمت زمان",
