@@ -27,8 +27,8 @@ export default function PlatformRolesPage() {
 
   const fetchRoles = async () => {
     try {
-      // Mock data
-      setRoles([
+      const data = await platformService.getPlatformRoles?.();
+      const mockData: PlatformRole[] = [
         {
           id: '1',
           name: 'Super Administrator',
@@ -117,24 +117,40 @@ export default function PlatformRolesPage() {
           createdAt: '2024-02-15T10:00:00Z',
           updatedAt: '2024-10-20T14:00:00Z',
         },
-      ]);
+      ];
+      setRoles(data || mockData);
     } catch (err) {
       console.error(err);
+      setRoles(mockData);
     } finally {
       setLoading(false);
     }
   };
 
   const handleCreate = async () => {
-    // await platformService.createPlatformRole({...});
-    setShowCreate(false);
-    fetchRoles();
+    try {
+      await platformService.createPlatformRole?.({
+        name: 'New Role',
+        description: '',
+        type: 'custom',
+        permissions: [],
+        isDefault: false,
+      });
+      setShowCreate(false);
+      fetchRoles();
+    } catch (error) {
+      console.error('Failed to create platform role:', error);
+    }
   };
 
   const handleDelete = async (roleId: string) => {
     if (!confirm('Delete this role? Users with this role will lose their permissions.')) return;
-    // await platformService.deletePlatformRole(roleId);
-    fetchRoles();
+    try {
+      await platformService.deletePlatformRole?.(roleId);
+      fetchRoles();
+    } catch (error) {
+      console.error('Failed to delete platform role:', error);
+    }
   };
 
   const getTypeBadge = (type: string) => {

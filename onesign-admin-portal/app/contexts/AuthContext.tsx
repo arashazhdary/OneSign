@@ -2,6 +2,7 @@
 
 import { createContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import type { User } from '@/lib/api/types/auth';
+import { authService } from '@/lib/api/services/auth.service';
 
 export interface AuthContextType {
   user: User | null;
@@ -37,9 +38,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         const token = localStorage.getItem('token');
         if (token) {
-          // TODO: Validate token and fetch user
-          // const userData = await fetchUser(token);
-          // setUser(userData);
+          // Validate token and fetch user
+          const validation = await authService.validateToken(token);
+          if (validation.valid && validation.user) {
+            setUser(validation.user);
+          } else {
+            localStorage.removeItem('token');
+          }
         }
       } catch (error) {
         console.error('Failed to load user:', error);
@@ -55,21 +60,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const login = useCallback(async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // TODO: Replace with actual API call
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Login failed');
-      }
-
-      const { user: userData, token } = await response.json();
+      // Use authService for login
+      const response = await authService.signIn({ email, password });
 
       // Save token to localStorage
-      localStorage.setItem('token', token);
+      if (response.accessToken) {
+        localStorage.setItem('token', response.accessToken);
+      }
+
+      // Fetch current user after login
+      const userData = await authService.getCurrentUser();
       setUser(userData);
     } catch (error) {
       console.error('Login error:', error);
@@ -81,8 +81,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const logout = useCallback(async () => {
     try {
-      // TODO: Call logout endpoint if needed
-      await fetch('/api/auth/logout', { method: 'POST' });
+      // Call logout endpoint
+      await authService.signOut();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -98,21 +98,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         throw new Error('No token found');
       }
 
-      // TODO: Replace with actual API call
-      const response = await fetch('/api/auth/refresh', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Use authService for token refresh
+      const response = await authService.refreshToken({ refreshToken: token });
 
-      if (!response.ok) {
-        throw new Error('Token refresh failed');
+      if (response.accessToken) {
+        localStorage.setItem('token', response.accessToken);
       }
-
-      const { token: newToken } = await response.json();
-      localStorage.setItem('token', newToken);
     } catch (error) {
       console.error('Token refresh error:', error);
       await logout();

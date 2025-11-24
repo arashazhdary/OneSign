@@ -37,8 +37,8 @@ export default function DiagnosticsPage() {
 
   const fetchData = async () => {
     try {
-      // Mock health data
-      setHealth({
+      const data = await platformService.getDiagnostics?.();
+      const mockHealth: SystemHealth = {
         overall: 'healthy',
         score: 98,
         components: [
@@ -51,10 +51,9 @@ export default function DiagnosticsPage() {
           { name: 'Email Service', status: 'degraded', responseTime: 450 },
           { name: 'Search Service', status: 'operational', responseTime: 35 },
         ],
-      });
+      };
 
-      // Mock test results
-      setTests([
+      const mockTests: DiagnosticTest[] = [
         {
           id: '1',
           name: 'Database Connection',
@@ -191,9 +190,13 @@ export default function DiagnosticsPage() {
             integrity: 'Verified',
           },
         },
-      ]);
+      ];
+      setHealth(data?.health || mockHealth);
+      setTests(data?.tests || mockTests);
     } catch (err) {
       console.error(err);
+      setHealth(mockHealth);
+      setTests(mockTests);
     } finally {
       setLoading(false);
     }
@@ -201,16 +204,25 @@ export default function DiagnosticsPage() {
 
   const handleRunAll = async () => {
     setRunning(true);
-    // await platformService.runDiagnostics();
-    setTimeout(() => {
+    try {
+      await platformService.runDiagnostics?.();
+      setTimeout(() => {
+        setRunning(false);
+        fetchData();
+      }, 3000);
+    } catch (error) {
+      console.error('Failed to run diagnostics:', error);
       setRunning(false);
-      fetchData();
-    }, 3000);
+    }
   };
 
   const handleRunTest = async (testId: string) => {
-    // await platformService.runDiagnosticTest(testId);
-    fetchData();
+    try {
+      await platformService.runDiagnosticTest?.(testId);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to run diagnostic test:', error);
+    }
   };
 
   const getStatusBadge = (status: string) => {

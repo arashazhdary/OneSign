@@ -38,8 +38,8 @@ export default function DataRetentionPage() {
 
   const fetchData = async () => {
     try {
-      // Mock policies
-      setPolicies([
+      const data = await platformService.getRetentionPolicies?.();
+      const mockPolicies: RetentionPolicy[] = [
         {
           id: '1',
           name: 'Application Logs Retention',
@@ -177,26 +177,48 @@ export default function DataRetentionPage() {
   };
 
   const handleCreate = async () => {
-    // await platformService.createRetentionPolicy(tenantId, {...});
-    setShowCreate(false);
-    fetchData();
+    try {
+      await platformService.createRetentionPolicy?.('tenant-id', {
+        name: 'New Retention Policy',
+        dataType: 'logs',
+        retentionDays: 30,
+        autoDelete: true,
+        isActive: true,
+      });
+      setShowCreate(false);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to create retention policy:', error);
+    }
   };
 
   const handleToggle = async (policyId: string) => {
-    // await platformService.toggleRetentionPolicy(tenantId, policyId);
-    fetchData();
+    try {
+      await platformService.toggleRetentionPolicy?.('tenant-id', policyId);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to toggle retention policy:', error);
+    }
   };
 
   const handleRunNow = async (policyId: string) => {
     if (!confirm('Run this retention policy now? This will delete data according to the policy.')) return;
-    // await platformService.runRetentionPolicy(tenantId, policyId);
-    fetchData();
+    try {
+      await platformService.runRetentionPolicy?.('tenant-id', policyId);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to run retention policy:', error);
+    }
   };
 
   const handleDelete = async (policyId: string) => {
     if (!confirm('Delete this retention policy?')) return;
-    // await platformService.deleteRetentionPolicy(tenantId, policyId);
-    fetchData();
+    try {
+      await platformService.deleteRetentionPolicy?.('tenant-id', policyId);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to delete retention policy:', error);
+    }
   };
 
   const getDataTypeBadge = (type: string) => {

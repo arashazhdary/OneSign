@@ -33,8 +33,7 @@ export default function CertificatesPage() {
   const fetchCertificates = async () => {
     setLoading(true);
     try {
-      // const data = await platformService.getCertificates(tenantId);
-      // Mock data
+      const data = await platformService.getCertificates?.();
       const mockData: Certificate[] = [
         {
           id: '1',
@@ -61,9 +60,11 @@ export default function CertificatesPage() {
           fingerprint: 'SHA256:B2:C3:D4:...',
         },
       ];
-      setCertificates(mockData);
+      setCertificates(data || mockData);
     } catch (err: any) {
+      console.error('Error fetching certificates:', err);
       setError(err.message || 'Failed to load certificates');
+      setCertificates([]);
     } finally {
       setLoading(false);
     }
@@ -72,7 +73,7 @@ export default function CertificatesPage() {
   const handleUpload = async () => {
     if (!file) return;
     try {
-      // await platformService.uploadCertificate(tenantId, file);
+      await platformService.uploadCertificate?.('tenant-id', file);
       setShowUpload(false);
       setFile(null);
       fetchCertificates();
@@ -84,7 +85,7 @@ export default function CertificatesPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this certificate?')) return;
     try {
-      // await platformService.deleteCertificate(tenantId, id);
+      await platformService.deleteCertificate?.('tenant-id', id);
       fetchCertificates();
     } catch (err: any) {
       setError(err.message || 'Failed to delete certificate');

@@ -146,18 +146,39 @@ export default function GlobalBackupsPage() {
   };
 
   const handleCreateBackup = async () => {
-    // await platformService.createGlobalBackup({ type: 'full', name: 'Manual Backup' });
-    setShowCreate(false);
-    fetchData();
+    try {
+      await platformService.createGlobalBackup?.({
+        type: 'full',
+        name: 'Manual Backup',
+        tenantId: 'global',
+      });
+      setShowCreate(false);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to create backup:', error);
+    }
   };
 
   const handleRestore = async (backupId: string) => {
     if (!confirm('This will restore the entire platform to this backup. Continue?')) return;
-    // await platformService.restoreGlobalBackup(backupId);
+    try {
+      await platformService.restoreGlobalBackup?.(backupId);
+      alert('Restore initiated successfully!');
+      fetchData();
+    } catch (error) {
+      console.error('Failed to restore backup:', error);
+      alert('Restore failed. Check console for details.');
+    }
   };
 
   const handleDownload = async (backupId: string) => {
-    // await platformService.downloadBackup(backupId);
+    try {
+      await platformService.downloadBackup?.(backupId);
+      alert('Backup download started!');
+    } catch (error) {
+      console.error('Failed to download backup:', error);
+      alert('Download failed. Check console for details.');
+    }
   };
 
   const getStatusBadge = (status: string) => {

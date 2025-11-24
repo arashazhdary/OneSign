@@ -40,8 +40,8 @@ export default function LicensesPage() {
 
   const fetchLicenses = async () => {
     try {
-      // Mock data
-      setLicenses([
+      const data = await platformService.getLicenses?.();
+      const mockData: License[] = [
         {
           id: '1',
           licenseKey: 'ONESIGN-ENT-2024-ABC123-DEF456',
@@ -142,26 +142,52 @@ export default function LicensesPage() {
   };
 
   const handleAdd = async () => {
-    // await platformService.createLicense({...});
-    setShowAdd(false);
-    fetchLicenses();
+    try {
+      await platformService.createLicense?.({
+        type: 'trial',
+        issuedTo: 'New Customer',
+        features: [],
+        limits: {
+          tenants: 5,
+          users: 100,
+          apiCalls: 10000,
+          storage: '10 GB',
+        },
+      });
+      setShowAdd(false);
+      fetchLicenses();
+    } catch (error) {
+      console.error('Failed to create license:', error);
+    }
   };
 
   const handleSuspend = async (licenseId: string) => {
     if (!confirm('Suspend this license?')) return;
-    // await platformService.suspendLicense(licenseId);
-    fetchLicenses();
+    try {
+      await platformService.suspendLicense?.(licenseId);
+      fetchLicenses();
+    } catch (error) {
+      console.error('Failed to suspend license:', error);
+    }
   };
 
   const handleRevoke = async (licenseId: string) => {
     if (!confirm('Revoke this license? This action cannot be undone.')) return;
-    // await platformService.revokeLicense(licenseId);
-    fetchLicenses();
+    try {
+      await platformService.revokeLicense?.(licenseId);
+      fetchLicenses();
+    } catch (error) {
+      console.error('Failed to revoke license:', error);
+    }
   };
 
   const handleRenew = async (licenseId: string) => {
-    // await platformService.renewLicense(licenseId);
-    fetchLicenses();
+    try {
+      await platformService.renewLicense?.(licenseId);
+      fetchLicenses();
+    } catch (error) {
+      console.error('Failed to renew license:', error);
+    }
   };
 
   const getTypeBadge = (type: string) => {

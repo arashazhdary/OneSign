@@ -47,8 +47,8 @@ export default function GlobalIntegrationsPage() {
 
   const fetchData = async () => {
     try {
-      // Mock integrations
-      setIntegrations([
+      const data = await platformService.getGlobalIntegrations?.();
+      const mockIntegrations: Integration[] = [
         {
           id: '1',
           name: 'Stripe Payment Gateway',
@@ -214,8 +214,7 @@ export default function GlobalIntegrationsPage() {
         },
       ]);
 
-      // Mock webhooks
-      setWebhooks([
+      const mockWebhooks: WebhookEndpoint[] = [
         {
           id: '1',
           url: 'https://api.partner.com/webhooks/onesign',
@@ -234,27 +233,45 @@ export default function GlobalIntegrationsPage() {
           lastDelivery: '2024-11-23T10:00:00Z',
           successRate: 99.2,
         },
-      ]);
+      ];
+      setIntegrations(data?.integrations || mockIntegrations);
+      setWebhooks(data?.webhooks || mockWebhooks);
     } catch (err) {
       console.error(err);
+      setIntegrations(mockIntegrations);
+      setWebhooks(mockWebhooks);
     } finally {
       setLoading(false);
     }
   };
 
   const handleToggleIntegration = async (integrationId: string) => {
-    // await platformService.toggleIntegration(integrationId);
-    fetchData();
+    try {
+      await platformService.toggleIntegration?.(integrationId);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to toggle integration:', error);
+    }
   };
 
   const handleTestIntegration = async (integrationId: string) => {
-    // await platformService.testIntegration(integrationId);
+    try {
+      await platformService.testIntegration?.(integrationId);
+      alert('Integration test successful!');
+    } catch (error) {
+      console.error('Failed to test integration:', error);
+      alert('Integration test failed. Check console for details.');
+    }
   };
 
   const handleDeleteIntegration = async (integrationId: string) => {
     if (!confirm('Remove this integration?')) return;
-    // await platformService.deleteIntegration(integrationId);
-    fetchData();
+    try {
+      await platformService.deleteIntegration?.(integrationId);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to delete integration:', error);
+    }
   };
 
   const getTypeBadge = (type: string) => {

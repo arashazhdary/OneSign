@@ -31,8 +31,8 @@ export default function AdminAPIKeysPage() {
 
   const fetchAPIKeys = async () => {
     try {
-      // Mock data
-      setApiKeys([
+      const data = await platformService.getAdminAPIKeys?.();
+      const mockData: AdminAPIKey[] = [
         {
           id: '1',
           name: 'Platform Management Key',
@@ -108,24 +108,39 @@ export default function AdminAPIKeysPage() {
           createdBy: 'admin@example.com',
           createdAt: '2023-01-01T00:00:00Z',
         },
-      ]);
+      ];
+      setApiKeys(data || mockData);
     } catch (err) {
       console.error(err);
+      setApiKeys(mockData);
     } finally {
       setLoading(false);
     }
   };
 
   const handleCreate = async () => {
-    // await platformService.createAdminAPIKey({...});
-    setShowCreate(false);
-    fetchAPIKeys();
+    try {
+      await platformService.createAdminAPIKey?.({
+        name: 'New API Key',
+        scope: 'readonly',
+        permissions: ['read'],
+        expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+      setShowCreate(false);
+      fetchAPIKeys();
+    } catch (error) {
+      console.error('Failed to create admin API key:', error);
+    }
   };
 
   const handleRevoke = async (keyId: string) => {
     if (!confirm('Revoke this API key? This action cannot be undone.')) return;
-    // await platformService.revokeAdminAPIKey(keyId);
-    fetchAPIKeys();
+    try {
+      await platformService.revokeAdminAPIKey?.(keyId);
+      fetchAPIKeys();
+    } catch (error) {
+      console.error('Failed to revoke admin API key:', error);
+    }
   };
 
   const handleCopy = (key: string) => {

@@ -29,8 +29,8 @@ export default function ConditionalAccessPage() {
 
   const fetchPolicies = async () => {
     try {
-      // Mock data
-      setPolicies([
+      const data = await securityService.getConditionalAccessPolicies?.();
+      const mockData: ConditionalAccessPolicy[] = [
         {
           id: '1',
           name: 'Block High Risk Locations',
@@ -57,9 +57,11 @@ export default function ConditionalAccessPage() {
           isEnabled: true,
           createdAt: '2024-02-20T00:00:00Z',
         },
-      ]);
-    } catch (err) {
-      console.error(err);
+      ];
+      setPolicies(data || mockData);
+    } catch (err: any) {
+      console.error('Error fetching conditional access policies:', err);
+      setPolicies([]);
     } finally {
       setLoading(false);
     }

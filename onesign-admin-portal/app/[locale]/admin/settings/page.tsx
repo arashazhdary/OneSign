@@ -166,7 +166,7 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      // await platformService.updateGlobalSettings('platform', platformSettings);
+      await platformService.updateGlobalSettings?.('platform', platformSettings);
       setSuccess('Platform settings saved successfully');
     } catch (err: any) {
       setError(err.message || 'Failed to save platform settings');
@@ -179,7 +179,7 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      // await platformService.updateGlobalSettings('email', emailSettings);
+      await platformService.updateGlobalSettings?.('email', emailSettings);
       setSuccess('Email settings saved successfully');
     } catch (err: any) {
       setError(err.message || 'Failed to save email settings');
@@ -191,7 +191,7 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      // await platformService.testEmailConfiguration(emailSettings);
+      await platformService.testEmailConfiguration?.(emailSettings);
       setSuccess('Test email sent successfully');
     } catch (err: any) {
       setError(err.message || 'Failed to send test email');
@@ -204,7 +204,7 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      // await platformService.updateGlobalSettings('sms', smsSettings);
+      await platformService.updateGlobalSettings?.('sms', smsSettings);
       setSuccess('SMS settings saved successfully');
     } catch (err: any) {
       setError(err.message || 'Failed to save SMS settings');
@@ -216,7 +216,7 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      // await platformService.testSMSConfiguration(smsSettings);
+      await platformService.testSMSConfiguration?.(smsSettings);
       setSuccess('Test SMS sent successfully');
     } catch (err: any) {
       setError(err.message || 'Failed to send test SMS');
@@ -237,7 +237,7 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      // await platformService.updateGlobalSettings('maintenance', maintenanceSettings);
+      await platformService.updateGlobalSettings?.('maintenance', maintenanceSettings);
       setSuccess('Maintenance settings saved successfully');
     } catch (err: any) {
       setError(err.message || 'Failed to save maintenance settings');

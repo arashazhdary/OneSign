@@ -28,8 +28,8 @@ export default function IPWhitelistPage() {
   const fetchWhitelist = async () => {
     setLoading(true);
     try {
-      // Mock data
-      setWhitelist([
+      const data = await securityService.getIPWhitelist?.();
+      const mockData: IPWhitelist[] = [
         {
           id: '1',
           ipAddress: '192.168.1.100',
@@ -50,26 +50,36 @@ export default function IPWhitelistPage() {
           accessCount: 856,
           isActive: true,
         },
-      ]);
-    } catch (err) {
-      console.error(err);
+      ];
+      setWhitelist(data || mockData);
+    } catch (err: any) {
+      console.error('Error fetching IP whitelist:', err);
+      setWhitelist([]);
     } finally {
       setLoading(false);
     }
   };
 
   const handleAdd = async () => {
-    // await securityService.addIPWhitelist(tenantId, { ipAddress: newIP, description });
-    setShowAdd(false);
-    setNewIP('');
-    setDescription('');
-    fetchWhitelist();
+    try {
+      await securityService.addIPWhitelist?.('tenant-id', { ipAddress: newIP, description });
+      setShowAdd(false);
+      setNewIP('');
+      setDescription('');
+      fetchWhitelist();
+    } catch (error) {
+      console.error('Failed to add IP to whitelist:', error);
+    }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm('Remove this IP from whitelist?')) return;
-    // await securityService.removeIPWhitelist(tenantId, id);
-    fetchWhitelist();
+    try {
+      await securityService.removeIPWhitelist?.('tenant-id', id);
+      fetchWhitelist();
+    } catch (error) {
+      console.error('Failed to remove IP from whitelist:', error);
+    }
   };
 
   if (loading) return <div className="p-6">Loading...</div>;

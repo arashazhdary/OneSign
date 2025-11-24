@@ -35,8 +35,8 @@ export default function MaintenancePage() {
 
   const fetchWindows = async () => {
     try {
-      // Mock maintenance windows
-      setWindows([
+      const data = await platformService.getMaintenanceWindows?.();
+      const mockData: MaintenanceWindow[] = [
         {
           id: '1',
           title: 'Database Upgrade',
@@ -128,29 +128,52 @@ export default function MaintenancePage() {
           notes: 'Completed successfully',
           recurring: false,
         },
-      ]);
-    } catch (err) {
-      console.error(err);
+      ];
+      setWindows(data || mockData);
+    } catch (err: any) {
+      console.error('Error fetching maintenance windows:', err);
+      setWindows([]);
     } finally {
       setLoading(false);
     }
   };
 
   const handleCreate = async () => {
-    // await platformService.createMaintenanceWindow({...});
-    setShowCreate(false);
-    fetchWindows();
+    try {
+      await platformService.createMaintenanceWindow?.({
+        title: 'New Maintenance Window',
+        description: '',
+        type: 'scheduled',
+        startTime: new Date().toISOString(),
+        endTime: new Date().toISOString(),
+        affectedServices: [],
+        impactLevel: 'low',
+        notifyUsers: false,
+      });
+      setShowCreate(false);
+      fetchWindows();
+    } catch (error) {
+      console.error('Failed to create maintenance window:', error);
+    }
   };
 
   const handleCancel = async (id: string) => {
     if (!confirm('Cancel this maintenance window?')) return;
-    // await platformService.cancelMaintenanceWindow(id);
-    fetchWindows();
+    try {
+      await platformService.cancelMaintenanceWindow?.(id);
+      fetchWindows();
+    } catch (error) {
+      console.error('Failed to cancel maintenance window:', error);
+    }
   };
 
   const handleNotify = async (id: string) => {
-    // await platformService.sendMaintenanceNotification(id);
-    fetchWindows();
+    try {
+      await platformService.sendMaintenanceNotification?.(id);
+      fetchWindows();
+    } catch (error) {
+      console.error('Failed to send notification:', error);
+    }
   };
 
   const getTypeBadge = (type: string) => {

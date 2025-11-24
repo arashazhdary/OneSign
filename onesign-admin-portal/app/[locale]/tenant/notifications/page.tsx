@@ -18,11 +18,19 @@ import {
   updateNotificationPreference,
   getNotificationStats,
   retryNotification,
+  getNotificationRules,
+  getNotificationRule,
+  createNotificationRule,
+  updateNotificationRule,
+  deleteNotificationRule,
+  toggleNotificationRule,
   NotificationTemplateDto,
   NotificationDto,
   NotificationChannelDto,
   NotificationPreferenceDto,
   NotificationStatsDto,
+  NotificationRuleDto,
+  CreateNotificationRuleDto,
   NotificationType,
   NotificationCategory,
   NotificationPriority,
@@ -37,22 +45,11 @@ import {
 
 type TabType = 'settings' | 'templates' | 'history' | 'rules';
 
-interface NotificationRule {
-  id: string;
-  name: string;
-  description: string;
-  eventType: string;
-  conditions: string[];
-  notificationType: NotificationType;
-  templateId?: string;
-  isActive: boolean;
-  createdAt: string;
-}
-
-// Mock data for rules (since there's no API endpoint yet)
-const mockRules: NotificationRule[] = [
+// Fallback mock data for rules if API is not available
+const mockRules: NotificationRuleDto[] = [
   {
     id: '1',
+    tenantId: '00000000-0000-0000-0000-000000000000',
     name: 'Failed Login Alert',
     description: 'Notify admin on 3 failed login attempts',
     eventType: 'FailedLogin',
@@ -60,9 +57,11 @@ const mockRules: NotificationRule[] = [
     notificationType: 'Email',
     isActive: true,
     createdAt: new Date().toISOString(),
+    createdBy: 'system',
   },
   {
     id: '2',
+    tenantId: '00000000-0000-0000-0000-000000000000',
     name: 'New User Registration',
     description: 'Send welcome notification to new users',
     eventType: 'UserRegistered',
@@ -71,6 +70,7 @@ const mockRules: NotificationRule[] = [
     templateId: 'welcome-template',
     isActive: true,
     createdAt: new Date().toISOString(),
+    createdBy: 'system',
   },
 ];
 
@@ -120,9 +120,9 @@ export default function NotificationsPage() {
   const [selectedNotification, setSelectedNotification] = useState<NotificationDto | null>(null);
 
   // Rules Tab State
-  const [rules, setRules] = useState<NotificationRule[]>(mockRules);
+  const [rules, setRules] = useState<NotificationRuleDto[]>([]);
   const [showRuleModal, setShowRuleModal] = useState(false);
-  const [editingRule, setEditingRule] = useState<NotificationRule | null>(null);
+  const [editingRule, setEditingRule] = useState<NotificationRuleDto | null>(null);
   const [ruleName, setRuleName] = useState('');
   const [ruleDescription, setRuleDescription] = useState('');
   const [ruleEventType, setRuleEventType] = useState('');
@@ -155,7 +155,7 @@ export default function NotificationsPage() {
           await Promise.all([fetchNotifications(), fetchStats()]);
           break;
         case 'rules':
-          // Rules are mock data for now
+          await fetchRules();
           break;
       }
     } catch (err) {
@@ -380,6 +380,19 @@ export default function NotificationsPage() {
     }
   };
 
+  // Rules Tab Functions
+  const fetchRules = async () => {
+    if (!tenantId) return;
+    try {
+      const data = await getNotificationRules(tenantId);
+      setRules(data || mockRules);
+    } catch (err) {
+      console.error('Error fetching notification rules:', err);
+      console.warn('Using fallback mock data for notification rules');
+      setRules(mockRules);
+    }
+  };
+
   const handleRetryNotification = async (notificationId: string) => {
     if (!tenantId) return;
     setError('');
@@ -393,46 +406,69 @@ export default function NotificationsPage() {
     }
   };
 
-  // Rules Tab Functions
-  const handleSaveRule = (e: React.FormEvent) => {
+  const handleSaveRule = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!tenantId) return;
+
     setError('');
     setSuccess('');
 
-    const newRule: NotificationRule = {
-      id: editingRule?.id || Date.now().toString(),
-      name: ruleName,
-      description: ruleDescription,
-      eventType: ruleEventType,
-      conditions: [],
-      notificationType: ruleNotificationType,
-      templateId: ruleTemplateId || undefined,
-      isActive: ruleActive,
-      createdAt: editingRule?.createdAt || new Date().toISOString(),
-    };
+    try {
+      const ruleData: CreateNotificationRuleDto = {
+        tenantId,
+        userId: '00000000-0000-0000-0000-000000000001',
+        name: ruleName,
+        description: ruleDescription,
+        eventType: ruleEventType,
+        conditions: [],
+        notificationType: ruleNotificationType,
+        templateId: ruleTemplateId || undefined,
+        isActive: ruleActive,
+      };
 
-    if (editingRule) {
-      setRules(rules.map(r => r.id === editingRule.id ? newRule : r));
-      setSuccess('Rule updated successfully');
-    } else {
-      setRules([...rules, newRule]);
-      setSuccess('Rule created successfully');
+      if (editingRule) {
+        await updateNotificationRule(editingRule.id, ruleData);
+        setSuccess('Rule updated successfully');
+      } else {
+        await createNotificationRule(ruleData);
+        setSuccess('Rule created successfully');
+      }
+
+      setShowRuleModal(false);
+      resetRuleForm();
+      fetchRules();
+    } catch (err: any) {
+      console.error('Error saving rule:', err);
+      setError(err?.message || 'Failed to save rule');
     }
-
-    setShowRuleModal(false);
-    resetRuleForm();
   };
 
-  const handleDeleteRule = (ruleId: string) => {
-    if (!confirm('Are you sure you want to delete this rule?')) return;
-    setRules(rules.filter(r => r.id !== ruleId));
-    setSuccess('Rule deleted successfully');
+  const handleDeleteRule = async (ruleId: string) => {
+    if (!tenantId || !confirm('Are you sure you want to delete this rule?')) return;
+
+    setError('');
+    setSuccess('');
+    try {
+      await deleteNotificationRule(ruleId, tenantId);
+      setSuccess('Rule deleted successfully');
+      fetchRules();
+    } catch (err: any) {
+      console.error('Error deleting rule:', err);
+      setError(err?.message || 'Failed to delete rule');
+    }
   };
 
-  const handleToggleRule = (ruleId: string) => {
-    setRules(rules.map(r =>
-      r.id === ruleId ? { ...r, isActive: !r.isActive } : r
-    ));
+  const handleToggleRule = async (ruleId: string) => {
+    if (!tenantId) return;
+
+    setError('');
+    try {
+      await toggleNotificationRule(ruleId, tenantId);
+      fetchRules();
+    } catch (err: any) {
+      console.error('Error toggling rule:', err);
+      setError(err?.message || 'Failed to toggle rule status');
+    }
   };
 
   const resetRuleForm = () => {
@@ -445,7 +481,7 @@ export default function NotificationsPage() {
     setRuleActive(true);
   };
 
-  const openEditRule = (rule: NotificationRule) => {
+  const openEditRule = (rule: NotificationRuleDto) => {
     setEditingRule(rule);
     setRuleName(rule.name);
     setRuleDescription(rule.description);

@@ -158,18 +158,30 @@ export default function GlobalAlertsPage() {
   };
 
   const handleAcknowledge = async (alertId: string) => {
-    // await securityService.acknowledgeAlert(alertId);
-    fetchData();
+    try {
+      await securityService.acknowledgeAlert?.(alertId);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to acknowledge alert:', error);
+    }
   };
 
   const handleResolve = async (alertId: string) => {
-    // await securityService.resolveAlert(alertId);
-    fetchData();
+    try {
+      await securityService.resolveAlert?.(alertId);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to resolve alert:', error);
+    }
   };
 
   const handleSilence = async (alertId: string) => {
-    // await securityService.silenceAlert(alertId, { duration: 3600 });
-    fetchData();
+    try {
+      await securityService.silenceAlert?.(alertId, { duration: 3600 });
+      fetchData();
+    } catch (error) {
+      console.error('Failed to silence alert:', error);
+    }
   };
 
   const getSeverityBadge = (severity: string) => {

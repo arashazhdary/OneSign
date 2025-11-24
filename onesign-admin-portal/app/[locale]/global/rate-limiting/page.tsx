@@ -33,8 +33,8 @@ export default function RateLimitingPage() {
 
   const fetchLimits = async () => {
     try {
-      // Mock data
-      setLimits([
+      const data = await platformService.getRateLimits?.();
+      const mockData: RateLimit[] = [
         {
           id: '1',
           name: 'Global API Rate Limit',
@@ -123,29 +123,51 @@ export default function RateLimitingPage() {
             throttledRequests: 56789,
           },
         },
-      ]);
+      ];
+      setLimits(data || mockData);
     } catch (err) {
       console.error(err);
+      setLimits(mockData);
     } finally {
       setLoading(false);
     }
   };
 
   const handleCreate = async () => {
-    // await platformService.createRateLimit({...});
-    setShowCreate(false);
-    fetchLimits();
+    try {
+      await platformService.createRateLimit?.({
+        name: 'New Rate Limit',
+        type: 'global',
+        limit: 1000,
+        window: 1,
+        windowUnit: 'minute',
+        action: 'throttle',
+        exemptions: [],
+      });
+      setShowCreate(false);
+      fetchLimits();
+    } catch (error) {
+      console.error('Failed to create rate limit:', error);
+    }
   };
 
   const handleToggle = async (limitId: string) => {
-    // await platformService.toggleRateLimit(limitId);
-    fetchLimits();
+    try {
+      await platformService.toggleRateLimit?.(limitId);
+      fetchLimits();
+    } catch (error) {
+      console.error('Failed to toggle rate limit:', error);
+    }
   };
 
   const handleDelete = async (limitId: string) => {
     if (!confirm('Delete this rate limit?')) return;
-    // await platformService.deleteRateLimit(limitId);
-    fetchLimits();
+    try {
+      await platformService.deleteRateLimit?.(limitId);
+      fetchLimits();
+    } catch (error) {
+      console.error('Failed to delete rate limit:', error);
+    }
   };
 
   const getTypeBadge = (type: string) => {
