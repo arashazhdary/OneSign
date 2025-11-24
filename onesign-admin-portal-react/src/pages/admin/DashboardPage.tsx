@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
+import { useTranslation } from 'react-i18next';
 import {
   Users,
   Building2,
@@ -23,6 +24,7 @@ interface Activity {
 }
 
 const DashboardPage: React.FC = () => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalTenants: 0,
@@ -96,7 +98,7 @@ const DashboardPage: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Dashboard - OneSign Admin Portal</title>
+        <title>{t('dashboard.title')} - OneSign Admin Portal</title>
       </Helmet>
 
       <div className="space-y-8">
@@ -107,19 +109,19 @@ const DashboardPage: React.FC = () => {
           transition={{ duration: 0.4 }}
         >
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-            Admin Dashboard
+            {t('dashboard.title')}
           </h1>
           <p className="text-slate-600 dark:text-slate-400">
-            Platform-wide overview and system monitoring
+            {t('dashboard.subtitle')}
           </p>
         </motion.div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
-            title="Total Tenants"
+            title={t('dashboard.totalTenants')}
             value={formatNumber(stats.totalTenants)}
-            subtitle={`${stats.activeTenants} active`}
+            subtitle={`${stats.activeTenants} ${t('dashboard.activeTenants')}`}
             icon={Building2}
             trend={{ value: 12, isPositive: true }}
             iconColor="text-primary-600"
@@ -128,9 +130,9 @@ const DashboardPage: React.FC = () => {
           />
 
           <StatCard
-            title="Total Users"
+            title={t('dashboard.totalUsers')}
             value={formatNumber(stats.totalUsers)}
-            subtitle="Across all tenants"
+            subtitle={t('dashboard.acrossAllTenants')}
             icon={Users}
             trend={{ value: 8, isPositive: true }}
             iconColor="text-success-600"
@@ -139,9 +141,9 @@ const DashboardPage: React.FC = () => {
           />
 
           <StatCard
-            title="API Calls"
+            title={t('dashboard.apiCalls')}
             value={formatNumber(stats.apiCallsToday)}
-            subtitle="Today"
+            subtitle={t('dashboard.today')}
             icon={Activity}
             trend={{ value: 15, isPositive: true }}
             iconColor="text-secondary-600"
@@ -150,9 +152,9 @@ const DashboardPage: React.FC = () => {
           />
 
           <StatCard
-            title="System Status"
-            value="Healthy"
-            subtitle="All systems operational"
+            title={t('dashboard.systemStatus')}
+            value={t('dashboard.healthy')}
+            subtitle={t('dashboard.allSystemsOperational')}
             icon={TrendingUp}
             iconColor="text-success-600"
             iconBgColor="bg-success-100 dark:bg-success-900/20"
@@ -171,10 +173,10 @@ const DashboardPage: React.FC = () => {
             <Card>
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
-                  Recent Activities
+                  {t('dashboard.recentActivities')}
                 </h2>
                 <button className="text-sm text-primary-600 dark:text-primary-400 hover:underline font-medium">
-                  View All
+                  {t('dashboard.viewAll')}
                 </button>
               </div>
 
@@ -216,31 +218,31 @@ const DashboardPage: React.FC = () => {
           >
             <Card>
               <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">
-                System Health
+                {t('dashboard.systemHealth')}
               </h2>
 
               <div className="space-y-4">
                 {[
                   {
-                    name: 'API Gateway',
+                    name: t('dashboard.apiGateway'),
                     status: 'healthy',
                     uptime: 99.9,
                     responseTime: 45,
                   },
                   {
-                    name: 'Auth Service',
+                    name: t('dashboard.authService'),
                     status: 'healthy',
                     uptime: 99.8,
                     responseTime: 32,
                   },
                   {
-                    name: 'Database',
+                    name: t('dashboard.database'),
                     status: 'healthy',
                     uptime: 99.95,
                     responseTime: 28,
                   },
                   {
-                    name: 'Analytics',
+                    name: t('dashboard.analytics'),
                     status: 'degraded',
                     uptime: 98.5,
                     responseTime: 156,
@@ -268,7 +270,7 @@ const DashboardPage: React.FC = () => {
                           {service.name}
                         </p>
                         <p className="text-xs text-slate-500">
-                          {service.uptime}% uptime
+                          {service.uptime}% {t('dashboard.uptime')}
                         </p>
                       </div>
                     </div>
@@ -276,7 +278,7 @@ const DashboardPage: React.FC = () => {
                       <p className="text-sm font-medium text-slate-900 dark:text-white">
                         {service.responseTime}ms
                       </p>
-                      <p className="text-xs text-slate-500">Response time</p>
+                      <p className="text-xs text-slate-500">{t('dashboard.responseTime')}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -293,15 +295,15 @@ const DashboardPage: React.FC = () => {
         >
           <Card>
             <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">
-              Quick Actions
+              {t('dashboard.quickActions')}
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
-                { label: 'Create Tenant', color: 'primary' },
-                { label: 'Add Admin', color: 'secondary' },
-                { label: 'View Logs', color: 'accent' },
-                { label: 'Settings', color: 'success' },
+                { label: t('dashboard.createTenant'), color: 'primary' },
+                { label: t('dashboard.addAdmin'), color: 'secondary' },
+                { label: t('dashboard.viewLogs'), color: 'accent' },
+                { label: t('dashboard.settings'), color: 'success' },
               ].map((action, index) => (
                 <motion.button
                   key={action.label}
