@@ -18,7 +18,17 @@
     "actions": "Actions",
     "status": "Status",
     "createdAt": "Created At",
-    "updatedAt": "Updated At"
+    "updatedAt": "Updated At",
+    "welcomeBack": "Welcome back",
+    "happeningToday": "Here's what's happening today",
+    "notifications": "Notifications",
+    "unread": "unread",
+    "newUserRegistered": "New user registered",
+    "minutesAgo": "minutes ago",
+    "profile": "Profile",
+    "searchMenu": "Search menu...",
+    "adminPortal": "Admin Portal",
+    "error": "Error"
   },
   "auth": {
     "login": "Login",

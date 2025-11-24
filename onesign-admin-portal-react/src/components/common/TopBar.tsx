@@ -10,7 +10,7 @@ import { cn } from '@/utils/cn';
 const TopBar: React.FC = () => {
   const { darkMode, toggleDarkMode, sidebarCollapsed } = useUIStore();
   const { user, logout } = useAuthStore();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -45,10 +45,10 @@ const TopBar: React.FC = () => {
       <div className="flex items-center gap-4">
         <div>
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-            Welcome back, {user?.name?.split(' ')[0] || 'Admin'}!
+            {t('common.welcomeBack')}, {user?.name?.split(' ')[0] || 'Admin'}!
           </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Here's what's happening today
+            {t('common.happeningToday')}
           </p>
         </div>
       </div>
@@ -125,9 +125,9 @@ const TopBar: React.FC = () => {
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-slate-900 dark:text-white">
-                  Notifications
+                  {t('common.notifications')}
                 </h3>
-                <span className="text-xs text-slate-500">3 unread</span>
+                <span className="text-xs text-slate-500">3 {t('common.unread')}</span>
               </div>
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
@@ -136,9 +136,9 @@ const TopBar: React.FC = () => {
                     className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                   >
                     <p className="text-sm font-medium text-slate-900 dark:text-white">
-                      New user registered
+                      {t('common.newUserRegistered')}
                     </p>
-                    <p className="text-xs text-slate-500 mt-1">2 minutes ago</p>
+                    <p className="text-xs text-slate-500 mt-1">2 {t('common.minutesAgo')}</p>
                   </div>
                 ))}
               </div>
@@ -182,7 +182,7 @@ const TopBar: React.FC = () => {
               <button className="w-full flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left">
                 <User className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                 <span className="text-sm text-slate-900 dark:text-white">
-                  Profile
+                  {t('common.profile')}
                 </span>
               </button>
               <button
@@ -190,7 +190,7 @@ const TopBar: React.FC = () => {
                 className="w-full flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-danger-50 dark:hover:bg-danger-900/20 transition-colors text-left text-danger-600 dark:text-danger-400"
               >
                 <LogOut className="w-4 h-4" />
-                <span className="text-sm font-medium">Logout</span>
+                <span className="text-sm font-medium">{t('auth.logout')}</span>
               </button>
             </motion.div>
           )}

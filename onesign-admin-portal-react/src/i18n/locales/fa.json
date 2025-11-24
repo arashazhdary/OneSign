@@ -18,7 +18,17 @@
     "actions": "عملیات",
     "status": "وضعیت",
     "createdAt": "تاریخ ایجاد",
-    "updatedAt": "تاریخ بروزرسانی"
+    "updatedAt": "تاریخ بروزرسانی",
+    "welcomeBack": "خوش آمدید",
+    "happeningToday": "آنچه امروز در حال وقوع است",
+    "notifications": "اعلان‌ها",
+    "unread": "خوانده نشده",
+    "newUserRegistered": "کاربر جدید ثبت‌نام کرد",
+    "minutesAgo": "دقیقه پیش",
+    "profile": "پروفایل",
+    "searchMenu": "جستجو در منو...",
+    "adminPortal": "پورتال ادمین",
+    "error": "خطا"
   },
   "auth": {
     "login": "ورود",

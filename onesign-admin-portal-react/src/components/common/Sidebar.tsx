@@ -13,49 +13,11 @@ import {
   ChevronDown,
   Search,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/utils/cn';
 import { useUIStore } from '@/stores/uiStore';
 import { useAuthStore } from '@/stores/authStore';
 import type { MenuItem } from '@/types';
-
-const adminMenuItems: MenuItem[] = [
-  {
-    id: 'dashboard',
-    label: 'Dashboard',
-    icon: 'LayoutDashboard',
-    href: '/admin/dashboard',
-  },
-  {
-    id: 'users',
-    label: 'Users',
-    icon: 'Users',
-    href: '/admin/users',
-  },
-  {
-    id: 'tenants',
-    label: 'Tenants',
-    icon: 'Building2',
-    href: '/admin/tenants',
-  },
-  {
-    id: 'roles',
-    label: 'Roles',
-    icon: 'Shield',
-    href: '/admin/roles',
-  },
-  {
-    id: 'api-keys',
-    label: 'API Keys',
-    icon: 'Key',
-    href: '/admin/api-keys',
-  },
-  {
-    id: 'settings',
-    label: 'Settings',
-    icon: 'Settings',
-    href: '/admin/settings',
-  },
-];
 
 const iconMap: Record<string, any> = {
   LayoutDashboard,
@@ -68,10 +30,50 @@ const iconMap: Record<string, any> = {
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
+  const { t } = useTranslation();
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const { user } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+
+  const adminMenuItems: MenuItem[] = [
+    {
+      id: 'dashboard',
+      label: t('nav.dashboard'),
+      icon: 'LayoutDashboard',
+      href: '/admin/dashboard',
+    },
+    {
+      id: 'users',
+      label: t('nav.users'),
+      icon: 'Users',
+      href: '/admin/users',
+    },
+    {
+      id: 'tenants',
+      label: t('nav.tenants'),
+      icon: 'Building2',
+      href: '/admin/tenants',
+    },
+    {
+      id: 'roles',
+      label: t('nav.roles'),
+      icon: 'Shield',
+      href: '/admin/roles',
+    },
+    {
+      id: 'api-keys',
+      label: t('nav.apiKeys'),
+      icon: 'Key',
+      href: '/admin/api-keys',
+    },
+    {
+      id: 'settings',
+      label: t('nav.settings'),
+      icon: 'Settings',
+      href: '/admin/settings',
+    },
+  ];
 
   const filteredMenuItems = adminMenuItems.filter((item) =>
     item.label.toLowerCase().includes(searchQuery.toLowerCase())
@@ -119,7 +121,7 @@ const Sidebar: React.FC = () => {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gradient-primary">OneSign</h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Admin Portal</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{t('common.adminPortal')}</p>
               </div>
             </motion.div>
           )}
@@ -152,7 +154,7 @@ const Sidebar: React.FC = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search menu..."
+                placeholder={t('common.searchMenu')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
