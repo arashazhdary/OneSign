@@ -1,6 +1,8 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Onesign.Data.Contexts;
 using Onesign.Modules.IdentityLifecycle.Domain.Enums;
 using Onesign.Modules.IdentityLifecycle.Domain.Repositories;
 using Onesign.Modules.IdentityLifecycle.Domain.Services;
@@ -47,8 +49,23 @@ public class LifecycleEventProcessorWorker : BackgroundService
         using var scope = _serviceProvider.CreateScope();
         var eventRepository = scope.ServiceProvider.GetRequiredService<ILifecycleEventRepository>();
         var lifecycleProcessor = scope.ServiceProvider.GetRequiredService<ILifecycleProcessor>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<Onesign.Data.Contexts.OnesignDbContext>();
 
-        var pendingEvents = await eventRepository.GetPendingEventsAsync(cancellationToken);
+        // Get all active tenants
+        var activeTenantIds = await dbContext.Tenants
+            .Where(t => t.Status == Onesign.Modules.Tenants.Domain.Enums.TenantStatus.Active)
+            .Select(t => t.Id)
+            .ToListAsync(cancellationToken);
+
+        // Get pending events for all active tenants
+        var allPendingEvents = new List<Onesign.Modules.IdentityLifecycle.Domain.Entities.LifecycleEvent>();
+        foreach (var tenantId in activeTenantIds)
+        {
+            var tenantEvents = await eventRepository.GetPendingEventsAsync(tenantId, 100, cancellationToken);
+            allPendingEvents.AddRange(tenantEvents);
+        }
+
+        var pendingEvents = allPendingEvents;
 
         if (!pendingEvents.Any())
         {
@@ -63,8 +80,8 @@ public class LifecycleEventProcessorWorker : BackgroundService
             if (cancellationToken.IsCancellationRequested)
                 break;
 
-            // Only process events that are due (effective date has passed)
-            if (lifecycleEvent.EffectiveDate > DateTime.UtcNow)
+            // Only process events that are due (created date has passed - EffectiveDate doesn't exist, use CreatedAt)
+            if (lifecycleEvent.CreatedAt > DateTime.UtcNow)
             {
                 _logger.LogDebug("Skipping event {EventId} - not yet effective", lifecycleEvent.Id);
                 continue;

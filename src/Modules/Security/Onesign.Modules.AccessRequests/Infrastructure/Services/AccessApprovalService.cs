@@ -57,7 +57,7 @@ public class AccessApprovalService : IAccessApprovalService
             return false;
         }
 
-        step.Action = ApprovalAction.Approved;
+        step.Action = ApprovalAction.Approve;
         step.Comment = comment;
         step.ActionAt = DateTime.UtcNow;
 
@@ -79,7 +79,7 @@ public class AccessApprovalService : IAccessApprovalService
             return false;
         }
 
-        step.Action = ApprovalAction.Rejected;
+        step.Action = ApprovalAction.Reject;
         step.Comment = comment;
         step.ActionAt = DateTime.UtcNow;
 

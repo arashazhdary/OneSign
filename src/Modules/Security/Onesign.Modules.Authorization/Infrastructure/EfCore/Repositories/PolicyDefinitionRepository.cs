@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Onesign.Data.Contexts;
 using Onesign.Modules.Authorization.Domain.Entities;
 using Onesign.Modules.Authorization.Domain.Repositories;
 using Onesign.Modules.Authorization.Infrastructure.EfCore.Entities;
@@ -8,9 +7,9 @@ namespace Onesign.Modules.Authorization.Infrastructure.EfCore.Repositories;
 
 public class PolicyDefinitionRepository : IPolicyDefinitionRepository
 {
-    private readonly OnesignDbContext _dbContext;
+    private readonly DbContext _dbContext;
 
-    public PolicyDefinitionRepository(OnesignDbContext dbContext)
+    public PolicyDefinitionRepository(DbContext dbContext)
     {
         _dbContext = dbContext;
     }

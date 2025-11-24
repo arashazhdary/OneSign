@@ -7,7 +7,7 @@ using Onesign.Modules.Privacy.Domain.Enums;
 namespace Onesign.Api.Controllers.Tenant;
 
 /// <summary>
-/// Privacy & Data Protection Center (Phase 23)
+/// Privacy and Data Protection Center (Phase 23)
 /// </summary>
 [Route("api/tenant/privacy")]
 [ApiController]
@@ -59,7 +59,7 @@ public class PrivacyController : ControllerBase
         var result = await _mediator.Send(command);
 
         if (!result.IsSuccess)
-            return BadRequest(new { error = result.Error });
+            return BadRequest(new { error = result.ErrorMessage });
 
         return Ok(result.Value);
     }
@@ -105,7 +105,7 @@ public class PrivacyController : ControllerBase
         var result = await _mediator.Send(command);
 
         if (!result.IsSuccess)
-            return BadRequest(new { error = result.Error });
+            return BadRequest(new { error = result.ErrorMessage });
 
         return Ok(result.Value);
     }
@@ -120,7 +120,7 @@ public class PrivacyController : ControllerBase
         var result = await _mediator.Send(command);
 
         if (!result.IsSuccess)
-            return BadRequest(new { error = result.Error });
+            return BadRequest(new { error = result.ErrorMessage });
 
         return Ok(result.Value);
     }

@@ -291,7 +291,7 @@ export default function AccessRequestDetailPage() {
             <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
               Access Request
             </h1>
-            <p className="text-gray-600 mt-2">
+            <p className="text-gray-700 mt-2">
               {request.requesterName} requesting {request.requestedAccessLevel} access to {request.resourceName}
             </p>
           </div>

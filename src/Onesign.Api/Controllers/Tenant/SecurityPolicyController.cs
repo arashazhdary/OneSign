@@ -71,7 +71,7 @@ public class SecurityPolicyController : Onesign.Api.Controllers.TenantController
         var command = new UpdateOrgUnitMfaRulesCommand
         {
             TenantId = tenantId,
-            Rules = request.Rules.Select(r => new Commands.OrgUnitMfaRuleItem
+            Rules = request.Rules.Select(r => new Onesign.Modules.Security.Application.Commands.OrgUnitMfaRuleItem
             {
                 OrgUnitId = r.OrgUnitId,
                 MfaRequirement = r.MfaRequirement

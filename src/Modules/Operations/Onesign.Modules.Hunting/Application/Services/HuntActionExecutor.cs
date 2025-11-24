@@ -177,6 +177,6 @@ public class HuntActionExecutor : IHuntActionExecutor
 </body>
 </html>";
 
-        await _emailService.SendAsync(email, subject, body, cancellationToken);
+        await _emailService.SendEmailAsync(email, subject, body, isHtml: true, cancellationToken);
     }
 }

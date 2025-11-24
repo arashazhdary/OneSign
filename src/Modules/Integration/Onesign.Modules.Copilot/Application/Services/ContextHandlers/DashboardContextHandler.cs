@@ -153,9 +153,9 @@ public class DashboardContextHandler : IContextHandler
                 RiskType = "UserRisk",
                 EntityType = "User",
                 EntityId = u.UserId,
-                EntityName = u.UserDisplayName ?? "Unknown",
-                RiskScore = u.OverallRiskScore,
-                Description = $"Risk level: {u.RiskLevel}"
+                EntityName = u.UserId.ToString(), // Display name would need to be fetched separately
+                RiskScore = u.HighRiskEventsLast30Days * 10, // Calculate risk score from high risk events
+                Description = $"High risk events: {u.HighRiskEventsLast30Days}"
             }).ToList();
         }
         catch (Exception ex)

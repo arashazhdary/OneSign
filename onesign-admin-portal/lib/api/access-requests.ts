@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:7000';
+import { API_BASE } from './config/api-config';
 
 // Enums
 export type AccessRequestStatus = 'Pending' | 'Approved' | 'Rejected' | 'Expired' | 'Cancelled';

@@ -128,7 +128,7 @@ export default function TenantHuntingPage() {
         });
         setScheduledHunts(data.items || []);
       } else if (activeTab === 'runs') {
-        const data = await HuntingAPI.getHuntRuns(tenantId, {
+        const data = await HuntingAPI.getScheduledHuntRuns(tenantId, {
           pageNumber: runsPage,
           pageSize: 20,
         });
@@ -238,11 +238,9 @@ export default function TenantHuntingPage() {
 
   const handleToggleSchedule = async (hunt: ScheduledHunt) => {
     try {
-      if (hunt.isEnabled) {
-        await HuntingAPI.disableScheduledHunt(hunt.id, tenantId, { userId });
-      } else {
-        await HuntingAPI.enableScheduledHunt(hunt.id, tenantId, { userId });
-      }
+      await HuntingAPI.updateScheduledHunt(hunt.id, {
+        isEnabled: !hunt.isEnabled
+      }, tenantId, { userId });
       fetchData();
     } catch (err) {
       setError(t('common.error'));
@@ -251,10 +249,19 @@ export default function TenantHuntingPage() {
 
   const handleRunNow = async (huntId: string) => {
     try {
-      await HuntingAPI.runScheduledHunt(huntId, tenantId, { userId });
-      setSuccess('Hunt run triggered successfully');
-      setActiveTab('runs');
-      fetchData();
+      // Get the scheduled hunt details
+      const hunt = await HuntingAPI.getScheduledHunt(huntId, tenantId);
+      // Execute the associated saved query
+      if (hunt.savedQueryId) {
+        const query = await HuntingAPI.getSavedQuery(hunt.savedQueryId, tenantId);
+        await HuntingAPI.executeQuery(query.queryText, query.dataset, tenantId, {
+          maxRows: hunt.maxRowsToScan,
+          timeWindowMinutes: hunt.timeWindowMinutes
+        });
+        setSuccess('Hunt run triggered successfully');
+        setActiveTab('runs');
+        fetchData();
+      }
     } catch (err) {
       setError(t('common.error'));
     }

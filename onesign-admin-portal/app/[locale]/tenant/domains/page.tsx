@@ -114,7 +114,8 @@ export default function CustomDomainsPage() {
           lastChecked: '2024-11-23T10:00:00Z',
           isPrimary: false,
         },
-      ]);
+      ];
+      setDomains(data || mockData);
     } catch (err) {
       console.error(err);
     } finally {

@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Onesign.Data.Contexts;
 using Onesign.Modules.Hunting.Domain.Entities;
 using Onesign.Modules.Hunting.Domain.Enums;
 using Onesign.Modules.Hunting.Domain.Repositories;
@@ -9,9 +8,9 @@ namespace Onesign.Modules.Hunting.Infrastructure.EfCore.Repositories;
 
 public class SavedQueryRepository : ISavedQueryRepository
 {
-    private readonly OnesignDbContext _dbContext;
+    private readonly DbContext _dbContext;
 
-    public SavedQueryRepository(OnesignDbContext dbContext)
+    public SavedQueryRepository(DbContext dbContext)
     {
         _dbContext = dbContext;
     }

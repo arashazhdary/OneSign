@@ -16,6 +16,7 @@ public class TenantUserEntityTypeConfiguration : IEntityTypeConfiguration<Tenant
         builder.Property(x => x.Status).IsRequired();
         builder.Property(x => x.IsAdmin).IsRequired();
         builder.Property(x => x.CreatedAt).IsRequired();
+        builder.Property(x => x.IsActive).IsRequired().HasDefaultValue(true);
     }
 }
 

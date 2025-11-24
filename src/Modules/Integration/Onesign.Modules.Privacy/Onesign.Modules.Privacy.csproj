@@ -14,5 +14,7 @@
     <ProjectReference Include="..\..\..\Onesign.Shared\Onesign.Shared.csproj" />
     <ProjectReference Include="..\..\Integration\Onesign.Modules.Audit\Onesign.Modules.Audit.csproj" />
     <ProjectReference Include="..\..\Security\Onesign.Modules.Identity\Onesign.Modules.Identity.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.NotificationCenter\Onesign.Modules.NotificationCenter.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Extensibility\Onesign.Modules.Extensibility.csproj" />
   </ItemGroup>
 </Project>

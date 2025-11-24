@@ -1,76 +1,77 @@
-using System.Reflection;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Onesign.Api.BackgroundServices;
 using Onesign.Data.Contexts;
-// ماژول‌های امنیتی
-using Onesign.Modules.Identity.Domain.Repositories;
-using Onesign.Modules.Identity.Domain.Services;
-using Onesign.Modules.Identity.Infrastructure.EfCore.Repositories;
-using Onesign.Modules.Identity.Infrastructure.Security;
-using Onesign.Modules.Security.Domain.Repositories;
-using Onesign.Modules.Security.Domain.Services;
-using Onesign.Modules.Security.Infrastructure.EfCore.Repositories;
-using Onesign.Modules.Security.Infrastructure.Services;
-using Onesign.Modules.Authorization.Application.Services;
-using Onesign.Modules.Authorization.Domain.Repositories;
-using Onesign.Modules.Authorization.Domain.Services;
-using Onesign.Modules.Authorization.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.AccessRequests.Application.Services;
 using Onesign.Modules.AccessRequests.Domain.Repositories;
 using Onesign.Modules.AccessRequests.Domain.Services;
 using Onesign.Modules.AccessRequests.Infrastructure.EfCore.Repositories;
-using Onesign.Modules.AccessRequests.Application.Services;
-// ماژول‌های عملیاتی
-using Onesign.Modules.Automation.Domain.Repositories;
-using Onesign.Modules.Automation.Domain.Services;
-using Onesign.Modules.Automation.Infrastructure.EfCore.Repositories;
-using Onesign.Modules.Automation.Application.Services;
-using Onesign.Modules.ChangeManagement.Domain.Repositories;
-using Onesign.Modules.ChangeManagement.Infrastructure.EfCore.Repositories;
-using Onesign.Modules.ChangeManagement.Application.Services;
-using Onesign.Modules.ChangeManagement.Application.Jobs;
-using Onesign.Modules.Incidents.Domain.Repositories;
-using Onesign.Modules.Incidents.Infrastructure.EfCore.Repositories;
-using Onesign.Modules.Incidents.Application.Services;
-using Onesign.Modules.Hunting.Domain.Repositories;
-using Onesign.Modules.Hunting.Infrastructure.EfCore.Repositories;
-using Onesign.Modules.Hunting.Application.Services;
-using Onesign.Modules.Hunting.Application.Jobs;
-using Onesign.Modules.Insights.Domain.Repositories;
-using Onesign.Modules.Insights.Infrastructure.EfCore.Repositories;
-using Onesign.Modules.Insights.Application.Services;
-using Onesign.Modules.Insights.Application.Jobs;
-// ماژول‌های پلتفرم
-using Onesign.Modules.Platform.Domain.Repositories;
-using Onesign.Modules.Platform.Infrastructure.EfCore.Repositories;
-using Onesign.Modules.Platform.Application.Services;
-using Onesign.Modules.Tenants.Domain.Repositories;
-using Onesign.Modules.Tenants.Infrastructure.EfCore.Repositories;
-using Onesign.Shared.MultiTenancy;
-using Onesign.Shared.Services;
-// ماژول‌های کسب و کار
-using Onesign.Modules.Organization.Domain.Repositories;
-using Onesign.Modules.Organization.Domain.Services;
-using Onesign.Modules.Organization.Infrastructure.EfCore.Repositories;
-using Onesign.Modules.Organization.Infrastructure.Services;
+using Onesign.Modules.AccessRequests.Infrastructure.Services;
 using Onesign.Modules.Applications.Domain.Repositories;
 using Onesign.Modules.Applications.Infrastructure.EfCore.Repositories;
 // ماژول‌های یکپارچه‌سازی
 using Onesign.Modules.Audit.Domain.Repositories;
 using Onesign.Modules.Audit.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.Authorization.Application.Services;
+using Onesign.Modules.Authorization.Domain.Repositories;
+using Onesign.Modules.Authorization.Domain.Services;
+using Onesign.Modules.Authorization.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.Automation.Application.Services;
+// ماژول‌های عملیاتی
+using Onesign.Modules.Automation.Domain.Repositories;
+using Onesign.Modules.Automation.Domain.Services;
+using Onesign.Modules.Automation.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.ChangeManagement.Application.Jobs;
+using Onesign.Modules.ChangeManagement.Application.Services;
+using Onesign.Modules.ChangeManagement.Domain.Repositories;
+using Onesign.Modules.ChangeManagement.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.Copilot.Application.Services;
+using Onesign.Modules.Copilot.Domain.Repositories;
+using Onesign.Modules.Copilot.Infrastructure.EfCore.Repositories;
 using Onesign.Modules.Developer.Domain.Repositories;
 using Onesign.Modules.Developer.Domain.Services;
 using Onesign.Modules.Developer.Infrastructure.EfCore.Repositories;
 using Onesign.Modules.Developer.Infrastructure.Services;
+using Onesign.Modules.Hunting.Application.Jobs;
+using Onesign.Modules.Hunting.Application.Services;
+using Onesign.Modules.Hunting.Domain.Repositories;
+using Onesign.Modules.Hunting.Infrastructure.EfCore.Repositories;
+// ماژول‌های امنیتی
+using Onesign.Modules.Identity.Domain.Repositories;
+using Onesign.Modules.Identity.Domain.Services;
+using Onesign.Modules.Identity.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.Identity.Infrastructure.Security;
+using Onesign.Modules.Incidents.Application.Services;
+using Onesign.Modules.Incidents.Domain.Repositories;
+using Onesign.Modules.Incidents.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.Insights.Application.Jobs;
+using Onesign.Modules.Insights.Application.Services;
+using Onesign.Modules.Insights.Domain.Repositories;
+using Onesign.Modules.Insights.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.NotificationCenter.Application.Services;
 using Onesign.Modules.NotificationCenter.Domain.Repositories;
 using Onesign.Modules.NotificationCenter.Domain.Services;
 using Onesign.Modules.NotificationCenter.Infrastructure.EfCore.Repositories;
-using Onesign.Modules.NotificationCenter.Application.Services;
-using Onesign.Modules.Copilot.Domain.Repositories;
-using Onesign.Modules.Copilot.Infrastructure.EfCore.Repositories;
-using Onesign.Modules.Copilot.Application.Services;
+// ماژول‌های کسب و کار
+using Onesign.Modules.Organization.Domain.Repositories;
+using Onesign.Modules.Organization.Domain.Services;
+using Onesign.Modules.Organization.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.Organization.Infrastructure.Services;
+using Onesign.Modules.Platform.Application.Services;
+// ماژول‌های پلتفرم
+using Onesign.Modules.Platform.Domain.Repositories;
+using Onesign.Modules.Platform.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.Security.Domain.Repositories;
+using Onesign.Modules.Security.Domain.Services;
+using Onesign.Modules.Security.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.Security.Infrastructure.Services;
+using Onesign.Modules.Tenants.Domain.Repositories;
+using Onesign.Modules.Tenants.Infrastructure.EfCore.Repositories;
+using Onesign.Shared.MultiTenancy;
+using Onesign.Shared.Services;
+using System.Reflection;
 
 // =====================================================
 // نقطه ورود اصلی برنامه
@@ -89,6 +90,8 @@ ConfigureBusinessServices(builder);
 ConfigureIntegrationServices(builder);
 ConfigureBackgroundServices(builder);
 
+builder.Services.AddScoped<IAccessRequestWorkflowEngine, AccessRequestWorkflowEngineService>();
+
 var app = builder.Build();
 
 // پیکربندی میدلورها و پایپلاین درخواست
@@ -100,8 +103,7 @@ app.Run();
 // متدهای پیکربندی سرویس‌ها
 // =====================================================
 
-/// <summary>
-/// سرویس‌های مشترک و زیرساختی
+// سرویس‌های مشترک و زیرساختی
 /// شامل پایگاه داده، اعتبارسنجی، مدیاتور و سایر سرویس‌های پایه
 /// </summary>
 static void ConfigureSharedServices(WebApplicationBuilder builder)
@@ -242,9 +244,8 @@ static void ConfigureSharedServices(WebApplicationBuilder builder)
     builder.Services.AddSingleton<IResourceQuotaService, ResourceQuotaService>();
 }
 
-/// <summary>
-/// سرویس‌های امنیتی
-/// مدیریت هویت، احراز هویت، مجوزدهی، درخواست دسترسی و دسترسی ویژه
+// سرویس‌های امنیتی
+// مدیریت هویت، احراز هویت، مجوزدهی، درخواست دسترسی و دسترسی ویژه
 /// </summary>
 static void ConfigureSecurityServices(WebApplicationBuilder builder)
 {
@@ -331,9 +332,8 @@ static void ConfigureSecurityServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IWorkflowEngine, WorkflowEngineService>();
 }
 
-/// <summary>
-/// سرویس‌های حاکمیت
-/// مدیریت چرخه حیات هویت، بینش‌های هویتی و فدراسیون
+// سرویس‌های حاکمیت
+// مدیریت چرخه حیات هویت، بینش‌های هویتی و فدراسیون
 /// </summary>
 static void ConfigureGovernanceServices(WebApplicationBuilder builder)
 {
@@ -347,9 +347,8 @@ static void ConfigureGovernanceServices(WebApplicationBuilder builder)
     // - IdentityInsights: تحلیل و گزارش‌گیری از رفتار کاربران
 }
 
-/// <summary>
-/// سرویس‌های عملیاتی
-/// اتوماسیون، مدیریت تغییرات، حوادث، شکار تهدید و بینش‌ها
+// سرویس‌های عملیاتی
+// اتوماسیون، مدیریت تغییرات، حوادث، شکار تهدید و بینش‌ها
 /// </summary>
 static void ConfigureOperationsServices(WebApplicationBuilder builder)
 {
@@ -460,9 +459,8 @@ static void ConfigureOperationsServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IExportService, ExportService>();
 }
 
-/// <summary>
-/// سرویس‌های پلتفرم
-/// مدیریت نسخه، استقرار، چندمنطقه‌ای، رمزنگاری و مستاجرین
+// سرویس‌های پلتفرم
+// مدیریت نسخه، استقرار، چندمنطقه‌ای، رمزنگاری و مستاجرین
 /// </summary>
 static void ConfigurePlatformServices(WebApplicationBuilder builder)
 {
@@ -573,6 +571,10 @@ static void ConfigureIntegrationServices(WebApplicationBuilder builder)
         new NotificationOutboxRepository(sp.GetRequiredService<OnesignDbContext>()));
     builder.Services.AddScoped<INotificationEventSubscriptionRepository>(sp =>
         new NotificationEventSubscriptionRepository(sp.GetRequiredService<OnesignDbContext>()));
+    builder.Services.AddScoped<INotificationChannelConfigRepository>(sp =>
+        new NotificationChannelConfigRepository(sp.GetRequiredService<OnesignDbContext>()));
+    builder.Services.AddScoped<INotificationDeliveryLogRepository>(sp =>
+        new NotificationDeliveryLogRepository(sp.GetRequiredService<OnesignDbContext>()));
 
     // =====================================================
     // سرویس‌های ماژول مرکز اعلان‌ها

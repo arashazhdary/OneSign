@@ -119,7 +119,7 @@ describe('ResetPasswordPage', () => {
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
-          'http://localhost:7000/api/auth/reset-password',
+          'http://localhost:9091/api/auth/reset-password',
           expect.objectContaining({
             method: 'POST',
             headers: {

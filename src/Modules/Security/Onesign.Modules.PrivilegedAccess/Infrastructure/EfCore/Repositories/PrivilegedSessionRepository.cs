@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Onesign.Data.Contexts;
 using Onesign.Modules.PrivilegedAccess.Domain.Entities;
 using Onesign.Modules.PrivilegedAccess.Domain.Repositories;
 using Onesign.Modules.PrivilegedAccess.Infrastructure.EfCore.Entities;
@@ -8,9 +7,9 @@ namespace Onesign.Modules.PrivilegedAccess.Infrastructure.EfCore.Repositories;
 
 public class PrivilegedSessionRepository : IPrivilegedSessionRepository
 {
-    private readonly OnesignDbContext _dbContext;
+    private readonly DbContext _dbContext;
 
-    public PrivilegedSessionRepository(OnesignDbContext dbContext)
+    public PrivilegedSessionRepository(DbContext dbContext)
     {
         _dbContext = dbContext;
     }
@@ -27,6 +26,16 @@ public class PrivilegedSessionRepository : IPrivilegedSessionRepository
     {
         var entities = await _dbContext.Set<PrivilegedSessionEntity>()
             .Where(x => x.TenantId == tenantId && x.UserId == userId)
+            .OrderByDescending(x => x.StartedAt)
+            .ToListAsync(ct);
+
+        return entities.Select(MapToDomain).ToList();
+    }
+
+    public async Task<IReadOnlyList<PrivilegedSession>> GetByTenantIdAsync(Guid tenantId, CancellationToken ct = default)
+    {
+        var entities = await _dbContext.Set<PrivilegedSessionEntity>()
+            .Where(x => x.TenantId == tenantId)
             .OrderByDescending(x => x.StartedAt)
             .ToListAsync(ct);
 

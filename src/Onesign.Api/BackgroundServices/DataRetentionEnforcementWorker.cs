@@ -214,7 +214,7 @@ public class DataRetentionEnforcementWorker : BackgroundService
             .ToListAsync(cancellationToken);
 
         var oldSessions = await dbContext.UserLoginSessions
-            .Where(s => userIds.Contains(s.UserId) &&
+            .Where(s => userIds.Contains(s.TenantUserId) &&
                        s.CreatedAt < cutoffDate &&
                        (s.ExpiresAt < DateTime.UtcNow || s.RevokedAt != null))
             .Take(batchSize)

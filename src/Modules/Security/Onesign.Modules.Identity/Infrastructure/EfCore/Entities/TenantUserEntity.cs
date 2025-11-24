@@ -19,5 +19,6 @@ public class TenantUserEntity
     public bool IsLocked { get; set; }
     public DateTime? LockedAt { get; set; }
     public string? LockReason { get; set; }
+    public bool IsActive { get; set; } = true;
 }
 

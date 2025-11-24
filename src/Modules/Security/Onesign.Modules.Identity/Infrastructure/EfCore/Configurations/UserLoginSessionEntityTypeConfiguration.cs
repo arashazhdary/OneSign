@@ -17,6 +17,8 @@ public class UserLoginSessionEntityTypeConfiguration : IEntityTypeConfiguration<
         builder.Property(x => x.CreatedAt).IsRequired();
         builder.Property(x => x.IpAddress).HasMaxLength(50);
         builder.Property(x => x.UserAgent).HasMaxLength(500);
+        builder.Property(x => x.IsActive).IsRequired().HasDefaultValue(true);
+        builder.Property(x => x.RevokedAt);
     }
 }
 

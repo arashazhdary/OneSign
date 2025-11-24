@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Onesign.Data.Contexts;
 using Onesign.Modules.AccessRequests.Domain.Entities;
 using Onesign.Modules.AccessRequests.Domain.Enums;
 using Onesign.Modules.AccessRequests.Domain.Repositories;
@@ -9,9 +8,9 @@ namespace Onesign.Modules.AccessRequests.Infrastructure.EfCore.Repositories;
 
 public class AccessRequestRepository : IAccessRequestRepository
 {
-    private readonly OnesignDbContext _dbContext;
+    private readonly DbContext _dbContext;
 
-    public AccessRequestRepository(OnesignDbContext dbContext)
+    public AccessRequestRepository(DbContext dbContext)
     {
         _dbContext = dbContext;
     }
@@ -44,6 +43,35 @@ public class AccessRequestRepository : IAccessRequestRepository
             .Include(x => x.Items)
             .Include(x => x.ApprovalSteps)
             .Where(x => x.TenantId == tenantId && x.RequesterId == requesterId)
+            .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+        return entities.Select(MapToDomain).ToList();
+    }
+
+    public async Task<IReadOnlyList<AccessRequest>> GetByRequesterIdAsync(Guid tenantId, Guid requesterId, CancellationToken cancellationToken = default)
+    {
+        return await GetByRequesterAsync(tenantId, requesterId, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<AccessRequest>> GetByApproverIdAsync(Guid tenantId, Guid approverId, CancellationToken cancellationToken = default)
+    {
+        var entities = await _dbContext.Set<AccessRequestEntity>()
+            .Include(x => x.Items)
+            .Include(x => x.ApprovalSteps)
+            .Where(x => x.TenantId == tenantId &&
+                       x.ApprovalSteps.Any(s => s.ApproverId == approverId))
+            .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync(cancellationToken);
+
+        return entities.Select(MapToDomain).ToList();
+    }
+
+    public async Task<IReadOnlyList<AccessRequest>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        var entities = await _dbContext.Set<AccessRequestEntity>()
+            .Include(x => x.Items)
+            .Include(x => x.ApprovalSteps)
             .OrderByDescending(x => x.CreatedAt)
             .ToListAsync(cancellationToken);
 

@@ -298,10 +298,16 @@ public class AdaptiveSecurityController : TenantControllerBase
         [FromQuery] int limit = 100,
         CancellationToken cancellationToken = default)
     {
+        Onesign.Modules.AdaptiveSecurity.Domain.Enums.SecuritySignalType? signalType = null;
+        if (!string.IsNullOrEmpty(type) && Enum.TryParse<Onesign.Modules.AdaptiveSecurity.Domain.Enums.SecuritySignalType>(type, true, out var parsedType))
+        {
+            signalType = parsedType;
+        }
+
         var query = new GetSecuritySignalsQuery
         {
             TenantId = tenantId,
-            SignalType = type,
+            SignalType = signalType,
             Limit = limit
         };
 

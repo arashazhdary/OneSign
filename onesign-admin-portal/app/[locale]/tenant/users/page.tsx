@@ -328,7 +328,7 @@ export default function TenantUsersPage() {
                     <option key={node.id} value={node.id}>{node.name}</option>
                   ))}
               </select>
-              <p className="text-sm text-gray-500 mt-1">{t('common.holdCtrl') || 'Hold Ctrl/Cmd to select multiple'}</p>
+              <p className="text-sm text-gray-700 mt-1">{t('common.holdCtrl') || 'Hold Ctrl/Cmd to select multiple'}</p>
             </div>
             {error && (
               <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
@@ -367,20 +367,20 @@ export default function TenantUsersPage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.users.email')}</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.users.status')}</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.users.isAdmin')}</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.users.lastLogin')}</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.users.actions')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">{t('tenant.users.email')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">{t('tenant.users.status')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">{t('tenant.users.isAdmin')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">{t('tenant.users.lastLogin')}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">{t('tenant.users.actions')}</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {users.map((user) => (
               <tr key={user.id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.email}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.status}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.isAdmin ? 'Yes' : 'No'}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.lastLoginAt || '-'}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.status}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.isAdmin ? 'Yes' : 'No'}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.lastLoginAt || '-'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <div className="flex gap-2">
                     <button

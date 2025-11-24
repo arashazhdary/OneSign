@@ -62,7 +62,7 @@ export default function MfaChallengePage() {
         ? btoa(`${navigator.userAgent}-${window.screen.width}x${window.screen.height}`)
         : undefined;
 
-      const response = await fetch('http://localhost:7000/api/tenant/mfa/verify', {
+      const response = await fetch('http://localhost:9091/api/tenant/mfa/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

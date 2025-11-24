@@ -55,7 +55,7 @@ public class CryptoController : ControllerBase
         var result = await _mediator.Send(command);
 
         if (!result.IsSuccess)
-            return BadRequest(new { error = result.Error });
+            return BadRequest(new { error = result.ErrorMessage });
 
         return Ok(result.Value);
     }
@@ -69,12 +69,12 @@ public class CryptoController : ControllerBase
         var command = new RevokeKeyVersionCommand
         {
             KeyVersionId = id,
-            AutoCreateNewActive = autoCreateNew
+            Reason = autoCreateNew ? "Auto-rotation requested" : "Manual revocation"
         };
         var result = await _mediator.Send(command);
 
         if (!result.IsSuccess)
-            return BadRequest(new { error = result.Error });
+            return BadRequest(new { error = result.ErrorMessage });
 
         return Ok();
     }

@@ -1,11 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using Onesign.Data.Contexts;
 using Onesign.Modules.Applications.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Billing.Domain.Repositories;
 using Onesign.Modules.Billing.Domain.Services;
 using Onesign.Modules.Federation.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Identity.Infrastructure.EfCore.Entities;
-using Onesign.Modules.OrgHierarchy.Infrastructure.EfCore.Entities;
+using Onesign.Modules.Organization.Infrastructure.EfCore.Entities;
 
 namespace Onesign.Modules.Billing.Application.Services;
 

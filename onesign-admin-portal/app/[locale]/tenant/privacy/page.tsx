@@ -102,9 +102,8 @@ export default function PrivacyPage() {
       await governanceService.createDataSubjectRequest(tenantId, requestForm);
       setSuccess('Data request created successfully');
       setShowRequestModal(false);
-        fetchDataRequests();
-        setRequestForm({ subjectId: '', type: 'Access', reason: '' });
-      }
+      fetchDataRequests();
+      setRequestForm({ subjectId: '', type: 'Access', reason: '' });
     } catch (err) {
       setError('Failed to create data request');
     } finally {
@@ -150,7 +149,7 @@ export default function PrivacyPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-6">
       <LoadingOverlay isLoading={loading} message="Processing..." />
 
       <div className="mb-8">

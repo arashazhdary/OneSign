@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
-import * as CopilotAPI from '@/lib/api/copilot';
+import { copilotService } from '@/lib/api/services/copilot.service';
 
 interface Message {
   id: string;
@@ -102,11 +102,16 @@ export default function TenantCopilotPage() {
   const fetchConversations = async () => {
     setLoading(true);
     try {
-      const data = await CopilotAPI.getConversations(tenantId, {
-        pageNumber: 1,
-        pageSize: 100,
-      });
-      setConversations(data.items || []);
+      // TODO: Get userId from auth context
+      const userId = 'current-user-id'; // This should come from auth context
+      const data = await copilotService.getConversations(tenantId, userId);
+      setConversations(data.map(conv => ({
+        id: conv.id,
+        title: conv.title || 'Untitled Conversation',
+        contextType: conv.context || 'Generic',
+        createdAt: conv.createdAt || new Date().toISOString(),
+        lastMessageAt: conv.updatedAt || conv.createdAt || new Date().toISOString(),
+      })));
     } catch (err) {
       console.error('Error fetching conversations:', err);
     } finally {
@@ -116,11 +121,14 @@ export default function TenantCopilotPage() {
 
   const fetchMessages = async (conversationId: string) => {
     try {
-      const data = await CopilotAPI.getMessages(tenantId, conversationId, {
-        pageNumber: 1,
-        pageSize: 100,
-      });
-      setMessages(data.items || []);
+      const data = await copilotService.getMessages(tenantId, conversationId);
+      setMessages(data.map(msg => ({
+        id: msg.id,
+        role: msg.role as 'user' | 'assistant',
+        content: msg.content,
+        timestamp: new Date(msg.timestamp || Date.now()),
+        suggestedActions: undefined, // Messages don't have suggestedActions in the type
+      })));
     } catch (err) {
       console.error('Error fetching messages:', err);
     }
@@ -156,10 +164,14 @@ export default function TenantCopilotPage() {
     setInputMessage('');
 
     try {
-      const data = await CopilotAPI.sendChatMessage(tenantId, {
+      // TODO: Get userId from auth context
+      const userId = 'current-user-id'; // This should come from auth context
+      const data = await copilotService.sendQuery({
+        tenantId,
+        userId,
         conversationId: activeConversationId || undefined,
-        contextType: selectedContext,
-        message: inputMessage,
+        context: selectedContext,
+        query: inputMessage,
       });
 
       const assistantMessage: Message = {
@@ -167,7 +179,7 @@ export default function TenantCopilotPage() {
         role: 'assistant',
         content: data.response,
         timestamp: new Date(),
-        suggestedActions: data.suggestedActions,
+        suggestedActions: data.suggestions,
       };
 
       setMessages(prev => [...prev, assistantMessage]);
@@ -190,11 +202,14 @@ export default function TenantCopilotPage() {
 
   const fetchSuggestions = async () => {
     try {
-      const data = await CopilotAPI.getSuggestions(tenantId, {
-        pageNumber: 1,
-        pageSize: 50,
-      });
-      setSuggestions(data.items || []);
+      const data = await copilotService.getSuggestions(tenantId, selectedContext);
+      setSuggestions(data.map((s: any) => ({
+        id: s.id || `suggestion-${Date.now()}`,
+        title: s.title || s.label || 'Suggestion',
+        description: s.description || '',
+        category: s.category || 'General',
+        priority: s.priority || 'Medium',
+      })));
     } catch (err) {
       console.error('Error fetching suggestions:', err);
     }
@@ -202,11 +217,15 @@ export default function TenantCopilotPage() {
 
   const fetchInsights = async () => {
     try {
-      const data = await CopilotAPI.getInsights(tenantId, {
-        pageNumber: 1,
-        pageSize: 50,
-      });
-      setInsights(data.items || []);
+      const data = await copilotService.getInsights(tenantId);
+      setInsights(data.map((i: any) => ({
+        id: i.id || `insight-${Date.now()}`,
+        title: i.title || 'Insight',
+        description: i.description || '',
+        severity: i.severity || 'Info',
+        metrics: i.metrics || {},
+        recommendations: i.recommendations || [],
+      })));
     } catch (err) {
       console.error('Error fetching insights:', err);
     }
@@ -216,10 +235,21 @@ export default function TenantCopilotPage() {
     setAnalyzing(true);
     setError('');
     try {
-      const data = await CopilotAPI.analyzeTenant(tenantId, {
-        contextType: selectedContext,
+      const data = await copilotService.requestAnalysis({
+        tenantId,
+        analysisType: 'risk', // Default to risk analysis
+        scope: selectedContext,
       });
-      setAnalysisResult(data);
+      setAnalysisResult({
+        summary: data.results?.summary || '',
+        findings: data.results?.findings?.map((f: any) => ({
+          category: f.type || 'General',
+          severity: f.severity || 'medium',
+          description: f.description || '',
+          recommendation: f.recommendation || '',
+        })) || [],
+        score: 0, // Analysis doesn't return a score, calculate from findings if needed
+      });
       setSidebarTab('analysis');
     } catch (err: any) {
       setError(err?.message || t('common.error'));

@@ -1705,5 +1705,6 @@ export default function TenantChangeManagementPage() {
         </div>
       </Modal>
     </div>
+    </div>
   );
 }

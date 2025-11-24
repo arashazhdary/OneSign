@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Onesign.Data.Contexts;
 using Onesign.Modules.ChangeManagement.Domain.Entities;
 using Onesign.Modules.ChangeManagement.Domain.Enums;
 using Onesign.Modules.ChangeManagement.Domain.Repositories;
@@ -9,9 +8,9 @@ namespace Onesign.Modules.ChangeManagement.Infrastructure.EfCore.Repositories;
 
 public class ChangeApprovalRepository : IChangeApprovalRepository
 {
-    private readonly OnesignDbContext _dbContext;
+    private readonly DbContext _dbContext;
 
-    public ChangeApprovalRepository(OnesignDbContext dbContext)
+    public ChangeApprovalRepository(DbContext dbContext)
     {
         _dbContext = dbContext;
     }

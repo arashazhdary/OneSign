@@ -345,7 +345,7 @@ export default function ExtensibilityPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-6">
       <LoadingOverlay isLoading={loading} message="Processing..." />
 
       {/* Header */}

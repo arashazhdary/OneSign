@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Onesign.Modules.Platform.Application.Commands;
 using Onesign.Modules.Platform.Application.Queries;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Onesign.Api.Controllers.Global;
 
@@ -68,7 +69,7 @@ public class PlatformController : ControllerBase
         [FromQuery] int pageSize = 20,
         [FromQuery] string? status = null)
     {
-        var query = new GetMigrationsQuery
+        var query = new Onesign.Modules.Platform.Application.Queries.GetMigrationHistoryQuery
         {
             Page = page,
             PageSize = pageSize,
@@ -98,8 +99,8 @@ public class PlatformController : ControllerBase
             return BadRequest(new { Error = "Command cannot be null" });
         }
 
-        _logger.LogInformation("Applying migration: {MigrationId}, DryRun: {DryRun}",
-            command.MigrationId, command.DryRun);
+        _logger.LogInformation("Applying migration: {MigrationName}, UserId: {UserId}",
+            command.MigrationName, command.UserId);
 
         var result = await _mediator.Send(command);
 
@@ -118,7 +119,7 @@ public class PlatformController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetDiagnostics()
     {
-        var query = new GetPlatformDiagnosticsQuery();
+        var query = new Onesign.Modules.Platform.Application.Queries.GetDiagnosticsQuery();
         var result = await _mediator.Send(query);
 
         if (!result.IsSuccess)
@@ -142,10 +143,10 @@ public class PlatformController : ControllerBase
             command = new RunIntegrationTestsCommand();
         }
 
-        command.ExecutedBy = User.Identity?.Name ?? "System";
+        // ExecutedBy is not a property of RunIntegrationTestsCommand
 
         _logger.LogInformation("Running integration tests: TestSuiteId={TestSuiteId}, Categories={Categories}",
-            command.TestSuiteId, string.Join(",", command.TestCategories ?? new List<string>()));
+            command.TestSuiteId, string.Join(",", command.Categories ?? new List<string>()));
 
         var result = await _mediator.Send(command);
 
@@ -165,7 +166,7 @@ public class PlatformController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetTestResult(Guid testId)
     {
-        var query = new GetTestResultQuery { TestId = testId };
+        var query = new Onesign.Modules.Platform.Application.Queries.GetIntegrationTestResultByIdQuery { Id = testId };
         var result = await _mediator.Send(query);
 
         if (!result.IsSuccess)
@@ -185,7 +186,7 @@ public class PlatformController : ControllerBase
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
-        var query = new GetTestResultsQuery
+        var query = new Onesign.Modules.Platform.Application.Queries.GetIntegrationTestResultsQuery
         {
             Page = page,
             PageSize = pageSize
@@ -209,15 +210,10 @@ public class PlatformController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetOpenApiSpec()
     {
-        var query = new GetOpenApiSpecQuery();
-        var result = await _mediator.Send(query);
-
-        if (!result.IsSuccess)
-        {
-            return BadRequest(new { Error = result.ErrorMessage });
-        }
-
-        return Ok(result.Value);
+        // Use service directly instead of query
+        var apiDocService = HttpContext.RequestServices.GetRequiredService<Onesign.Shared.Platform.Services.IApiDocumentationService>();
+        var spec = await apiDocService.GetOpenApiSpecificationAsync();
+        return Ok(spec);
     }
 
     /// <summary>
@@ -228,13 +224,12 @@ public class PlatformController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GenerateDocumentation()
     {
-        var command = new GenerateDocumentationCommand
+        var command = new Onesign.Modules.Platform.Application.Commands.GenerateApiDocumentationCommand
         {
-            RequestedBy = User.Identity?.Name ?? "System",
-            RequestedAt = DateTime.UtcNow
+            IncludeExamples = true
         };
 
-        _logger.LogInformation("Generating documentation requested by {RequestedBy}", command.RequestedBy);
+        _logger.LogInformation("Generating documentation");
 
         var result = await _mediator.Send(command);
 

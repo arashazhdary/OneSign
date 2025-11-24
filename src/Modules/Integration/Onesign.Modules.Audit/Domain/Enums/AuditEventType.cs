@@ -56,6 +56,11 @@ public enum AuditEventType
     PrivilegeEscalation = 120,
     ConfigurationChanged = 121,
     SecurityPolicyViolation = 122,
-    AnomalousPattern = 123
+    AnomalousPattern = 123,
+    UserLoggedIn = 124,
+    LoginFailed = 125,
+    DataAnonymized = 126,
+    DataDeleted = 127,
+    DataExported = 128
 }
 

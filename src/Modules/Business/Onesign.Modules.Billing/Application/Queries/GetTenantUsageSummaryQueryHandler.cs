@@ -1,13 +1,12 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Onesign.Data.Contexts;
 using Onesign.Modules.Billing.Application.DTOs;
 using Onesign.Modules.Billing.Domain.Enums;
 using Onesign.Modules.Billing.Domain.Repositories;
 using Onesign.Modules.Identity.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Applications.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Federation.Infrastructure.EfCore.Entities;
-using Onesign.Modules.OrgHierarchy.Infrastructure.EfCore.Entities;
+using Onesign.Modules.Organization.Infrastructure.EfCore.Entities;
 using Onesign.Shared.Result;
 
 namespace Onesign.Modules.Billing.Application.Queries;

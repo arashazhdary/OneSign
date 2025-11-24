@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Onesign.Data.Contexts;
 using Onesign.Modules.Developer.Domain.Entities;
 using Onesign.Modules.Developer.Domain.Repositories;
 using Onesign.Modules.Developer.Infrastructure.EfCore.Entities;
@@ -8,9 +7,9 @@ namespace Onesign.Modules.Developer.Infrastructure.EfCore.Repositories;
 
 public class ApiUsageLogRepository : IApiUsageLogRepository
 {
-    private readonly OnesignDbContext _dbContext;
+    private readonly DbContext _dbContext;
 
-    public ApiUsageLogRepository(OnesignDbContext dbContext)
+    public ApiUsageLogRepository(DbContext dbContext)
     {
         _dbContext = dbContext;
     }

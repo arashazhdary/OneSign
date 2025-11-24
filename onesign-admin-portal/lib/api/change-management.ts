@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:7000';
+import { API_BASE } from './config/api-config';
 
 // Enums
 export type ChangeSetStatus = 'Draft' | 'PendingApproval' | 'Approved' | 'Rejected' | 'Scheduled' | 'Applied' | 'RolledBack' | 'Failed';

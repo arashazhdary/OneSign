@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build:*)",
+      "Bash(npm run build:*)",
+      "Bash(node:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm install)",
+      "Bash(cat:*)",
+      "Bash(timeout 180 npm run build:*)",
+      "Bash(dotnet test:*)",
+      "Bash(dotnet sln:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

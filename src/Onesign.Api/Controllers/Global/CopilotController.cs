@@ -151,8 +151,10 @@ public class GlobalCopilotController : ControllerBase
                     UserId = request.UserId,
                     Name = request.Parameters.GetValueOrDefault("name", "New Automation"),
                     Description = request.Parameters.GetValueOrDefault("description", ""),
-                    TriggersJson = request.Parameters.GetValueOrDefault("triggers", "[]"),
-                    ActionsJson = request.Parameters.GetValueOrDefault("actions", "[]")
+                    TriggerEventType = request.Parameters.GetValueOrDefault("triggerEventType", ""),
+                    ActionType = request.Parameters.GetValueOrDefault("actionType", ""),
+                    ActionConfigJson = request.Parameters.GetValueOrDefault("actionConfigJson", "{}"),
+                    ConditionExpression = request.Parameters.TryGetValue("conditionExpression", out var conditionExpr) ? conditionExpr : null
                 };
                 var automationResult = await _mediator.Send(automationCommand);
                 if (!automationResult.IsSuccess)

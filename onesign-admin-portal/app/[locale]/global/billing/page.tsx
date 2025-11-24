@@ -294,8 +294,7 @@ export default function GlobalBillingPage() {
       label: t('global.billing.status'),
       render: (plan) => (
         <StatusBadge
-          status={plan.isActive ? 'Active' : 'Inactive'}
-          color={plan.isActive ? 'green' : 'gray'}
+          status={plan.isActive ? 'Active' : 'Inactive'}
         />
       )
     }
@@ -320,7 +319,7 @@ export default function GlobalBillingPage() {
           Suspended: 'yellow',
           Cancelled: 'red'
         };
-        return <StatusBadge status={sub.status} color={colors[sub.status] || 'gray'} />;
+        return <StatusBadge status={sub.status} />;
       }
     },
     {
@@ -380,7 +379,7 @@ export default function GlobalBillingPage() {
           Overdue: 'red',
           Cancelled: 'gray'
         };
-        return <StatusBadge status={invoice.status} color={colors[invoice.status]} />;
+        return <StatusBadge status={invoice.status} />;
       }
     },
     {

@@ -1,4 +1,4 @@
-import { ApiClient, apiClient } from '../api-client';
+import { ApiClient, authClient } from '../api-client';
 import {
   SignInRequest,
   SignInResponse,
@@ -30,7 +30,7 @@ import {
  * Handles all authentication and authorization operations
  */
 export class AuthService {
-  constructor(private client: ApiClient = apiClient) {}
+  constructor(private client: ApiClient = authClient) {}
 
   /**
    * Sign in with email and password

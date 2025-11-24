@@ -40,6 +40,7 @@ interface APIConsumer {
 }
 
 interface APIVersion {
+  id: string;
   version: string;
   status: 'Active' | 'Deprecated' | 'Retired';
   releaseDate: string;

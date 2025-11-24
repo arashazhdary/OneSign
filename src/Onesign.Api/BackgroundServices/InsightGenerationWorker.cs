@@ -54,7 +54,7 @@ public class InsightGenerationWorker : BackgroundService
 
         // Get all active tenants
         var tenants = await dbContext.Tenants
-            .Where(t => t.IsActive)
+            .Where(t => t.Status == Onesign.Modules.Tenants.Domain.Enums.TenantStatus.Active)
             .Select(t => t.Id)
             .ToListAsync(cancellationToken);
 
@@ -332,7 +332,15 @@ public class InsightGenerationWorker : BackgroundService
             .CountAsync(u => u.TenantId == tenantId && u.IsActive, cancellationToken);
 
         var mfaEnabledUsers = await dbContext.TenantUsers
-            .CountAsync(u => u.TenantId == tenantId && u.IsActive && u.MfaEnabled, cancellationToken);
+            .Where(u => u.TenantId == tenantId && u.IsActive)
+            .Join(dbContext.UserMfaMethods,
+                u => u.Id,
+                m => m.TenantUserId,
+                (u, m) => new { u, m })
+            .Where(x => x.m.IsVerified)
+            .Select(x => x.u.Id)
+            .Distinct()
+            .CountAsync(cancellationToken);
 
         if (totalUsers > 5 && mfaEnabledUsers < totalUsers * 0.5) // <50% MFA adoption
         {
@@ -385,7 +393,7 @@ public class InsightGenerationWorker : BackgroundService
                             a.CreatedAt >= since &&
                             (a.EventType == Onesign.Modules.Audit.Domain.Enums.AuditEventType.UserCreated ||
                              a.EventType == Onesign.Modules.Audit.Domain.Enums.AuditEventType.UserDeleted ||
-                             a.EventType == Onesign.Modules.Audit.Domain.Enums.AuditEventType.SettingsUpdated), cancellationToken);
+                             a.EventType == Onesign.Modules.Audit.Domain.Enums.AuditEventType.ConfigurationChanged), cancellationToken);
 
         // Get typical daily average (simplified - in production would use historical data)
         var typicalDailyAverage = 10;

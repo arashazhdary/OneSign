@@ -82,60 +82,62 @@ export default function LoginPage() {
       }
 
       // Initialize Google Sign-In
-      window.google.accounts.id.initialize({
-        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
-        callback: async (response: any) => {
-          try {
-            if (!tenantId) {
+      if (window.google) {
+        window.google.accounts.id.initialize({
+          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
+          callback: async (response: any) => {
+            try {
+              if (!tenantId) {
+                setError(t('common.error'));
+                setLoading(false);
+                return;
+              }
+
+              const loginResponse = await fetch(`http://localhost:9091/api/auth/google-login?tenantId=${tenantId}`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  idToken: response.credential,
+                  clientId: clientId ? clientId : undefined
+                }),
+              });
+
+              if (!loginResponse.ok) {
+                const data = await loginResponse.json();
+                setError(data.errorMessage || t('login.invalidCredentials'));
+                setLoading(false);
+                return;
+              }
+
+              const data = await loginResponse.json();
+
+              // If OIDC flow, redirect to authorize endpoint
+              if (clientId && redirectUri) {
+                const authorizeUrl = new URL('http://localhost:7000/connect/authorize');
+                authorizeUrl.searchParams.set('client_id', clientId);
+                authorizeUrl.searchParams.set('redirect_uri', redirectUri);
+                authorizeUrl.searchParams.set('response_type', 'code');
+                authorizeUrl.searchParams.set('scope', 'openid profile email');
+                if (state) authorizeUrl.searchParams.set('state', state);
+                if (codeChallenge) authorizeUrl.searchParams.set('code_challenge', codeChallenge);
+                if (codeChallengeMethod) authorizeUrl.searchParams.set('code_challenge_method', codeChallengeMethod);
+                authorizeUrl.searchParams.set('tenantId', tenantId);
+
+                window.location.href = authorizeUrl.toString();
+              } else {
+                router.push('/');
+              }
+            } catch (err) {
               setError(t('common.error'));
               setLoading(false);
-              return;
             }
-            
-            const loginResponse = await fetch(`http://localhost:7000/api/auth/google-login?tenantId=${tenantId}`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ 
-                idToken: response.credential,
-                clientId: clientId ? clientId : undefined
-              }),
-            });
-
-            if (!loginResponse.ok) {
-              const data = await loginResponse.json();
-              setError(data.errorMessage || t('login.invalidCredentials'));
-              setLoading(false);
-              return;
-            }
-
-            const data = await loginResponse.json();
-            
-            // If OIDC flow, redirect to authorize endpoint
-            if (clientId && redirectUri) {
-              const authorizeUrl = new URL('http://localhost:7000/connect/authorize');
-              authorizeUrl.searchParams.set('client_id', clientId);
-              authorizeUrl.searchParams.set('redirect_uri', redirectUri);
-              authorizeUrl.searchParams.set('response_type', 'code');
-              authorizeUrl.searchParams.set('scope', 'openid profile email');
-              if (state) authorizeUrl.searchParams.set('state', state);
-              if (codeChallenge) authorizeUrl.searchParams.set('code_challenge', codeChallenge);
-              if (codeChallengeMethod) authorizeUrl.searchParams.set('code_challenge_method', codeChallengeMethod);
-              authorizeUrl.searchParams.set('tenantId', tenantId);
-              
-              window.location.href = authorizeUrl.toString();
-            } else {
-              router.push('/');
-            }
-          } catch (err) {
-            setError(t('common.error'));
-            setLoading(false);
           }
-        }
-      });
+        });
 
-      window.google.accounts.id.prompt();
+        window.google.accounts.id.prompt();
+      }
     } catch (err) {
       setError(t('common.error'));
       setLoading(false);
@@ -154,7 +156,7 @@ export default function LoginPage() {
         return;
       }
       
-      const response = await fetch(`http://localhost:7000/api/auth/login?tenantId=${tenantId}`, {
+      const response = await fetch(`http://localhost:9091/api/auth/login?tenantId=${tenantId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -231,7 +233,7 @@ export default function LoginPage() {
               >
                 {t('login.title')}
               </h1>
-              <p className="text-gray-600 text-sm">
+              <p className="text-gray-700 text-sm">
                 Welcome back! Please enter your credentials
               </p>
             </div>

@@ -7,5 +7,7 @@ public enum DataCategory
     AuditLogs = 3,
     FederationLogs = 4,
     AccessRequests = 5,
-    LifecycleHistory = 6
+    LifecycleHistory = 6,
+    LoginHistory = 7,
+    Sessions = 8
 }

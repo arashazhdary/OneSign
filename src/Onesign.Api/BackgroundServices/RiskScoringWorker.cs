@@ -57,7 +57,7 @@ public class RiskScoringWorker : BackgroundService
 
         // Get all tenants
         var tenants = await dbContext.Tenants
-            .Where(t => t.IsActive)
+            .Where(t => t.Status == Onesign.Modules.Tenants.Domain.Enums.TenantStatus.Active)
             .Select(t => t.Id)
             .ToListAsync(cancellationToken);
 
@@ -95,8 +95,14 @@ public class RiskScoringWorker : BackgroundService
             var riskFactors = new List<string>();
             var riskScore = 0;
 
+            // Get global user for display name
+            var globalUser = await dbContext.GlobalUsers
+                .FirstOrDefaultAsync(g => g.Id == user.GlobalUserId, cancellationToken);
+
             // Factor 1: MFA not enabled (+20 points)
-            if (!user.MfaEnabled)
+            var hasMfa = await dbContext.UserMfaMethods
+                .AnyAsync(m => m.TenantUserId == user.Id && m.IsVerified, cancellationToken);
+            if (!hasMfa)
             {
                 riskScore += 20;
                 riskFactors.Add("MFA not enabled");
@@ -150,7 +156,7 @@ public class RiskScoringWorker : BackgroundService
                     ao => ao.OrgUnitId,
                     uo => uo.OrgUnitId,
                     (ao, uo) => new { ao, uo })
-                .CountAsync(x => x.uo.UserId == user.Id, cancellationToken);
+                .CountAsync(x => x.uo.TenantUserId == user.Id, cancellationToken);
 
             if (appsCount > 20)
             {
@@ -173,7 +179,9 @@ public class RiskScoringWorker : BackgroundService
                 existingProfile.RiskFactorsJson = System.Text.Json.JsonSerializer.Serialize(riskFactors);
                 existingProfile.LastLoginAt = user.LastLoginAt;
                 existingProfile.FailedLoginCount = failedLogins;
-                existingProfile.MfaEnabled = user.MfaEnabled;
+                var hasMfaForProfile = await dbContext.UserMfaMethods
+                    .AnyAsync(m => m.TenantUserId == user.Id && m.IsVerified, cancellationToken);
+                existingProfile.MfaEnabled = hasMfaForProfile;
                 existingProfile.PrivilegedRolesCount = privilegedRoles;
                 existingProfile.ApplicationsCount = appsCount;
                 existingProfile.CalculatedAt = now;
@@ -186,12 +194,12 @@ public class RiskScoringWorker : BackgroundService
                     Id = Guid.NewGuid(),
                     TenantId = tenantId,
                     UserId = user.Id,
-                    UserDisplayName = $"{user.FirstName} {user.LastName}".Trim(),
+                    UserDisplayName = globalUser?.Email ?? user.Id.ToString(),
                     RiskScore = riskScore,
                     RiskFactorsJson = System.Text.Json.JsonSerializer.Serialize(riskFactors),
                     LastLoginAt = user.LastLoginAt,
                     FailedLoginCount = failedLogins,
-                    MfaEnabled = user.MfaEnabled,
+                    MfaEnabled = hasMfa,
                     PrivilegedRolesCount = privilegedRoles,
                     ApplicationsCount = appsCount,
                     CalculatedAt = now,

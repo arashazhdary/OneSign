@@ -133,7 +133,8 @@ export default function LicensesPage() {
           activations: 1,
           maxActivations: 1,
         },
-      ]);
+      ];
+      setLicenses(data || mockData);
     } catch (err) {
       console.error(err);
     } finally {

@@ -35,7 +35,7 @@ public class ApplicationsControllerTests : IClassFixture<InMemoryWebApplicationF
         {
             TenantId = tenantId,
             Name = "Test Application",
-            ApplicationType = "web",
+            ApplicationType = Onesign.Modules.Applications.Domain.Enums.ApplicationType.Web,
             RedirectUris = new[] { "https://example.com/callback" }
         };
 
@@ -68,7 +68,7 @@ public class ApplicationsControllerTests : IClassFixture<InMemoryWebApplicationF
         {
             TenantId = tenantId,
             Name = "Get Test Application",
-            ApplicationType = "web",
+            ApplicationType = Onesign.Modules.Applications.Domain.Enums.ApplicationType.Web,
             RedirectUris = new[] { "https://example.com/callback" }
         };
 
@@ -103,7 +103,7 @@ public class ApplicationsControllerTests : IClassFixture<InMemoryWebApplicationF
         {
             TenantId = tenantId,
             Name = "Redirect Test Application",
-            ApplicationType = "web",
+            ApplicationType = Onesign.Modules.Applications.Domain.Enums.ApplicationType.Web,
             RedirectUris = new[] { "https://example.com/callback" }
         };
 
@@ -139,7 +139,7 @@ public class ApplicationsControllerTests : IClassFixture<InMemoryWebApplicationF
         {
             TenantId = tenantId,
             Name = "Regen Secret Application",
-            ApplicationType = "web",
+            ApplicationType = Onesign.Modules.Applications.Domain.Enums.ApplicationType.Web,
             RedirectUris = new[] { "https://example.com/callback" }
         };
 

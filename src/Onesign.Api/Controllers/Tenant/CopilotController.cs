@@ -74,6 +74,8 @@ public class CopilotController : TenantControllerBase
     /// Get recent conversation history for the current user
     /// </summary>
     /// <param name="limit">Maximum number of conversations to return (default: 10)</param>
+    /// <param name="tenantId">Optional tenant ID filter</param>
+    /// <param name="userId">Optional user ID filter</param>
     /// <returns>List of recent conversations</returns>
     [HttpGet("conversations")]
     [ProducesResponseType(typeof(List<ConversationHistoryDto>), StatusCodes.Status200OK)]
@@ -117,6 +119,9 @@ public class CopilotController : TenantControllerBase
     /// Get a specific conversation with full message history
     /// </summary>
     /// <param name="id">The conversation ID</param>
+    /// <param name="id">Conversation ID</param>
+    /// <param name="tenantId">Optional tenant ID filter</param>
+    /// <param name="userId">Optional user ID filter</param>
     /// <returns>The conversation with all messages</returns>
     [HttpGet("conversations/{id:guid}")]
     [ProducesResponseType(typeof(ConversationHistoryDto), StatusCodes.Status200OK)]
@@ -200,8 +205,10 @@ public class CopilotController : TenantControllerBase
                     UserId = userId,
                     Name = request.Parameters.GetValueOrDefault("name", "New Automation"),
                     Description = request.Parameters.GetValueOrDefault("description", ""),
-                    TriggersJson = request.Parameters.GetValueOrDefault("triggers", "[]"),
-                    ActionsJson = request.Parameters.GetValueOrDefault("actions", "[]")
+                    TriggerEventType = request.Parameters.GetValueOrDefault("triggerEventType", ""),
+                    ActionType = request.Parameters.GetValueOrDefault("actionType", ""),
+                    ActionConfigJson = request.Parameters.GetValueOrDefault("actionConfigJson", "{}"),
+                    ConditionExpression = request.Parameters.TryGetValue("conditionExpression", out var conditionExpr) ? conditionExpr : null
                 };
                 var automationResult = await _mediator.Send(automationCommand);
                 if (!automationResult.IsSuccess)

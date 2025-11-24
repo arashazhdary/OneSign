@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-using Onesign.Data.Contexts;
 using Onesign.Modules.Developer.Domain.Entities;
 using Onesign.Modules.Developer.Domain.Repositories;
 using Onesign.Modules.Developer.Infrastructure.EfCore.Entities;
@@ -9,9 +8,9 @@ namespace Onesign.Modules.Developer.Infrastructure.EfCore.Repositories;
 
 public class ApiKeyRepository : IApiKeyRepository
 {
-    private readonly OnesignDbContext _dbContext;
+    private readonly DbContext _dbContext;
 
-    public ApiKeyRepository(OnesignDbContext dbContext)
+    public ApiKeyRepository(DbContext dbContext)
     {
         _dbContext = dbContext;
     }

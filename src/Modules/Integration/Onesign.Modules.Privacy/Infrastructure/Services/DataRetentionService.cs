@@ -2,6 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Onesign.Modules.Audit.Infrastructure.EfCore.Entities;
+using Onesign.Modules.Identity.Infrastructure.EfCore.Entities;
+using Onesign.Modules.NotificationCenter.Infrastructure.EfCore.Entities;
+using Onesign.Modules.Extensibility.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Privacy.Domain.Entities;
 using Onesign.Modules.Privacy.Domain.Enums;
 using Onesign.Modules.Privacy.Domain.Repositories;
@@ -125,7 +128,7 @@ public class DataRetentionService : IDataRetentionService
         DateTime cutoffDate,
         CancellationToken cancellationToken)
     {
-        var loginEvents = await dbContext.AuditEvents
+        var loginEvents = await dbContext.Set<AuditEventEntity>()
             .Where(a => a.TenantId == policy.TenantId &&
                        a.CreatedAt < cutoffDate &&
                        (a.EventType == Onesign.Modules.Audit.Domain.Enums.AuditEventType.UserLoggedIn ||
@@ -134,7 +137,7 @@ public class DataRetentionService : IDataRetentionService
 
         if (loginEvents.Any())
         {
-            dbContext.AuditEvents.RemoveRange(loginEvents);
+            dbContext.Set<AuditEventEntity>().RemoveRange(loginEvents);
         }
 
         return loginEvents.Count;
@@ -146,20 +149,20 @@ public class DataRetentionService : IDataRetentionService
         DateTime cutoffDate,
         CancellationToken cancellationToken)
     {
-        var userIds = await dbContext.TenantUsers
+        var userIds = await dbContext.Set<TenantUserEntity>()
             .Where(u => u.TenantId == policy.TenantId)
             .Select(u => u.Id)
             .ToListAsync(cancellationToken);
 
-        var oldSessions = await dbContext.UserLoginSessions
-            .Where(s => userIds.Contains(s.UserId) &&
+        var oldSessions = await dbContext.Set<UserLoginSessionEntity>()
+            .Where(s => userIds.Contains(s.TenantUserId) &&
                        s.CreatedAt < cutoffDate &&
                        (s.ExpiresAt < DateTime.UtcNow || s.RevokedAt != null))
             .ToListAsync(cancellationToken);
 
         if (oldSessions.Any())
         {
-            dbContext.UserLoginSessions.RemoveRange(oldSessions);
+            dbContext.Set<UserLoginSessionEntity>().RemoveRange(oldSessions);
         }
 
         return oldSessions.Count;
@@ -171,7 +174,7 @@ public class DataRetentionService : IDataRetentionService
         DateTime cutoffDate,
         CancellationToken cancellationToken)
     {
-        var oldNotifications = await dbContext.NotificationOutboxItems
+        var oldNotifications = await dbContext.Set<NotificationOutboxItemEntity>()
             .Where(n => n.TenantId == policy.TenantId &&
                        n.CreatedAt < cutoffDate &&
                        (n.Status == 1 || n.Status == 2))
@@ -179,7 +182,7 @@ public class DataRetentionService : IDataRetentionService
 
         if (oldNotifications.Any())
         {
-            dbContext.NotificationOutboxItems.RemoveRange(oldNotifications);
+            dbContext.Set<NotificationOutboxItemEntity>().RemoveRange(oldNotifications);
         }
 
         return oldNotifications.Count;
@@ -191,7 +194,7 @@ public class DataRetentionService : IDataRetentionService
         DateTime cutoffDate,
         CancellationToken cancellationToken)
     {
-        var oldLogs = await dbContext.WebhookDeliveryLogs
+        var oldLogs = await dbContext.Set<WebhookDeliveryLogEntity>()
             .Where(w => w.TenantId == policy.TenantId &&
                        w.CreatedAt < cutoffDate &&
                        (w.Status == 2 || w.Status == 3))
@@ -199,7 +202,7 @@ public class DataRetentionService : IDataRetentionService
 
         if (oldLogs.Any())
         {
-            dbContext.WebhookDeliveryLogs.RemoveRange(oldLogs);
+            dbContext.Set<WebhookDeliveryLogEntity>().RemoveRange(oldLogs);
         }
 
         return oldLogs.Count;
@@ -229,7 +232,7 @@ public class DataRetentionService : IDataRetentionService
             CreatedAt = DateTime.UtcNow
         };
 
-        dbContext.AuditEvents.Add(auditEvent);
+        dbContext.Set<AuditEventEntity>().Add(auditEvent);
         await Task.CompletedTask;
     }
 }

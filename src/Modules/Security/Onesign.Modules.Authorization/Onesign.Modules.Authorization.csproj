@@ -13,8 +13,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Onesign.Shared\Onesign.Shared.csproj" />
-    <ProjectReference Include="..\..\..\Onesign.Data\Onesign.Data.csproj" />
     <ProjectReference Include="..\..\Platform\Onesign.Modules.Tenants\Onesign.Modules.Tenants.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.Identity\Onesign.Modules.Identity.csproj" />
   </ItemGroup>
 
 </Project>

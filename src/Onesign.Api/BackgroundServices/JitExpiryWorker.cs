@@ -89,13 +89,12 @@ public class JitExpiryWorker : BackgroundService
                 var activeSessions = await dbContext.PrivilegedSessions
                     .Where(s => s.TenantId == grant.TenantId &&
                                s.UserId == grant.UserId &&
-                               s.JitGrantId == grant.Id &&
-                               s.Status == 0) // Active
+                               s.IsActive) // Active
                     .ToListAsync(cancellationToken);
 
                 foreach (var session in activeSessions)
                 {
-                    session.Status = 2; // Terminated
+                    session.IsActive = false; // Terminated
                     session.EndedAt = now;
                     _logger.LogDebug("Terminated privileged session {SessionId} due to JIT grant expiry", session.Id);
                 }
@@ -148,7 +147,7 @@ public class JitExpiryWorker : BackgroundService
             TenantId = tenantId,
             Channel = 0, // Email
             Priority = 1, // Normal
-            RecipientAddress = user.Email,
+            RecipientAddress = (await dbContext.GlobalUsers.FirstOrDefaultAsync(g => g.Id == user.GlobalUserId, cancellationToken))?.Email ?? string.Empty,
             RecipientUserId = userId,
             Subject = $"Privileged Access Expired: {roleName}",
             Body = $"Your just-in-time access to the role '{roleName}' has expired. " +

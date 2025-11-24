@@ -309,13 +309,20 @@ export class ApiClient {
   }
 }
 
-// Default instance with localhost configuration
+import { apiConfig } from './config/api-config';
+
+// Default instance for services (uses servicesBaseUrl from config)
 export const apiClient = new ApiClient({
-  baseUrl: 'http://localhost:7000',
-  timeout: 30000,
-  defaultHeaders: {
-    'Content-Type': 'application/json',
-  },
+  baseUrl: apiConfig.servicesBaseUrl,
+  timeout: apiConfig.timeout,
+  defaultHeaders: apiConfig.defaultHeaders,
+});
+
+// Auth client instance (uses authBaseUrl from config)
+export const authClient = new ApiClient({
+  baseUrl: apiConfig.authBaseUrl,
+  timeout: apiConfig.timeout,
+  defaultHeaders: apiConfig.defaultHeaders,
 });
 
 // Create a custom instance

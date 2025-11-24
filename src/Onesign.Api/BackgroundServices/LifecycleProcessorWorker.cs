@@ -126,7 +126,7 @@ public class LifecycleProcessorWorker : BackgroundService
 
         // Find applicable access packages for the new employee
         var accessPackages = await dbContext.AccessPackages
-            .Where(ap => ap.TenantId == lifecycleEvent.TenantId && ap.IsAutoAssigned)
+            .Where(ap => ap.TenantId == lifecycleEvent.TenantId && ap.IsEnabled)
             .ToListAsync(cancellationToken);
 
         // Get HR record details from NewSnapshotJson
@@ -136,9 +136,15 @@ public class LifecycleProcessorWorker : BackgroundService
         if (hrRecord != null)
         {
             // Create user account if it doesn't exist
-            var existingUser = await dbContext.TenantUsers
-                .FirstOrDefaultAsync(u => u.TenantId == lifecycleEvent.TenantId &&
-                                         u.Email == hrRecord.WorkEmail, cancellationToken);
+            // Get global user by email
+            var globalUser = await dbContext.GlobalUsers
+                .FirstOrDefaultAsync(g => g.Email == hrRecord.Email, cancellationToken);
+            
+            var existingUser = globalUser != null
+                ? await dbContext.TenantUsers
+                    .FirstOrDefaultAsync(u => u.TenantId == lifecycleEvent.TenantId &&
+                                             u.GlobalUserId == globalUser.Id, cancellationToken)
+                : null;
 
             if (existingUser == null)
             {
@@ -148,7 +154,7 @@ public class LifecycleProcessorWorker : BackgroundService
 
             // Queue notification for new user welcome
             await QueueNotificationAsync(dbContext, lifecycleEvent.TenantId,
-                "user.onboarded", hrRecord.WorkEmail, cancellationToken);
+                "user.onboarded", hrRecord.Email, cancellationToken);
         }
 
         _logger.LogDebug("Joiner event {Id} completed with {PackageCount} access packages",
@@ -176,7 +182,7 @@ public class LifecycleProcessorWorker : BackgroundService
 
             // Queue notification for role change
             await QueueNotificationAsync(dbContext, lifecycleEvent.TenantId,
-                "user.rolechanged", hrRecord.WorkEmail, cancellationToken);
+                "user.rolechanged", hrRecord.Email, cancellationToken);
         }
 
         _logger.LogDebug("Mover event {Id} processed", lifecycleEvent.Id);
@@ -195,10 +201,16 @@ public class LifecycleProcessorWorker : BackgroundService
 
         if (hrRecord != null)
         {
+            // Get global user by email
+            var globalUser = await dbContext.GlobalUsers
+                .FirstOrDefaultAsync(g => g.Email == hrRecord.Email, cancellationToken);
+            
             // Find and disable user account
-            var user = await dbContext.TenantUsers
-                .FirstOrDefaultAsync(u => u.TenantId == lifecycleEvent.TenantId &&
-                                         u.Email == hrRecord.WorkEmail, cancellationToken);
+            var user = globalUser != null
+                ? await dbContext.TenantUsers
+                    .FirstOrDefaultAsync(u => u.TenantId == lifecycleEvent.TenantId &&
+                                             u.GlobalUserId == globalUser.Id, cancellationToken)
+                : null;
 
             if (user != null)
             {
@@ -207,7 +219,7 @@ public class LifecycleProcessorWorker : BackgroundService
 
                 // Revoke all active sessions
                 var sessions = await dbContext.UserLoginSessions
-                    .Where(s => s.UserId == user.Id && s.RevokedAt == null)
+                    .Where(s => s.TenantUserId == user.Id && s.RevokedAt == null)
                     .ToListAsync(cancellationToken);
 
                 foreach (var session in sessions)

@@ -17,6 +17,7 @@
     <ProjectReference Include="..\Onesign.Modules.Applications\Onesign.Modules.Applications.csproj" />
     <ProjectReference Include="..\..\Governance\Onesign.Modules.Federation\Onesign.Modules.Federation.csproj" />
     <ProjectReference Include="..\Onesign.Modules.Organization\Onesign.Modules.Organization.csproj" />
+    <ProjectReference Include="..\..\Platform\Onesign.Modules.Tenants\Onesign.Modules.Tenants.csproj" />
   </ItemGroup>
 
 </Project>

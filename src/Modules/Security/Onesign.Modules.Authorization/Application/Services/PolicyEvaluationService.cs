@@ -1,20 +1,20 @@
 using Microsoft.EntityFrameworkCore;
-using Onesign.Data.Contexts;
 using Onesign.Modules.Authorization.Domain.Enums;
 using Onesign.Modules.Authorization.Domain.Repositories;
 using Onesign.Modules.Authorization.Domain.Services;
 using Onesign.Modules.Tenants.Domain.Entities;
+using Onesign.Modules.Identity.Infrastructure.EfCore.Entities;
 
 namespace Onesign.Modules.Authorization.Application.Services;
 
 public class PolicyEvaluationService : IPolicyEvaluationService
 {
     private readonly IPolicyAssignmentRepository _assignmentRepository;
-    private readonly OnesignDbContext _dbContext;
+    private readonly DbContext _dbContext;
 
     public PolicyEvaluationService(
         IPolicyAssignmentRepository assignmentRepository,
-        OnesignDbContext dbContext)
+        DbContext dbContext)
     {
         _assignmentRepository = assignmentRepository;
         _dbContext = dbContext;
@@ -164,15 +164,23 @@ public class PolicyEvaluationService : IPolicyEvaluationService
         var context = new Dictionary<string, object>();
 
         // Get user information
-        var user = await _dbContext.Set<TenantUserEntity>()
+        var tenantUser = await _dbContext.Set<TenantUserEntity>()
             .FirstOrDefaultAsync(x => x.Id == userId && x.TenantId == tenantId, cancellationToken);
 
-        if (user != null)
+        if (tenantUser != null)
         {
-            context["UserId"] = user.Id.ToString();
-            context["Email"] = user.Email;
-            context["IsActive"] = user.IsActive;
-            context["EmailVerified"] = user.EmailVerified;
+            context["UserId"] = tenantUser.Id.ToString();
+            context["IsActive"] = tenantUser.IsActive;
+            
+            // Get global user for email information
+            var globalUser = await _dbContext.Set<GlobalUserEntity>()
+                .FirstOrDefaultAsync(x => x.Id == tenantUser.GlobalUserId, cancellationToken);
+            
+            if (globalUser != null)
+            {
+                context["Email"] = globalUser.Email;
+                context["EmailVerified"] = globalUser.EmailVerified;
+            }
         }
 
         // Get user roles (you would need to implement this based on your role system)

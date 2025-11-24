@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Onesign.Data.Contexts;
 using Onesign.Modules.PrivilegedAccess.Domain.Entities;
 using Onesign.Modules.PrivilegedAccess.Domain.Repositories;
 using Onesign.Modules.PrivilegedAccess.Infrastructure.EfCore.Entities;
@@ -8,9 +7,9 @@ namespace Onesign.Modules.PrivilegedAccess.Infrastructure.EfCore.Repositories;
 
 public class BreakGlassAccountRepository : IBreakGlassAccountRepository
 {
-    private readonly OnesignDbContext _dbContext;
+    private readonly DbContext _dbContext;
 
-    public BreakGlassAccountRepository(OnesignDbContext dbContext)
+    public BreakGlassAccountRepository(DbContext dbContext)
     {
         _dbContext = dbContext;
     }

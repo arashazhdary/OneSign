@@ -24,14 +24,13 @@ public class GetPrivilegedSessionsQueryHandler : IRequestHandler<GetPrivilegedSe
         var dtos = sessions.Select(s => new PrivilegedSessionDto
         {
             Id = s.Id,
+            TenantId = s.TenantId,
             UserId = s.UserId,
-            UserDisplayName = s.UserDisplayName,
-            PrivilegedRolesJson = s.PrivilegedRolesJson,
+            SessionType = "Privileged", // Default session type
             StartedAt = s.StartedAt,
-            LastActivityAt = s.LastActivityAt,
             EndedAt = s.EndedAt,
-            IpAddress = s.IpAddress,
-            IsActive = s.IsActive
+            SourceIp = s.IpAddress,
+            Status = s.IsActive ? "Active" : "Ended"
         }).ToList();
 
         return Result.Success(dtos);

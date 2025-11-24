@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Onesign.Data.Contexts;
 using Onesign.Modules.Billing.Infrastructure.EfCore.Entities;
+using Onesign.Modules.Tenants.Infrastructure.EfCore.Entities;
 
 namespace Onesign.Modules.Billing.Infrastructure.EfCore.Configurations;
 

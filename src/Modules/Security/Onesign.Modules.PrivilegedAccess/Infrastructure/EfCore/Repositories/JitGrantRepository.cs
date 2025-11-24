@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Onesign.Data.Contexts;
 using Onesign.Modules.PrivilegedAccess.Domain.Entities;
 using Onesign.Modules.PrivilegedAccess.Domain.Enums;
 using Onesign.Modules.PrivilegedAccess.Domain.Repositories;
@@ -9,9 +8,9 @@ namespace Onesign.Modules.PrivilegedAccess.Infrastructure.EfCore.Repositories;
 
 public class JitGrantRepository : IJitGrantRepository
 {
-    private readonly OnesignDbContext _dbContext;
+    private readonly DbContext _dbContext;
 
-    public JitGrantRepository(OnesignDbContext dbContext)
+    public JitGrantRepository(DbContext dbContext)
     {
         _dbContext = dbContext;
     }
@@ -34,6 +33,16 @@ public class JitGrantRepository : IJitGrantRepository
         return entities.Select(MapToDomain).ToList();
     }
 
+    public async Task<IReadOnlyList<JitGrant>> GetByTenantIdAsync(Guid tenantId, CancellationToken ct = default)
+    {
+        var entities = await _dbContext.Set<JitGrantEntity>()
+            .Where(x => x.TenantId == tenantId)
+            .OrderByDescending(x => x.GrantedAt)
+            .ToListAsync(ct);
+
+        return entities.Select(MapToDomain).ToList();
+    }
+
     public async Task<IReadOnlyList<JitGrant>> GetActiveByUserAsync(Guid tenantId, Guid userId, CancellationToken ct = default)
     {
         var entities = await _dbContext.Set<JitGrantEntity>()
@@ -42,6 +51,16 @@ public class JitGrantRepository : IJitGrantRepository
             .ToListAsync(ct);
 
         return entities.Select(MapToDomain).ToList();
+    }
+
+    public async Task<IReadOnlyList<JitGrant>> GetActiveGrantsForUserAsync(Guid tenantId, Guid userId, CancellationToken ct = default)
+    {
+        return await GetActiveByUserAsync(tenantId, userId, ct);
+    }
+
+    public async Task<IReadOnlyList<JitGrant>> GetExpiredGrantsAsync(CancellationToken ct = default)
+    {
+        return await GetExpiredGrantsAsync(DateTime.UtcNow, ct);
     }
 
     public async Task<IReadOnlyList<JitGrant>> GetExpiredGrantsAsync(DateTime beforeDate, CancellationToken ct = default)

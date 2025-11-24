@@ -153,7 +153,7 @@ public class KeyRotationWorker : BackgroundService
         var auditEvent = new Onesign.Modules.Audit.Infrastructure.EfCore.Entities.AuditEventEntity
         {
             Id = Guid.NewGuid(),
-            EventType = Onesign.Modules.Audit.Domain.Enums.AuditEventType.SettingsUpdated,
+            EventType = Onesign.Modules.Audit.Domain.Enums.AuditEventType.ConfigurationChanged,
             Description = $"Key rotation completed for KeySet {keySet.Id}",
             Metadata = System.Text.Json.JsonSerializer.Serialize(new
             {

@@ -94,7 +94,7 @@ public class DataSubjectRequestProcessorWorker : BackgroundService
                 failed++;
                 _logger.LogError(ex, "Error processing DSR {RequestId}", request.Id);
 
-                request.Status = (int)DataSubjectRequestStatus.Failed;
+                request.Status = (int)DataSubjectRequestStatus.Rejected;
                 await dbContext.SaveChangesAsync(cancellationToken);
             }
         }
@@ -112,7 +112,7 @@ public class DataSubjectRequestProcessorWorker : BackgroundService
         var requestProcessor = scope.ServiceProvider.GetRequiredService<IDataSubjectRequestProcessor>();
         var dbContext = scope.ServiceProvider.GetRequiredService<OnesignDbContext>();
 
-        request.Status = (int)DataSubjectRequestStatus.InProgress;
+        request.Status = (int)DataSubjectRequestStatus.Processing;
         await dbContext.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation(
@@ -125,7 +125,7 @@ public class DataSubjectRequestProcessorWorker : BackgroundService
         {
             request.Status = (int)DataSubjectRequestStatus.Completed;
             request.CompletedAt = DateTime.UtcNow;
-            request.ResultUrl = result.DownloadUrl;
+            request.ResultLocation = result.DownloadUrl;
 
             await LogDsrCompletionAsync(dbContext, request, result, cancellationToken);
 
@@ -135,7 +135,7 @@ public class DataSubjectRequestProcessorWorker : BackgroundService
         }
         else
         {
-            request.Status = (int)DataSubjectRequestStatus.Failed;
+            request.Status = (int)DataSubjectRequestStatus.Rejected;
 
             await LogDsrFailureAsync(dbContext, request, result.ErrorMessage, cancellationToken);
 
@@ -158,7 +158,7 @@ public class DataSubjectRequestProcessorWorker : BackgroundService
         var approachingDeadline = await dbContext.DataSubjectRequests
             .Where(r => (r.Status == (int)DataSubjectRequestStatus.Requested ||
                         r.Status == (int)DataSubjectRequestStatus.Approved ||
-                        r.Status == (int)DataSubjectRequestStatus.InProgress) &&
+                        r.Status == (int)DataSubjectRequestStatus.Processing) &&
                        r.RequestedAt <= deadlineThreshold)
             .ToListAsync(cancellationToken);
 
@@ -221,7 +221,7 @@ public class DataSubjectRequestProcessorWorker : BackgroundService
         {
             Id = Guid.NewGuid(),
             TenantId = request.TenantId,
-            EventType = Onesign.Modules.Audit.Domain.Enums.AuditEventType.SettingsUpdated,
+            EventType = Onesign.Modules.Audit.Domain.Enums.AuditEventType.ConfigurationChanged,
             Description = $"Data subject request failed: {(DataSubjectRequestType)request.Type}",
             Metadata = System.Text.Json.JsonSerializer.Serialize(new
             {
@@ -253,7 +253,7 @@ public class DataSubjectRequestProcessorWorker : BackgroundService
             Body = $"Data subject request {request.Id} is approaching its 30-day deadline with {daysRemaining:F0} days remaining.",
             Status = 0,
             CreatedAt = DateTime.UtcNow,
-            ScheduledAt = DateTime.UtcNow
+            NextRetryAt = DateTime.UtcNow
         };
 
         dbContext.NotificationOutboxItems.Add(notification);
@@ -264,12 +264,9 @@ public class DataSubjectRequestProcessorWorker : BackgroundService
     {
         return type switch
         {
-            DataSubjectRequestType.Access => Onesign.Modules.Audit.Domain.Enums.AuditEventType.DataExported,
             DataSubjectRequestType.Export => Onesign.Modules.Audit.Domain.Enums.AuditEventType.DataExported,
-            DataSubjectRequestType.Deletion => Onesign.Modules.Audit.Domain.Enums.AuditEventType.DataDeleted,
-            DataSubjectRequestType.Rectification => Onesign.Modules.Audit.Domain.Enums.AuditEventType.SettingsUpdated,
-            DataSubjectRequestType.Restriction => Onesign.Modules.Audit.Domain.Enums.AuditEventType.SettingsUpdated,
-            _ => Onesign.Modules.Audit.Domain.Enums.AuditEventType.SettingsUpdated
+            DataSubjectRequestType.Delete => Onesign.Modules.Audit.Domain.Enums.AuditEventType.DataDeleted,
+            _ => Onesign.Modules.Audit.Domain.Enums.AuditEventType.ConfigurationChanged
         };
     }
 }

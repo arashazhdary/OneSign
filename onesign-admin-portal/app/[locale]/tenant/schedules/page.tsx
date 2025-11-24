@@ -187,15 +187,6 @@ export default function SchedulesPage() {
         },
       ];
 
-      setSchedules(mockSchedules);
-    } catch (err) {
-      setError('Failed to fetch schedules');
-      console.error('Error fetching schedules:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const fetchExecutionHistory = (jobId: string) => {
     // Mock execution history
     const mockExecutions: JobExecution[] = [];

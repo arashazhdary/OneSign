@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Onesign.Data.Contexts;
 using Onesign.Modules.Platform.Domain.Entities;
 using Onesign.Modules.Platform.Domain.Enums;
 using Onesign.Modules.Platform.Domain.Repositories;
@@ -9,9 +8,9 @@ namespace Onesign.Modules.Platform.Infrastructure.EfCore.Repositories;
 
 public class MigrationHistoryRepository : IMigrationHistoryRepository
 {
-    private readonly OnesignDbContext _dbContext;
+    private readonly DbContext _dbContext;
 
-    public MigrationHistoryRepository(OnesignDbContext dbContext)
+    public MigrationHistoryRepository(DbContext dbContext)
     {
         _dbContext = dbContext;
     }

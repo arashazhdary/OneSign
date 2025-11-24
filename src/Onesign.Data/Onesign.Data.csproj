@@ -13,18 +13,46 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Onesign.Shared\Onesign.Shared.csproj" />
+    <!-- Security Modules -->
+    <ProjectReference Include="..\Modules\Security\Onesign.Modules.Identity\Onesign.Modules.Identity.csproj" />
+    <ProjectReference Include="..\Modules\Security\Onesign.Modules.Security\Onesign.Modules.Security.csproj" />
+    <ProjectReference Include="..\Modules\Security\Onesign.Modules.Authorization\Onesign.Modules.Authorization.csproj" />
+    <ProjectReference Include="..\Modules\Security\Onesign.Modules.AccessRequests\Onesign.Modules.AccessRequests.csproj" />
+    <ProjectReference Include="..\Modules\Security\Onesign.Modules.PrivilegedAccess\Onesign.Modules.PrivilegedAccess.csproj" />
+    <ProjectReference Include="..\Modules\Security\Onesign.Modules.AdaptiveSecurity\Onesign.Modules.AdaptiveSecurity.csproj" />
+    <!-- Platform Modules -->
+    <ProjectReference Include="..\Modules\Platform\Onesign.Modules.Tenants\Onesign.Modules.Tenants.csproj" />
+    <ProjectReference Include="..\Modules\Platform\Onesign.Modules.Platform\Onesign.Modules.Platform.csproj" />
+    <ProjectReference Include="..\Modules\Platform\Onesign.Modules.MultiRegion\Onesign.Modules.MultiRegion.csproj" />
+    <ProjectReference Include="..\Modules\Platform\Onesign.Modules.Deployment\Onesign.Modules.Deployment.csproj" />
+    <ProjectReference Include="..\Modules\Platform\Onesign.Modules.Crypto\Onesign.Modules.Crypto.csproj" />
+    <!-- Business Modules -->
+    <ProjectReference Include="..\Modules\Business\Onesign.Modules.Organization\Onesign.Modules.Organization.csproj" />
+    <ProjectReference Include="..\Modules\Business\Onesign.Modules.Applications\Onesign.Modules.Applications.csproj" />
     <ProjectReference Include="..\Modules\Business\Onesign.Modules.Billing\Onesign.Modules.Billing.csproj" />
+    <!-- Governance Modules -->
+    <ProjectReference Include="..\Modules\Governance\Onesign.Modules.Governance\Onesign.Modules.Governance.csproj" />
+    <ProjectReference Include="..\Modules\Governance\Onesign.Modules.IdentityLifecycle\Onesign.Modules.IdentityLifecycle.csproj" />
+    <ProjectReference Include="..\Modules\Governance\Onesign.Modules.IdentityInsights\Onesign.Modules.IdentityInsights.csproj" />
+    <ProjectReference Include="..\Modules\Governance\Onesign.Modules.Federation\Onesign.Modules.Federation.csproj" />
+    <!-- Operations Modules -->
+    <ProjectReference Include="..\Modules\Operations\Onesign.Modules.Automation\Onesign.Modules.Automation.csproj" />
+    <ProjectReference Include="..\Modules\Operations\Onesign.Modules.ChangeManagement\Onesign.Modules.ChangeManagement.csproj" />
+    <ProjectReference Include="..\Modules\Operations\Onesign.Modules.Hunting\Onesign.Modules.Hunting.csproj" />
+    <ProjectReference Include="..\Modules\Operations\Onesign.Modules.Observability\Onesign.Modules.Observability.csproj" />
+    <ProjectReference Include="..\Modules\Operations\Onesign.Modules.Incidents\Onesign.Modules.Incidents.csproj" />
+    <ProjectReference Include="..\Modules\Operations\Onesign.Modules.Insights\Onesign.Modules.Insights.csproj" />
+    <!-- Integration Modules -->
+    <ProjectReference Include="..\Modules\Integration\Onesign.Modules.Audit\Onesign.Modules.Audit.csproj" />
+    <ProjectReference Include="..\Modules\Integration\Onesign.Modules.Developer\Onesign.Modules.Developer.csproj" />
+    <ProjectReference Include="..\Modules\Integration\Onesign.Modules.NotificationCenter\Onesign.Modules.NotificationCenter.csproj" />
     <ProjectReference Include="..\Modules\Integration\Onesign.Modules.Extensibility\Onesign.Modules.Extensibility.csproj" />
     <ProjectReference Include="..\Modules\Integration\Onesign.Modules.Privacy\Onesign.Modules.Privacy.csproj" />
-    <ProjectReference Include="..\Onesign.Shared\Onesign.Shared.csproj" />
-    <!-- Platform Modules -->
-    <!-- Security Modules -->
-    <!-- Business Modules -->
-    <!-- Governance Modules -->
-    <!-- Operations Modules -->
-    <!-- Integration Modules -->
     <!-- Note: Copilot is not referenced here to avoid circular dependency (Data->Copilot->ChangeManagement->Data) -->
     <!-- Copilot entities will be registered via reflection or in API project -->
+    <!-- Note: Authorization, AccessRequests, PrivilegedAccess, Platform, ChangeManagement, Hunting, Observability, Developer entities -->
+    <!-- are still accessible via their Infrastructure.EfCore.Entities namespaces without project reference -->
   </ItemGroup>
 
 </Project>

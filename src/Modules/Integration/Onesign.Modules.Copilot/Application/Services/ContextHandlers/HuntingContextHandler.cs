@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Onesign.Modules.Copilot.Application.DTOs;
 using Onesign.Modules.Copilot.Domain.Enums;
 using Onesign.Modules.Hunting.Domain.Repositories;
+using Onesign.Modules.Hunting.Domain.Entities;
 
 namespace Onesign.Modules.Copilot.Application.Services.ContextHandlers;
 
@@ -51,29 +52,34 @@ public class HuntingContextHandler : IContextHandler
             {
                 QueryId = q.Id,
                 Name = q.Name,
-                Query = q.QueryText,
+                Query = q.QueryDslJson,
                 Description = q.Description ?? string.Empty
             }).Take(20).ToList() ?? new List<SavedQueryDto>();
 
             // Get scheduled hunts
-            var scheduledHunts = await _scheduledHuntRepository.GetByScopeAsync("Tenant", tenantId, cancellationToken);
-            var scheduledHuntDtos = scheduledHunts?.Select(h => new ScheduledHuntDto
+            var tenantScheduledHunts = await _scheduledHuntRepository.GetByScopeAsync("Tenant", tenantId, cancellationToken);
+            var scheduledHuntDtos = tenantScheduledHunts?.Select(h =>
             {
-                HuntId = h.Id,
-                Name = h.Name,
-                Schedule = h.CronExpression ?? "N/A",
-                LastRun = h.LastRunAt,
-                LastResultCount = h.LastResultCount
+                var lastRun = h.HuntRuns?.OrderByDescending(r => r.StartedAt).FirstOrDefault();
+                return new ScheduledHuntDto
+                {
+                    HuntId = h.Id,
+                    Name = h.Name,
+                    Schedule = h.ScheduleSpec.ToString(),
+                    LastRun = lastRun?.StartedAt,
+                    LastResultCount = lastRun?.MatchCount ?? 0
+                };
             }).ToList() ?? new List<ScheduledHuntDto>();
 
             // Get recent hunt runs
-            var recentRuns = await _huntRunRepository.GetRecentByScopeAsync("Tenant", tenantId, 10, cancellationToken);
+            var allRuns = await _huntRunRepository.GetByScopeAsync("Tenant", tenantId, cancellationToken);
+            var recentRuns = allRuns?.Take(10).ToList();
             var recentRunDtos = recentRuns?.Select(r => new HuntRunDto
             {
                 RunId = r.Id,
-                QueryName = r.QueryName ?? "Ad-hoc Query",
+                QueryName = r.ScheduledHunt?.SavedQuery?.Name ?? "Ad-hoc Query",
                 Status = r.Status.ToString(),
-                ResultCount = r.ResultCount,
+                ResultCount = r.MatchCount,
                 ExecutedAt = r.StartedAt
             }).ToList() ?? new List<HuntRunDto>();
 
@@ -84,12 +90,25 @@ public class HuntingContextHandler : IContextHandler
                 var query = await _savedQueryRepository.GetByIdAsync(contextId.Value, cancellationToken);
                 if (query != null)
                 {
-                    var latestRun = await _huntRunRepository.GetLatestByQueryAsync(contextId.Value, cancellationToken);
+                    // Find latest run for this query's scheduled hunts
+                    var queryScheduledHunts = await _scheduledHuntRepository.GetBySavedQueryIdAsync(contextId.Value, cancellationToken);
+                    HuntRun? latestRun = null;
+                    if (queryScheduledHunts?.Any() == true)
+                    {
+                        foreach (var hunt in queryScheduledHunts)
+                        {
+                            var run = await _huntRunRepository.GetLatestByScheduledHuntIdAsync(hunt.Id, cancellationToken);
+                            if (run != null && (latestRun == null || run.StartedAt > latestRun.StartedAt))
+                            {
+                                latestRun = run;
+                            }
+                        }
+                    }
                     currentResults = new HuntResultsDto
                     {
                         QueryId = query.Id,
                         QueryName = query.Name,
-                        TotalResults = latestRun?.ResultCount ?? 0,
+                        TotalResults = latestRun?.MatchCount ?? 0,
                         Items = new List<HuntResultItemDto>() // Results would be loaded separately
                     };
                 }
@@ -99,7 +118,7 @@ public class HuntingContextHandler : IContextHandler
             {
                 SavedQueries = savedQueryDtos,
                 ScheduledHunts = scheduledHuntDtos,
-                RecentRuns = recentRunDtos,
+                RecentRuns = recentRunDtos.Cast<object>().ToList(),
                 CurrentResults = currentResults
             };
         }
@@ -110,7 +129,7 @@ public class HuntingContextHandler : IContextHandler
             {
                 SavedQueries = new List<SavedQueryDto>(),
                 ScheduledHunts = new List<ScheduledHuntDto>(),
-                RecentRuns = new List<HuntRunDto>(),
+                RecentRuns = new List<HuntRunDto>().Cast<object>().ToList(),
                 CurrentResults = null
             };
         }

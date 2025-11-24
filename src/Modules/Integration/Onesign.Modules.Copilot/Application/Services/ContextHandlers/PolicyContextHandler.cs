@@ -59,15 +59,16 @@ public class PolicyContextHandler : IContextHandler
         try
         {
             // Get summary of policies across the tenant
-            var activeCampaigns = await _accessReviewRepository.GetActiveCampaignsAsync(tenantId, cancellationToken);
-            var sodViolations = await _sodViolationRepository.GetByTenantAsync(tenantId, 100, cancellationToken);
+            var allCampaigns = await _accessReviewRepository.GetByTenantIdAsync(tenantId, cancellationToken);
+            var activeCampaigns = allCampaigns?.Where(c => c.Status == Onesign.Modules.Governance.Domain.Enums.CampaignStatus.Active).ToList() ?? new List<Onesign.Modules.Governance.Domain.Entities.AccessReviewCampaign>();
+            var sodViolations = await _sodViolationRepository.GetByTenantIdAsync(tenantId, null, cancellationToken);
 
             return new Dictionary<string, object?>
             {
-                ["activeCampaigns"] = activeCampaigns?.Count ?? 0,
-                ["pendingReviews"] = activeCampaigns?.Sum(c => c.PendingReviewCount) ?? 0,
+                ["activeCampaigns"] = activeCampaigns.Count,
+                ["pendingReviews"] = activeCampaigns.Sum(c => c.ReviewItems?.Count(ri => ri.Decision == Onesign.Modules.Governance.Domain.Enums.ReviewDecision.Pending) ?? 0),
                 ["sodViolations"] = sodViolations?.Count ?? 0,
-                ["criticalViolations"] = sodViolations?.Count(v => v.Severity == "Critical") ?? 0
+                ["criticalViolations"] = sodViolations?.Count(v => v.Severity == Onesign.Modules.Governance.Domain.Enums.ViolationSeverity.Critical) ?? 0
             };
         }
         catch (Exception ex)
@@ -97,14 +98,14 @@ public class PolicyContextHandler : IContextHandler
                         new PolicyRuleDto
                         {
                             RuleName = "Review Schedule",
-                            Condition = $"Every {campaign.RecurrencePattern}",
+                            Condition = $"From {campaign.StartDate:yyyy-MM-dd} to {campaign.EndDate:yyyy-MM-dd}",
                             Action = "Request access certification"
                         }
                     },
-                    MatchCount = campaign.TotalReviewCount,
+                    MatchCount = campaign.ReviewItems?.Count ?? 0,
                     RecentMatches = new List<PolicyMatchDto>(),
-                    AffectedUsers = campaign.AffectedUserCount,
-                    AffectedApplications = campaign.AffectedApplicationCount
+                    AffectedUsers = campaign.ReviewItems?.Select(ri => ri.UserId).Distinct().Count() ?? 0,
+                    AffectedApplications = campaign.ReviewItems?.Where(ri => ri.ResourceType == "Application").Select(ri => ri.ResourceId).Distinct().Count() ?? 0
                 };
             }
 

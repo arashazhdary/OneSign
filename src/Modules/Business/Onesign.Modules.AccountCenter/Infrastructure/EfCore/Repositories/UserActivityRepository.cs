@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-using Onesign.Data.Contexts;
 using Onesign.Modules.AccountCenter.Domain.Entities;
 using Onesign.Modules.AccountCenter.Domain.Repositories;
 using Onesign.Modules.AccountCenter.Infrastructure.EfCore.Entities;
@@ -9,9 +8,9 @@ namespace Onesign.Modules.AccountCenter.Infrastructure.EfCore.Repositories;
 
 public class UserActivityRepository : IUserActivityRepository
 {
-    private readonly OnesignDbContext _dbContext;
+    private readonly DbContext _dbContext;
 
-    public UserActivityRepository(OnesignDbContext dbContext) => _dbContext = dbContext;
+    public UserActivityRepository(DbContext dbContext) => _dbContext = dbContext;
 
     public async Task<List<UserActivity>> GetByUserIdAsync(Guid userId, DateTime from, DateTime to, int skip, int take, CancellationToken cancellationToken = default)
     {

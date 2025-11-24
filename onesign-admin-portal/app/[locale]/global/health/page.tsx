@@ -81,10 +81,10 @@ export default function HealthMonitoringPage() {
     try {
       // Fetch all health endpoints in parallel
       const [healthRes, liveRes, readyRes, regionsRes] = await Promise.all([
-        fetch('http://localhost:7000/api/health'),
-        fetch('http://localhost:7000/api/health/live'),
-        fetch('http://localhost:7000/api/health/ready'),
-        fetch('http://localhost:7000/api/health/regions'),
+        fetch('http://localhost:9091/api/health'),
+        fetch('http://localhost:9091/api/health/live'),
+        fetch('http://localhost:9091/api/health/ready'),
+        fetch('http://localhost:9091/api/health/regions'),
       ]);
 
       if (healthRes.ok) {

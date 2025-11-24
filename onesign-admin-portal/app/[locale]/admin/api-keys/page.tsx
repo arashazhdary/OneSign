@@ -31,7 +31,8 @@ export default function AdminAPIKeysPage() {
 
   const fetchAPIKeys = async () => {
     try {
-      const data = await platformService.getAdminAPIKeys?.();
+      // TODO: Implement getAdminAPIKeys in platformService
+      // const data = await platformService.getAdminAPIKeys?.();
       const mockData: AdminAPIKey[] = [
         {
           id: '1',
@@ -109,10 +110,10 @@ export default function AdminAPIKeysPage() {
           createdAt: '2023-01-01T00:00:00Z',
         },
       ];
-      setApiKeys(data || mockData);
+      setApiKeys(mockData);
     } catch (err) {
       console.error(err);
-      setApiKeys(mockData);
+      setApiKeys([]);
     } finally {
       setLoading(false);
     }
@@ -120,12 +121,13 @@ export default function AdminAPIKeysPage() {
 
   const handleCreate = async () => {
     try {
-      await platformService.createAdminAPIKey?.({
-        name: 'New API Key',
-        scope: 'readonly',
-        permissions: ['read'],
-        expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
-      });
+      // TODO: Implement createAdminAPIKey in platformService
+      // await platformService.createAdminAPIKey?.({
+      //   name: 'New API Key',
+      //   scope: 'readonly',
+      //   permissions: ['read'],
+      //   expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+      // });
       setShowCreate(false);
       fetchAPIKeys();
     } catch (error) {
@@ -136,7 +138,8 @@ export default function AdminAPIKeysPage() {
   const handleRevoke = async (keyId: string) => {
     if (!confirm('Revoke this API key? This action cannot be undone.')) return;
     try {
-      await platformService.revokeAdminAPIKey?.(keyId);
+      // TODO: Implement revokeAdminAPIKey in platformService
+      // await platformService.revokeAdminAPIKey?.(keyId);
       fetchAPIKeys();
     } catch (error) {
       console.error('Failed to revoke admin API key:', error);

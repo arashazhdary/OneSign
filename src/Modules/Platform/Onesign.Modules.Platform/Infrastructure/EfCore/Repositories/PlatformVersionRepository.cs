@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Onesign.Data.Contexts;
 using Onesign.Modules.Platform.Domain.Entities;
 using Onesign.Modules.Platform.Domain.Repositories;
 using Onesign.Modules.Platform.Infrastructure.EfCore.Entities;
@@ -8,9 +7,9 @@ namespace Onesign.Modules.Platform.Infrastructure.EfCore.Repositories;
 
 public class PlatformVersionRepository : IPlatformVersionRepository
 {
-    private readonly OnesignDbContext _dbContext;
+    private readonly DbContext _dbContext;
 
-    public PlatformVersionRepository(OnesignDbContext dbContext)
+    public PlatformVersionRepository(DbContext dbContext)
     {
         _dbContext = dbContext;
     }

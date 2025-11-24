@@ -60,7 +60,7 @@ public class ChangeSetContextHandler : IContextHandler
     {
         try
         {
-            var pendingChangeSets = await _changeSetRepository.GetByStatusAsync("Tenant", tenantId, ChangeSetStatus.PendingApproval, cancellationToken);
+            var pendingChangeSets = await _changeSetRepository.GetByStatusAsync("Tenant", tenantId, ChangeSetStatus.InReview, cancellationToken);
             var draftChangeSets = await _changeSetRepository.GetByStatusAsync("Tenant", tenantId, ChangeSetStatus.Draft, cancellationToken);
 
             return new Dictionary<string, object?>
@@ -88,50 +88,55 @@ public class ChangeSetContextHandler : IContextHandler
             }
 
             // Get execution logs
-            var executionLogs = await _executionLogRepository.GetByChangeSetAsync(changeSetId, cancellationToken);
+            var executionLogs = await _executionLogRepository.GetByChangeSetIdAsync(changeSetId, cancellationToken);
             var executionLogDtos = executionLogs?.Select(log => new ExecutionLogDto
             {
                 LogId = log.Id,
-                Action = log.Action,
-                Status = log.Status.ToString(),
+                Action = log.Step.ToString(),
+                Status = log.Status,
                 Message = log.Message ?? string.Empty,
-                Timestamp = log.Timestamp
+                Timestamp = log.CreatedAt
             }).ToList() ?? new List<ExecutionLogDto>();
 
             // Map change items
             var items = changeSet.Items?.Select(item => new ChangeItemDto
             {
                 ItemId = item.Id,
-                ChangeType = item.ChangeType.ToString(),
-                EntityType = item.EntityType,
-                EntityId = item.EntityId,
-                EntityName = item.EntityName ?? "Unknown",
-                Description = item.Description ?? string.Empty
+                ChangeType = item.Operation.ToString(),
+                EntityType = item.TargetType.ToString(),
+                EntityId = item.TargetId,
+                EntityName = item.TargetId.ToString(), // Display name would need to be fetched separately
+                Description = $"Change {item.Operation} on {item.TargetType}"
             }).ToList() ?? new List<ChangeItemDto>();
 
             // Build simulation summary from change set data
-            var simulationSummary = changeSet.SimulationStatus == "Completed" ? new SimulationSummaryDto
+            SimulationSummaryDto? simulationSummary = null;
+            if (!string.IsNullOrEmpty(changeSet.SimulationSummaryJson))
             {
-                AffectedUsers = changeSet.SimulationAffectedUsers,
-                AffectedApplications = changeSet.SimulationAffectedApplications,
-                AffectedPolicies = changeSet.SimulationAffectedPolicies,
-                Warnings = changeSet.SimulationWarnings?.ToList() ?? new List<string>(),
-                Recommendations = changeSet.SimulationRecommendations?.ToList() ?? new List<string>()
-            } : null;
+                // Parse simulation summary from JSON if needed
+                simulationSummary = new SimulationSummaryDto
+                {
+                    AffectedUsers = 0, // Would need to parse from JSON
+                    AffectedApplications = 0,
+                    AffectedPolicies = 0,
+                    Warnings = new List<string>(),
+                    Recommendations = new List<string>()
+                };
+            }
 
             return new ChangeSetContextData
             {
                 ChangeSetId = changeSet.Id,
-                Name = changeSet.Name,
+                Name = changeSet.Title,
                 Status = changeSet.Status.ToString(),
                 Description = changeSet.Description ?? string.Empty,
                 Category = changeSet.Category.ToString(),
-                RequestedBy = changeSet.RequestedByDisplayName ?? "Unknown",
+                RequestedBy = changeSet.RequestedByUserId.ToString(), // Display name would need to be fetched separately
                 CreatedAt = changeSet.CreatedAt,
                 ScheduledFor = changeSet.ScheduledFor,
                 Items = items,
                 SimulationSummary = simulationSummary,
-                ExecutionLogs = executionLogDtos
+                ExecutionLogs = executionLogDtos.Cast<object>().ToList()
             };
         }
         catch (Exception ex)

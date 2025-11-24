@@ -9,5 +9,9 @@ public enum ConditionOperator
     GreaterThanOrEqual = 4,
     LessThanOrEqual = 5,
     Contains = 6,
-    NotContains = 7
+    NotContains = 7,
+    StartsWith = 8,
+    EndsWith = 9,
+    GreaterThan = 10,
+    LessThan = 11
 }

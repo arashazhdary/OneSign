@@ -50,7 +50,7 @@ public class TenantLifecycleController : ControllerBase
         }
 
         var previousStatus = tenant.Status;
-        tenant.UpdateStatus(TenantStatus.Suspended);
+        tenant.Status = TenantStatus.Suspended;
         await _tenantRepository.UpdateAsync(tenant);
 
         using var scope = _serviceProvider.CreateScope();
@@ -60,7 +60,7 @@ public class TenantLifecycleController : ControllerBase
         {
             Id = Guid.NewGuid(),
             TenantId = tenantId,
-            EventType = Onesign.Modules.Audit.Domain.Enums.AuditEventType.SettingsUpdated,
+            EventType = Onesign.Modules.Audit.Domain.Enums.AuditEventType.ConfigurationChanged,
             Description = "Tenant suspended",
             Metadata = JsonSerializer.Serialize(new
             {
@@ -105,7 +105,7 @@ public class TenantLifecycleController : ControllerBase
             return BadRequest(new { errorCode = "TENANT_NOT_SUSPENDED", errorMessage = "Tenant is not currently suspended" });
         }
 
-        tenant.UpdateStatus(TenantStatus.Active);
+        tenant.Status = TenantStatus.Active;
         await _tenantRepository.UpdateAsync(tenant);
 
         using var scope = _serviceProvider.CreateScope();
@@ -115,7 +115,7 @@ public class TenantLifecycleController : ControllerBase
         {
             Id = Guid.NewGuid(),
             TenantId = tenantId,
-            EventType = Onesign.Modules.Audit.Domain.Enums.AuditEventType.SettingsUpdated,
+            EventType = Onesign.Modules.Audit.Domain.Enums.AuditEventType.ConfigurationChanged,
             Description = "Tenant resumed",
             CreatedAt = DateTime.UtcNow
         };
@@ -164,7 +164,7 @@ public class TenantLifecycleController : ControllerBase
         {
             Id = Guid.NewGuid(),
             TenantId = tenantId,
-            EventType = Onesign.Modules.Audit.Domain.Enums.AuditEventType.SettingsUpdated,
+            EventType = Onesign.Modules.Audit.Domain.Enums.AuditEventType.ConfigurationChanged,
             Description = "Tenant migration initiated",
             Metadata = JsonSerializer.Serialize(new
             {
@@ -215,7 +215,7 @@ public class TenantLifecycleController : ControllerBase
             status = "InProgress",
             progress = 45,
             currentPhase = "DataTransfer",
-            phases = new[]
+            phases = new object[]
             {
                 new { name = "Preparation", status = "Completed", completedAt = DateTime.UtcNow.AddMinutes(-30) },
                 new { name = "SchemaCreation", status = "Completed", completedAt = DateTime.UtcNow.AddMinutes(-20) },
@@ -323,7 +323,7 @@ public class TenantLifecycleController : ControllerBase
         var dbContext = scope.ServiceProvider.GetRequiredService<OnesignDbContext>();
 
         var userCount = await dbContext.TenantUsers.CountAsync(u => u.TenantId == tenantId);
-        var appCount = await dbContext.Applications.CountAsync(a => a.TenantId == tenantId);
+        var appCount = await dbContext.ApplicationClients.CountAsync(a => a.TenantId == tenantId);
         var lastActivity = await dbContext.AuditEvents
             .Where(a => a.TenantId == tenantId)
             .OrderByDescending(a => a.CreatedAt)

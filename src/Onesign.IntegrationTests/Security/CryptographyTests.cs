@@ -21,7 +21,7 @@ public class CryptographyTests
         hash.Should().StartWith("$2");
 
         // Hash should be at least 60 characters
-        hash.Length.Should().BeGreaterOrEqualTo(60);
+        hash.Length.Should().BeGreaterThanOrEqualTo(60);
 
         // Verify works correctly
         BCrypt.Net.BCrypt.Verify(password, hash).Should().BeTrue();

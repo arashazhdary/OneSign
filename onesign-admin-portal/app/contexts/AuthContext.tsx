@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { createContext, useState, useEffect, useCallback, useContext, ReactNode } from 'react';
 import type { User } from '@/lib/api/types/auth';
 import { authService } from '@/lib/api/services/auth.service';
 
@@ -15,6 +15,17 @@ export interface AuthContextType {
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+/**
+ * Hook to use auth context
+ */
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}
 
 interface AuthProviderProps {
   children: ReactNode;

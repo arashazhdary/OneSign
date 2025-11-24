@@ -16,8 +16,11 @@
  */
 
 // Export API Client
-export { ApiClient, apiClient, createApiClient } from './api-client';
+export { ApiClient, apiClient, authClient, createApiClient } from './api-client';
 export type { ApiClientConfig, RequestConfig, ApiResponse } from './api-client';
+
+// Export API Configuration
+export { apiConfig, API_BASE, getServicesApiUrl, getAuthApiUrl } from './config/api-config';
 
 // Export all services
 export * from './services';

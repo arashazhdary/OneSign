@@ -54,7 +54,7 @@ public class BackupSchedulerWorker : BackgroundService
 
         // Get all active tenants with their data residency info
         var tenantsWithResidency = await dbContext.Tenants
-            .Where(t => t.IsActive)
+            .Where(t => t.Status == Onesign.Modules.Tenants.Domain.Enums.TenantStatus.Active)
             .Join(dbContext.TenantDataResidencies,
                 t => t.Id,
                 r => r.TenantId,
@@ -65,7 +65,7 @@ public class BackupSchedulerWorker : BackgroundService
         {
             // Fall back to just active tenants without residency info
             var activeTenants = await dbContext.Tenants
-                .Where(t => t.IsActive)
+                .Where(t => t.Status == Onesign.Modules.Tenants.Domain.Enums.TenantStatus.Active)
                 .ToListAsync(cancellationToken);
 
             foreach (var tenant in activeTenants)
@@ -77,7 +77,7 @@ public class BackupSchedulerWorker : BackgroundService
         {
             foreach (var item in tenantsWithResidency)
             {
-                await ScheduleTenantBackupAsync(dbContext, item.Tenant.Id, item.Residency.PrimaryRegionId, cancellationToken);
+                await ScheduleTenantBackupAsync(dbContext, item.Tenant.Id, item.Residency.DataRegionId, cancellationToken);
             }
         }
 

@@ -212,7 +212,8 @@ export default function GlobalIntegrationsPage() {
           createdAt: '2024-01-20T10:00:00Z',
           updatedAt: '2024-07-10T14:00:00Z',
         },
-      ]);
+      ];
+      setIntegrations(data || mockIntegrations);
 
       const mockWebhooks: WebhookEndpoint[] = [
         {

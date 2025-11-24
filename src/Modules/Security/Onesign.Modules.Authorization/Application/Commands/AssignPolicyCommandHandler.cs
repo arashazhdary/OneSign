@@ -1,6 +1,5 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Onesign.Data.Contexts;
 using Onesign.Modules.Authorization.Domain.Entities;
 using Onesign.Modules.Authorization.Domain.Repositories;
 using Onesign.Modules.Authorization.Infrastructure.EfCore.Entities;
@@ -12,12 +11,12 @@ public class AssignPolicyCommandHandler : IRequestHandler<AssignPolicyCommand, R
 {
     private readonly IPolicyDefinitionRepository _policyRepository;
     private readonly IPolicyAssignmentRepository _assignmentRepository;
-    private readonly OnesignDbContext _dbContext;
+    private readonly DbContext _dbContext;
 
     public AssignPolicyCommandHandler(
         IPolicyDefinitionRepository policyRepository,
         IPolicyAssignmentRepository assignmentRepository,
-        OnesignDbContext dbContext)
+        DbContext dbContext)
     {
         _policyRepository = policyRepository;
         _assignmentRepository = assignmentRepository;

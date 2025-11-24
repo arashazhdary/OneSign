@@ -132,6 +132,7 @@ public class NotificationDeliveryWorker : BackgroundService
             item.RecipientAddress,
             item.Subject,
             item.Body,
+            isHtml: true,
             cancellationToken);
 
         return true;

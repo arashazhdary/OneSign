@@ -481,11 +481,7 @@ export default function GlobalAccessReviewsPage() {
       render: (campaign) => (
         <StatusBadge
           status={campaign.type}
-          color={
-            campaign.type === 'Privileged Access' ? 'red' :
-            campaign.type === 'User Access' ? 'blue' :
-            campaign.type === 'Role Assignment' ? 'purple' : 'green'
-          }
+          
         />
       ),
     },
@@ -494,12 +490,7 @@ export default function GlobalAccessReviewsPage() {
       label: 'Status',
       render: (campaign) => (
         <StatusBadge
-          status={campaign.status}
-          color={
-            campaign.status === 'Active' ? 'green' :
-            campaign.status === 'Completed' ? 'blue' :
-            campaign.status === 'Scheduled' ? 'yellow' : 'gray'
-          }
+          status={campaign.status}
         />
       ),
     },
@@ -662,12 +653,7 @@ export default function GlobalAccessReviewsPage() {
       label: 'Risk',
       render: (item) => (
         <StatusBadge
-          status={item.riskLevel}
-          color={
-            item.riskLevel === 'Critical' ? 'red' :
-            item.riskLevel === 'High' ? 'orange' :
-            item.riskLevel === 'Medium' ? 'yellow' : 'green'
-          }
+          status={item.riskLevel}
         />
       ),
     },
@@ -676,12 +662,7 @@ export default function GlobalAccessReviewsPage() {
       label: 'Status',
       render: (item) => (
         <StatusBadge
-          status={item.status}
-          color={
-            item.status === 'Approved' ? 'green' :
-            item.status === 'Revoked' ? 'red' :
-            item.status === 'Escalated' ? 'orange' : 'yellow'
-          }
+          status={item.status}
         />
       ),
     },
@@ -1181,12 +1162,7 @@ export default function GlobalAccessReviewsPage() {
                 <div>
                   <div className="text-gray-600">Risk Level</div>
                   <StatusBadge
-                    status={selectedReviewItem.riskLevel}
-                    color={
-                      selectedReviewItem.riskLevel === 'Critical' ? 'red' :
-                      selectedReviewItem.riskLevel === 'High' ? 'orange' :
-                      selectedReviewItem.riskLevel === 'Medium' ? 'yellow' : 'green'
-                    }
+                    status={selectedReviewItem.riskLevel}
                   />
                 </div>
               </div>

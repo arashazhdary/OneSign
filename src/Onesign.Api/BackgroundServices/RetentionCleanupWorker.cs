@@ -217,7 +217,7 @@ public class RetentionCleanupWorker : BackgroundService
             .ToListAsync(cancellationToken);
 
         var oldSessions = await dbContext.UserLoginSessions
-            .Where(s => userIds.Contains(s.UserId) &&
+            .Where(s => userIds.Contains(s.TenantUserId) &&
                        s.CreatedAt < cutoffDate &&
                        (s.ExpiresAt < DateTime.UtcNow || s.RevokedAt != null))
             .ToListAsync(cancellationToken);
@@ -250,7 +250,7 @@ public class RetentionCleanupWorker : BackgroundService
 
         // Also clean up old delivery logs
         var oldDeliveryLogs = await dbContext.NotificationDeliveryLogs
-            .Where(l => l.TenantId == tenantId && l.CreatedAt < cutoffDate)
+            .Where(l => l.TenantId == tenantId && l.Timestamp < cutoffDate)
             .ToListAsync(cancellationToken);
 
         if (oldDeliveryLogs.Any())

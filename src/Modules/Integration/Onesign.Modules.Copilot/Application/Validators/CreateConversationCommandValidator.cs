@@ -22,6 +22,6 @@ public class CreateConversationCommandValidator : AbstractValidator<CreateConver
 
         RuleFor(x => x.ContextId)
             .NotEmpty().WithMessage("Context ID is required when context type is specified")
-            .When(x => x.ContextType != Domain.Enums.ContextType.General);
+            .When(x => x.ContextType != Domain.Enums.ContextType.Generic);
     }
 }

@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Onesign.Data.Contexts;
 using Onesign.Modules.ChangeManagement.Domain.Entities;
 using Onesign.Modules.ChangeManagement.Domain.Enums;
 using Onesign.Modules.ChangeManagement.Domain.Repositories;
@@ -9,9 +8,9 @@ namespace Onesign.Modules.ChangeManagement.Infrastructure.EfCore.Repositories;
 
 public class ChangeSetRepository : IChangeSetRepository
 {
-    private readonly OnesignDbContext _dbContext;
+    private readonly DbContext _dbContext;
 
-    public ChangeSetRepository(OnesignDbContext dbContext)
+    public ChangeSetRepository(DbContext dbContext)
     {
         _dbContext = dbContext;
     }

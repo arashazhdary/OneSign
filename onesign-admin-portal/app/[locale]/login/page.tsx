@@ -71,7 +71,7 @@ export default function LoginPage() {
               <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
                 Admin Portal
               </h1>
-              <p className="text-gray-600 text-sm">
+              <p className="text-gray-700 text-sm">
                 Sign in to manage your Onesign platform
               </p>
             </div>

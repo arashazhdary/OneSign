@@ -317,15 +317,15 @@ export default function AnomalyDetectionPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-6">
       <LoadingOverlay isLoading={loading} message="Processing..." />
 
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+        <h1 className="text-4xl font-bold text-gray-900 mb-2">
           Anomaly Detection
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-700">
           Detect and respond to unusual behavior patterns and security threats
         </p>
       </div>
@@ -349,7 +349,7 @@ export default function AnomalyDetectionPage() {
           className={`px-6 py-3 font-medium transition-colors ${
             activeTab === 'detections'
               ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-600 hover:text-gray-800'
+              : 'text-gray-700 hover:text-gray-900'
           }`}
         >
           Detection Rules

@@ -18,12 +18,12 @@ public class GetTenantQuotaStatusQueryHandler : IRequestHandler<GetTenantQuotaSt
         // Reuse GetTenantUsageSummaryQuery to get quota status
         var summaryResult = await _mediator.Send(new GetTenantUsageSummaryQuery { TenantId = request.TenantId }, cancellationToken);
 
-        if (!summaryResult.IsSuccess || summaryResult.Data?.QuotaStatus == null)
+        if (!summaryResult.IsSuccess || summaryResult.Value?.QuotaStatus == null)
         {
             return Result.Failure<TenantQuotaStatusDto>(summaryResult.ErrorCode ?? "QUOTA_STATUS_ERROR",
                 summaryResult.ErrorMessage ?? "Failed to retrieve quota status");
         }
 
-        return Result.Success(summaryResult.Data.QuotaStatus);
+        return Result.Success(summaryResult.Value.QuotaStatus);
     }
 }

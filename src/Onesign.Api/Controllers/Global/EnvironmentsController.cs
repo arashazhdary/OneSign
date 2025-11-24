@@ -30,8 +30,8 @@ public class EnvironmentsController : ControllerBase
     {
         var query = new GetEnvironmentsQuery
         {
-            Type = type,
-            RegionId = regionId
+            FilterByType = type,
+            FilterByRegionId = regionId
         };
 
         var result = await _mediator.Send(query);
@@ -62,9 +62,9 @@ public class EnvironmentsController : ControllerBase
         var result = await _mediator.Send(command);
 
         if (!result.IsSuccess)
-            return BadRequest(new { error = result.Error });
+            return BadRequest(new { error = result.ErrorMessage });
 
-        return Ok(new { environmentId = command.Descriptor.EnvironmentId });
+        return Ok(new { environmentId = command.EnvironmentId });
     }
 
     /// <summary>
@@ -77,7 +77,7 @@ public class EnvironmentsController : ControllerBase
         var result = await _mediator.Send(command);
 
         if (!result.IsSuccess)
-            return BadRequest(new { error = result.Error });
+            return BadRequest(new { error = result.ErrorMessage });
 
         return Ok();
     }

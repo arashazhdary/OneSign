@@ -4,6 +4,9 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Onesign.Modules.Audit.Infrastructure.EfCore.Entities;
+using Onesign.Modules.Identity.Infrastructure.EfCore.Entities;
+using Onesign.Modules.Security.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Privacy.Domain.Services;
 
 namespace Onesign.Modules.Privacy.Infrastructure.Services;
@@ -110,17 +113,15 @@ public class DataExportService : IDataExportService
             Data = new
             {
                 user.Id,
-                user.Email,
-                user.FirstName,
-                user.LastName,
-                user.PhoneNumber,
+                user.GlobalUserId,
+                user.TenantId,
+                user.Status,
+                user.IsAdmin,
                 user.IsActive,
-                user.EmailVerified,
-                user.CreatedAt,
-                user.UpdatedAt,
+                user.FirstLoginAt,
                 user.LastLoginAt,
-                user.Locale,
-                user.Timezone
+                user.CreatedAt,
+                user.UpdatedAt
             }
         };
     }
@@ -130,8 +131,8 @@ public class DataExportService : IDataExportService
         Guid userId,
         CancellationToken cancellationToken)
     {
-        var sessions = await dbContext.UserLoginSessions
-            .Where(s => s.UserId == userId)
+        var sessions = await dbContext.Set<UserLoginSessionEntity>()
+            .Where(s => s.TenantUserId == userId)
             .Select(s => new
             {
                 s.Id,
@@ -140,7 +141,7 @@ public class DataExportService : IDataExportService
                 s.RevokedAt,
                 s.IpAddress,
                 s.UserAgent,
-                s.DeviceInfo
+                // DeviceInfo property does not exist on UserLoginSessionEntity
             })
             .ToListAsync(cancellationToken);
 
@@ -160,7 +161,7 @@ public class DataExportService : IDataExportService
         Guid userId,
         CancellationToken cancellationToken)
     {
-        var auditEvents = await dbContext.AuditEvents
+        var auditEvents = await dbContext.Set<AuditEventEntity>()
             .Where(a => a.TenantId == tenantId && a.ActorId == userId)
             .OrderByDescending(a => a.CreatedAt)
             .Take(1000)
@@ -190,15 +191,16 @@ public class DataExportService : IDataExportService
         Guid userId,
         CancellationToken cancellationToken)
     {
-        var mfaEnrollments = await dbContext.MfaEnrollments
-            .Where(m => m.UserId == userId)
+        var mfaEnrollments = await dbContext.Set<UserMfaMethodEntity>()
+            .Where(m => m.TenantUserId == userId)
             .Select(m => new
             {
                 m.Id,
-                m.Method,
+                m.MethodType,
+                m.IsPrimary,
                 m.IsVerified,
                 m.CreatedAt,
-                m.LastUsedAt
+                m.UpdatedAt
             })
             .ToListAsync(cancellationToken);
 
@@ -217,16 +219,17 @@ public class DataExportService : IDataExportService
         Guid userId,
         CancellationToken cancellationToken)
     {
-        var devices = await dbContext.TrustedDevices
-            .Where(d => d.UserId == userId)
+        var devices = await dbContext.Set<TrustedDeviceEntity>()
+            .Where(d => d.TenantUserId == userId)
             .Select(d => new
             {
                 d.Id,
+                d.DeviceId,
                 d.DeviceName,
-                d.DeviceType,
-                d.LastUsedAt,
-                d.CreatedAt,
-                d.TrustedUntil
+                d.FirstSeenAt,
+                d.LastSeenAt,
+                d.ExpiresAt,
+                d.CreatedAt
             })
             .ToListAsync(cancellationToken);
 
@@ -321,7 +324,7 @@ public class DataExportService : IDataExportService
             CreatedAt = DateTime.UtcNow
         };
 
-        dbContext.AuditEvents.Add(auditEvent);
+        dbContext.Set<AuditEventEntity>().Add(auditEvent);
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 

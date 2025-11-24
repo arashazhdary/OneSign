@@ -72,15 +72,15 @@ public class AnonymizationService : IAnonymizationService
             result.RecordsAnonymized += auditEvents.Count;
             result.CategoryBreakdown["AuditEvents"] = auditEvents.Count;
 
-            var sessions = await dbContext.UserLoginSessions
-                .Where(s => s.UserId == userId)
+            var sessions = await dbContext.Set<UserLoginSessionEntity>()
+                .Where(s => s.TenantUserId == userId)
                 .ToListAsync(cancellationToken);
 
             foreach (var session in sessions)
             {
                 session.IpAddress = "ANONYMIZED";
                 session.UserAgent = "ANONYMIZED";
-                session.DeviceInfo = "ANONYMIZED";
+                // DeviceInfo property does not exist on UserLoginSessionEntity
                 result.FieldsAnonymized += 3;
             }
             result.RecordsAnonymized += sessions.Count;
@@ -193,9 +193,9 @@ public class AnonymizationService : IAnonymizationService
         CancellationToken cancellationToken = default)
     {
         using var scope = _serviceProvider.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<OnesignDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
 
-        var anonymizationEvents = await dbContext.AuditEvents
+        var anonymizationEvents = await dbContext.Set<AuditEventEntity>()
             .Where(a => a.TenantId == tenantId &&
                        a.CreatedAt >= startDate &&
                        a.CreatedAt <= endDate &&
@@ -228,7 +228,7 @@ public class AnonymizationService : IAnonymizationService
         DateTime olderThan,
         CancellationToken cancellationToken)
     {
-        var events = await dbContext.AuditEvents
+        var events = await dbContext.Set<AuditEventEntity>()
             .Where(a => a.TenantId == tenantId && a.CreatedAt < olderThan)
             .ToListAsync(cancellationToken);
 
@@ -255,7 +255,7 @@ public class AnonymizationService : IAnonymizationService
         DateTime olderThan,
         CancellationToken cancellationToken)
     {
-        var events = await dbContext.AuditEvents
+        var events = await dbContext.Set<AuditEventEntity>()
             .Where(a => a.TenantId == tenantId &&
                        a.CreatedAt < olderThan &&
                        (a.EventType == Onesign.Modules.Audit.Domain.Enums.AuditEventType.UserLoggedIn ||
@@ -284,13 +284,13 @@ public class AnonymizationService : IAnonymizationService
         DateTime olderThan,
         CancellationToken cancellationToken)
     {
-        var userIds = await dbContext.TenantUsers
+        var userIds = await dbContext.Set<TenantUserEntity>()
             .Where(u => u.TenantId == tenantId)
             .Select(u => u.Id)
             .ToListAsync(cancellationToken);
 
-        var sessions = await dbContext.UserLoginSessions
-            .Where(s => userIds.Contains(s.UserId) && s.CreatedAt < olderThan)
+        var sessions = await dbContext.Set<UserLoginSessionEntity>()
+            .Where(s => userIds.Contains(s.TenantUserId) && s.CreatedAt < olderThan)
             .ToListAsync(cancellationToken);
 
         var result = new AnonymizationResult();
@@ -299,7 +299,7 @@ public class AnonymizationService : IAnonymizationService
         {
             session.IpAddress = "ANONYMIZED";
             session.UserAgent = "ANONYMIZED";
-            session.DeviceInfo = "ANONYMIZED";
+            // DeviceInfo property does not exist on UserLoginSessionEntity
             result.FieldsAnonymized += 3;
         }
 
@@ -341,7 +341,7 @@ public class AnonymizationService : IAnonymizationService
             CreatedAt = DateTime.UtcNow
         };
 
-        dbContext.AuditEvents.Add(auditEvent);
+        dbContext.Set<AuditEventEntity>().Add(auditEvent);
         await Task.CompletedTask;
     }
 }

@@ -103,7 +103,7 @@ export default function TokensPage() {
           createdBy: 'system',
           createdAt: '2023-11-23T10:00:00Z',
         },
-      ]);
+      ];
       setTokens(data || mockData);
     } catch (err) {
       console.error(err);

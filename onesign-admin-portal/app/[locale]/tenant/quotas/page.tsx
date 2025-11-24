@@ -251,10 +251,10 @@ export default function QuotasPage() {
   };
 
   return (
-    <div className="p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="p-8 min-h-screen bg-gray-50">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+        <h1 className="text-4xl font-bold text-gray-900">
           Quota Management
         </h1>
         <p className="text-gray-600 mt-2">

@@ -49,13 +49,13 @@ public class AutomationContextHandler : IContextHandler
                 WorkflowId = w.Id,
                 Name = w.Name,
                 IsEnabled = w.IsEnabled,
-                Severity = w.Severity,
+                Severity = w.Severity.ToString(),
                 TriggerCount = w.Triggers?.Count ?? 0,
                 ActionCount = w.Actions?.Count ?? 0
             }).ToList();
 
             // Get recent executions
-            var recentExecutions = await _executionRepository.GetRecentByTenantAsync(tenantId, 20, cancellationToken);
+            var recentExecutions = await _executionRepository.GetByTenantIdAsync(tenantId, null, null, null, null, 1, 20, cancellationToken);
             var executionDtos = recentExecutions?.Select(e => new RecentExecutionDto
             {
                 ExecutionId = e.Id,
@@ -71,7 +71,7 @@ public class AutomationContextHandler : IContextHandler
                 var workflow = await _workflowRepository.GetByIdWithDetailsAsync(contextId.Value, cancellationToken);
                 if (workflow != null && workflow.TenantId == tenantId)
                 {
-                    var workflowExecutions = await _executionRepository.GetByWorkflowAsync(contextId.Value, 10, cancellationToken);
+                    var workflowExecutions = await _executionRepository.GetByTenantIdAsync(tenantId, contextId.Value, null, null, null, 1, 10, cancellationToken);
 
                     selectedWorkflow = new WorkflowDetailDto
                     {
@@ -79,17 +79,17 @@ public class AutomationContextHandler : IContextHandler
                         Name = workflow.Name,
                         Description = workflow.Description ?? string.Empty,
                         IsEnabled = workflow.IsEnabled,
-                        Severity = workflow.Severity,
+                        Severity = workflow.Severity.ToString(),
                         Triggers = workflow.Triggers?.Select(t => new TriggerSummaryDto
                         {
                             TriggerId = t.Id,
-                            TriggerType = t.TriggerType,
+                            TriggerType = t.SourceModule,
                             EventType = t.EventType
                         }).ToList() ?? new List<TriggerSummaryDto>(),
                         Actions = workflow.Actions?.Select(a => new ActionSummaryDto
                         {
                             ActionId = a.Id,
-                            ActionType = a.ActionType,
+                            ActionType = a.ActionType.ToString(),
                             Order = a.Order
                         }).ToList() ?? new List<ActionSummaryDto>(),
                         RecentExecutions = workflowExecutions?.Select(e => new RecentExecutionDto

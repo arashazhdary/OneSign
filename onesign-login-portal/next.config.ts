@@ -5,7 +5,7 @@ const withNextIntl = createNextIntlPlugin('./i18n.ts');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Use Webpack instead of Turbopack to avoid build issues
-  webpack: (config) => {
+  webpack: (config: any) => {
     return config;
   },
 };

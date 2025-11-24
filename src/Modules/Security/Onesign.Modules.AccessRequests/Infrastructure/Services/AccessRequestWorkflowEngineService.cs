@@ -74,7 +74,7 @@ public class AccessRequestWorkflowEngineService : IAccessRequestWorkflowEngine
         if (step == null)
             return false;
 
-        step.Action = approved ? ApprovalAction.Approved : ApprovalAction.Rejected;
+        step.Action = approved ? ApprovalAction.Approve : ApprovalAction.Reject;
         step.Comment = comment;
         step.ActionAt = DateTime.UtcNow;
 
@@ -98,7 +98,7 @@ public class AccessRequestWorkflowEngineService : IAccessRequestWorkflowEngine
         // Check if all required steps are approved
         var allRequiredApproved = request.ApprovalSteps
             .Where(s => s.IsRequired)
-            .All(s => s.Action == ApprovalAction.Approved);
+            .All(s => s.Action == ApprovalAction.Approve);
 
         if (allRequiredApproved)
         {

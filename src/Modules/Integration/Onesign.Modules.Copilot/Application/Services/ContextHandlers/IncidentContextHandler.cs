@@ -81,8 +81,8 @@ public class IncidentContextHandler : IContextHandler
             {
                 EventId = e.Id,
                 EventType = e.EventType,
-                Description = e.Description,
-                Timestamp = e.EventTime
+                Description = e.EventType, // Use EventType as description since Description doesn't exist
+                Timestamp = e.Timestamp
             }).Take(20).ToList();
 
             // Get playbook runs
@@ -109,24 +109,24 @@ public class IncidentContextHandler : IContextHandler
 
             // Build entities from incident
             var entities = new List<IncidentEntityDto>();
-            if (incident.AffectedUserId.HasValue)
+            if (incident.PrimaryUserId.HasValue)
             {
                 entities.Add(new IncidentEntityDto
                 {
                     EntityType = "User",
-                    EntityId = incident.AffectedUserId.Value,
-                    EntityName = incident.AffectedUserDisplayName ?? "Unknown User",
-                    Role = "Affected"
+                    EntityId = incident.PrimaryUserId.Value,
+                    EntityName = "User", // Display name would need to be fetched separately
+                    Role = "Primary"
                 });
             }
-            if (incident.AffectedApplicationId.HasValue)
+            if (incident.PrimaryAppId.HasValue)
             {
                 entities.Add(new IncidentEntityDto
                 {
                     EntityType = "Application",
-                    EntityId = incident.AffectedApplicationId.Value,
-                    EntityName = incident.AffectedApplicationName ?? "Unknown Application",
-                    Role = "Affected"
+                    EntityId = incident.PrimaryAppId.Value,
+                    EntityName = "Application", // Display name would need to be fetched separately
+                    Role = "Primary"
                 });
             }
 
@@ -138,12 +138,12 @@ public class IncidentContextHandler : IContextHandler
                 Status = incident.Status.ToString(),
                 Description = incident.Description ?? string.Empty,
                 Category = incident.Category.ToString(),
-                AssignedTo = incident.AssignedToDisplayName,
+                AssignedTo = incident.AssignedTo?.ToString() ?? null,
                 CreatedAt = incident.CreatedAt,
                 Events = eventDtos,
                 Entities = entities,
                 AvailablePlaybooks = availablePlaybooks,
-                PlaybookRuns = playbookRunDtos
+                PlaybookRuns = playbookRunDtos.Cast<object>().ToList()
             };
         }
         catch (Exception ex)

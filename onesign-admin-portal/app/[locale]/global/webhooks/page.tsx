@@ -121,7 +121,8 @@ export default function GlobalWebhooksPage() {
             avgResponseTime: 178,
           },
         },
-      ]);
+      ];
+      setWebhooks(data || mockWebhooks);
 
       // Mock logs
       setLogs([

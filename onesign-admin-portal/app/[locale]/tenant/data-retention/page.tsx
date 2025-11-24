@@ -122,7 +122,8 @@ export default function DataRetentionPage() {
           createdAt: '2024-01-15T10:00:00Z',
           updatedAt: '2024-11-23T04:00:00Z',
         },
-      ]);
+      ];
+      setPolicies(data || mockPolicies);
 
       // Mock stats
       setStats([
