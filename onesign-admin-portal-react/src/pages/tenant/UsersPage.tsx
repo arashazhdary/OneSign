@@ -12,6 +12,7 @@ import Input from '@/components/common/Input';
 import Dropdown from '@/components/common/Dropdown';
 import Badge from '@/components/common/Badge';
 import Avatar from '@/components/common/Avatar';
+import { tenantService, TenantUserDto } from '@/lib/api/services/tenant.service';
 
 interface User {
   id: string;
@@ -47,18 +48,23 @@ const UsersPage = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      const mockUsers: User[] = Array.from({ length: 30 }, (_, i) => ({
-        id: `user-${i + 1}`,
-        name: `${['John', 'Jane', 'Bob', 'Alice', 'Charlie'][i % 5]} ${['Smith', 'Johnson', 'Williams', 'Brown', 'Jones'][i % 5]}`,
-        email: `user${i + 1}@company.com`,
-        role: ['Admin', 'User', 'Manager', 'Viewer', 'Editor'][i % 5],
-        status: ['active', 'inactive', 'suspended'][i % 3] as any,
-        createdAt: new Date(Date.now() - i * 86400000).toISOString(),
-        lastLogin: i % 2 === 0 ? new Date(Date.now() - i * 3600000).toISOString() : undefined,
+      // Fetch users from API
+      const response = await tenantService.getUsers(1, 100);
+
+      // Map API response to local User interface
+      const mappedUsers: User[] = response.items.map((user: TenantUserDto) => ({
+        id: user.id,
+        name: user.displayName || `${user.firstName} ${user.lastName}`,
+        email: user.email,
+        role: user.roles?.[0] || 'User',
+        status: user.status.toLowerCase() as 'active' | 'inactive' | 'suspended',
+        createdAt: user.createdAt,
+        lastLogin: user.lastLoginAt,
       }));
-      setUsers(mockUsers);
+
+      setUsers(mappedUsers);
     } catch (error) {
+      console.error('Error fetching users:', error);
       toast.error(t('common.error') || 'Failed to load users');
     } finally {
       setLoading(false);
@@ -167,48 +173,91 @@ const UsersPage = () => {
 
   const handleDelete = async (user: User) => {
     if (confirm(t('users.deleteConfirm') || `Delete ${user.name}?`)) {
-      setUsers((prev) => prev.filter((u) => u.id !== user.id));
-      toast.success(t('users.userDeleted') || 'User deleted successfully');
+      try {
+        await tenantService.deleteUser(user.id);
+        setUsers((prev) => prev.filter((u) => u.id !== user.id));
+        toast.success(t('users.userDeleted') || 'User deleted successfully');
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        toast.error(t('common.error') || 'Failed to delete user');
+      }
     }
   };
 
-  const handleSaveUser = () => {
-    if (selectedUser) {
-      // Update existing user
-      setUsers((prev) =>
-        prev.map((u) =>
-          u.id === selectedUser.id
-            ? { ...u, name: formData.name, email: formData.email, role: formData.role, status: formData.status as any }
-            : u
-        )
-      );
-      toast.success(t('users.userUpdated') || 'User updated successfully');
-      setIsEditModalOpen(false);
-    } else {
-      // Add new user
-      const newUser: User = {
-        id: `user-${Date.now()}`,
-        name: formData.name,
-        email: formData.email,
-        role: formData.role,
-        status: formData.status as any,
-        createdAt: new Date().toISOString(),
-      };
-      setUsers((prev) => [newUser, ...prev]);
-      toast.success(t('users.userAdded') || 'User added successfully');
-      setIsAddModalOpen(false);
+  const handleSaveUser = async () => {
+    try {
+      if (selectedUser) {
+        // Update existing user via API
+        const nameParts = formData.name.split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+
+        await tenantService.updateUser(selectedUser.id, {
+          firstName,
+          lastName,
+          status: formData.status === 'active' ? 'Active' : formData.status === 'inactive' ? 'Inactive' : 'Suspended',
+          roles: [formData.role],
+        });
+
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.id === selectedUser.id
+              ? { ...u, name: formData.name, email: formData.email, role: formData.role, status: formData.status as any }
+              : u
+          )
+        );
+        toast.success(t('users.userUpdated') || 'User updated successfully');
+        setIsEditModalOpen(false);
+      } else {
+        // Add new user via API
+        const nameParts = formData.name.split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+
+        const newUserResponse = await tenantService.createUser({
+          email: formData.email,
+          firstName,
+          lastName,
+          roles: [formData.role],
+          sendInvite: true,
+        });
+
+        const newUser: User = {
+          id: newUserResponse.id,
+          name: formData.name,
+          email: formData.email,
+          role: formData.role,
+          status: 'active',
+          createdAt: new Date().toISOString(),
+        };
+        setUsers((prev) => [newUser, ...prev]);
+        toast.success(t('users.userAdded') || 'User added successfully');
+        setIsAddModalOpen(false);
+      }
+    } catch (error) {
+      console.error('Error saving user:', error);
+      toast.error(t('common.error') || 'Failed to save user');
     }
+
     setFormData({ name: '', email: '', role: 'user', status: 'active' });
     setSelectedUser(null);
   };
 
-  const handleBulkDelete = () => {
+  const handleBulkDelete = async () => {
     if (selectedUsers.length === 0) return;
     if (confirm(`Delete ${selectedUsers.length} users?`)) {
-      const selectedIds = selectedUsers.map((u) => u.id);
-      setUsers((prev) => prev.filter((u) => !selectedIds.includes(u.id)));
-      toast.success(`${selectedUsers.length} users deleted`);
-      setSelectedUsers([]);
+      try {
+        // Delete users via API
+        const selectedIds = selectedUsers.map((u) => u.id);
+        await Promise.all(selectedIds.map((id) => tenantService.deleteUser(id)));
+
+        setUsers((prev) => prev.filter((u) => !selectedIds.includes(u.id)));
+        toast.success(`${selectedUsers.length} users deleted`);
+        setSelectedUsers([]);
+      } catch (error) {
+        console.error('Error deleting users:', error);
+        toast.error(t('common.error') || 'Failed to delete some users');
+      }
     }
   };
 

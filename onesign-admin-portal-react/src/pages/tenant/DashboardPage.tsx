@@ -14,20 +14,18 @@ import Card from '@/components/common/Card';
 import Avatar from '@/components/common/Avatar';
 import Badge from '@/components/common/Badge';
 import { formatNumber, formatRelativeTime } from '@/utils/formatters';
-
-interface RecentLogin {
-  id: string;
-  userName: string;
-  email: string;
-  timestamp: string;
-  ipAddress: string;
-  location: string;
-}
+import {
+  tenantService,
+  TenantStatsDto,
+  RecentLoginDto,
+  UserActivityStatsDto,
+  ApplicationUsageDto
+} from '@/lib/api/services/tenant.service';
 
 const DashboardPage: React.FC = () => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<TenantStatsDto>({
     activeUsers: 0,
     totalUsers: 0,
     totalApps: 0,
@@ -36,58 +34,37 @@ const DashboardPage: React.FC = () => {
     storageUsed: 0,
     storageTotal: 100,
   });
-  const [recentLogins, setRecentLogins] = useState<RecentLogin[]>([]);
+  const [recentLogins, setRecentLogins] = useState<RecentLoginDto[]>([]);
+  const [userActivityStats, setUserActivityStats] = useState<UserActivityStatsDto[]>([]);
+  const [applicationUsage, setApplicationUsage] = useState<ApplicationUsageDto[]>([]);
 
   useEffect(() => {
-    setTimeout(() => {
-      setStats({
-        activeUsers: 127,
-        totalUsers: 350,
-        totalApps: 8,
-        activeApps: 6,
-        apiCalls: 45230,
-        storageUsed: 67.8,
-        storageTotal: 100,
-      });
+    fetchDashboardData();
+  }, []);
 
-      setRecentLogins([
-        {
-          id: '1',
-          userName: 'John Smith',
-          email: 'john.smith@company.com',
-          timestamp: new Date(Date.now() - 180000).toISOString(),
-          ipAddress: '192.168.1.100',
-          location: 'New York, US',
-        },
-        {
-          id: '2',
-          userName: 'Jane Doe',
-          email: 'jane.doe@company.com',
-          timestamp: new Date(Date.now() - 480000).toISOString(),
-          ipAddress: '192.168.1.101',
-          location: 'London, UK',
-        },
-        {
-          id: '3',
-          userName: 'Bob Wilson',
-          email: 'bob.wilson@company.com',
-          timestamp: new Date(Date.now() - 900000).toISOString(),
-          ipAddress: '192.168.1.102',
-          location: 'Toronto, CA',
-        },
-        {
-          id: '4',
-          userName: 'Alice Johnson',
-          email: 'alice.johnson@company.com',
-          timestamp: new Date(Date.now() - 1800000).toISOString(),
-          ipAddress: '192.168.1.103',
-          location: 'Sydney, AU',
-        },
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    try {
+      // Fetch all dashboard data from API in parallel
+      const [statsData, loginsData, activityData, appUsageData] = await Promise.all([
+        tenantService.getTenantStats(),
+        tenantService.getRecentLogins(10),
+        tenantService.getUserActivityStats(7),
+        tenantService.getApplicationUsage()
       ]);
 
+      if (statsData) {
+        setStats(statsData);
+      }
+      setRecentLogins(loginsData);
+      setUserActivityStats(activityData);
+      setApplicationUsage(appUsageData);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
       setLoading(false);
-    }, 1000);
-  }, []);
+    }
+  };
 
   if (loading) {
     return (
@@ -182,40 +159,40 @@ const DashboardPage: React.FC = () => {
               </h2>
 
               <div className="space-y-4">
-                {[
-                  { day: 'Monday', users: 245, color: 'bg-primary-500' },
-                  { day: 'Tuesday', users: 312, color: 'bg-primary-500' },
-                  { day: 'Wednesday', users: 189, color: 'bg-primary-500' },
-                  { day: 'Thursday', users: 401, color: 'bg-primary-500' },
-                  { day: 'Friday', users: 356, color: 'bg-primary-500' },
-                  { day: 'Saturday', users: 189, color: 'bg-slate-300' },
-                  { day: 'Sunday', users: 156, color: 'bg-slate-300' },
-                ].map((data, index) => (
-                  <motion.div
-                    key={data.day}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: 0.5 + index * 0.1 }}
-                    className="flex items-center gap-4"
-                  >
-                    <div className="w-20 text-sm font-medium text-slate-600 dark:text-slate-400">
-                      {data.day}
-                    </div>
-                    <div className="flex-1 relative">
-                      <div className="h-8 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${(data.users / 450) * 100}%` }}
-                          transition={{ duration: 1, delay: 0.6 + index * 0.1 }}
-                          className={`h-full ${data.color} rounded-lg`}
-                        />
-                      </div>
-                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-900 dark:text-white">
-                        {data.users}
-                      </span>
-                    </div>
-                  </motion.div>
-                ))}
+                {userActivityStats.length > 0 ? (
+                  userActivityStats.map((data, index) => {
+                    const isWeekend = data.day === 'Saturday' || data.day === 'Sunday';
+                    const maxUsers = Math.max(...userActivityStats.map(d => d.users), 1);
+                    return (
+                      <motion.div
+                        key={data.day}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3, delay: 0.5 + index * 0.1 }}
+                        className="flex items-center gap-4"
+                      >
+                        <div className="w-20 text-sm font-medium text-slate-600 dark:text-slate-400">
+                          {data.day}
+                        </div>
+                        <div className="flex-1 relative">
+                          <div className="h-8 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${(data.users / maxUsers) * 100}%` }}
+                              transition={{ duration: 1, delay: 0.6 + index * 0.1 }}
+                              className={`h-full ${isWeekend ? 'bg-slate-300' : 'bg-primary-500'} rounded-lg`}
+                            />
+                          </div>
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-900 dark:text-white">
+                            {data.users}
+                          </span>
+                        </div>
+                      </motion.div>
+                    );
+                  })
+                ) : (
+                  <p className="text-center text-slate-500 py-8">{t('dashboard.noActivityData')}</p>
+                )}
               </div>
             </Card>
           </motion.div>
@@ -232,42 +209,45 @@ const DashboardPage: React.FC = () => {
               </h2>
 
               <div className="space-y-4">
-                {[
-                  { name: 'Web Application', usage: 45, requests: 15230, color: 'primary' },
-                  { name: 'Mobile App (iOS)', usage: 30, requests: 10145, color: 'secondary' },
-                  { name: 'Mobile App (Android)', usage: 20, requests: 8920, color: 'success' },
-                  { name: 'API Integration', usage: 5, requests: 2145, color: 'accent' },
-                ].map((app, index) => (
-                  <motion.div
-                    key={app.name}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: 0.6 + index * 0.1 }}
-                    className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                        {app.name}
-                      </p>
-                      <Badge variant={app.color as any} pill>
-                        {app.usage}%
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mr-4">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          animate={{ width: `${app.usage}%` }}
-                          transition={{ duration: 1, delay: 0.7 + index * 0.1 }}
-                          className={`h-full bg-${app.color}-500 rounded-full`}
-                        />
-                      </div>
-                      <p className="text-xs text-slate-500">
-                        {formatNumber(app.requests)} requests
-                      </p>
-                    </div>
-                  </motion.div>
-                ))}
+                {applicationUsage.length > 0 ? (
+                  applicationUsage.map((app, index) => {
+                    const colors = ['primary', 'secondary', 'success', 'accent'];
+                    const color = colors[index % colors.length];
+                    return (
+                      <motion.div
+                        key={app.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: 0.6 + index * 0.1 }}
+                        className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                            {app.name}
+                          </p>
+                          <Badge variant={color as any} pill>
+                            {app.usage}%
+                          </Badge>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mr-4">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${app.usage}%` }}
+                              transition={{ duration: 1, delay: 0.7 + index * 0.1 }}
+                              className={`h-full bg-${color}-500 rounded-full`}
+                            />
+                          </div>
+                          <p className="text-xs text-slate-500">
+                            {formatNumber(app.requests)} requests
+                          </p>
+                        </div>
+                      </motion.div>
+                    );
+                  })
+                ) : (
+                  <p className="text-center text-slate-500 py-8">{t('dashboard.noApplicationData')}</p>
+                )}
               </div>
             </Card>
           </motion.div>
@@ -290,35 +270,39 @@ const DashboardPage: React.FC = () => {
             </div>
 
             <div className="space-y-4">
-              {recentLogins.map((login, index) => (
-                <motion.div
-                  key={login.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: 0.8 + index * 0.1 }}
-                  className="flex items-center gap-4 p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                >
-                  <Avatar name={login.userName} size="sm" status="online" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                      {login.userName}
-                    </p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">
-                      {login.email}
-                    </p>
-                  </div>
-                  <div className="text-right hidden md:block">
-                    <p className="text-xs font-medium text-slate-900 dark:text-white">
-                      {login.location}
-                    </p>
-                    <p className="text-xs text-slate-500">{login.ipAddress}</p>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-500">
-                    <Clock className="w-3 h-3" />
-                    {formatRelativeTime(login.timestamp)}
-                  </div>
-                </motion.div>
-              ))}
+              {recentLogins.length > 0 ? (
+                recentLogins.map((login, index) => (
+                  <motion.div
+                    key={login.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: 0.8 + index * 0.1 }}
+                    className="flex items-center gap-4 p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <Avatar name={login.userName} size="sm" status={login.success ? "online" : "offline"} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                        {login.userName}
+                      </p>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        {login.email}
+                      </p>
+                    </div>
+                    <div className="text-right hidden md:block">
+                      <p className="text-xs font-medium text-slate-900 dark:text-white">
+                        {login.location}
+                      </p>
+                      <p className="text-xs text-slate-500">{login.ipAddress}</p>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                      <Clock className="w-3 h-3" />
+                      {formatRelativeTime(login.timestamp)}
+                    </div>
+                  </motion.div>
+                ))
+              ) : (
+                <p className="text-center text-slate-500 py-8">{t('dashboard.noRecentLogins')}</p>
+              )}
             </div>
           </Card>
         </motion.div>
