@@ -79,3 +79,10 @@ export type {
   GlobalInsightsOverviewDto,
   RiskyTenantDto,
 } from './global.service';
+
+export type {
+  ChangeSetDto,
+  ChangeItemDto,
+  ImpactAnalysisDto,
+  SimulationResultDto,
+} from './change-management.service';

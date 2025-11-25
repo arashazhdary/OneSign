@@ -932,31 +932,12 @@ export const authService = {
   },
 };
 
-// Billing Service
+// Billing Service - Based on /api/tenant/billing spec
 export const billingService = {
-  getBillingInfo: async () => {
+  // GET /api/tenant/billing/subscription
+  getSubscription: async (tenantId?: string) => {
     try {
-      const response = await apiClient.get('/api/billing');
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch billing info:', error);
-      return null;
-    }
-  },
-
-  getInvoices: async () => {
-    try {
-      const response = await apiClient.get('/api/billing/invoices');
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch invoices:', error);
-      return [];
-    }
-  },
-
-  getSubscription: async () => {
-    try {
-      const response = await apiClient.get('/api/billing/subscription');
+      const response = await apiClient.get('/api/tenant/billing/subscription');
       return response.data;
     } catch (error) {
       console.error('Failed to fetch subscription:', error);
@@ -964,9 +945,53 @@ export const billingService = {
     }
   },
 
+  // GET /api/tenant/billing/quota-status
+  getQuotaStatus: async (tenantId?: string) => {
+    try {
+      const response = await apiClient.get('/api/tenant/billing/quota-status');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch quota status:', error);
+      return { quotas: [] };
+    }
+  },
+
+  // GET /api/tenant/billing/summary
+  getBillingSummary: async (tenantId?: string) => {
+    try {
+      const response = await apiClient.get('/api/tenant/billing/summary');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch billing summary:', error);
+      return null;
+    }
+  },
+
+  // GET /api/tenant/billing/invoices
+  getInvoices: async (tenantId?: string) => {
+    try {
+      const response = await apiClient.get('/api/tenant/billing/invoices');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch invoices:', error);
+      return [];
+    }
+  },
+
+  // Backwards compatibility
+  getBillingInfo: async () => {
+    try {
+      const response = await apiClient.get('/api/tenant/billing/summary');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch billing info:', error);
+      return null;
+    }
+  },
+
   updateSubscription: async (data: any) => {
     try {
-      const response = await apiClient.put('/api/billing/subscription', data);
+      const response = await apiClient.put('/api/tenant/billing/subscription', data);
       return response.data;
     } catch (error) {
       console.error('Failed to update subscription:', error);
@@ -976,7 +1001,7 @@ export const billingService = {
 
   getUsage: async () => {
     try {
-      const response = await apiClient.get('/api/billing/usage');
+      const response = await apiClient.get('/api/tenant/billing/quota-status');
       return response.data;
     } catch (error) {
       console.error('Failed to fetch usage:', error);
