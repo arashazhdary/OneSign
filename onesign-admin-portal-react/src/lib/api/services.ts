@@ -655,6 +655,77 @@ export const platformService = {
       throw error;
     }
   },
+
+  // ==================== ORG UNITS (Spec: /api/tenant/orgunits) ====================
+  getOrgUnitsTree: async (tenantId?: string) => {
+    try {
+      const response = await apiClient.get('/api/tenant/orgunits/tree');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch org units tree:', error);
+      return [];
+    }
+  },
+
+  createOrgUnit: async (data: { tenantId?: string; parentId: string | null; name: string }) => {
+    const response = await apiClient.post('/api/tenant/orgunits', data);
+    return response.data;
+  },
+
+  updateOrgUnit: async (tenantId: string, orgUnitId: string, data: { name?: string }) => {
+    const response = await apiClient.put(`/api/tenant/orgunits/${orgUnitId}`, data);
+    return response.data;
+  },
+
+  moveOrgUnit: async (tenantId: string, orgUnitId: string, newParentId: string | null) => {
+    const response = await apiClient.post(`/api/tenant/orgunits/${orgUnitId}/move`, { newParentId });
+    return response.data;
+  },
+
+  deleteOrgUnit: async (tenantId: string, orgUnitId: string) => {
+    await apiClient.delete(`/api/tenant/orgunits/${orgUnitId}`);
+  },
+
+  // ==================== ROLES (Spec: /api/tenant/authorization/roles) ====================
+  getRoles: async (tenantId?: string) => {
+    try {
+      const response = await apiClient.get('/api/tenant/authorization/roles');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch roles:', error);
+      return { items: [] };
+    }
+  },
+
+  createRole: async (data: { tenantId?: string; name: string; description?: string; permissions: string[]; parentRoleId?: string }) => {
+    const response = await apiClient.post('/api/tenant/authorization/roles', data);
+    return response.data;
+  },
+
+  updateRole: async (roleId: string, data: { name?: string; description?: string; permissions?: string[]; parentRoleId?: string }, tenantId?: string) => {
+    const response = await apiClient.put(`/api/tenant/authorization/roles/${roleId}`, data);
+    return response.data;
+  },
+
+  deleteRole: async (roleId: string, tenantId?: string) => {
+    await apiClient.delete(`/api/tenant/authorization/roles/${roleId}`);
+  },
+
+  // ==================== SECURITY POLICY (Spec: /api/tenant/security) ====================
+  getSecurityPolicy: async () => {
+    try {
+      const response = await apiClient.get('/api/tenant/security/policy');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch security policy:', error);
+      return null;
+    }
+  },
+
+  updateSecurityPolicy: async (data: any) => {
+    const response = await apiClient.put('/api/tenant/security/policy', data);
+    return response.data;
+  },
 };
 
 // Security Service

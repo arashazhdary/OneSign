@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
 import { getCurrentUserScope, CurrentUserScopeDto } from '@/lib/api/users';
-import { platformService } from '@/lib/api/services';
+import { orgUnitsService } from '@/lib/api/services/org-units.service';
 import { Helmet } from 'react-helmet-async';
 
 interface OrgUnitTreeNode {
@@ -60,7 +60,7 @@ export default function TenantOrgUnitsPage() {
   const fetchTree = async (tid: string) => {
     try {
       setLoading(true);
-      const data = await platformService.getOrgUnitsTree(tid);
+      const data = await orgUnitsService.getTree();
       setTree(data);
       // Expand root nodes by default
       const rootIds = data.map((node: OrgUnitTreeNode) => node.id);
@@ -84,7 +84,7 @@ export default function TenantOrgUnitsPage() {
 
   const handleCreate = async () => {
     try {
-      await platformService.createOrgUnit({
+      await orgUnitsService.create({
         tenantId,
         parentId: newParentId || null,
         name: newOrgUnitName
@@ -101,7 +101,7 @@ export default function TenantOrgUnitsPage() {
   const handleUpdate = async () => {
     if (!selectedNode) return;
     try {
-      await platformService.updateOrgUnit(tenantId, selectedNode.id, {
+      await orgUnitsService.update(selectedNode.id, {
         name: newOrgUnitName
       });
       setShowEditModal(false);
@@ -116,7 +116,7 @@ export default function TenantOrgUnitsPage() {
   const handleMove = async () => {
     if (!selectedNode) return;
     try {
-      await platformService.moveOrgUnit(tenantId, selectedNode.id, newParentId || null);
+      await orgUnitsService.move(selectedNode.id, newParentId || null);
       setShowMoveModal(false);
       setSelectedNode(null);
       setNewParentId(null);
@@ -129,7 +129,7 @@ export default function TenantOrgUnitsPage() {
   const handleDelete = async (node: OrgUnitTreeNode) => {
     if (!confirm(t('tenant.orgUnits.confirmDelete'))) return;
     try {
-      await platformService.deleteOrgUnit(tenantId, node.id);
+      await orgUnitsService.delete(node.id);
       fetchTree(tenantId);
     } catch (err: any) {
       alert(err?.message || t('tenant.orgUnits.cannotDelete'));
