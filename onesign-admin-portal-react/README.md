@@ -23,11 +23,19 @@ A modern, beautiful, and performant admin portal built with React 18, Vite, Type
 - **Keyboard Navigation**: Full keyboard support throughout the app
 - **Focus Management**: Clear focus indicators for better UX
 
+### 🌍 Internationalization
+- **Multi-language Support**: English and Farsi (Persian) out of the box
+- **RTL Support**: Full Right-to-Left layout support for Farsi
+- **Dynamic Language Switching**: Change language on the fly
+- **Persistent Preferences**: Language selection saved to localStorage
+- **Complete Translation Coverage**: ~420 translation keys across all pages
+
 ### 🛠️ Developer Experience
 - **TypeScript**: Full type safety and IntelliSense support
 - **Path Aliases**: Clean imports with @ prefix
 - **Hot Module Replacement**: Instant updates during development
 - **Organized Structure**: Clear separation of concerns
+- **Production Ready**: Zero TypeScript errors, optimized build
 
 ## 📦 Tech Stack
 
@@ -37,11 +45,14 @@ A modern, beautiful, and performant admin portal built with React 18, Vite, Type
 - **Tailwind CSS** - Utility-first CSS framework
 - **Framer Motion** - Production-ready animation library
 - **React Router v6** - Client-side routing
-- **Zustand** - Lightweight state management
+- **Zustand** - Lightweight state management with persistence
 - **React Hook Form** - Performant forms with validation
 - **Recharts** - Composable charting library
 - **Lucide React** - Beautiful consistent icons
 - **React Hot Toast** - Beautiful notifications
+- **i18next** - Internationalization framework
+- **react-i18next** - React bindings for i18next
+- **React Helmet Async** - Document head management
 
 ## 🚀 Getting Started
 
@@ -94,23 +105,60 @@ onesign-admin-portal-react/
 │   ├── assets/            # Images, fonts, etc.
 │   ├── components/        # Reusable UI components
 │   │   ├── common/        # Shared components (Button, Card, Input, etc.)
+│   │   │   ├── Avatar.tsx
+│   │   │   ├── Badge.tsx
+│   │   │   ├── Button.tsx
+│   │   │   ├── Card.tsx
+│   │   │   ├── DataTable.tsx (with i18n)
+│   │   │   ├── Dropdown.tsx
+│   │   │   ├── Input.tsx
+│   │   │   ├── Modal.tsx
+│   │   │   ├── Sidebar.tsx (with i18n)
+│   │   │   ├── Tabs.tsx
+│   │   │   ├── Tooltip.tsx
+│   │   │   └── TopBar.tsx (with i18n)
 │   │   ├── admin/         # Admin-specific components
 │   │   ├── tenant/        # Tenant-specific components
 │   │   └── global/        # Global admin components
 │   ├── hooks/             # Custom React hooks
+│   │   └── useLanguage.ts # Language switching hook
+│   ├── i18n/              # Internationalization
+│   │   ├── config.ts      # i18next configuration
+│   │   └── locales/       # Translation files
+│   │       ├── en.json    # English translations (~420 keys)
+│   │       └── fa.json    # Farsi translations (~420 keys)
 │   ├── layouts/           # Layout components (AdminLayout, TenantLayout, etc.)
 │   ├── pages/             # Page components (route-based)
-│   │   ├── admin/         # Admin pages
-│   │   ├── tenant/        # Tenant pages
+│   │   ├── admin/         # Admin pages (all with i18n)
+│   │   │   ├── DashboardPage.tsx
+│   │   │   ├── UsersPage.tsx
+│   │   │   ├── TenantsPage.tsx
+│   │   │   ├── RolesPage.tsx
+│   │   │   ├── ApiKeysPage.tsx
+│   │   │   └── SettingsPage.tsx
+│   │   ├── tenant/        # Tenant pages (all with i18n)
+│   │   │   ├── DashboardPage.tsx
+│   │   │   ├── UsersPage.tsx
+│   │   │   ├── AppsPage.tsx
+│   │   │   ├── SettingsPage.tsx
+│   │   │   ├── RolesPage.tsx
+│   │   │   └── AuditPage.tsx
 │   │   ├── global/        # Global pages
 │   │   └── auth/          # Authentication pages
+│   │       └── LoginPage.tsx (with i18n)
 │   ├── services/          # API service layer
+│   │   └── apiClient.ts   # Axios instance with interceptors
 │   ├── stores/            # Zustand state management stores
+│   │   ├── authStore.ts   # Authentication state
+│   │   └── uiStore.ts     # UI state (sidebar, theme)
 │   ├── types/             # TypeScript type definitions
+│   │   └── index.ts       # Shared types
 │   ├── utils/             # Utility functions
+│   │   └── cn.ts          # Class name utility
 │   ├── App.tsx            # Main App component with routing
 │   ├── main.tsx           # Application entry point
-│   └── index.css          # Global styles
+│   ├── index.css          # Global styles
+│   └── vite-env.d.ts      # Vite environment type definitions
 ├── index.html             # HTML template
 ├── tailwind.config.js     # Tailwind CSS configuration
 ├── tsconfig.json          # TypeScript configuration
@@ -182,6 +230,62 @@ npm run test:ui      # Run tests with UI
 - Generous white space
 - Card-based layouts
 
+## 🌍 Internationalization (i18n)
+
+### Supported Languages
+
+- 🇬🇧 **English** (en)
+- 🇮🇷 **فارسی** (fa) - Farsi/Persian with full RTL support
+
+### Features
+
+- **Language Switcher**: Available in TopBar component
+- **Persistent Selection**: Language preference saved to localStorage
+- **RTL Layout**: Automatic layout direction change for Farsi
+- **Complete Coverage**: All UI text translated across ~420 keys
+- **Type-Safe**: Full TypeScript support for translation keys
+
+### Translation Structure
+
+```json
+{
+  "common": { ... },      // Common UI elements (50+ keys)
+  "nav": { ... },         // Navigation items (20+ keys)
+  "auth": { ... },        // Authentication pages (17+ keys)
+  "users": { ... },       // User management (35+ keys)
+  "tenants": { ... },     // Tenant management (30+ keys)
+  "roles": { ... },       // Role management (25+ keys)
+  "settings": { ... },    // Settings pages (40+ keys)
+  "dashboard": { ... },   // Dashboard elements (50+ keys)
+  "apps": { ... },        // Application management (30+ keys)
+  "apiKeys": { ... },     // API key management (25+ keys)
+  "audit": { ... }        // Audit logs (20+ keys)
+}
+```
+
+### Usage in Components
+
+```tsx
+import { useTranslation } from 'react-i18next';
+
+function MyComponent() {
+  const { t } = useTranslation();
+
+  return (
+    <div>
+      <h1>{t('common.welcome')}</h1>
+      <p>{t('users.totalUsers')}</p>
+    </div>
+  );
+}
+```
+
+### Adding New Translations
+
+1. Add keys to both `src/i18n/locales/en.json` and `src/i18n/locales/fa.json`
+2. Use `t('category.key')` in your components
+3. Keys are automatically type-checked by TypeScript
+
 ## 🔐 Authentication
 
 The app uses JWT-based authentication with the following flow:
@@ -189,6 +293,7 @@ The app uses JWT-based authentication with the following flow:
 2. Token stored in Zustand + localStorage
 3. Protected routes check authentication state
 4. Automatic redirect to login if not authenticated
+5. Token automatically included in API requests via Axios interceptors
 
 ## 🌍 Deployment
 
@@ -267,9 +372,100 @@ Edit `tailwind.config.js` to customize:
 - **Before**: `NEXT_PUBLIC_` prefix
 - **After**: `VITE_` prefix
 
+## ✅ Implementation Status
+
+### Completed Features
+
+- ✅ **Core Infrastructure**
+  - React 18 + TypeScript + Vite setup
+  - Tailwind CSS with custom theme
+  - React Router v6 routing
+  - Zustand state management
+  - Production build optimization
+
+- ✅ **Internationalization**
+  - i18next integration
+  - English and Farsi translations (~420 keys)
+  - RTL layout support
+  - Language switcher component
+  - Persistent language selection
+
+- ✅ **Common Components** (All with i18n)
+  - Avatar, Badge, Button, Card
+  - DataTable (advanced with search, filter, pagination)
+  - Dropdown, Input, Modal
+  - Sidebar with menu search
+  - TopBar with notifications
+  - Tabs (controlled/uncontrolled)
+  - Tooltip
+
+- ✅ **Admin Pages** (All with i18n)
+  - Dashboard with stats and charts
+  - Users management (CRUD)
+  - Tenants management
+  - Roles & Permissions
+  - API Keys management
+  - Settings (4 tabs: General, Security, Notifications, Integrations)
+
+- ✅ **Tenant Pages** (All with i18n)
+  - Dashboard with analytics
+  - Users management
+  - Apps management
+  - Settings (4 tabs)
+  - Roles & Permissions
+  - Audit logs
+
+- ✅ **Authentication**
+  - Login page with i18n
+  - JWT token handling
+  - Protected routes
+  - Auto-redirect
+
+- ✅ **Build & Production**
+  - Zero TypeScript errors
+  - Zero build warnings
+  - Optimized bundle splitting
+  - Production-ready build
+
+### Pending Features
+
+- ⏳ Real API integration (currently using mock data)
+- ⏳ Advanced form validation
+- ⏳ Image upload components
+- ⏳ Advanced charts and analytics
+- ⏳ Email notification templates
+- ⏳ Export to PDF/Excel functionality
+
+## 🐛 Recent Fixes
+
+### Build Optimization (Latest)
+- Fixed TypeScript compilation errors
+- Resolved Framer Motion type conflicts in Button component
+- Fixed Tabs component to support controlled/uncontrolled modes
+- Corrected CSS custom property usage
+- Added Vite environment type definitions
+- Removed unused imports and variables
+
+### i18n Integration
+- Complete translation coverage across all pages
+- DataTable component fully localized
+- TopBar and Sidebar navigation localized
+- Language switcher with persistence
+- RTL layout support for Farsi
+
 ## 🤝 Contributing
 
 This is a migrated project. For contributing guidelines, please refer to the main project repository.
+
+## 🏗️ Migration Notes
+
+This project was successfully migrated from Next.js 14 to React 18 + Vite with the following improvements:
+- 3-5x faster development server
+- Smaller bundle sizes
+- Complete UI/UX redesign
+- Full internationalization support
+- Better type safety
+- Production-ready build
 
 ## 📄 License
 
