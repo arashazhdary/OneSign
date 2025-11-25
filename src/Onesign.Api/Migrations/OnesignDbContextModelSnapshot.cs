@@ -22,6 +22,332 @@ namespace Onesign.Api.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Onesign.Modules.AccessRequests.Infrastructure.EfCore.Entities.AccessRequestEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Justification")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<Guid>("RequesterId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RequesterName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ReviewComment")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("ReviewedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "RequesterId")
+                        .HasDatabaseName("IX_AccessRequests_TenantId_RequesterId");
+
+                    b.HasIndex("TenantId", "Status", "CreatedAt")
+                        .HasDatabaseName("IX_AccessRequests_TenantId_Status_CreatedAt");
+
+                    b.ToTable("AccessRequests", "AccessRequests");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.AccessRequests.Infrastructure.EfCore.Entities.AccessRequestItemEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AccessRequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AccessType")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DurationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TargetId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("TargetName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccessRequestId")
+                        .HasDatabaseName("IX_AccessRequestItems_AccessRequestId");
+
+                    b.ToTable("AccessRequestItems", "AccessRequests");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.AccessRequests.Infrastructure.EfCore.Entities.ApprovalStepEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("AccessRequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("Action")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ActionAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ApproverId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ApproverName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("StepNumber")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccessRequestId", "StepNumber")
+                        .HasDatabaseName("IX_ApprovalSteps_AccessRequestId_StepNumber");
+
+                    b.HasIndex("ApproverId", "Action")
+                        .HasDatabaseName("IX_ApprovalSteps_ApproverId_Action");
+
+                    b.ToTable("ApprovalSteps", "AccessRequests");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.AccessRequests.Infrastructure.EfCore.Entities.WorkflowDefinitionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ApprovalChainJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid?>("TargetId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("TargetType")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "TargetType", "TargetId")
+                        .HasDatabaseName("IX_WorkflowDefinitions_TenantId_TargetType_TargetId");
+
+                    b.ToTable("WorkflowDefinitions", "AccessRequests");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.AdaptiveSecurity.Infrastructure.EfCore.Entities.AdaptivePolicyEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ActionsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Conditions")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RiskThreshold")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_AdaptivePolicies_TenantId");
+
+                    b.HasIndex("TenantId", "IsEnabled")
+                        .HasDatabaseName("IX_AdaptivePolicies_TenantId_IsEnabled");
+
+                    b.HasIndex("TenantId", "Priority")
+                        .HasDatabaseName("IX_AdaptivePolicies_TenantId_Priority");
+
+                    b.ToTable("AdaptivePolicies", "AdaptiveSecurity");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.AdaptiveSecurity.Infrastructure.EfCore.Entities.SecuritySignalEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ActionTaken")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("DetailsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DetectedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RiskScore")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("SessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("SignalType")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_SecuritySignals_TenantId");
+
+                    b.HasIndex("TenantId", "DetectedAt")
+                        .HasDatabaseName("IX_SecuritySignals_TenantId_DetectedAt");
+
+                    b.HasIndex("TenantId", "ProcessedAt")
+                        .HasDatabaseName("IX_SecuritySignals_TenantId_ProcessedAt");
+
+                    b.HasIndex("TenantId", "SignalType")
+                        .HasDatabaseName("IX_SecuritySignals_TenantId_SignalType");
+
+                    b.HasIndex("TenantId", "UserId")
+                        .HasDatabaseName("IX_SecuritySignals_TenantId_UserId");
+
+                    b.ToTable("SecuritySignals", "AdaptiveSecurity");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.AdaptiveSecurity.Infrastructure.EfCore.Entities.UserSecurityContextEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("CurrentRiskScore")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LastLoginDevice")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("LastLoginLocation")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("RiskFactorsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("TrustedDevicesJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TrustedLocationsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "CurrentRiskScore")
+                        .HasDatabaseName("IX_UserSecurityContexts_TenantId_CurrentRiskScore");
+
+                    b.HasIndex("TenantId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_UserSecurityContexts_TenantId_UserId");
+
+                    b.ToTable("UserSecurityContexts", "AdaptiveSecurity");
+                });
+
             modelBuilder.Entity("Onesign.Modules.Applications.Infrastructure.EfCore.Entities.ApplicationClientEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -148,6 +474,1984 @@ namespace Onesign.Api.Migrations
                     b.HasIndex("TenantId", "CreatedAt");
 
                     b.ToTable("AuditEvents", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Authorization.Infrastructure.EfCore.Entities.PolicyAssignmentEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("PolicyDefinitionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PolicyTargetId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PolicyDefinitionId")
+                        .HasDatabaseName("IX_PolicyAssignments_PolicyDefinitionId");
+
+                    b.HasIndex("PolicyTargetId");
+
+                    b.HasIndex("TenantId", "PolicyTargetId", "Order")
+                        .HasDatabaseName("IX_PolicyAssignments_TenantId_PolicyTargetId_Order");
+
+                    b.ToTable("PolicyAssignments", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Authorization.Infrastructure.EfCore.Entities.PolicyConditionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ConditionGroupId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Operator")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SourceKey")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("SourceType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConditionGroupId")
+                        .HasDatabaseName("IX_PolicyConditions_ConditionGroupId");
+
+                    b.ToTable("PolicyConditions", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Authorization.Infrastructure.EfCore.Entities.PolicyConditionGroupEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("LogicalOperator")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("PolicyDefinitionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PolicyDefinitionId")
+                        .HasDatabaseName("IX_PolicyConditionGroups_PolicyDefinitionId");
+
+                    b.ToTable("PolicyConditionGroups", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Authorization.Infrastructure.EfCore.Entities.PolicyDefinitionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("Effect")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_PolicyDefinitions_TenantId");
+
+                    b.HasIndex("TenantId", "Enabled", "Priority")
+                        .HasDatabaseName("IX_PolicyDefinitions_TenantId_Enabled_Priority");
+
+                    b.ToTable("PolicyDefinitions", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Authorization.Infrastructure.EfCore.Entities.PolicyTargetEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TargetKey")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("TargetName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("TargetType")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_PolicyTargets_TenantId");
+
+                    b.HasIndex("TenantId", "TargetType", "TargetKey")
+                        .IsUnique()
+                        .HasDatabaseName("IX_PolicyTargets_TenantId_TargetType_TargetKey");
+
+                    b.ToTable("PolicyTargets", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Automation.Infrastructure.EfCore.Entities.AutomationActionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ActionType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConfigJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsCritical")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("WorkflowId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkflowId")
+                        .HasDatabaseName("IX_Automation_Actions_WorkflowId");
+
+                    b.ToTable("Automation_Actions", "Automation");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Automation.Infrastructure.EfCore.Entities.AutomationConditionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Expression")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ExpressionType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("WorkflowId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkflowId")
+                        .HasDatabaseName("IX_Automation_Conditions_WorkflowId");
+
+                    b.ToTable("Automation_Conditions", "Automation");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Automation.Infrastructure.EfCore.Entities.AutomationExecutionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ActionsExecutedCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ActionsFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("EventId")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("PayloadSnapshot")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("WorkflowId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_Automation_Executions_TenantId");
+
+                    b.HasIndex("WorkflowId")
+                        .HasDatabaseName("IX_Automation_Executions_WorkflowId");
+
+                    b.HasIndex("TenantId", "StartedAt")
+                        .HasDatabaseName("IX_Automation_Executions_TenantId_StartedAt");
+
+                    b.HasIndex("TenantId", "Status")
+                        .HasDatabaseName("IX_Automation_Executions_TenantId_Status");
+
+                    b.HasIndex("WorkflowId", "EventId")
+                        .HasDatabaseName("IX_Automation_Executions_WorkflowId_EventId");
+
+                    b.ToTable("Automation_Executions", "Automation");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Automation.Infrastructure.EfCore.Entities.AutomationTriggerEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("SourceModule")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("WorkflowId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventType")
+                        .HasDatabaseName("IX_Automation_Triggers_EventType");
+
+                    b.HasIndex("WorkflowId")
+                        .HasDatabaseName("IX_Automation_Triggers_WorkflowId");
+
+                    b.ToTable("Automation_Triggers", "Automation");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Automation.Infrastructure.EfCore.Entities.AutomationWorkflowEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsEnforced")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsTemplate")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("ScopeType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Severity")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("TenantCanDisable")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("TenantCanOverrideConditions")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_Automation_Workflows_TenantId");
+
+                    b.HasIndex("TenantId", "IsEnabled")
+                        .HasDatabaseName("IX_Automation_Workflows_TenantId_IsEnabled");
+
+                    b.HasIndex("ScopeType", "IsTemplate", "IsEnforced")
+                        .HasDatabaseName("IX_Automation_Workflows_ScopeType_IsTemplate_IsEnforced");
+
+                    b.ToTable("Automation_Workflows", "Automation");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Billing.Infrastructure.EfCore.Entities.PlanEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("Plans", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Billing.Infrastructure.EfCore.Entities.PlanFeatureEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("LimitType")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("PlanId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlanId");
+
+                    b.HasIndex("PlanId", "Key")
+                        .IsUnique();
+
+                    b.ToTable("PlanFeatures", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Billing.Infrastructure.EfCore.Entities.TenantSubscriptionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("CurrentPeriodEndsAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("PlanId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("TrialEndsAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PlanId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("TenantId")
+                        .IsUnique();
+
+                    b.ToTable("TenantSubscriptions", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Billing.Infrastructure.EfCore.Entities.TenantUsageSnapshotEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ActiveUsersLast30Days")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ApplicationCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CapturedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("IdpConnectionCount")
+                        .HasColumnType("int");
+
+                    b.Property<long>("LoginsThisMonth")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("OrgUnitCount")
+                        .HasColumnType("int");
+
+                    b.Property<long>("ScimCallsThisMonth")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("UserCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "CapturedAt");
+
+                    b.ToTable("TenantUsageSnapshots", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Billing.Infrastructure.EfCore.Entities.UsageCounterEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("MetricType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PeriodMonth")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PeriodYear")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("Value")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "MetricType", "PeriodYear", "PeriodMonth")
+                        .IsUnique();
+
+                    b.ToTable("UsageCounters", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.ChangeManagement.Infrastructure.EfCore.Entities.ChangeApprovalEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ApproverUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ChangeSetId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("DecidedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Decision")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApproverUserId")
+                        .HasDatabaseName("IX_ChangeMgmt_Approvals_ApproverUserId");
+
+                    b.HasIndex("ChangeSetId")
+                        .HasDatabaseName("IX_ChangeMgmt_Approvals_ChangeSetId");
+
+                    b.HasIndex("ChangeSetId", "ApproverUserId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_ChangeMgmt_Approvals_ChangeSetUser");
+
+                    b.ToTable("ChangeMgmt_Approvals", "ChangeMgmt");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.ChangeManagement.Infrastructure.EfCore.Entities.ChangeApprovalRuleEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MinApprovers")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("RequireSeparationOfDuties")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("ScopeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ScopeType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ScopeType", "ScopeId", "Category")
+                        .IsUnique()
+                        .HasDatabaseName("IX_ChangeMgmt_ApprovalRules_ScopeCategory");
+
+                    b.ToTable("ChangeMgmt_ApprovalRules", "ChangeMgmt");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.ChangeManagement.Infrastructure.EfCore.Entities.ChangeExecutionLogEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ChangeSetId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("ItemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Message")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Step")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChangeSetId")
+                        .HasDatabaseName("IX_ChangeMgmt_ExecutionLogs_ChangeSetId");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_ChangeMgmt_ExecutionLogs_CreatedAt");
+
+                    b.HasIndex("ChangeSetId", "Step")
+                        .HasDatabaseName("IX_ChangeMgmt_ExecutionLogs_ChangeSetStep");
+
+                    b.ToTable("ChangeMgmt_ExecutionLogs", "ChangeMgmt");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.ChangeManagement.Infrastructure.EfCore.Entities.ChangeItemEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ChangeSetId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CurrentValueJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Operation")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ProposedValueJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("TargetId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("TargetType")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChangeSetId")
+                        .HasDatabaseName("IX_ChangeMgmt_ChangeItems_ChangeSetId");
+
+                    b.HasIndex("TargetType", "TargetId")
+                        .HasDatabaseName("IX_ChangeMgmt_ChangeItems_Target");
+
+                    b.ToTable("ChangeMgmt_ChangeItems", "ChangeMgmt");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.ChangeManagement.Infrastructure.EfCore.Entities.ChangeSetEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("AppliedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("ApprovedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("ApprovedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<Guid>("RequestedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RollbackReason")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTimeOffset?>("RolledBackAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("ScheduledFor")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("ScopeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ScopeType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("SimulationSummaryJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_ChangeMgmt_ChangeSets_CreatedAt");
+
+                    b.HasIndex("RequestedByUserId")
+                        .HasDatabaseName("IX_ChangeMgmt_ChangeSets_RequestedBy");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_ChangeMgmt_ChangeSets_Status");
+
+                    b.HasIndex("ScopeType", "ScopeId")
+                        .HasDatabaseName("IX_ChangeMgmt_ChangeSets_Scope");
+
+                    b.ToTable("ChangeMgmt_ChangeSets", "ChangeMgmt");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Crypto.Infrastructure.EfCore.Entities.KeyRotationPolicyEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("OverlapPeriodDays")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Purpose")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RotationPeriodDays")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ScopeId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("ScopeType")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Enabled")
+                        .HasDatabaseName("IX_KeyRotationPolicies_Enabled");
+
+                    b.HasIndex("ScopeType", "ScopeId", "Purpose")
+                        .IsUnique()
+                        .HasDatabaseName("IX_KeyRotationPolicies_Scope_Purpose");
+
+                    b.ToTable("KeyRotationPolicies", "Crypto");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Crypto.Infrastructure.EfCore.Entities.KeySetEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDefaultForScope")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Purpose")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ScopeId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("ScopeType")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ScopeType", "ScopeId", "IsDefaultForScope")
+                        .HasDatabaseName("IX_KeySets_Scope_Default");
+
+                    b.HasIndex("ScopeType", "ScopeId", "Purpose")
+                        .HasDatabaseName("IX_KeySets_Scope_Purpose");
+
+                    b.ToTable("KeySets", "Crypto");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Crypto.Infrastructure.EfCore.Entities.KeyVersionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ActivatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Algorithm")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ExpiredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("KeyMaterial")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<Guid>("KeySetId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Kid")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("State")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KeySetId")
+                        .HasDatabaseName("IX_KeyVersions_KeySetId");
+
+                    b.HasIndex("Kid")
+                        .IsUnique()
+                        .HasDatabaseName("IX_KeyVersions_Kid");
+
+                    b.HasIndex("KeySetId", "State")
+                        .HasDatabaseName("IX_KeyVersions_KeySetId_State");
+
+                    b.ToTable("KeyVersions", "Crypto");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Deployment.Infrastructure.EfCore.Entities.DeploymentEnvironmentEntity", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("AppVersion")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("BaseUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DbSchemaVersion")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("LastHeartbeatAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LicenseKey")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("RegionId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RegionId")
+                        .HasDatabaseName("IX_Global_Environments_RegionId");
+
+                    b.HasIndex("Type")
+                        .HasDatabaseName("IX_Global_Environments_Type");
+
+                    b.ToTable("Global_Environments", "Deployment");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Deployment.Infrastructure.EfCore.Entities.EnvironmentFeatureConfigEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EnabledModulesJson")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("EnvironmentId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("MaxApplications")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxTenants")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxUsers")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EnvironmentId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_EnvironmentFeatureConfigs_EnvironmentId");
+
+                    b.ToTable("EnvironmentFeatureConfigs", "Deployment");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Developer.Infrastructure.EfCore.Entities.ApiKeyEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("KeyHash")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("KeyPrefix")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("LastUsedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RevokedReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ScopesJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("ServiceAccountId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("KeyHash")
+                        .IsUnique()
+                        .HasDatabaseName("IX_ApiKeys_KeyHash");
+
+                    b.HasIndex("ServiceAccountId")
+                        .HasDatabaseName("IX_ApiKeys_ServiceAccountId");
+
+                    b.HasIndex("TenantId", "Status")
+                        .HasDatabaseName("IX_ApiKeys_TenantId_Status");
+
+                    b.ToTable("ApiKeys", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Developer.Infrastructure.EfCore.Entities.ApiUsageLogEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ApiKeyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Endpoint")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("HttpMethod")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("RequestedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("ResponseTimeMs")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid?>("ServiceAccountId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("StatusCode")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("UserAgent")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApiKeyId", "RequestedAt")
+                        .HasDatabaseName("IX_ApiUsageLogs_ApiKeyId_RequestedAt");
+
+                    b.HasIndex("TenantId", "RequestedAt")
+                        .HasDatabaseName("IX_ApiUsageLogs_TenantId_RequestedAt");
+
+                    b.ToTable("ApiUsageLogs", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Developer.Infrastructure.EfCore.Entities.SdkConfigurationEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ConfigurationJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("SdkType")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "SdkType")
+                        .HasDatabaseName("IX_SdkConfigurations_TenantId_SdkType");
+
+                    b.ToTable("SdkConfigurations", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Developer.Infrastructure.EfCore.Entities.ServiceAccountEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime?>("LastAccessAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("RolesJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "Email")
+                        .IsUnique()
+                        .HasDatabaseName("IX_ServiceAccounts_TenantId_Email");
+
+                    b.HasIndex("TenantId", "Status")
+                        .HasDatabaseName("IX_ServiceAccounts_TenantId_Status");
+
+                    b.ToTable("ServiceAccounts", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Developer.Infrastructure.EfCore.Entities.WebhookEndpointEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("EventTypesJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("FailureCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("LastTriggeredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SecretKey")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "Enabled")
+                        .HasDatabaseName("IX_WebhookEndpoints_TenantId_Enabled");
+
+                    b.ToTable("WebhookEndpoints", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Extensibility.Infrastructure.EfCore.Entities.LoginHookEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EndpointUrl")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<bool>("FailOpen")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Secret")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("Stage")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("TimeoutSeconds")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "Stage", "IsEnabled")
+                        .HasDatabaseName("IX_LoginHooks_TenantId_Stage_IsEnabled");
+
+                    b.ToTable("LoginHooks", "Extensibility");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Extensibility.Infrastructure.EfCore.Entities.TokenTransformationRuleEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RuleDefinitionJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("TargetAppId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "Order")
+                        .HasDatabaseName("IX_TokenTransformationRules_TenantId_Order");
+
+                    b.HasIndex("TenantId", "TargetAppId", "IsEnabled")
+                        .HasDatabaseName("IX_TokenTransformationRules_TenantId_TargetAppId_IsEnabled");
+
+                    b.ToTable("TokenTransformationRules", "Extensibility");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Extensibility.Infrastructure.EfCore.Entities.WebhookDeliveryLogEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("LastAttemptAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PayloadJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ResponseStatusCode")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("SubscriptionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SubscriptionId", "CreatedAt")
+                        .HasDatabaseName("IX_WebhookDeliveryLogs_SubscriptionId_CreatedAt");
+
+                    b.HasIndex("TenantId", "Status")
+                        .HasDatabaseName("IX_WebhookDeliveryLogs_TenantId_Status");
+
+                    b.HasIndex("TenantId", "Status", "AttemptCount")
+                        .HasDatabaseName("IX_WebhookDeliveryLogs_TenantId_Status_AttemptCount");
+
+                    b.ToTable("WebhookDeliveryLogs", "Extensibility");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Extensibility.Infrastructure.EfCore.Entities.WebhookSubscriptionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EndpointUrl")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("EventTypesJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastDeliveryAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastDeliveryStatus")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("MaxRetries")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Secret")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "IsEnabled")
+                        .HasDatabaseName("IX_WebhookSubscriptions_TenantId_IsEnabled");
+
+                    b.ToTable("WebhookSubscriptions", "Extensibility");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Federation.Infrastructure.EfCore.Entities.AttributeMappingEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExternalAttributeName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("InternalAttributeName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MappingType")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("OidcFederationProviderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("SamlProviderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("StaticValue")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("TemplateExpression")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OidcFederationProviderId");
+
+                    b.HasIndex("SamlProviderId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("AttributeMappings", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Federation.Infrastructure.EfCore.Entities.JitProvisioningLogEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("ExternalUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<Guid?>("OidcFederationProviderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ProvisionedDataJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("SamlProviderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("OidcFederationProviderId");
+
+                    b.HasIndex("SamlProviderId");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "UserId");
+
+                    b.ToTable("JitProvisioningLogs", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Federation.Infrastructure.EfCore.Entities.OidcFederationProviderEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Authority")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ClientId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ClientSecret")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("ProviderType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Scopes")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "Name");
+
+                    b.ToTable("OidcFederationProviders", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Federation.Infrastructure.EfCore.Entities.SamlProviderEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("BindingType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("EntityId")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("IdpCertificate")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IdpSsoUrl")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("SignAuthRequest")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SpAssertionConsumerServiceUrl")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("SpEntityId")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("WantAssertionsSigned")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "EntityId")
+                        .IsUnique();
+
+                    b.ToTable("SamlProviders", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Federation.Infrastructure.EfCore.Entities.ScimTokenEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastUsedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("TenantId", "Status");
+
+                    b.ToTable("ScimTokens", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Hunting.Infrastructure.EfCore.Entities.HuntRunEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<bool>("FindingCreated")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid?>("IncidentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("MatchCount")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ScheduledHuntId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ScopeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ScopeType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("TriggeredWorkflowId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FindingCreated")
+                        .HasDatabaseName("IX_Hunting_HuntRuns_FindingCreated");
+
+                    b.HasIndex("ScheduledHuntId")
+                        .HasDatabaseName("IX_Hunting_HuntRuns_ScheduledHuntId");
+
+                    b.HasIndex("StartedAt")
+                        .HasDatabaseName("IX_Hunting_HuntRuns_StartedAt");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_Hunting_HuntRuns_Status");
+
+                    b.HasIndex("ScopeType", "ScopeId")
+                        .HasDatabaseName("IX_Hunting_HuntRuns_Scope");
+
+                    b.ToTable("Hunting_HuntRuns", "Hunting");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Hunting.Infrastructure.EfCore.Entities.HuntSampleRowEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Dataset")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DocumentJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("HuntRunId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("RowIndex")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Dataset")
+                        .HasDatabaseName("IX_Hunting_HuntSampleRows_Dataset");
+
+                    b.HasIndex("HuntRunId")
+                        .HasDatabaseName("IX_Hunting_HuntSampleRows_HuntRunId");
+
+                    b.HasIndex("RowIndex")
+                        .HasDatabaseName("IX_Hunting_HuntSampleRows_RowIndex");
+
+                    b.ToTable("Hunting_HuntSampleRows", "Hunting");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Hunting.Infrastructure.EfCore.Entities.SavedQueryEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Dataset")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsGlobalTemplate")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("QueryDslJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("ScopeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ScopeType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_Hunting_SavedQueries_CreatedAt");
+
+                    b.HasIndex("Dataset")
+                        .HasDatabaseName("IX_Hunting_SavedQueries_Dataset");
+
+                    b.HasIndex("IsEnabled")
+                        .HasDatabaseName("IX_Hunting_SavedQueries_IsEnabled");
+
+                    b.HasIndex("IsGlobalTemplate")
+                        .HasDatabaseName("IX_Hunting_SavedQueries_IsGlobalTemplate");
+
+                    b.HasIndex("ScopeType", "ScopeId")
+                        .HasDatabaseName("IX_Hunting_SavedQueries_Scope");
+
+                    b.ToTable("Hunting_SavedQueries", "Hunting");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Hunting.Infrastructure.EfCore.Entities.ScheduledHuntEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ActionsJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MaxRowsToScan")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MinMatchCountForFinding")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("SavedQueryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ScheduleSpec")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ScopeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ScopeType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("TimeWindowMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_Hunting_ScheduledHunts_CreatedAt");
+
+                    b.HasIndex("IsEnabled")
+                        .HasDatabaseName("IX_Hunting_ScheduledHunts_IsEnabled");
+
+                    b.HasIndex("SavedQueryId")
+                        .HasDatabaseName("IX_Hunting_ScheduledHunts_SavedQueryId");
+
+                    b.HasIndex("ScheduleSpec")
+                        .HasDatabaseName("IX_Hunting_ScheduledHunts_ScheduleSpec");
+
+                    b.HasIndex("ScopeType", "ScopeId")
+                        .HasDatabaseName("IX_Hunting_ScheduledHunts_Scope");
+
+                    b.ToTable("Hunting_ScheduledHunts", "Hunting");
                 });
 
             modelBuilder.Entity("Onesign.Modules.Identity.Infrastructure.EfCore.Entities.AuthorizationCodeEntity", b =>
@@ -306,11 +2610,28 @@ namespace Onesign.Api.Migrations
                     b.Property<Guid>("GlobalUserId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
                     b.Property<bool>("IsAdmin")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsLocked")
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastLoginAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("LockReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LockedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("RequireMfaNextSignIn")
+                        .HasColumnType("bit");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -345,6 +2666,14 @@ namespace Onesign.Api.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("SessionToken")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -363,6 +2692,1420 @@ namespace Onesign.Api.Migrations
                         .IsUnique();
 
                     b.ToTable("UserLoginSessions", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.IdentityInsights.Infrastructure.EfCore.Entities.InsightEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DataJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MessageKey")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("ResolvedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("ResolvedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ScopeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ScopeType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("Severity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "Severity", "CreatedAt")
+                        .HasDatabaseName("IX_Insights_TenantId_Severity_CreatedAt");
+
+                    b.HasIndex("TenantId", "Type", "Status")
+                        .HasDatabaseName("IX_Insights_TenantId_Type_Status");
+
+                    b.ToTable("Insights", "IdentityInsights");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.IdentityInsights.Infrastructure.EfCore.Entities.TenantRiskProfileEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CalculatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("FailedLoginRate")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<int>("HighRiskUsersCount")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("MfaEnrollmentRate")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<int>("OpenGovernanceFindingsCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PrivilegedUsersCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RiskScore")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("UsersCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RiskScore")
+                        .HasDatabaseName("IX_TenantRiskProfiles_RiskScore");
+
+                    b.HasIndex("TenantId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_TenantRiskProfiles_TenantId");
+
+                    b.ToTable("TenantRiskProfiles", "IdentityInsights");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.IdentityInsights.Infrastructure.EfCore.Entities.UserRiskProfileEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ApplicationsCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CalculatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("FailedLoginCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("LastLoginAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("MfaEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("PrivilegedRolesCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RiskFactorsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RiskScore")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserDisplayName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "RiskScore")
+                        .HasDatabaseName("IX_UserRiskProfiles_TenantId_RiskScore");
+
+                    b.HasIndex("TenantId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_UserRiskProfiles_TenantId_UserId");
+
+                    b.ToTable("UserRiskProfiles", "IdentityInsights");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.IdentityLifecycle.Infrastructure.EfCore.Entities.AccessPackageEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ApplicationIdsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("RoleIdsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "IsEnabled")
+                        .HasDatabaseName("IX_AccessPackages_TenantId_IsEnabled");
+
+                    b.ToTable("AccessPackages", "IdentityLifecycle");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.IdentityLifecycle.Infrastructure.EfCore.Entities.HRIdentityRecordEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExternalEmployeeId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("JobRole")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("LastSyncedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ManagerEmployeeId")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("OrgUnitCode")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "ExternalEmployeeId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_HRIdentityRecords_TenantId_ExternalEmployeeId");
+
+                    b.HasIndex("TenantId", "Status")
+                        .HasDatabaseName("IX_HRIdentityRecords_TenantId_Status");
+
+                    b.ToTable("HRIdentityRecords", "IdentityLifecycle");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.IdentityLifecycle.Infrastructure.EfCore.Entities.LifecycleEventEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("EventType")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("HRRecordId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("NewSnapshotJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OldSnapshotJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HRRecordId");
+
+                    b.HasIndex("TenantId", "Status", "CreatedAt")
+                        .HasDatabaseName("IX_LifecycleEvents_TenantId_Status_CreatedAt");
+
+                    b.ToTable("LifecycleEvents", "IdentityLifecycle");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.IdentityLifecycle.Infrastructure.EfCore.Entities.LifecyclePolicyEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AccessPackageIdsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EmploymentType")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("JobRole")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("OrgUnitCode")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_LifecyclePolicies_TenantId");
+
+                    b.HasIndex("TenantId", "OrgUnitCode", "JobRole")
+                        .HasDatabaseName("IX_LifecyclePolicies_TenantId_OrgUnitCode_JobRole");
+
+                    b.ToTable("LifecyclePolicies", "IdentityLifecycle");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Incidents.Infrastructure.EfCore.Entities.IncidentEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("AcknowledgedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("AcknowledgedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AffectedAppsCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AffectedUsersCount")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("AssignedTo")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ClosedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("ClosedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ClosingNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DetectedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DetectionSource")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EscalationReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsEscalated")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid?>("PrimaryAppId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("PrimaryUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ResolutionSummary")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime?>("ResolvedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("ResolvedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RootCause")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Severity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_Incidents_TenantId");
+
+                    b.HasIndex("TenantId", "Category")
+                        .HasDatabaseName("IX_Incidents_TenantId_Category");
+
+                    b.HasIndex("TenantId", "DetectedAt")
+                        .HasDatabaseName("IX_Incidents_TenantId_DetectedAt");
+
+                    b.HasIndex("TenantId", "PrimaryAppId")
+                        .HasDatabaseName("IX_Incidents_TenantId_PrimaryAppId");
+
+                    b.HasIndex("TenantId", "PrimaryUserId")
+                        .HasDatabaseName("IX_Incidents_TenantId_PrimaryUserId");
+
+                    b.HasIndex("TenantId", "Severity")
+                        .HasDatabaseName("IX_Incidents_TenantId_Severity");
+
+                    b.HasIndex("TenantId", "Status")
+                        .HasDatabaseName("IX_Incidents_TenantId_Status");
+
+                    b.ToTable("Incidents_Incidents", "Incidents");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Incidents.Infrastructure.EfCore.Entities.IncidentEventEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EventData")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("IncidentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SourceModule")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IncidentId")
+                        .HasDatabaseName("IX_IncidentEvents_IncidentId");
+
+                    b.HasIndex("IncidentId", "EventType")
+                        .HasDatabaseName("IX_IncidentEvents_IncidentId_EventType");
+
+                    b.HasIndex("IncidentId", "SourceModule")
+                        .HasDatabaseName("IX_IncidentEvents_IncidentId_SourceModule");
+
+                    b.HasIndex("IncidentId", "Timestamp")
+                        .HasDatabaseName("IX_IncidentEvents_IncidentId_Timestamp");
+
+                    b.ToTable("Incidents_Events", "Incidents");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Incidents.Infrastructure.EfCore.Entities.IncidentLinkedEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EntityId")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("EntityName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("EntityType")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("IncidentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IncidentId")
+                        .HasDatabaseName("IX_IncidentEntities_IncidentId");
+
+                    b.HasIndex("EntityType", "EntityId")
+                        .HasDatabaseName("IX_IncidentEntities_EntityType_EntityId");
+
+                    b.HasIndex("IncidentId", "EntityType")
+                        .HasDatabaseName("IX_IncidentEntities_IncidentId_EntityType");
+
+                    b.HasIndex("IncidentId", "Role")
+                        .HasDatabaseName("IX_IncidentEntities_IncidentId_Role");
+
+                    b.ToTable("Incidents_Entities", "Incidents");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Incidents.Infrastructure.EfCore.Entities.IncidentNoteEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("IncidentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IncidentId")
+                        .HasDatabaseName("IX_IncidentNotes_IncidentId");
+
+                    b.HasIndex("IncidentId", "CreatedAt")
+                        .HasDatabaseName("IX_IncidentNotes_IncidentId_CreatedAt");
+
+                    b.HasIndex("IncidentId", "CreatedByUserId")
+                        .HasDatabaseName("IX_IncidentNotes_IncidentId_CreatedByUserId");
+
+                    b.ToTable("Incidents_Notes", "Incidents");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Incidents.Infrastructure.EfCore.Entities.IncidentPlaybookRunEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("IncidentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Result")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("WorkflowId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("WorkflowName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IncidentId")
+                        .HasDatabaseName("IX_IncidentPlaybookRuns_IncidentId");
+
+                    b.HasIndex("IncidentId", "Status")
+                        .HasDatabaseName("IX_IncidentPlaybookRuns_IncidentId_Status");
+
+                    b.HasIndex("IncidentId", "WorkflowId")
+                        .HasDatabaseName("IX_IncidentPlaybookRuns_IncidentId_WorkflowId");
+
+                    b.ToTable("Incidents_PlaybookRuns", "Incidents");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Insights.Infrastructure.EfCore.Entities.ApplicationDailyUsageSnapshotEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ApplicationId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<int>("FailedSignInCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("HighRiskSignInCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SignInCount")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("UniqueUsers")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Date")
+                        .HasDatabaseName("IX_Insights_ApplicationDailyUsageSnapshots_Date");
+
+                    b.HasIndex("TenantId", "Date")
+                        .HasDatabaseName("IX_Insights_ApplicationDailyUsageSnapshots_TenantId_Date");
+
+                    b.HasIndex("TenantId", "ApplicationId", "Date")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Insights_ApplicationDailyUsageSnapshots_TenantId_ApplicationId_Date");
+
+                    b.ToTable("Insights_ApplicationDailyUsageSnapshots", "Insights");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Insights.Infrastructure.EfCore.Entities.ReportSubscriptionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CronOrFrequency")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("EmailRecipients")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastSentAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ReportType")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("ScopeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ScopeType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UpdatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId")
+                        .HasDatabaseName("IX_Insights_ReportSubscriptions_CreatedByUserId");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_Insights_ReportSubscriptions_IsActive");
+
+                    b.HasIndex("ReportType")
+                        .HasDatabaseName("IX_Insights_ReportSubscriptions_ReportType");
+
+                    b.HasIndex("ScopeType", "ScopeId")
+                        .HasDatabaseName("IX_Insights_ReportSubscriptions_ScopeType_ScopeId");
+
+                    b.ToTable("Insights_ReportSubscriptions", "Insights");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Insights.Infrastructure.EfCore.Entities.TenantDailyUsageSnapshotEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AccessRequestApprovedCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("AccessRequestCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ActiveIncidents")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ActiveUsers")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ApplicationsWithSSOEnabled")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<int>("EmergencyAccessCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FailedSignInCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("HighRiskSignInCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LifecycleEventsCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MfaEnabledUsers")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PendingChangeSets")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RiskyApplications")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SecurityScore")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("TotalApplications")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalSignInCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalUsers")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Date")
+                        .HasDatabaseName("IX_Insights_TenantDailyUsageSnapshots_Date");
+
+                    b.HasIndex("TenantId", "Date")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Insights_TenantDailyUsageSnapshots_TenantId_Date");
+
+                    b.ToTable("Insights_TenantDailyUsageSnapshots", "Insights");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Insights.Infrastructure.EfCore.Entities.UserSecurityPostureEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("EnabledAppsCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("HighRiskEventsLast30Days")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsAnonymized")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastSignInAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("MfaEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UsedAppsLast30DaysCount")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "HighRiskEventsLast30Days")
+                        .HasDatabaseName("IX_Insights_UserSecurityPostures_TenantId_HighRiskEvents");
+
+                    b.HasIndex("TenantId", "LastSignInAt")
+                        .HasDatabaseName("IX_Insights_UserSecurityPostures_TenantId_LastSignInAt");
+
+                    b.HasIndex("TenantId", "MfaEnabled")
+                        .HasDatabaseName("IX_Insights_UserSecurityPostures_TenantId_MfaEnabled");
+
+                    b.HasIndex("TenantId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Insights_UserSecurityPostures_TenantId_UserId");
+
+                    b.ToTable("Insights_UserSecurityPostures", "Insights");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.MultiRegion.Infrastructure.EfCore.Entities.RegionBackupSetEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BackupType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("RegionId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StorageLocation")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RegionId")
+                        .HasDatabaseName("IX_RegionBackupSets_RegionId");
+
+                    b.HasIndex("RegionId", "CreatedAt")
+                        .HasDatabaseName("IX_RegionBackupSets_RegionId_CreatedAt");
+
+                    b.ToTable("RegionBackupSets", "MultiRegion");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.MultiRegion.Infrastructure.EfCore.Entities.RegionEntity", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DbClusterRef")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("EndpointBaseUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastHealthCheckAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StorageClusterRef")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_Regions_IsActive");
+
+                    b.ToTable("Regions", "MultiRegion");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.MultiRegion.Infrastructure.EfCore.Entities.TenantBackupSetEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BackupType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("RegionId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StorageLocation")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_TenantBackupSets_TenantId");
+
+                    b.HasIndex("TenantId", "CreatedAt")
+                        .HasDatabaseName("IX_TenantBackupSets_TenantId_CreatedAt");
+
+                    b.ToTable("TenantBackupSets", "MultiRegion");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.MultiRegion.Infrastructure.EfCore.Entities.TenantDataResidencyEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BackupRegionId")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ComplianceTag")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("CrossRegionReplicationAllowed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("DataRegionId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DataRegionId")
+                        .HasDatabaseName("IX_TenantDataResidencies_DataRegionId");
+
+                    b.HasIndex("TenantId")
+                        .IsUnique()
+                        .HasDatabaseName("IX_TenantDataResidencies_TenantId");
+
+                    b.ToTable("TenantDataResidencies", "MultiRegion");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.NotificationCenter.Infrastructure.EfCore.Entities.NotificationChannelConfigEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Channel")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConfigurationJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "Channel")
+                        .IsUnique()
+                        .HasDatabaseName("IX_NotificationChannelConfigs_TenantId_Channel");
+
+                    b.ToTable("NotificationChannelConfigs", "NotificationCenter");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.NotificationCenter.Infrastructure.EfCore.Entities.NotificationDeliveryLogEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Channel")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ErrorDetails")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<Guid>("OutboxItemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ProviderMessageId")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OutboxItemId");
+
+                    b.HasIndex("Timestamp")
+                        .HasDatabaseName("IX_NotificationDeliveryLogs_Timestamp");
+
+                    b.HasIndex("TenantId", "OutboxItemId")
+                        .HasDatabaseName("IX_NotificationDeliveryLogs_TenantId_OutboxItemId");
+
+                    b.ToTable("NotificationDeliveryLogs", "NotificationCenter");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.NotificationCenter.Infrastructure.EfCore.Entities.NotificationEventSubscriptionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Channel")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("RecipientSelector")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("TemplateId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TemplateId");
+
+                    b.HasIndex("TenantId", "EventType", "IsEnabled")
+                        .HasDatabaseName("IX_NotificationEventSubscriptions_TenantId_EventType_IsEnabled");
+
+                    b.ToTable("NotificationEventSubscriptions", "NotificationCenter");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.NotificationCenter.Infrastructure.EfCore.Entities.NotificationOutboxItemEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AttemptCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Channel")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ContextDataJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeliveredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("NextRetryAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RecipientAddress")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid?>("RecipientUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("SentAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_NotificationOutboxItems_CreatedAt");
+
+                    b.HasIndex("Status", "NextRetryAt")
+                        .HasDatabaseName("IX_NotificationOutboxItems_Status_NextRetryAt");
+
+                    b.HasIndex("TenantId", "RecipientUserId")
+                        .HasDatabaseName("IX_NotificationOutboxItems_TenantId_RecipientUserId");
+
+                    b.ToTable("NotificationOutboxItems", "NotificationCenter");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.NotificationCenter.Infrastructure.EfCore.Entities.NotificationTemplateEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("BodyTemplate")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Channel")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Locale")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("SubjectTemplate")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("TemplateKey")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_NotificationTemplates_TenantId");
+
+                    b.HasIndex("TenantId", "TemplateKey", "Channel", "Locale")
+                        .IsUnique()
+                        .HasDatabaseName("IX_NotificationTemplates_TenantId_TemplateKey_Channel_Locale");
+
+                    b.ToTable("NotificationTemplates", "NotificationCenter");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Observability.Infrastructure.EfCore.Entities.ObservabilityAuditEventEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ActorDisplayName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ActorId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ActorType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CorrelationId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Country")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("DataJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("OccurredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Severity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TargetId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("TargetType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("UserAgent")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CorrelationId")
+                        .HasDatabaseName("IX_ObservabilityAuditEvents_CorrelationId");
+
+                    b.HasIndex("OccurredAt")
+                        .HasDatabaseName("IX_ObservabilityAuditEvents_OccurredAt");
+
+                    b.HasIndex("ActorId", "OccurredAt")
+                        .HasDatabaseName("IX_ObservabilityAuditEvents_ActorId_OccurredAt");
+
+                    b.HasIndex("TenantId", "OccurredAt")
+                        .HasDatabaseName("IX_ObservabilityAuditEvents_TenantId_OccurredAt");
+
+                    b.HasIndex("TenantId", "Category", "OccurredAt")
+                        .HasDatabaseName("IX_ObservabilityAuditEvents_TenantId_Category_OccurredAt");
+
+                    b.ToTable("ObservabilityAuditEvents", (string)null);
                 });
 
             modelBuilder.Entity("Onesign.Modules.Organization.Infrastructure.EfCore.Entities.ApplicationOrgUnitEntity", b =>
@@ -406,7 +4149,8 @@ namespace Onesign.Api.Migrations
 
                     b.HasIndex("TenantUserId");
 
-                    b.HasIndex("TenantUserId", "OrgUnitId");
+                    b.HasIndex("TenantUserId", "OrgUnitId")
+                        .IsUnique();
 
                     b.ToTable("DelegatedAdminScopes", (string)null);
                 });
@@ -462,7 +4206,8 @@ namespace Onesign.Api.Migrations
                         .IsUnique()
                         .HasFilter("[Code] IS NOT NULL");
 
-                    b.HasIndex("TenantId", "Path");
+                    b.HasIndex("TenantId", "Path")
+                        .IsUnique();
 
                     b.ToTable("OrgUnits", (string)null);
                 });
@@ -485,6 +4230,627 @@ namespace Onesign.Api.Migrations
                     b.HasIndex("TenantUserId");
 
                     b.ToTable("UserOrgUnits", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Platform.Infrastructure.EfCore.Entities.IntegrationTestResultEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Category")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(5000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StackTrace")
+                        .HasMaxLength(10000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TestName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("TestSuiteId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Category")
+                        .HasDatabaseName("IX_Platform_IntegrationTestResults_Category");
+
+                    b.HasIndex("StartedAt")
+                        .HasDatabaseName("IX_Platform_IntegrationTestResults_StartedAt");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_Platform_IntegrationTestResults_Status");
+
+                    b.HasIndex("TestSuiteId")
+                        .HasDatabaseName("IX_Platform_IntegrationTestResults_TestSuiteId");
+
+                    b.HasIndex("TestSuiteId", "Status")
+                        .HasDatabaseName("IX_Platform_IntegrationTestResults_TestSuiteId_Status");
+
+                    b.ToTable("Platform_IntegrationTestResults", "Platform");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Platform.Infrastructure.EfCore.Entities.MigrationHistoryEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("AppliedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("AppliedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<long>("DurationTicks")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(5000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MigrationName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AppliedAt")
+                        .HasDatabaseName("IX_Platform_MigrationHistory_AppliedAt");
+
+                    b.HasIndex("AppliedByUserId")
+                        .HasDatabaseName("IX_Platform_MigrationHistory_AppliedByUserId");
+
+                    b.HasIndex("MigrationName")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Platform_MigrationHistory_MigrationName");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_Platform_MigrationHistory_Status");
+
+                    b.ToTable("Platform_MigrationHistory", "Platform");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Platform.Infrastructure.EfCore.Entities.PlatformVersionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsCurrentVersion")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset>("ReleaseDate")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ReleaseNotes")
+                        .HasMaxLength(10000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsCurrentVersion")
+                        .HasDatabaseName("IX_Platform_Versions_IsCurrentVersion");
+
+                    b.HasIndex("ReleaseDate")
+                        .HasDatabaseName("IX_Platform_Versions_ReleaseDate");
+
+                    b.HasIndex("Version")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Platform_Versions_Version");
+
+                    b.ToTable("Platform_Versions", "Platform");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Privacy.Infrastructure.EfCore.Entities.DataRetentionPolicyEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DataCategory")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Enabled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HardDeleteAfter")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("RetentionPeriodDays")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId")
+                        .HasDatabaseName("IX_DataRetentionPolicies_TenantId");
+
+                    b.HasIndex("TenantId", "DataCategory")
+                        .IsUnique()
+                        .HasDatabaseName("IX_DataRetentionPolicies_TenantId_DataCategory");
+
+                    b.ToTable("DataRetentionPolicies", "Privacy");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Privacy.Infrastructure.EfCore.Entities.DataSubjectRequestEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("RequestedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("RequestedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ResultLocation")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("SubjectId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "RequestedAt")
+                        .HasDatabaseName("IX_DataSubjectRequests_TenantId_RequestedAt");
+
+                    b.HasIndex("TenantId", "Status")
+                        .HasDatabaseName("IX_DataSubjectRequests_TenantId_Status");
+
+                    b.HasIndex("TenantId", "SubjectId")
+                        .HasDatabaseName("IX_DataSubjectRequests_TenantId_SubjectId");
+
+                    b.ToTable("DataSubjectRequests", "Privacy");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.PrivilegedAccess.Infrastructure.EfCore.Entities.BreakGlassAccountEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AllowedRolesJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AllowedTenantsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastUsedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsEnabled")
+                        .HasDatabaseName("IX_BreakGlassAccounts_IsEnabled");
+
+                    b.HasIndex("Username")
+                        .IsUnique()
+                        .HasDatabaseName("IX_BreakGlassAccounts_Username");
+
+                    b.ToTable("BreakGlassAccounts", "PrivilegedAccess");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.PrivilegedAccess.Infrastructure.EfCore.Entities.JitGrantEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("AccessRequestId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ApprovedBy")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("GrantedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Justification")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RoleName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "ExpiresAt")
+                        .HasDatabaseName("IX_JitGrants_TenantId_ExpiresAt");
+
+                    b.HasIndex("TenantId", "UserId", "Status")
+                        .HasDatabaseName("IX_JitGrants_TenantId_UserId_Status");
+
+                    b.ToTable("JitGrants", "PrivilegedAccess");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.PrivilegedAccess.Infrastructure.EfCore.Entities.PrivilegedSessionEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("EndedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastActivityAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PrivilegedRolesJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("UserDisplayName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "IsActive")
+                        .HasDatabaseName("IX_PrivilegedSessions_TenantId_IsActive");
+
+                    b.HasIndex("TenantId", "UserId", "IsActive")
+                        .HasDatabaseName("IX_PrivilegedSessions_TenantId_UserId_IsActive");
+
+                    b.ToTable("PrivilegedSessions", "PrivilegedAccess");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Security.Infrastructure.EfCore.Entities.MfaChallengeEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CodeHash")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("Consumed")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeviceId")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("MethodType")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TenantUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpiresAt");
+
+                    b.HasIndex("TenantUserId");
+
+                    b.ToTable("MfaChallenges", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Security.Infrastructure.EfCore.Entities.OrgUnitMfaRuleEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("MfaRequired")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("OrgUnitId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "OrgUnitId")
+                        .IsUnique();
+
+                    b.ToTable("OrgUnitMfaRules", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Security.Infrastructure.EfCore.Entities.RiskEventEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DetailsJson")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("DeviceId")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("EventType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("RiskLevel")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("TenantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("TenantUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId");
+
+                    b.HasIndex("TenantId", "CreatedAt", "RiskLevel");
+
+                    b.ToTable("RiskEvents", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Security.Infrastructure.EfCore.Entities.SecurityPolicyEntity", b =>
+                {
+                    b.Property<Guid>("TenantId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("AllowMfaRememberDevice")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("BlockLevel")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("EnableGeoAnomalyDetection")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MaxFailedLoginAttempts")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MfaRequirementLevel")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RememberDeviceDays")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("RequireMfaForSensitiveApps")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("TenantId");
+
+                    b.HasIndex("TenantId")
+                        .IsUnique();
+
+                    b.ToTable("SecurityPolicies", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Security.Infrastructure.EfCore.Entities.TrustedDeviceEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeviceId")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("DeviceName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FirstSeenAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("LastSeenAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("TenantUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExpiresAt");
+
+                    b.HasIndex("TenantUserId", "DeviceId")
+                        .IsUnique();
+
+                    b.ToTable("TrustedDevices", (string)null);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Security.Infrastructure.EfCore.Entities.UserMfaMethodEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MethodType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SecretEncrypted")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<Guid>("TenantUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantUserId");
+
+                    b.HasIndex("TenantUserId", "MethodType", "IsPrimary");
+
+                    b.ToTable("UserMfaMethods", (string)null);
                 });
 
             modelBuilder.Entity("Onesign.Modules.Tenants.Infrastructure.EfCore.Entities.TenantConfigEntity", b =>
@@ -551,12 +4917,458 @@ namespace Onesign.Api.Migrations
                     b.ToTable("Tenants", (string)null);
                 });
 
+            modelBuilder.Entity("Onesign.Modules.AccessRequests.Infrastructure.EfCore.Entities.AccessRequestItemEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.AccessRequests.Infrastructure.EfCore.Entities.AccessRequestEntity", "AccessRequest")
+                        .WithMany("Items")
+                        .HasForeignKey("AccessRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AccessRequest");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.AccessRequests.Infrastructure.EfCore.Entities.ApprovalStepEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.AccessRequests.Infrastructure.EfCore.Entities.AccessRequestEntity", "AccessRequest")
+                        .WithMany("ApprovalSteps")
+                        .HasForeignKey("AccessRequestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AccessRequest");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Authorization.Infrastructure.EfCore.Entities.PolicyAssignmentEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Authorization.Infrastructure.EfCore.Entities.PolicyDefinitionEntity", "PolicyDefinition")
+                        .WithMany()
+                        .HasForeignKey("PolicyDefinitionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Onesign.Modules.Authorization.Infrastructure.EfCore.Entities.PolicyTargetEntity", "PolicyTarget")
+                        .WithMany()
+                        .HasForeignKey("PolicyTargetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PolicyDefinition");
+
+                    b.Navigation("PolicyTarget");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Authorization.Infrastructure.EfCore.Entities.PolicyConditionEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Authorization.Infrastructure.EfCore.Entities.PolicyConditionGroupEntity", "ConditionGroup")
+                        .WithMany("Conditions")
+                        .HasForeignKey("ConditionGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ConditionGroup");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Authorization.Infrastructure.EfCore.Entities.PolicyConditionGroupEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Authorization.Infrastructure.EfCore.Entities.PolicyDefinitionEntity", "PolicyDefinition")
+                        .WithMany("ConditionGroups")
+                        .HasForeignKey("PolicyDefinitionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PolicyDefinition");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Automation.Infrastructure.EfCore.Entities.AutomationActionEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Automation.Infrastructure.EfCore.Entities.AutomationWorkflowEntity", "Workflow")
+                        .WithMany("Actions")
+                        .HasForeignKey("WorkflowId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Workflow");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Automation.Infrastructure.EfCore.Entities.AutomationConditionEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Automation.Infrastructure.EfCore.Entities.AutomationWorkflowEntity", "Workflow")
+                        .WithMany("Conditions")
+                        .HasForeignKey("WorkflowId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Workflow");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Automation.Infrastructure.EfCore.Entities.AutomationExecutionEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Automation.Infrastructure.EfCore.Entities.AutomationWorkflowEntity", "Workflow")
+                        .WithMany()
+                        .HasForeignKey("WorkflowId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Workflow");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Automation.Infrastructure.EfCore.Entities.AutomationTriggerEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Automation.Infrastructure.EfCore.Entities.AutomationWorkflowEntity", "Workflow")
+                        .WithMany("Triggers")
+                        .HasForeignKey("WorkflowId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Workflow");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Billing.Infrastructure.EfCore.Entities.PlanFeatureEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Billing.Infrastructure.EfCore.Entities.PlanEntity", "Plan")
+                        .WithMany("Features")
+                        .HasForeignKey("PlanId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Plan");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Billing.Infrastructure.EfCore.Entities.TenantSubscriptionEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Billing.Infrastructure.EfCore.Entities.PlanEntity", "Plan")
+                        .WithMany()
+                        .HasForeignKey("PlanId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Onesign.Modules.Tenants.Infrastructure.EfCore.Entities.TenantEntity", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Plan");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Billing.Infrastructure.EfCore.Entities.TenantUsageSnapshotEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Tenants.Infrastructure.EfCore.Entities.TenantEntity", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Billing.Infrastructure.EfCore.Entities.UsageCounterEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Tenants.Infrastructure.EfCore.Entities.TenantEntity", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Onesign.Modules.ChangeManagement.Infrastructure.EfCore.Entities.ChangeApprovalEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.ChangeManagement.Infrastructure.EfCore.Entities.ChangeSetEntity", "ChangeSet")
+                        .WithMany("Approvals")
+                        .HasForeignKey("ChangeSetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ChangeSet");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.ChangeManagement.Infrastructure.EfCore.Entities.ChangeExecutionLogEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.ChangeManagement.Infrastructure.EfCore.Entities.ChangeSetEntity", "ChangeSet")
+                        .WithMany("ExecutionLogs")
+                        .HasForeignKey("ChangeSetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ChangeSet");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.ChangeManagement.Infrastructure.EfCore.Entities.ChangeItemEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.ChangeManagement.Infrastructure.EfCore.Entities.ChangeSetEntity", "ChangeSet")
+                        .WithMany("Items")
+                        .HasForeignKey("ChangeSetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ChangeSet");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Developer.Infrastructure.EfCore.Entities.ApiKeyEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Developer.Infrastructure.EfCore.Entities.ServiceAccountEntity", "ServiceAccount")
+                        .WithMany("ApiKeys")
+                        .HasForeignKey("ServiceAccountId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("ServiceAccount");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Federation.Infrastructure.EfCore.Entities.AttributeMappingEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Federation.Infrastructure.EfCore.Entities.OidcFederationProviderEntity", null)
+                        .WithMany()
+                        .HasForeignKey("OidcFederationProviderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Onesign.Modules.Federation.Infrastructure.EfCore.Entities.SamlProviderEntity", null)
+                        .WithMany()
+                        .HasForeignKey("SamlProviderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Onesign.Modules.Tenants.Infrastructure.EfCore.Entities.TenantEntity", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Federation.Infrastructure.EfCore.Entities.JitProvisioningLogEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Federation.Infrastructure.EfCore.Entities.OidcFederationProviderEntity", null)
+                        .WithMany()
+                        .HasForeignKey("OidcFederationProviderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Onesign.Modules.Federation.Infrastructure.EfCore.Entities.SamlProviderEntity", null)
+                        .WithMany()
+                        .HasForeignKey("SamlProviderId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Onesign.Modules.Tenants.Infrastructure.EfCore.Entities.TenantEntity", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Federation.Infrastructure.EfCore.Entities.OidcFederationProviderEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Tenants.Infrastructure.EfCore.Entities.TenantEntity", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Federation.Infrastructure.EfCore.Entities.SamlProviderEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Tenants.Infrastructure.EfCore.Entities.TenantEntity", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Federation.Infrastructure.EfCore.Entities.ScimTokenEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Tenants.Infrastructure.EfCore.Entities.TenantEntity", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Hunting.Infrastructure.EfCore.Entities.HuntRunEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Hunting.Infrastructure.EfCore.Entities.ScheduledHuntEntity", "ScheduledHunt")
+                        .WithMany("HuntRuns")
+                        .HasForeignKey("ScheduledHuntId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ScheduledHunt");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Hunting.Infrastructure.EfCore.Entities.HuntSampleRowEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Hunting.Infrastructure.EfCore.Entities.HuntRunEntity", "HuntRun")
+                        .WithMany("SampleRows")
+                        .HasForeignKey("HuntRunId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("HuntRun");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Hunting.Infrastructure.EfCore.Entities.ScheduledHuntEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Hunting.Infrastructure.EfCore.Entities.SavedQueryEntity", "SavedQuery")
+                        .WithMany("ScheduledHunts")
+                        .HasForeignKey("SavedQueryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SavedQuery");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.IdentityLifecycle.Infrastructure.EfCore.Entities.LifecycleEventEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.IdentityLifecycle.Infrastructure.EfCore.Entities.HRIdentityRecordEntity", "HRRecord")
+                        .WithMany()
+                        .HasForeignKey("HRRecordId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("HRRecord");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.NotificationCenter.Infrastructure.EfCore.Entities.NotificationDeliveryLogEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.NotificationCenter.Infrastructure.EfCore.Entities.NotificationOutboxItemEntity", "OutboxItem")
+                        .WithMany()
+                        .HasForeignKey("OutboxItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("OutboxItem");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.NotificationCenter.Infrastructure.EfCore.Entities.NotificationEventSubscriptionEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.NotificationCenter.Infrastructure.EfCore.Entities.NotificationTemplateEntity", "Template")
+                        .WithMany()
+                        .HasForeignKey("TemplateId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Template");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Observability.Infrastructure.EfCore.Entities.ObservabilityAuditEventEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Tenants.Infrastructure.EfCore.Entities.TenantEntity", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Organization.Infrastructure.EfCore.Entities.ApplicationOrgUnitEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Applications.Infrastructure.EfCore.Entities.ApplicationClientEntity", null)
+                        .WithMany()
+                        .HasForeignKey("ApplicationClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Onesign.Modules.Organization.Infrastructure.EfCore.Entities.OrgUnitEntity", null)
+                        .WithMany()
+                        .HasForeignKey("OrgUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Organization.Infrastructure.EfCore.Entities.DelegatedAdminScopeEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Organization.Infrastructure.EfCore.Entities.OrgUnitEntity", null)
+                        .WithMany()
+                        .HasForeignKey("OrgUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Onesign.Modules.Identity.Infrastructure.EfCore.Entities.TenantUserEntity", null)
+                        .WithMany()
+                        .HasForeignKey("TenantUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Onesign.Modules.Organization.Infrastructure.EfCore.Entities.OrgUnitEntity", b =>
                 {
                     b.HasOne("Onesign.Modules.Organization.Infrastructure.EfCore.Entities.OrgUnitEntity", null)
                         .WithMany()
                         .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Onesign.Modules.Tenants.Infrastructure.EfCore.Entities.TenantEntity", null)
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Organization.Infrastructure.EfCore.Entities.UserOrgUnitEntity", b =>
+                {
+                    b.HasOne("Onesign.Modules.Organization.Infrastructure.EfCore.Entities.OrgUnitEntity", null)
+                        .WithMany()
+                        .HasForeignKey("OrgUnitId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Onesign.Modules.Identity.Infrastructure.EfCore.Entities.TenantUserEntity", null)
+                        .WithMany()
+                        .HasForeignKey("TenantUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Onesign.Modules.AccessRequests.Infrastructure.EfCore.Entities.AccessRequestEntity", b =>
+                {
+                    b.Navigation("ApprovalSteps");
+
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Authorization.Infrastructure.EfCore.Entities.PolicyConditionGroupEntity", b =>
+                {
+                    b.Navigation("Conditions");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Authorization.Infrastructure.EfCore.Entities.PolicyDefinitionEntity", b =>
+                {
+                    b.Navigation("ConditionGroups");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Automation.Infrastructure.EfCore.Entities.AutomationWorkflowEntity", b =>
+                {
+                    b.Navigation("Actions");
+
+                    b.Navigation("Conditions");
+
+                    b.Navigation("Triggers");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Billing.Infrastructure.EfCore.Entities.PlanEntity", b =>
+                {
+                    b.Navigation("Features");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.ChangeManagement.Infrastructure.EfCore.Entities.ChangeSetEntity", b =>
+                {
+                    b.Navigation("Approvals");
+
+                    b.Navigation("ExecutionLogs");
+
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Developer.Infrastructure.EfCore.Entities.ServiceAccountEntity", b =>
+                {
+                    b.Navigation("ApiKeys");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Hunting.Infrastructure.EfCore.Entities.HuntRunEntity", b =>
+                {
+                    b.Navigation("SampleRows");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Hunting.Infrastructure.EfCore.Entities.SavedQueryEntity", b =>
+                {
+                    b.Navigation("ScheduledHunts");
+                });
+
+            modelBuilder.Entity("Onesign.Modules.Hunting.Infrastructure.EfCore.Entities.ScheduledHuntEntity", b =>
+                {
+                    b.Navigation("HuntRuns");
                 });
 #pragma warning restore 612, 618
         }

@@ -49,10 +49,14 @@ public class KeyRolloverService : IKeyRolloverService
         }
 
         // Generate new key
+        // Get default algorithm based on purpose
+        var supportedAlgorithms = _keyGenerator.GetSupportedAlgorithms(keySet.Purpose);
+        var algorithm = supportedAlgorithms.FirstOrDefault() ?? "RS256";
+
         var newKey = await _keyGenerator.GenerateAsync(
             keySetId,
             keySet.Purpose,
-            keySet.DefaultAlgorithm,
+            algorithm,
             cancellationToken);
 
         _logger.LogInformation(

@@ -31,16 +31,14 @@ public class EnvironmentBootstrapService : IEnvironmentBootstrapService
         // Create deployment environment record
         var environment = new DeploymentEnvironment
         {
-            Id = Guid.NewGuid(),
-            EnvironmentId = descriptor.EnvironmentId,
+            Id = descriptor.EnvironmentId,
             Name = descriptor.Name,
             Type = descriptor.Type,
             RegionId = descriptor.RegionId,
-            Status = EnvironmentStatus.Provisioning,
             BaseUrl = descriptor.BaseUrl,
-            DatabaseConnectionString = descriptor.DatabaseConnectionString,
-            CreatedAt = DateTime.UtcNow,
-            Version = descriptor.Version
+            AppVersion = descriptor.Version,
+            LicenseKey = descriptor.LicenseKey,
+            CreatedAt = DateTime.UtcNow
         };
 
         await _environmentRepository.AddAsync(environment, cancellationToken);
@@ -54,16 +52,12 @@ public class EnvironmentBootstrapService : IEnvironmentBootstrapService
         {
             Id = Guid.NewGuid(),
             EnvironmentId = environment.Id,
-            FeaturesJson = descriptor.FeaturesJson,
+            EnabledModulesJson = descriptor.FeaturesJson,
+            CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
 
         await _featureConfigRepository.AddAsync(featureConfig, cancellationToken);
-
-        // Update environment status to active
-        environment.Status = EnvironmentStatus.Active;
-        environment.UpdatedAt = DateTime.UtcNow;
-        await _environmentRepository.UpdateAsync(environment, cancellationToken);
 
         _logger.LogInformation(
             "Environment bootstrap completed for {EnvironmentId}",

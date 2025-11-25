@@ -7,6 +7,7 @@ using Onesign.Modules.AccessRequests.Application.Queries;
 namespace Onesign.Api.Controllers.Tenant;
 
 [Route("api/tenant/access-requests")]
+[Route("api/tenant/accessrequests")]
 public class AccessRequestController : TenantControllerBase
 {
     private readonly IMediator _mediator;

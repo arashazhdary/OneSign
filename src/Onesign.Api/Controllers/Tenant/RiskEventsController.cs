@@ -8,6 +8,7 @@ using Onesign.Shared.Localization;
 namespace Onesign.Api.Controllers.Tenant;
 
 [Route("api/tenant/risk-events")]
+[Route("api/tenant/riskevents")]
 public class RiskEventsController : Onesign.Api.Controllers.TenantControllerBase
 {
     private readonly IMediator _mediator;

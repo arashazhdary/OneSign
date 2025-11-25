@@ -31,15 +31,17 @@ public class JitProvisioningLogEntityTypeConfiguration : IEntityTypeConfiguratio
             .OnDelete(DeleteBehavior.Cascade);
 
         // Foreign key to SamlProvider (optional)
+        // Using Restrict to avoid multiple cascade paths (Tenant -> SamlProvider -> JitProvisioningLog)
         builder.HasOne<SamlProviderEntity>()
             .WithMany()
             .HasForeignKey(x => x.SamlProviderId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Foreign key to OidcFederationProvider (optional)
+        // Using Restrict to avoid multiple cascade paths (Tenant -> OidcFederationProvider -> JitProvisioningLog)
         builder.HasOne<OidcFederationProviderEntity>()
             .WithMany()
             .HasForeignKey(x => x.OidcFederationProviderId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

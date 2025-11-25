@@ -1,0 +1,44 @@
+#!/bin/sh
+
+# Pre-commit hook for code quality
+
+echo "🔍 Running pre-commit checks..."
+
+# Change to project directory
+cd onesign-admin-portal-react
+
+# 1. Type check
+echo "\n📘 Type checking..."
+npm run type-check
+if [ $? -ne 0 ]; then
+  echo "❌ Type check failed. Please fix TypeScript errors."
+  exit 1
+fi
+
+# 2. Lint
+echo "\n🔧 Linting..."
+npm run lint
+if [ $? -ne 0 ]; then
+  echo "❌ Lint failed. Please fix linting errors."
+  exit 1
+fi
+
+# 3. Format check
+echo "\n💅 Checking formatting..."
+npm run format:check
+if [ $? -ne 0 ]; then
+  echo "⚠️  Formatting issues found. Auto-fixing..."
+  npm run format
+  git add -A
+fi
+
+# 4. Run unit tests
+echo "\n🧪 Running unit tests..."
+npm run test -- --run
+if [ $? -ne 0 ]; then
+  echo "❌ Tests failed. Please fix failing tests."
+  exit 1
+fi
+
+echo "\n✅ All pre-commit checks passed!"
+exit 0
