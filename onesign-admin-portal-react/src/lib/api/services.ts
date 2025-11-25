@@ -657,6 +657,129 @@ export const platformService = {
   },
 };
 
+// Applications Service
+export const applicationsService = {
+  getApplications: async (params?: any) => {
+    try {
+      const response = await apiClient.get('/api/applications', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch applications:', error);
+      return [];
+    }
+  },
+
+  getApplicationById: async (appId: string) => {
+    try {
+      const response = await apiClient.get(`/api/applications/${appId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch application:', error);
+      return null;
+    }
+  },
+
+  createApplication: async (data: any) => {
+    try {
+      const response = await apiClient.post('/api/applications', data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to create application:', error);
+      throw error;
+    }
+  },
+
+  updateApplication: async (appId: string, data: any) => {
+    try {
+      const response = await apiClient.put(`/api/applications/${appId}`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to update application:', error);
+      throw error;
+    }
+  },
+
+  deleteApplication: async (appId: string) => {
+    try {
+      const response = await apiClient.delete(`/api/applications/${appId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to delete application:', error);
+      throw error;
+    }
+  },
+
+  getOrgUnitsTree: async () => {
+    try {
+      const response = await apiClient.get('/api/org-units/tree');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch org units tree:', error);
+      return [];
+    }
+  },
+
+  getApplicationOrgUnits: async (appId: string) => {
+    try {
+      const response = await apiClient.get(`/api/applications/${appId}/org-units`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch application org units:', error);
+      return [];
+    }
+  },
+
+  assignOrgUnits: async (appId: string, orgUnitIds: string[]) => {
+    try {
+      const response = await apiClient.put(`/api/applications/${appId}/org-units`, { orgUnitIds });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to assign org units:', error);
+      throw error;
+    }
+  },
+
+  addRedirectUri: async (appId: string, uri: string) => {
+    try {
+      const response = await apiClient.post(`/api/applications/${appId}/redirect-uris`, { uri });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to add redirect URI:', error);
+      throw error;
+    }
+  },
+
+  removeRedirectUri: async (appId: string, uri: string) => {
+    try {
+      const response = await apiClient.delete(`/api/applications/${appId}/redirect-uris`, { data: { uri } });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to remove redirect URI:', error);
+      throw error;
+    }
+  },
+
+  addClientSecret: async (appId: string, name?: string) => {
+    try {
+      const response = await apiClient.post(`/api/applications/${appId}/secrets`, { name });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to add client secret:', error);
+      throw error;
+    }
+  },
+
+  removeClientSecret: async (appId: string, secretId: string) => {
+    try {
+      const response = await apiClient.delete(`/api/applications/${appId}/secrets/${secretId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to remove client secret:', error);
+      throw error;
+    }
+  },
+};
+
 // Security Service
 export const securityService = {
   getSecurityAlerts: async () => {
@@ -910,6 +1033,207 @@ export const billingService = {
     } catch (error) {
       console.error('Failed to fetch usage:', error);
       return null;
+    }
+  },
+};
+
+// Incidents Service
+export const incidentsService = {
+  getIncidents: async (params?: any) => {
+    try {
+      const response = await apiClient.get('/api/incidents', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch incidents:', error);
+      return [];
+    }
+  },
+
+  getIncidentById: async (incidentId: string) => {
+    try {
+      const response = await apiClient.get(`/api/incidents/${incidentId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch incident:', error);
+      return null;
+    }
+  },
+
+  getIncidentStats: async () => {
+    try {
+      const response = await apiClient.get('/api/incidents/stats');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch incident stats:', error);
+      return null;
+    }
+  },
+
+  createIncident: async (data: any) => {
+    try {
+      const response = await apiClient.post('/api/incidents', data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to create incident:', error);
+      throw error;
+    }
+  },
+
+  updateIncident: async (incidentId: string, data: any) => {
+    try {
+      const response = await apiClient.put(`/api/incidents/${incidentId}`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to update incident:', error);
+      throw error;
+    }
+  },
+
+  acknowledgeIncident: async (incidentId: string) => {
+    try {
+      const response = await apiClient.post(`/api/incidents/${incidentId}/acknowledge`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to acknowledge incident:', error);
+      throw error;
+    }
+  },
+
+  resolveIncident: async (incidentId: string, resolution?: string) => {
+    try {
+      const response = await apiClient.post(`/api/incidents/${incidentId}/resolve`, { resolution });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to resolve incident:', error);
+      throw error;
+    }
+  },
+
+  closeIncident: async (incidentId: string) => {
+    try {
+      const response = await apiClient.post(`/api/incidents/${incidentId}/close`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to close incident:', error);
+      throw error;
+    }
+  },
+};
+
+// Lifecycle Service
+export const lifecycleService = {
+  getLifecycleEvents: async (params?: any) => {
+    try {
+      const response = await apiClient.get('/api/lifecycle/events', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch lifecycle events:', error);
+      return [];
+    }
+  },
+
+  getLifecycleStats: async () => {
+    try {
+      const response = await apiClient.get('/api/lifecycle/stats');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch lifecycle stats:', error);
+      return null;
+    }
+  },
+
+  getLifecyclePolicies: async () => {
+    try {
+      const response = await apiClient.get('/api/lifecycle/policies');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch lifecycle policies:', error);
+      return [];
+    }
+  },
+
+  createLifecyclePolicy: async (data: any) => {
+    try {
+      const response = await apiClient.post('/api/lifecycle/policies', data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to create lifecycle policy:', error);
+      throw error;
+    }
+  },
+
+  updateLifecyclePolicy: async (policyId: string, data: any) => {
+    try {
+      const response = await apiClient.put(`/api/lifecycle/policies/${policyId}`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to update lifecycle policy:', error);
+      throw error;
+    }
+  },
+
+  deleteLifecyclePolicy: async (policyId: string) => {
+    try {
+      await apiClient.delete(`/api/lifecycle/policies/${policyId}`);
+    } catch (error) {
+      console.error('Failed to delete lifecycle policy:', error);
+      throw error;
+    }
+  },
+};
+
+// Automation Service (re-export)
+export { automationService } from './automation';
+
+// Access Service
+export const accessService = {
+  getAccessRequests: async (params?: any) => {
+    try {
+      const response = await apiClient.get('/api/access/requests', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch access requests:', error);
+      return [];
+    }
+  },
+
+  getPrivilegedSessions: async (params?: any) => {
+    try {
+      const response = await apiClient.get('/api/access/privileged-sessions', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch privileged sessions:', error);
+      return [];
+    }
+  },
+
+  getPrivilegedAccounts: async (params?: any) => {
+    try {
+      const response = await apiClient.get('/api/access/privileged-accounts', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch privileged accounts:', error);
+      return [];
+    }
+  },
+
+  getVaultItems: async (params?: any) => {
+    try {
+      const response = await apiClient.get('/api/access/vault', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch vault items:', error);
+      return [];
+    }
+  },
+
+  getSessionRecordings: async (params?: any) => {
+    try {
+      const response = await apiClient.get('/api/access/recordings', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch session recordings:', error);
+      return [];
     }
   },
 };

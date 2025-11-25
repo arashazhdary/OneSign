@@ -1,5 +1,50 @@
 import apiClient from '@/services/apiClient';
 
+// Direct function exports for convenience
+export const searchGlobalAuditEvents = async (params?: any) => {
+  try {
+    const response = await apiClient.get('/api/audit/global/search', { params });
+    return response.data;
+  } catch (error) {
+    console.error('Failed to search global audit events:', error);
+    return { items: [], total: 0 };
+  }
+};
+
+export const getGlobalAuditEvent = async (eventId: string) => {
+  try {
+    const response = await apiClient.get(`/api/audit/global/${eventId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Failed to get global audit event:', error);
+    return null;
+  }
+};
+
+// Tenant audit functions
+export const searchAuditEvents = async (params?: any) => {
+  try {
+    const response = await apiClient.get('/api/audit/search', { params });
+    return response.data;
+  } catch (error) {
+    console.error('Failed to search audit events:', error);
+    return { items: [], total: 0 };
+  }
+};
+
+export const exportAuditLogs = async (format: string, params?: any) => {
+  try {
+    const response = await apiClient.get('/api/audit/export', {
+      params: { format, ...params },
+      responseType: 'blob'
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Failed to export audit logs:', error);
+    throw error;
+  }
+};
+
 export const observabilityService = {
   getAuditLogs: async (params?: {
     page?: number;

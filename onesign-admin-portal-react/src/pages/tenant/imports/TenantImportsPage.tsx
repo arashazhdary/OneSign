@@ -559,7 +559,6 @@ export default function TenantImportsPage() {
                   type="button"
                   onClick={() => {
                     setShowUploadModal(false);
-import { Helmet } from 'react-helmet-async';
                     resetUploadForm();
                   }}
                   className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
