@@ -31,8 +31,8 @@ const UsersPage = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
 
+  const [, setSelectedUsers] = useState<User[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     email: '',

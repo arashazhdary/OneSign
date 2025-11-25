@@ -10,7 +10,6 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
   Search,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -34,7 +33,6 @@ const Sidebar: React.FC = () => {
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const { user } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState('');
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
   const adminMenuItems: MenuItem[] = [
     {
@@ -82,18 +80,6 @@ const Sidebar: React.FC = () => {
   const isActive = (href?: string) => {
     if (!href) return false;
     return location.pathname === href || location.pathname.startsWith(href + '/');
-  };
-
-  const toggleExpanded = (id: string) => {
-    setExpandedItems((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(id)) {
-        newSet.delete(id);
-      } else {
-        newSet.add(id);
-      }
-      return newSet;
-    });
   };
 
   return (

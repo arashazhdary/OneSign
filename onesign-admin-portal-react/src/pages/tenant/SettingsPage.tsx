@@ -31,10 +31,10 @@ const SettingsPage = () => {
   };
 
   const tabs = [
-    { id: 'general', label: t('settings.general'), icon: SettingsIcon },
-    { id: 'security', label: t('settings.security'), icon: Shield },
-    { id: 'notifications', label: t('settings.notifications'), icon: Bell },
-    { id: 'integrations', label: t('settings.integrations'), icon: LinkIcon },
+    { id: 'general', label: t('settings.general'), icon: <SettingsIcon className="w-4 h-4" /> },
+    { id: 'security', label: t('settings.security'), icon: <Shield className="w-4 h-4" /> },
+    { id: 'notifications', label: t('settings.notifications'), icon: <Bell className="w-4 h-4" /> },
+    { id: 'integrations', label: t('settings.integrations'), icon: <LinkIcon className="w-4 h-4" /> },
   ];
 
   return (

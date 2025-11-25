@@ -13,8 +13,10 @@ export interface Tab {
 
 export interface TabsProps {
   tabs: Tab[];
+  activeTab?: string;
   defaultTab?: string;
   onChange?: (tabId: string) => void;
+  onTabChange?: (tabId: string) => void;
   variant?: 'default' | 'pills' | 'underline';
   fullWidth?: boolean;
   className?: string;
@@ -22,17 +24,23 @@ export interface TabsProps {
 
 const Tabs: React.FC<TabsProps> = ({
   tabs,
+  activeTab: controlledActiveTab,
   defaultTab,
   onChange,
+  onTabChange,
   variant = 'default',
   fullWidth = false,
   className,
 }) => {
-  const [activeTab, setActiveTab] = useState(defaultTab || tabs[0]?.id);
+  const [internalActiveTab, setInternalActiveTab] = useState(defaultTab || tabs[0]?.id);
+  const activeTab = controlledActiveTab !== undefined ? controlledActiveTab : internalActiveTab;
 
   const handleTabChange = (tabId: string) => {
-    setActiveTab(tabId);
+    if (controlledActiveTab === undefined) {
+      setInternalActiveTab(tabId);
+    }
     onChange?.(tabId);
+    onTabChange?.(tabId);
   };
 
   const activeTabContent = tabs.find((tab) => tab.id === activeTab)?.content;

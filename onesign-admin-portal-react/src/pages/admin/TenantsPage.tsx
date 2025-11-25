@@ -27,9 +27,9 @@ interface Tenant {
 const TenantsPage = () => {
   const { t } = useTranslation();
   const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [, setSelectedTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [selectedTenants, setSelectedTenants] = useState<Tenant[]>([]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -129,7 +129,7 @@ const TenantsPage = () => {
       key: 'actions',
       label: t('common.actions'),
       align: 'right',
-      render: (_, tenant) => (
+      render: () => (
         <div className="flex items-center justify-end gap-2">
           <Button variant="ghost" size="sm" leftIcon={<Edit className="w-4 h-4" />} />
           <Button variant="ghost" size="sm" leftIcon={<Trash2 className="w-4 h-4 text-danger-600" />} />

@@ -27,7 +27,7 @@ const RolesPage = () => {
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
+  const [, setSelectedRole] = useState<Role | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
