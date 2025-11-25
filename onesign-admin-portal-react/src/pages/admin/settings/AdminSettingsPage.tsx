@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { platformService } from '@/lib/api/services';
+import { adminService } from '@/lib/api/services/admin.service';
 import { Helmet } from 'react-helmet-async';
 
 type TabType = 'platform' | 'email' | 'sms' | 'oauth' | 'maintenance' | 'license';
@@ -148,7 +148,7 @@ export default function AdminSettingsPage() {
     setLoading(true);
     try {
       // Mock data - replace with actual API calls
-      // const settings = await platformService.getGlobalSettings('all');
+      // const settings = await adminService.getGlobalSettings('all');
       // setPlatformSettings(settings.platform);
       // setEmailSettings(settings.email);
       // etc.
@@ -165,7 +165,7 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      await platformService.updateGlobalSettings?.('platform', platformSettings);
+      await adminService.updateGlobalSettings?.('platform', platformSettings);
       setSuccess('Platform settings saved successfully');
     } catch (err: any) {
       setError(err.message || 'Failed to save platform settings');
@@ -178,7 +178,7 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      await platformService.updateGlobalSettings?.('email', emailSettings);
+      await adminService.updateGlobalSettings?.('email', emailSettings);
       setSuccess('Email settings saved successfully');
     } catch (err: any) {
       setError(err.message || 'Failed to save email settings');
@@ -190,7 +190,7 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      await platformService.testEmailConfiguration?.(emailSettings);
+      await adminService.testEmailConfiguration?.(emailSettings);
       setSuccess('Test email sent successfully');
     } catch (err: any) {
       setError(err.message || 'Failed to send test email');
@@ -203,7 +203,7 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      await platformService.updateGlobalSettings?.('sms', smsSettings);
+      await adminService.updateGlobalSettings?.('sms', smsSettings);
       setSuccess('SMS settings saved successfully');
     } catch (err: any) {
       setError(err.message || 'Failed to save SMS settings');
@@ -215,7 +215,7 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      await platformService.testSMSConfiguration?.(smsSettings);
+      await adminService.testSMSConfiguration?.(smsSettings);
       setSuccess('Test SMS sent successfully');
     } catch (err: any) {
       setError(err.message || 'Failed to send test SMS');
@@ -236,7 +236,7 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      await platformService.updateGlobalSettings?.('maintenance', maintenanceSettings);
+      await adminService.updateGlobalSettings?.('maintenance', maintenanceSettings);
       setSuccess('Maintenance settings saved successfully');
     } catch (err: any) {
       setError(err.message || 'Failed to save maintenance settings');
