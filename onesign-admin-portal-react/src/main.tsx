@@ -7,6 +7,10 @@ import './i18n/config';
 import App from './App';
 import './index.css';
 import { registerServiceWorker, setupInstallPrompt, setupOfflineDetection } from './utils/pwa';
+import { initSentry } from './utils/sentry';
+
+// Initialize Sentry for error tracking
+initSentry();
 
 // Register Service Worker for PWA
 if (import.meta.env.PROD) {
