@@ -330,6 +330,142 @@ export const changeManagementService = {
       throw error;
     }
   },
+
+  // ==================== GLOBAL CHANGE MANAGEMENT ====================
+  getGlobalChangeSets: async (params?: any) => {
+    try {
+      const response = await apiClient.get('/api/global/changesets', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch global change sets:', error);
+      return [];
+    }
+  },
+
+  getGlobalChangeSet: async (id: string) => {
+    try {
+      const response = await apiClient.get(`/api/global/changesets/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch global change set:', error);
+      return null;
+    }
+  },
+
+  simulateGlobalChangeSet: async (id: string) => {
+    try {
+      const response = await apiClient.get(`/api/global/changesets/${id}/simulate`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to simulate global change set:', error);
+      return { success: false, errors: ['Simulation failed'] };
+    }
+  },
+
+  getGlobalExecutionLog: async (id: string) => {
+    try {
+      const response = await apiClient.get(`/api/global/changesets/${id}/execution-log`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch global execution log:', error);
+      return [];
+    }
+  },
+
+  scheduleGlobalChangeSet: async (id: string, data: any) => {
+    const response = await apiClient.post(`/api/global/changesets/${id}/schedule`, data);
+    return response.data;
+  },
+
+  applyGlobalChangeSet: async (id: string) => {
+    const response = await apiClient.post(`/api/global/changesets/${id}/apply`);
+    return response.data;
+  },
+
+  rollbackGlobalChangeSet: async (id: string) => {
+    const response = await apiClient.post(`/api/global/changesets/${id}/rollback`);
+    return response.data;
+  },
+
+  approveGlobalChangeSet: async (id: string, comment?: string) => {
+    const response = await apiClient.post(`/api/global/changesets/${id}/approve`, { comment });
+    return response.data;
+  },
+
+  rejectGlobalChangeSet: async (id: string, reason: string) => {
+    const response = await apiClient.post(`/api/global/changesets/${id}/reject`, { reason });
+    return response.data;
+  },
+
+  submitGlobalChangeSet: async (id: string) => {
+    const response = await apiClient.post(`/api/global/changesets/${id}/submit`);
+    return response.data;
+  },
+
+  getGlobalApprovals: async (id: string) => {
+    try {
+      const response = await apiClient.get(`/api/global/changesets/${id}/approvals`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch global approvals:', error);
+      return [];
+    }
+  },
+
+  getGlobalImpactAnalysis: async (id: string) => {
+    try {
+      const response = await apiClient.get(`/api/global/changesets/${id}/impact`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to get global impact analysis:', error);
+      return null;
+    }
+  },
+
+  getGlobalTemplates: async () => {
+    try {
+      const response = await apiClient.get('/api/global/changesets/templates');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch global templates:', error);
+      return [];
+    }
+  },
+
+  getGlobalApprovalRules: async () => {
+    try {
+      const response = await apiClient.get('/api/global/changesets/approval-rules');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch global approval rules:', error);
+      return [];
+    }
+  },
+
+  createGlobalApprovalRule: async (data: any) => {
+    const response = await apiClient.post('/api/global/changesets/approval-rules', data);
+    return response.data;
+  },
+
+  toggleGlobalApprovalRule: async (ruleId: string, isActive: boolean) => {
+    const response = await apiClient.put(`/api/global/changesets/approval-rules/${ruleId}`, { isActive });
+    return response.data;
+  },
+
+  enforceGlobalApprovalRule: async (ruleId: string) => {
+    const response = await apiClient.post(`/api/global/changesets/approval-rules/${ruleId}/enforce`);
+    return response.data;
+  },
+
+  getGlobalChangeHistory: async (params?: any) => {
+    try {
+      const response = await apiClient.get('/api/global/changesets/history', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch global change history:', error);
+      return [];
+    }
+  },
 };
 
 export default changeManagementService;

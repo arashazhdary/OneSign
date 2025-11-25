@@ -217,6 +217,115 @@ export const automationService = {
       return [];
     }
   },
+
+  // ==================== GLOBAL AUTOMATION ====================
+  getGlobalTemplates: async (): Promise<AutomationWorkflowDto[]> => {
+    try {
+      const response = await apiClient.get('/api/global/automation/templates');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch global templates:', error);
+      return [];
+    }
+  },
+
+  getGlobalTemplate: async (templateId: string): Promise<AutomationWorkflowDto | null> => {
+    try {
+      const response = await apiClient.get(`/api/global/automation/templates/${templateId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch global template:', error);
+      return null;
+    }
+  },
+
+  createGlobalTemplate: async (data: Partial<AutomationWorkflowDto>): Promise<AutomationWorkflowDto> => {
+    const response = await apiClient.post('/api/global/automation/templates', data);
+    return response.data;
+  },
+
+  updateGlobalTemplate: async (templateId: string, data: Partial<AutomationWorkflowDto>): Promise<AutomationWorkflowDto> => {
+    const response = await apiClient.put(`/api/global/automation/templates/${templateId}`, data);
+    return response.data;
+  },
+
+  deleteGlobalTemplate: async (templateId: string): Promise<void> => {
+    await apiClient.delete(`/api/global/automation/templates/${templateId}`);
+  },
+
+  publishTemplate: async (templateId: string): Promise<AutomationWorkflowDto> => {
+    const response = await apiClient.post(`/api/global/automation/templates/${templateId}/publish`);
+    return response.data;
+  },
+
+  enforceTemplate: async (templateId: string, tenantIds?: string[]): Promise<void> => {
+    await apiClient.post(`/api/global/automation/templates/${templateId}/enforce`, { tenantIds });
+  },
+
+  unenforceTemplate: async (templateId: string, tenantIds?: string[]): Promise<void> => {
+    await apiClient.post(`/api/global/automation/templates/${templateId}/unenforce`, { tenantIds });
+  },
+
+  // Available templates for tenant use
+  getAvailableTemplates: async (): Promise<AutomationWorkflowDto[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/automation/available-templates');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch available templates:', error);
+      return [];
+    }
+  },
+
+  cloneTemplate: async (templateId: string, name: string): Promise<WorkflowDto> => {
+    const response = await apiClient.post(`/api/tenant/automation/templates/${templateId}/clone`, { name });
+    return response.data;
+  },
+
+  createTemplate: async (data: Partial<WorkflowTemplateDto>): Promise<WorkflowTemplateDto> => {
+    const response = await apiClient.post('/api/tenant/automation/templates', data);
+    return response.data;
+  },
 };
+
+// Export types for use in pages
+export type AutomationWorkflowDto = WorkflowDto;
+
+// Export constants
+export const EVENT_TYPES = [
+  'UserCreated',
+  'UserUpdated',
+  'UserDeleted',
+  'UserLogin',
+  'UserLogout',
+  'RoleAssigned',
+  'RoleRevoked',
+  'PasswordChanged',
+  'MfaEnabled',
+  'MfaDisabled',
+  'ApplicationCreated',
+  'ApplicationUpdated',
+  'ApplicationDeleted',
+  'PermissionGranted',
+  'PermissionRevoked',
+  'PolicyViolation',
+  'SecurityAlert',
+  'AuditEvent',
+];
+
+export const ACTION_TYPES = [
+  'SendEmail',
+  'SendSms',
+  'SendWebhook',
+  'CreateTicket',
+  'AssignRole',
+  'RevokeRole',
+  'EnableMfa',
+  'DisableAccount',
+  'NotifyAdmin',
+  'ExecuteScript',
+  'UpdateAttribute',
+  'TriggerWorkflow',
+];
 
 export default automationService;
