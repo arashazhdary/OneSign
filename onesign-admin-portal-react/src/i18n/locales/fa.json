@@ -6,7 +6,10 @@
     "save": "ذخیره",
     "cancel": "لغو",
     "search": "جستجو",
+    "searchPlaceholder": "جستجو...",
     "filter": "فیلتر",
+    "filters": "فیلترها",
+    "filterBy": "فیلتر بر اساس",
     "export": "صادرات",
     "import": "واردات",
     "refresh": "بروزرسانی",
@@ -28,7 +31,13 @@
     "profile": "پروفایل",
     "searchMenu": "جستجو در منو...",
     "adminPortal": "پورتال ادمین",
-    "error": "خطا"
+    "error": "خطا",
+    "showing": "نمایش",
+    "to": "تا",
+    "of": "از",
+    "results": "نتیجه",
+    "previous": "قبلی",
+    "next": "بعدی"
   },
   "auth": {
     "login": "ورود",

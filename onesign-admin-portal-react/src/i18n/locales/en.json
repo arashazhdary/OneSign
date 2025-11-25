@@ -6,7 +6,10 @@
     "save": "Save",
     "cancel": "Cancel",
     "search": "Search",
+    "searchPlaceholder": "Search...",
     "filter": "Filter",
+    "filters": "Filters",
+    "filterBy": "Filter by",
     "export": "Export",
     "import": "Import",
     "refresh": "Refresh",
@@ -28,7 +31,13 @@
     "profile": "Profile",
     "searchMenu": "Search menu...",
     "adminPortal": "Admin Portal",
-    "error": "Error"
+    "error": "Error",
+    "showing": "Showing",
+    "to": "to",
+    "of": "of",
+    "results": "results",
+    "previous": "Previous",
+    "next": "Next"
   },
   "auth": {
     "login": "Login",

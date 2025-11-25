@@ -9,6 +9,7 @@ import {
   Filter,
   X,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/utils/cn';
 import Button from './Button';
 import Input from './Input';
@@ -47,11 +48,12 @@ function DataTable<T extends Record<string, any>>({
   selectable = false,
   pageSize = 10,
   loading = false,
-  emptyMessage = 'No data available',
+  emptyMessage,
   onRowClick,
   onSelectionChange,
   className,
 }: DataTableProps<T>) {
+  const { t } = useTranslation();
   const [sortConfig, setSortConfig] = useState<{
     key: string;
     direction: 'asc' | 'desc';
@@ -61,6 +63,8 @@ function DataTable<T extends Record<string, any>>({
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [showFilters, setShowFilters] = useState(false);
+
+  const defaultEmptyMessage = emptyMessage || t('common.noData');
 
   // Sorting
   const sortedData = useMemo(() => {
@@ -201,7 +205,7 @@ function DataTable<T extends Record<string, any>>({
         <div className="flex items-center gap-2 flex-1 max-w-md">
           {searchable && (
             <Input
-              placeholder="Search..."
+              placeholder={t('common.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               leftIcon={<Search className="w-4 h-4" />}
@@ -223,7 +227,7 @@ function DataTable<T extends Record<string, any>>({
             onClick={() => setShowFilters(!showFilters)}
             leftIcon={<Filter className="w-4 h-4" />}
           >
-            Filters
+            {t('common.filters')}
           </Button>
 
           {exportable && (
@@ -233,7 +237,7 @@ function DataTable<T extends Record<string, any>>({
               onClick={handleExport}
               leftIcon={<Download className="w-4 h-4" />}
             >
-              Export
+              {t('common.export')}
             </Button>
           )}
         </div>
@@ -258,7 +262,7 @@ function DataTable<T extends Record<string, any>>({
                   onChange={(e) =>
                     setFilters({ ...filters, [col.key]: e.target.value })
                   }
-                  placeholder={`Filter by ${col.label}...`}
+                  placeholder={`${t('common.filterBy')} ${col.label}...`}
                 />
               ))}
           </motion.div>
@@ -311,7 +315,7 @@ function DataTable<T extends Record<string, any>>({
                     colSpan={columns.length + (selectable ? 1 : 0)}
                     className="px-4 py-8 text-center text-slate-500"
                   >
-                    {emptyMessage}
+                    {defaultEmptyMessage}
                   </td>
                 </tr>
               ) : (
@@ -367,9 +371,9 @@ function DataTable<T extends Record<string, any>>({
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-slate-600 dark:text-slate-400">
-            Showing {(currentPage - 1) * pageSize + 1} to{' '}
-            {Math.min(currentPage * pageSize, filteredData.length)} of{' '}
-            {filteredData.length} results
+            {t('common.showing')} {(currentPage - 1) * pageSize + 1} {t('common.to')}{' '}
+            {Math.min(currentPage * pageSize, filteredData.length)} {t('common.of')}{' '}
+            {filteredData.length} {t('common.results')}
           </div>
 
           <div className="flex items-center gap-2">
@@ -379,7 +383,7 @@ function DataTable<T extends Record<string, any>>({
               onClick={() => setCurrentPage(currentPage - 1)}
               disabled={currentPage === 1}
             >
-              Previous
+              {t('common.previous')}
             </Button>
 
             <div className="flex items-center gap-1">
@@ -418,7 +422,7 @@ function DataTable<T extends Record<string, any>>({
               onClick={() => setCurrentPage(currentPage + 1)}
               disabled={currentPage === totalPages}
             >
-              Next
+              {t('common.next')}
             </Button>
           </div>
         </div>
