@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
 import { securityService } from '@/lib/api/services';
-import DataTable, { Column } from '@/app/components/DataTable';
-import StatusBadge from '@/app/components/StatusBadge';
-import ActionButton from '@/app/components/ActionButton';
-import Modal from '@/app/components/Modal';
-import SearchBar from '@/app/components/SearchBar';
-import LoadingOverlay from '@/app/components/LoadingOverlay';
+import DataTable, { Column } from '@/components/common/DataTable';
+import StatusBadge from '@/components/common/StatusBadge';
+import ActionButton from '@/components/common/ActionButton';
+import Modal from '@/components/common/Modal';
+import SearchBar from '@/components/common/SearchBar';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
 import { Helmet } from 'react-helmet-async';
 
 interface AdaptivePolicy {

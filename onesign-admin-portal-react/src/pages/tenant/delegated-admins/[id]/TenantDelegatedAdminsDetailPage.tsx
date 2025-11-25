@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'react-router-dom';
 import { platformService } from '@/lib/api/services';
 import { getTenantId } from '@/lib/tenant-context';
-import Breadcrumbs from '@/app/components/Breadcrumbs';
+import Breadcrumbs from '@/components/common/Breadcrumbs';
 import { Helmet } from 'react-helmet-async';
 
 interface Scope {

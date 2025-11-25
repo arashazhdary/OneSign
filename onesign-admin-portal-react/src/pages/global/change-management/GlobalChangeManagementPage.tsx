@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import Modal from '@/app/components/Modal';
-import StatusBadge from '@/app/components/StatusBadge';
-import LoadingSpinner from '@/app/components/LoadingSpinner';
+import Modal from '@/components/common/Modal';
+import StatusBadge from '@/components/common/StatusBadge';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { changeManagementService } from '@/lib/api/services/change-management.service';
 import { Helmet } from 'react-helmet-async';
 

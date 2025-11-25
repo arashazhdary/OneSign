@@ -37,6 +37,7 @@ export interface DataTableProps<T = any> {
   onRowClick?: (row: T) => void;
   onSelectionChange?: (selectedRows: T[]) => void;
   className?: string;
+  actions?: (row: T) => React.ReactNode;
 }
 
 function DataTable<T extends Record<string, any>>({
@@ -52,6 +53,7 @@ function DataTable<T extends Record<string, any>>({
   onRowClick,
   onSelectionChange,
   className,
+  actions,
 }: DataTableProps<T>) {
   const { t } = useTranslation();
   const [sortConfig, setSortConfig] = useState<{
@@ -305,6 +307,11 @@ function DataTable<T extends Record<string, any>>({
                   </div>
                 </th>
               ))}
+              {actions && (
+                <th className="px-4 py-3 text-sm font-semibold text-slate-900 dark:text-white text-right">
+                  {t('common.actions')}
+                </th>
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
@@ -312,7 +319,7 @@ function DataTable<T extends Record<string, any>>({
               {paginatedData.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={columns.length + (selectable ? 1 : 0)}
+                    colSpan={columns.length + (selectable ? 1 : 0) + (actions ? 1 : 0)}
                     className="px-4 py-8 text-center text-slate-500"
                   >
                     {defaultEmptyMessage}
@@ -359,6 +366,11 @@ function DataTable<T extends Record<string, any>>({
                           : row[col.key]}
                       </td>
                     ))}
+                    {actions && (
+                      <td className="px-4 py-3 text-sm text-right">
+                        {actions(row)}
+                      </td>
+                    )}
                   </motion.tr>
                 ))
               )}

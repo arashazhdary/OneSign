@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
 import { automationService } from '@/lib/api/services/automation.service';

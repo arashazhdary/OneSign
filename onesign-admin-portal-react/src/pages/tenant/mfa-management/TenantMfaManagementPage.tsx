@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { getTenantId } from '@/lib/tenant-context';
 import { securityService } from '@/lib/api/services';
-import DataTable, { Column } from '@/app/components/DataTable';
-import StatusBadge from '@/app/components/StatusBadge';
-import ActionButton from '@/app/components/ActionButton';
-import LoadingOverlay from '@/app/components/LoadingOverlay';
+import DataTable, { Column } from '@/components/common/DataTable';
+import StatusBadge from '@/components/common/StatusBadge';
+import ActionButton from '@/components/common/ActionButton';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
 import { Helmet } from 'react-helmet-async';
 
 interface MFAMethod {

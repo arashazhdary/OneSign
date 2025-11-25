@@ -2,6 +2,11 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User, Tenant } from '@/types';
 
+interface GoogleLoginParams {
+  code: string;
+  redirectUri: string;
+}
+
 interface AuthState {
   user: User | null;
   tenant: Tenant | null;
@@ -16,6 +21,7 @@ interface AuthState {
   login: (user: User, tenant?: Tenant) => void;
   logout: () => void;
   switchTenant: (tenant: Tenant) => void;
+  googleLogin: (params: GoogleLoginParams) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -39,6 +45,33 @@ export const useAuthStore = create<AuthState>()(
         set({ user: null, tenant: null, isAuthenticated: false }),
 
       switchTenant: (tenant) => set({ tenant }),
+
+      googleLogin: async ({ code, redirectUri }) => {
+        set({ isLoading: true });
+        try {
+          // TODO: Implement actual Google OAuth callback
+          const response = await fetch('/api/auth/google/callback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code, redirectUri }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Google login failed');
+          }
+
+          const data = await response.json();
+          set({
+            user: data.user,
+            tenant: data.tenant,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+        } catch (error) {
+          set({ isLoading: false });
+          throw error;
+        }
+      },
     }),
     {
       name: 'auth-storage',

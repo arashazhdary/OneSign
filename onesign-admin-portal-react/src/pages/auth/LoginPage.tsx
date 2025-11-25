@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import LoadingOverlay from '@/app/components/LoadingOverlay';
-import { authService } from '@/lib/api/services/auth.service';
-import { Helmet } from 'react-helmet-async';
+import { authService } from '@/lib/api/services';
 
 export default function LoginPage() {
   const navigate = useNavigate();
