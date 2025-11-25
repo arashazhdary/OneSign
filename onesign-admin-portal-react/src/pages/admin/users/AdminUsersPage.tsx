@@ -1,27 +1,10 @@
 import { useState, useEffect } from 'react';
-import { usersService, platformService } from '@/lib/api/services';
 import { Helmet } from 'react-helmet-async';
-
-interface PlatformAdmin {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: 'SuperAdmin' | 'PlatformAdmin' | 'SupportAdmin';
-  permissions: string[];
-  status: 'Active' | 'Inactive' | 'Suspended';
-  lastLoginAt?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface Activity {
-  id: string;
-  timestamp: string;
-  action: string;
-  details: string;
-  ipAddress?: string;
-}
+import {
+  adminService,
+  PlatformAdminDto,
+  AdminActivityDto
+} from '@/lib/api/services/admin.service';
 
 const ADMIN_ROLES = ['SuperAdmin', 'PlatformAdmin', 'SupportAdmin'] as const;
 
@@ -43,9 +26,9 @@ const AVAILABLE_PERMISSIONS = [
 
 export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
-  const [admins, setAdmins] = useState<PlatformAdmin[]>([]);
-  const [selectedAdmin, setSelectedAdmin] = useState<PlatformAdmin | null>(null);
-  const [adminActivities, setAdminActivities] = useState<Activity[]>([]);
+  const [admins, setAdmins] = useState<PlatformAdminDto[]>([]);
+  const [selectedAdmin, setSelectedAdmin] = useState<PlatformAdminDto | null>(null);
+  const [adminActivities, setAdminActivities] = useState<AdminActivityDto[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showActivityModal, setShowActivityModal] = useState(false);
@@ -56,7 +39,7 @@ export default function AdminUsersPage() {
   const [formEmail, setFormEmail] = useState('');
   const [formFirstName, setFormFirstName] = useState('');
   const [formLastName, setFormLastName] = useState('');
-  const [formRole, setFormRole] = useState<PlatformAdmin['role']>('PlatformAdmin');
+  const [formRole, setFormRole] = useState<PlatformAdminDto['role']>('PlatformAdmin');
   const [formPermissions, setFormPermissions] = useState<string[]>([]);
 
   useEffect(() => {
@@ -68,57 +51,9 @@ export default function AdminUsersPage() {
     setError('');
 
     try {
-      // Mock data for demonstration (replace with actual API call when available)
-      const mockAdmins: PlatformAdmin[] = [
-        {
-          id: '1',
-          email: 'super.admin@platform.com',
-          firstName: 'Super',
-          lastName: 'Admin',
-          role: 'SuperAdmin',
-          permissions: AVAILABLE_PERMISSIONS,
-          status: 'Active',
-          lastLoginAt: new Date(Date.now() - 3600000).toISOString(),
-          createdAt: new Date(Date.now() - 86400000 * 365).toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          email: 'platform.admin@platform.com',
-          firstName: 'Platform',
-          lastName: 'Administrator',
-          role: 'PlatformAdmin',
-          permissions: [
-            'platform.tenants.read',
-            'platform.tenants.write',
-            'platform.users.read',
-            'platform.users.write',
-            'platform.settings.read',
-          ],
-          status: 'Active',
-          lastLoginAt: new Date(Date.now() - 7200000).toISOString(),
-          createdAt: new Date(Date.now() - 86400000 * 180).toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: '3',
-          email: 'support@platform.com',
-          firstName: 'Support',
-          lastName: 'Team',
-          role: 'SupportAdmin',
-          permissions: [
-            'platform.tenants.read',
-            'platform.users.read',
-            'platform.audit.read',
-          ],
-          status: 'Active',
-          lastLoginAt: new Date(Date.now() - 14400000).toISOString(),
-          createdAt: new Date(Date.now() - 86400000 * 90).toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      ];
-
-      setAdmins(mockAdmins);
+      // Fetch admins from API
+      const response = await adminService.getAdmins(1, 100);
+      setAdmins(response.items);
     } catch (err: any) {
       console.error('Error fetching admins:', err);
       setError('Failed to load platform administrators');
@@ -129,34 +64,12 @@ export default function AdminUsersPage() {
 
   const fetchAdminActivities = async (adminId: string) => {
     try {
-      // Mock data for demonstration
-      const mockActivities: Activity[] = [
-        {
-          id: '1',
-          timestamp: new Date(Date.now() - 3600000).toISOString(),
-          action: 'Logged in',
-          details: 'Successful login from dashboard',
-          ipAddress: '192.168.1.100',
-        },
-        {
-          id: '2',
-          timestamp: new Date(Date.now() - 7200000).toISOString(),
-          action: 'Created tenant',
-          details: 'Created new tenant "Acme Corp"',
-          ipAddress: '192.168.1.100',
-        },
-        {
-          id: '3',
-          timestamp: new Date(Date.now() - 14400000).toISOString(),
-          action: 'Updated settings',
-          details: 'Modified platform email configuration',
-          ipAddress: '192.168.1.100',
-        },
-      ];
-
-      setAdminActivities(mockActivities);
+      // Fetch admin activities from API
+      const activities = await adminService.getAdminActivities(adminId, 20);
+      setAdminActivities(activities);
     } catch (err) {
       console.error('Error fetching admin activities:', err);
+      setAdminActivities([]);
     }
   };
 
@@ -166,30 +79,21 @@ export default function AdminUsersPage() {
     setSuccess('');
 
     try {
-      // Placeholder for permission check
-      // if (!hasPermission('platform.users.write')) {
-      //   setError('You do not have permission to create administrators');
-      //   return;
-      // }
-
-      const newAdmin: PlatformAdmin = {
-        id: Date.now().toString(),
+      // Create admin via API
+      const newAdmin = await adminService.createAdmin({
         email: formEmail,
         firstName: formFirstName,
         lastName: formLastName,
         role: formRole,
         permissions: formPermissions,
-        status: 'Active',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+      });
 
       setAdmins([...admins, newAdmin]);
       setSuccess('Administrator created successfully');
       setShowCreateModal(false);
       resetForm();
     } catch (err: any) {
-      setError(err.message || 'Failed to create administrator');
+      setError(err.response?.data?.message || err.message || 'Failed to create administrator');
     }
   };
 
@@ -201,15 +105,14 @@ export default function AdminUsersPage() {
     if (!selectedAdmin) return;
 
     try {
-      const updatedAdmin: PlatformAdmin = {
-        ...selectedAdmin,
+      // Update admin via API
+      const updatedAdmin = await adminService.updateAdmin(selectedAdmin.id, {
         email: formEmail,
         firstName: formFirstName,
         lastName: formLastName,
         role: formRole,
         permissions: formPermissions,
-        updatedAt: new Date().toISOString(),
-      };
+      });
 
       setAdmins(admins.map(a => a.id === selectedAdmin.id ? updatedAdmin : a));
       setSuccess('Administrator updated successfully');
@@ -217,7 +120,7 @@ export default function AdminUsersPage() {
       setSelectedAdmin(null);
       resetForm();
     } catch (err: any) {
-      setError(err.message || 'Failed to update administrator');
+      setError(err.response?.data?.message || err.message || 'Failed to update administrator');
     }
   };
 
@@ -228,10 +131,12 @@ export default function AdminUsersPage() {
     setSuccess('');
 
     try {
+      // Delete admin via API
+      await adminService.deleteAdmin(adminId);
       setAdmins(admins.filter(a => a.id !== adminId));
       setSuccess('Administrator deleted successfully');
     } catch (err: any) {
-      setError(err.message || 'Failed to delete administrator');
+      setError(err.response?.data?.message || err.message || 'Failed to delete administrator');
     }
   };
 
@@ -242,12 +147,12 @@ export default function AdminUsersPage() {
     setSuccess('');
 
     try {
-      setAdmins(admins.map(a =>
-        a.id === adminId ? { ...a, status: 'Suspended' as const } : a
-      ));
+      // Suspend admin via API
+      const updatedAdmin = await adminService.suspendAdmin(adminId);
+      setAdmins(admins.map(a => a.id === adminId ? updatedAdmin : a));
       setSuccess('Administrator suspended successfully');
     } catch (err: any) {
-      setError(err.message || 'Failed to suspend administrator');
+      setError(err.response?.data?.message || err.message || 'Failed to suspend administrator');
     }
   };
 
@@ -256,16 +161,16 @@ export default function AdminUsersPage() {
     setSuccess('');
 
     try {
-      setAdmins(admins.map(a =>
-        a.id === adminId ? { ...a, status: 'Active' as const } : a
-      ));
+      // Activate admin via API
+      const updatedAdmin = await adminService.activateAdmin(adminId);
+      setAdmins(admins.map(a => a.id === adminId ? updatedAdmin : a));
       setSuccess('Administrator activated successfully');
     } catch (err: any) {
-      setError(err.message || 'Failed to activate administrator');
+      setError(err.response?.data?.message || err.message || 'Failed to activate administrator');
     }
   };
 
-  const openEditModal = (admin: PlatformAdmin) => {
+  const openEditModal = (admin: PlatformAdminDto) => {
     setSelectedAdmin(admin);
     setFormEmail(admin.email);
     setFormFirstName(admin.firstName);
@@ -275,7 +180,7 @@ export default function AdminUsersPage() {
     setShowEditModal(true);
   };
 
-  const openActivityModal = async (admin: PlatformAdmin) => {
+  const openActivityModal = async (admin: PlatformAdminDto) => {
     setSelectedAdmin(admin);
     await fetchAdminActivities(admin.id);
     setShowActivityModal(true);
@@ -520,7 +425,7 @@ export default function AdminUsersPage() {
                 <select
                   className="w-full border border-gray-300 rounded-md px-3 py-2"
                   value={formRole}
-                  onChange={(e) => setFormRole(e.target.value as PlatformAdmin['role'])}
+                  onChange={(e) => setFormRole(e.target.value as PlatformAdminDto['role'])}
                 >
                   {ADMIN_ROLES.map(role => (
                     <option key={role} value={role}>{role}</option>
@@ -608,7 +513,7 @@ export default function AdminUsersPage() {
                 <select
                   className="w-full border border-gray-300 rounded-md px-3 py-2"
                   value={formRole}
-                  onChange={(e) => setFormRole(e.target.value as PlatformAdmin['role'])}
+                  onChange={(e) => setFormRole(e.target.value as PlatformAdminDto['role'])}
                 >
                   {ADMIN_ROLES.map(role => (
                     <option key={role} value={role}>{role}</option>

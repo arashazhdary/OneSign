@@ -1,126 +1,36 @@
 import { useState, useEffect } from 'react';
-import { platformService } from '@/lib/api/services';
 import { Helmet } from 'react-helmet-async';
-
-interface PlatformRole {
-  id: string;
-  name: string;
-  description: string;
-  type: 'system' | 'custom';
-  permissions: string[];
-  usersCount: number;
-  isDefault: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+import {
+  adminService,
+  PlatformRoleDto,
+  CreatePlatformRoleDto
+} from '@/lib/api/services/admin.service';
 
 export default function AdminRolesPage() {
-  const [roles, setRoles] = useState<PlatformRole[]>([]);
+  const [roles, setRoles] = useState<PlatformRoleDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<PlatformRole | null>(null);
+  const [selectedRole, setSelectedRole] = useState<PlatformRoleDto | null>(null);
+  const [newRoleName, setNewRoleName] = useState('');
+  const [newRoleDescription, setNewRoleDescription] = useState('');
+  const [newRolePermissions, setNewRolePermissions] = useState<string[]>([]);
+  const [newRoleIsDefault, setNewRoleIsDefault] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchRoles();
   }, []);
 
   const fetchRoles = async () => {
+    setLoading(true);
+    setError('');
     try {
-      // TODO: Implement getPlatformRoles in platformService
-      // const data = await platformService.getPlatformRoles?.(  );
-      const mockData: PlatformRole[] = [
-        {
-          id: '1',
-          name: 'Super Administrator',
-          description: 'Full platform access with all permissions',
-          type: 'system',
-          permissions: [
-            'platform:*',
-            'tenants:*',
-            'users:*',
-            'billing:*',
-            'system:*',
-            'security:*',
-            'integrations:*',
-            'analytics:*',
-          ],
-          usersCount: 2,
-          isDefault: false,
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z',
-        },
-        {
-          id: '2',
-          name: 'Platform Administrator',
-          description: 'Manage tenants, users, and platform settings',
-          type: 'system',
-          permissions: [
-            'tenants:read',
-            'tenants:write',
-            'tenants:delete',
-            'users:read',
-            'users:write',
-            'users:delete',
-            'analytics:read',
-            'integrations:read',
-            'integrations:write',
-          ],
-          usersCount: 5,
-          isDefault: true,
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z',
-        },
-        {
-          id: '3',
-          name: 'Support Agent',
-          description: 'View tenants and users, limited write access',
-          type: 'system',
-          permissions: [
-            'tenants:read',
-            'users:read',
-            'users:write',
-            'analytics:read',
-          ],
-          usersCount: 12,
-          isDefault: false,
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z',
-        },
-        {
-          id: '4',
-          name: 'Analytics Viewer',
-          description: 'Read-only access to analytics and reports',
-          type: 'system',
-          permissions: [
-            'analytics:read',
-            'tenants:read',
-            'users:read',
-          ],
-          usersCount: 8,
-          isDefault: false,
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z',
-        },
-        {
-          id: '5',
-          name: 'Billing Manager',
-          description: 'Manage billing and subscriptions',
-          type: 'custom',
-          permissions: [
-            'billing:read',
-            'billing:write',
-            'tenants:read',
-            'analytics:read',
-          ],
-          usersCount: 3,
-          isDefault: false,
-          createdAt: '2024-02-15T10:00:00Z',
-          updatedAt: '2024-10-20T14:00:00Z',
-        },
-      ];
-      setRoles(mockData);
+      // Fetch roles from API
+      const data = await adminService.getPlatformRoles();
+      setRoles(data);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to fetch roles:', err);
+      setError('Failed to load platform roles');
       setRoles([]);
     } finally {
       setLoading(false);
@@ -128,24 +38,52 @@ export default function AdminRolesPage() {
   };
 
   const handleCreate = async () => {
+    if (!newRoleName.trim()) {
+      setError('Role name is required');
+      return;
+    }
+    setError('');
     try {
-      // TODO: Implement createPlatformRole
-      // await platformService.createPlatformRole?.({ name: 'New Role', description: '', type: 'custom', permissions: [], isDefault: false });
+      // Create role via API
+      const newRole: CreatePlatformRoleDto = {
+        name: newRoleName,
+        description: newRoleDescription,
+        permissions: newRolePermissions,
+        isDefault: newRoleIsDefault,
+      };
+      await adminService.createPlatformRole(newRole);
+
+      // Reset form and close modal
+      setNewRoleName('');
+      setNewRoleDescription('');
+      setNewRolePermissions([]);
+      setNewRoleIsDefault(false);
       setShowCreate(false);
       fetchRoles();
-    } catch (error) {
-      console.error('Failed to create platform role:', error);
+    } catch (err: any) {
+      console.error('Failed to create platform role:', err);
+      setError(err.response?.data?.message || 'Failed to create role');
     }
   };
 
   const handleDelete = async (roleId: string) => {
     if (!confirm('Delete this role? Users with this role will lose their permissions.')) return;
+    setError('');
     try {
-      // TODO: Implement deletePlatformRole
-      // await platformService.deletePlatformRole?.(roleId);
+      // Delete role via API
+      await adminService.deletePlatformRole(roleId);
       fetchRoles();
-    } catch (error) {
-      console.error('Failed to delete platform role:', error);
+    } catch (err: any) {
+      console.error('Failed to delete platform role:', err);
+      setError(err.response?.data?.message || 'Failed to delete role');
+    }
+  };
+
+  const togglePermission = (perm: string) => {
+    if (newRolePermissions.includes(perm)) {
+      setNewRolePermissions(newRolePermissions.filter(p => p !== perm));
+    } else {
+      setNewRolePermissions([...newRolePermissions, perm]);
     }
   };
 
@@ -178,6 +116,12 @@ export default function AdminRolesPage() {
       
       
     <div className="p-6 max-w-7xl mx-auto">
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+          {error}
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold">Platform Roles</h1>
@@ -384,6 +328,8 @@ export default function AdminRolesPage() {
                   type="text"
                   placeholder="e.g., Integration Manager"
                   className="w-full border border-gray-300 rounded-lg p-2"
+                  value={newRoleName}
+                  onChange={(e) => setNewRoleName(e.target.value)}
                 />
               </div>
 
@@ -393,6 +339,8 @@ export default function AdminRolesPage() {
                   placeholder="Describe what this role can do"
                   className="w-full border border-gray-300 rounded-lg p-2"
                   rows={3}
+                  value={newRoleDescription}
+                  onChange={(e) => setNewRoleDescription(e.target.value)}
                 />
               </div>
 
@@ -405,7 +353,12 @@ export default function AdminRolesPage() {
                       <div className="space-y-1 ml-4">
                         {group.perms.map((perm, pidx) => (
                           <label key={pidx} className="flex items-center text-sm">
-                            <input type="checkbox" className="mr-2" />
+                            <input
+                              type="checkbox"
+                              className="mr-2"
+                              checked={newRolePermissions.includes(perm)}
+                              onChange={() => togglePermission(perm)}
+                            />
                             <span className="font-mono">{perm}</span>
                           </label>
                         ))}
@@ -417,14 +370,25 @@ export default function AdminRolesPage() {
 
               <div>
                 <label className="flex items-center">
-                  <input type="checkbox" className="mr-2" />
+                  <input
+                    type="checkbox"
+                    className="mr-2"
+                    checked={newRoleIsDefault}
+                    onChange={(e) => setNewRoleIsDefault(e.target.checked)}
+                  />
                   <span className="text-sm">Set as default role for new admin users</span>
                 </label>
               </div>
 
               <div className="flex justify-end space-x-2 pt-4">
                 <button
-                  onClick={() => setShowCreate(false)}
+                  onClick={() => {
+                    setShowCreate(false);
+                    setNewRoleName('');
+                    setNewRoleDescription('');
+                    setNewRolePermissions([]);
+                    setNewRoleIsDefault(false);
+                  }}
                   className="px-4 py-2 border border-gray-300 rounded-lg"
                 >
                   Cancel

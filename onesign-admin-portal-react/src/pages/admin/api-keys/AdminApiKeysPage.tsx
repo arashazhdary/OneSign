@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { platformService } from '@/lib/api/services';
 import { Helmet } from 'react-helmet-async';
+import { adminService, ApiKeyDto, CreateApiKeyDto } from '@/lib/api/services/admin.service';
 
 interface AdminAPIKey {
   id: string;
@@ -23,95 +23,43 @@ export default function AdminApiKeysPage() {
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [showKey, setShowKey] = useState<string | null>(null);
+  const [error, setError] = useState('');
+  const [newKeyName, setNewKeyName] = useState('');
+  const [newKeyPermissions, setNewKeyPermissions] = useState<string[]>([]);
+  const [newKeyExpiration, setNewKeyExpiration] = useState('');
+  const [createdKeyValue, setCreatedKeyValue] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAPIKeys();
   }, []);
 
   const fetchAPIKeys = async () => {
+    setLoading(true);
+    setError('');
     try {
-      // TODO: Implement getAdminAPIKeys in platformService
-      // const data = await platformService.getAdminAPIKeys?.();
-      const mockData: AdminAPIKey[] = [
-        {
-          id: '1',
-          name: 'Platform Management Key',
-          key: 'pk_live_abc123def456ghi789jkl012mno345pqr678',
-          prefix: 'pk_live_',
-          scope: 'platform',
-          permissions: [
-            'tenants:read',
-            'tenants:write',
-            'tenants:delete',
-            'users:read',
-            'users:write',
-            'system:read',
-          ],
-          status: 'active',
-          lastUsed: '2024-11-23T09:30:00Z',
-          usageCount: 45678,
-          createdBy: 'superadmin@example.com',
-          createdAt: '2024-01-01T00:00:00Z',
-          ipWhitelist: ['192.168.1.0/24', '10.0.0.0/8'],
-        },
-        {
-          id: '2',
-          name: 'Read-Only Analytics Key',
-          key: 'pk_readonly_stu901vwx234yz567abc890def123ghi456',
-          prefix: 'pk_readonly_',
-          scope: 'readonly',
-          permissions: [
-            'analytics:read',
-            'logs:read',
-            'metrics:read',
-          ],
-          status: 'active',
-          expiresAt: '2025-01-01T00:00:00Z',
-          lastUsed: '2024-11-23T10:00:00Z',
-          usageCount: 123456,
-          createdBy: 'admin@example.com',
-          createdAt: '2024-06-01T10:00:00Z',
-        },
-        {
-          id: '3',
-          name: 'Admin Operations Key',
-          key: 'pk_admin_jkl789mno012pqr345stu678vwx901yz234',
-          prefix: 'pk_admin_',
-          scope: 'admin',
-          permissions: [
-            'tenants:read',
-            'tenants:write',
-            'users:read',
-            'users:write',
-            'integrations:manage',
-          ],
-          status: 'active',
-          expiresAt: '2024-12-31T23:59:59Z',
-          lastUsed: '2024-11-22T15:30:00Z',
-          usageCount: 8901,
-          createdBy: 'superadmin@example.com',
-          createdAt: '2024-03-15T09:00:00Z',
-        },
-        {
-          id: '4',
-          name: 'Legacy Integration Key',
-          key: 'pk_live_abc456def789ghi012jkl345mno678pqr901',
-          prefix: 'pk_live_',
-          scope: 'platform',
-          permissions: [
-            'tenants:read',
-            'users:read',
-          ],
-          status: 'revoked',
-          lastUsed: '2024-10-15T12:00:00Z',
-          usageCount: 234567,
-          createdBy: 'admin@example.com',
-          createdAt: '2023-01-01T00:00:00Z',
-        },
-      ];
-      setApiKeys(mockData);
+      // Fetch API keys from backend
+      const data = await adminService.getApiKeys();
+
+      // Map ApiKeyDto to AdminAPIKey interface
+      const mappedKeys: AdminAPIKey[] = data.map((key: ApiKeyDto) => ({
+        id: key.id,
+        name: key.name,
+        key: key.key || `${key.prefix}${'•'.repeat(32)}`,
+        prefix: key.prefix,
+        scope: 'platform' as const, // Default scope
+        permissions: key.permissions,
+        status: key.status.toLowerCase() as 'active' | 'revoked' | 'expired',
+        expiresAt: key.expiresAt,
+        lastUsed: key.lastUsedAt,
+        usageCount: 0, // Not provided by API
+        createdBy: key.createdBy,
+        createdAt: key.createdAt,
+      }));
+
+      setApiKeys(mappedKeys);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to fetch API keys:', err);
+      setError('Failed to load API keys');
       setApiKeys([]);
     } finally {
       setLoading(false);
@@ -119,29 +67,56 @@ export default function AdminApiKeysPage() {
   };
 
   const handleCreate = async () => {
+    if (!newKeyName.trim()) {
+      setError('Key name is required');
+      return;
+    }
+    setError('');
     try {
-      // TODO: Implement createAdminAPIKey in platformService
-      // await platformService.createAdminAPIKey?.({
-      //   name: 'New API Key',
-      //   scope: 'readonly',
-      //   permissions: ['read'],
-      //   expiresAt: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
-      // });
+      // Create API key via backend
+      const createData: CreateApiKeyDto = {
+        name: newKeyName,
+        permissions: newKeyPermissions,
+        expiresAt: newKeyExpiration || undefined,
+      };
+
+      const result = await adminService.createApiKey(createData);
+
+      // Store the created key value to display to user
+      if (result.key) {
+        setCreatedKeyValue(result.key);
+      }
+
+      // Reset form
+      setNewKeyName('');
+      setNewKeyPermissions([]);
+      setNewKeyExpiration('');
       setShowCreate(false);
       fetchAPIKeys();
-    } catch (error) {
-      console.error('Failed to create admin API key:', error);
+    } catch (err: any) {
+      console.error('Failed to create admin API key:', err);
+      setError(err.response?.data?.message || 'Failed to create API key');
     }
   };
 
   const handleRevoke = async (keyId: string) => {
     if (!confirm('Revoke this API key? This action cannot be undone.')) return;
+    setError('');
     try {
-      // TODO: Implement revokeAdminAPIKey in platformService
-      // await platformService.revokeAdminAPIKey?.(keyId);
+      // Revoke API key via backend
+      await adminService.revokeApiKey(keyId);
       fetchAPIKeys();
-    } catch (error) {
-      console.error('Failed to revoke admin API key:', error);
+    } catch (err: any) {
+      console.error('Failed to revoke admin API key:', err);
+      setError(err.response?.data?.message || 'Failed to revoke API key');
+    }
+  };
+
+  const toggleKeyPermission = (perm: string) => {
+    if (newKeyPermissions.includes(perm)) {
+      setNewKeyPermissions(newKeyPermissions.filter(p => p !== perm));
+    } else {
+      setNewKeyPermissions([...newKeyPermissions, perm]);
     }
   };
 
@@ -176,6 +151,45 @@ export default function AdminApiKeysPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+          {error}
+        </div>
+      )}
+
+      {/* Created Key Modal - Shows the newly created key */}
+      {createdKeyValue && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4 text-green-600">API Key Created!</h2>
+            <div className="space-y-4">
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded">
+                <p className="text-sm text-yellow-800 mb-2">
+                  <strong>Important:</strong> Copy this key now. You won't be able to see it again!
+                </p>
+              </div>
+              <div className="p-3 bg-gray-100 rounded font-mono text-sm break-all">
+                {createdKeyValue}
+              </div>
+              <div className="flex justify-end space-x-2">
+                <button
+                  onClick={() => handleCopy(createdKeyValue)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Copy Key
+                </button>
+                <button
+                  onClick={() => setCreatedKeyValue(null)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold">Platform API Keys</h1>
@@ -370,30 +384,25 @@ export default function AdminApiKeysPage() {
                   type="text"
                   placeholder="e.g., Platform Management Key"
                   className="w-full border border-gray-300 rounded-lg p-2"
+                  value={newKeyName}
+                  onChange={(e) => setNewKeyName(e.target.value)}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Scope</label>
-                <select className="w-full border border-gray-300 rounded-lg p-2">
-                  <option value="readonly">Read-Only (View access only)</option>
-                  <option value="admin">Admin (Manage tenants & users)</option>
-                  <option value="platform">Platform (All operations except system)</option>
-                  <option value="superadmin">Super Admin (Full platform access)</option>
-                </select>
-              </div>
-
-              <div>
                 <label className="block text-sm font-medium mb-2">Permissions</label>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  <label className="flex items-center"><input type="checkbox" className="mr-2" />tenants:read</label>
-                  <label className="flex items-center"><input type="checkbox" className="mr-2" />tenants:write</label>
-                  <label className="flex items-center"><input type="checkbox" className="mr-2" />tenants:delete</label>
-                  <label className="flex items-center"><input type="checkbox" className="mr-2" />users:read</label>
-                  <label className="flex items-center"><input type="checkbox" className="mr-2" />users:write</label>
-                  <label className="flex items-center"><input type="checkbox" className="mr-2" />system:read</label>
-                  <label className="flex items-center"><input type="checkbox" className="mr-2" />analytics:read</label>
-                  <label className="flex items-center"><input type="checkbox" className="mr-2" />integrations:manage</label>
+                <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                  {['tenants:read', 'tenants:write', 'tenants:delete', 'users:read', 'users:write', 'system:read', 'analytics:read', 'integrations:manage'].map((perm) => (
+                    <label key={perm} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        className="mr-2"
+                        checked={newKeyPermissions.includes(perm)}
+                        onChange={() => toggleKeyPermission(perm)}
+                      />
+                      {perm}
+                    </label>
+                  ))}
                 </div>
               </div>
 
@@ -402,21 +411,11 @@ export default function AdminApiKeysPage() {
                 <input
                   type="date"
                   className="w-full border border-gray-300 rounded-lg p-2"
+                  value={newKeyExpiration}
+                  onChange={(e) => setNewKeyExpiration(e.target.value)}
                 />
                 <p className="mt-1 text-xs text-gray-500">
                   Leave empty for no expiration
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">IP Whitelist (Optional)</label>
-                <input
-                  type="text"
-                  placeholder="192.168.1.0/24, 10.0.0.0/8"
-                  className="w-full border border-gray-300 rounded-lg p-2"
-                />
-                <p className="mt-1 text-xs text-gray-500">
-                  Comma-separated list of IP addresses or CIDR ranges
                 </p>
               </div>
 
@@ -427,7 +426,12 @@ export default function AdminApiKeysPage() {
 
               <div className="flex justify-end space-x-2 pt-4">
                 <button
-                  onClick={() => setShowCreate(false)}
+                  onClick={() => {
+                    setShowCreate(false);
+                    setNewKeyName('');
+                    setNewKeyPermissions([]);
+                    setNewKeyExpiration('');
+                  }}
                   className="px-4 py-2 border border-gray-300 rounded-lg"
                 >
                   Cancel

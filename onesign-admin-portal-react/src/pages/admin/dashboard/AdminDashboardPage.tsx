@@ -1,63 +1,19 @@
 import { useState, useEffect } from 'react';
-import { platformService, securityService } from '@/lib/api/services';
 import { Helmet } from 'react-helmet-async';
-
-interface PlatformStats {
-  totalTenants: number;
-  activeTenants: number;
-  totalUsers: number;
-  totalApplications: number;
-  activeUsers24h: number;
-  apiCallsToday: number;
-}
-
-interface SystemHealth {
-  status: 'healthy' | 'degraded' | 'down';
-  services: {
-    name: string;
-    status: 'healthy' | 'degraded' | 'down';
-    responseTime: number;
-    uptime: number;
-  }[];
-  database: {
-    status: 'healthy' | 'degraded' | 'down';
-    connections: number;
-    maxConnections: number;
-  };
-  memory: {
-    used: number;
-    total: number;
-    percentage: number;
-  };
-  cpu: {
-    usage: number;
-  };
-}
-
-interface Activity {
-  id: string;
-  timestamp: string;
-  type: string;
-  description: string;
-  severity: 'info' | 'warning' | 'critical';
-  user?: string;
-}
-
-interface Alert {
-  id: string;
-  title: string;
-  message: string;
-  severity: 'info' | 'warning' | 'critical';
-  timestamp: string;
-  isRead: boolean;
-}
+import {
+  adminService,
+  GlobalInsightsDto,
+  SystemHealthDto,
+  ActivityDto,
+  AlertDto
+} from '@/lib/api/services/admin.service';
 
 export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<PlatformStats | null>(null);
-  const [health, setHealth] = useState<SystemHealth | null>(null);
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [stats, setStats] = useState<GlobalInsightsDto | null>(null);
+  const [health, setHealth] = useState<SystemHealthDto | null>(null);
+  const [activities, setActivities] = useState<ActivityDto[]>([]);
+  const [alerts, setAlerts] = useState<AlertDto[]>([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -69,113 +25,33 @@ export default function AdminDashboardPage() {
     setError('');
 
     try {
-      // Fetch platform statistics
-      const platformStats = await platformService.getPlatformHealth();
+      // Fetch all dashboard data from API in parallel
+      const [insightsData, healthData, activitiesData, alertsData] = await Promise.all([
+        adminService.getGlobalInsights(),
+        adminService.getSystemHealth(),
+        adminService.getRecentActivities(10),
+        adminService.getActiveAlerts()
+      ]);
 
-      // Mock data for demonstration (replace with actual API calls when available)
-      const mockStats: PlatformStats = {
-        totalTenants: platformStats?.totalTenants || 45,
-        activeTenants: platformStats?.activeTenants || 42,
-        totalUsers: platformStats?.totalUsers || 1250,
-        totalApplications: platformStats?.totalApplications || 380,
-        activeUsers24h: platformStats?.activeUsers24h || 856,
-        apiCallsToday: platformStats?.apiCallsToday || 125430,
-      };
+      // Set stats from API response
+      if (insightsData) {
+        setStats(insightsData);
+      }
 
-      const mockHealth: SystemHealth = {
-        status: 'healthy',
-        services: [
-          { name: 'API Gateway', status: 'healthy', responseTime: 45, uptime: 99.9 },
-          { name: 'Auth Service', status: 'healthy', responseTime: 32, uptime: 99.8 },
-          { name: 'Notification Service', status: 'healthy', responseTime: 28, uptime: 99.7 },
-          { name: 'Analytics Service', status: 'degraded', responseTime: 156, uptime: 98.5 },
-        ],
-        database: {
-          status: 'healthy',
-          connections: 45,
-          maxConnections: 100,
-        },
-        memory: {
-          used: 6.4,
-          total: 16,
-          percentage: 40,
-        },
-        cpu: {
-          usage: 35,
-        },
-      };
+      // Set health data from API response
+      if (healthData) {
+        setHealth(healthData);
+      }
 
-      const mockActivities: Activity[] = [
-        {
-          id: '1',
-          timestamp: new Date(Date.now() - 300000).toISOString(),
-          type: 'Tenant Created',
-          description: 'New tenant "Acme Corp" created',
-          severity: 'info',
-          user: 'admin@platform.com',
-        },
-        {
-          id: '2',
-          timestamp: new Date(Date.now() - 900000).toISOString(),
-          type: 'Security Alert',
-          description: 'Multiple failed login attempts detected',
-          severity: 'warning',
-          user: 'system',
-        },
-        {
-          id: '3',
-          timestamp: new Date(Date.now() - 1800000).toISOString(),
-          type: 'System Update',
-          description: 'Platform updated to version 2.5.1',
-          severity: 'info',
-          user: 'system',
-        },
-        {
-          id: '4',
-          timestamp: new Date(Date.now() - 3600000).toISOString(),
-          type: 'User Management',
-          description: 'Admin role assigned to user john.doe@example.com',
-          severity: 'info',
-          user: 'admin@platform.com',
-        },
-      ];
+      // Set activities from API response
+      setActivities(activitiesData);
 
-      const mockAlerts: Alert[] = [
-        {
-          id: '1',
-          title: 'High CPU Usage',
-          message: 'Database server CPU usage exceeded 80% threshold',
-          severity: 'warning',
-          timestamp: new Date(Date.now() - 600000).toISOString(),
-          isRead: false,
-        },
-        {
-          id: '2',
-          title: 'API Rate Limit',
-          message: 'Tenant "Demo Corp" approaching API rate limit',
-          severity: 'info',
-          timestamp: new Date(Date.now() - 1200000).toISOString(),
-          isRead: false,
-        },
-      ];
+      // Set alerts from API response
+      setAlerts(alertsData);
 
-      setStats(mockStats);
-      setHealth(mockHealth);
-      setActivities(mockActivities);
-      setAlerts(mockAlerts);
     } catch (err: any) {
       console.error('Error fetching dashboard data:', err);
-      setError('Failed to load dashboard data. Using fallback data.');
-
-      // Fallback mock data
-      setStats({
-        totalTenants: 45,
-        activeTenants: 42,
-        totalUsers: 1250,
-        totalApplications: 380,
-        activeUsers24h: 856,
-        apiCallsToday: 125430,
-      });
+      setError('Failed to load dashboard data. Please try again later.');
     } finally {
       setLoading(false);
     }
