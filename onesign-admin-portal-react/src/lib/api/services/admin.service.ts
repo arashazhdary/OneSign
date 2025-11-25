@@ -110,6 +110,51 @@ export interface PaginatedResult<T> {
   totalPages: number;
 }
 
+export interface PlatformRoleDto {
+  id: string;
+  name: string;
+  description: string;
+  type: 'system' | 'custom';
+  permissions: string[];
+  usersCount: number;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreatePlatformRoleDto {
+  name: string;
+  description: string;
+  permissions: string[];
+  isDefault?: boolean;
+}
+
+export interface UpdatePlatformRoleDto {
+  name?: string;
+  description?: string;
+  permissions?: string[];
+  isDefault?: boolean;
+}
+
+export interface ApiKeyDto {
+  id: string;
+  name: string;
+  key?: string;
+  prefix: string;
+  permissions: string[];
+  status: 'Active' | 'Revoked' | 'Expired';
+  expiresAt?: string;
+  lastUsedAt?: string;
+  createdAt: string;
+  createdBy: string;
+}
+
+export interface CreateApiKeyDto {
+  name: string;
+  permissions: string[];
+  expiresAt?: string;
+}
+
 // Admin Service
 export const adminService = {
   // ==================== GLOBAL INSIGHTS ====================
@@ -240,29 +285,53 @@ export const adminService = {
     }
   },
 
-  // ==================== ADMIN ROLES ====================
-  getAdminRoles: async (): Promise<string[]> => {
+  // ==================== PLATFORM ROLES ====================
+  getPlatformRoles: async (): Promise<PlatformRoleDto[]> => {
     try {
       const response = await apiClient.get('/api/admin/roles');
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch admin roles:', error);
+      console.error('Failed to fetch platform roles:', error);
       return [];
     }
   },
 
-  getAdminPermissions: async (): Promise<string[]> => {
+  getPlatformRoleById: async (roleId: string): Promise<PlatformRoleDto | null> => {
+    try {
+      const response = await apiClient.get(`/api/admin/roles/${roleId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch platform role:', error);
+      return null;
+    }
+  },
+
+  createPlatformRole: async (data: CreatePlatformRoleDto): Promise<PlatformRoleDto> => {
+    const response = await apiClient.post('/api/admin/roles', data);
+    return response.data;
+  },
+
+  updatePlatformRole: async (roleId: string, data: UpdatePlatformRoleDto): Promise<PlatformRoleDto> => {
+    const response = await apiClient.put(`/api/admin/roles/${roleId}`, data);
+    return response.data;
+  },
+
+  deletePlatformRole: async (roleId: string): Promise<void> => {
+    await apiClient.delete(`/api/admin/roles/${roleId}`);
+  },
+
+  getAvailablePermissions: async (): Promise<string[]> => {
     try {
       const response = await apiClient.get('/api/admin/permissions');
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch admin permissions:', error);
+      console.error('Failed to fetch available permissions:', error);
       return [];
     }
   },
 
   // ==================== API KEYS ====================
-  getGlobalApiKeys: async (): Promise<any[]> => {
+  getApiKeys: async (): Promise<ApiKeyDto[]> => {
     try {
       const response = await apiClient.get('/api/admin/api-keys');
       return response.data;
@@ -272,7 +341,17 @@ export const adminService = {
     }
   },
 
-  createApiKey: async (data: { name: string; permissions: string[]; expiresAt?: string }): Promise<any> => {
+  getApiKeyById: async (keyId: string): Promise<ApiKeyDto | null> => {
+    try {
+      const response = await apiClient.get(`/api/admin/api-keys/${keyId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch API key:', error);
+      return null;
+    }
+  },
+
+  createApiKey: async (data: CreateApiKeyDto): Promise<ApiKeyDto> => {
     const response = await apiClient.post('/api/admin/api-keys', data);
     return response.data;
   },
