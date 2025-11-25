@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import Sidebar from '@/components/common/Sidebar';
+import GlobalSidebar from '@/components/common/GlobalSidebar';
 import TopBar from '@/components/common/TopBar';
 import { useUIStore } from '@/stores/uiStore';
 
@@ -9,7 +9,7 @@ export const GlobalLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      <Sidebar />
+      <GlobalSidebar />
       <TopBar />
 
       <motion.main
