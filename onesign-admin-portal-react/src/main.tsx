@@ -6,6 +6,17 @@ import { Toaster } from 'react-hot-toast';
 import './i18n/config';
 import App from './App';
 import './index.css';
+import { registerServiceWorker, setupInstallPrompt, setupOfflineDetection } from './utils/pwa';
+
+// Register Service Worker for PWA
+if (import.meta.env.PROD) {
+  registerServiceWorker();
+  setupInstallPrompt();
+  setupOfflineDetection(
+    () => console.log('App is back online'),
+    () => console.log('App is offline')
+  );
+}
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

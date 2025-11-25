@@ -14,6 +14,12 @@ export { default as Tooltip } from './Tooltip';
 export { default as TopBar } from './TopBar';
 export { default as FileUpload } from './FileUpload';
 export { default as AdvancedChart } from './AdvancedChart';
+export { default as VirtualList } from './VirtualList';
+export { default as PasswordStrength } from './PasswordStrength';
+export { default as Breadcrumbs } from './Breadcrumbs';
+export { default as ThemeToggle } from './ThemeToggle';
+export { default as ActivityTimeline } from './ActivityTimeline';
+export { default as AdvancedSearch } from './AdvancedSearch';
 
 // Export types
 export type { AvatarProps } from './Avatar';
@@ -28,3 +34,9 @@ export type { Tab, TabsProps } from './Tabs';
 export type { TooltipProps } from './Tooltip';
 export type { FileUploadProps } from './FileUpload';
 export type { AdvancedChartProps, ChartData } from './AdvancedChart';
+export type { VirtualListProps } from './VirtualList';
+export type { PasswordStrengthProps } from './PasswordStrength';
+export type { BreadcrumbsProps, BreadcrumbItem } from './Breadcrumbs';
+export type { ThemeToggleProps, Theme } from './ThemeToggle';
+export type { ActivityTimelineProps, ActivityItem } from './ActivityTimeline';
+export type { AdvancedSearchProps, SearchFilter } from './AdvancedSearch';
