@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
-import LoadingOverlay from '@/app/components/LoadingOverlay';
-import Modal from '@/app/components/Modal';
-import StatusBadge from '@/app/components/StatusBadge';
-import DataTable, { Column } from '@/app/components/DataTable';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
+import Modal from '@/components/common/Modal';
+import StatusBadge from '@/components/common/StatusBadge';
+import DataTable, { Column } from '@/components/common/DataTable';
 import { platformService } from '@/lib/api/services/platform.service';
 import { Helmet } from 'react-helmet-async';
 

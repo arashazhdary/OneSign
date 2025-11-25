@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import DataTable, { Column } from '@/app/components/DataTable';
-import Modal from '@/app/components/Modal';
-import StatusBadge from '@/app/components/StatusBadge';
+import DataTable, { Column } from '@/components/common/DataTable';
+import Modal from '@/components/common/Modal';
+import StatusBadge from '@/components/common/StatusBadge';
 import { platformService } from '@/lib/api/services';
 import { Helmet } from 'react-helmet-async';
 

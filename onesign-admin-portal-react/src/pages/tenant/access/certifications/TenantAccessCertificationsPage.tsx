@@ -3,11 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
 import { governanceService } from '@/lib/api/services';
 import { useAuth } from '@/app/contexts/AuthContext';
-import DataTable, { Column } from '@/app/components/DataTable';
-import StatusBadge from '@/app/components/StatusBadge';
-import ActionButton from '@/app/components/ActionButton';
-import Modal from '@/app/components/Modal';
-import LoadingOverlay from '@/app/components/LoadingOverlay';
+import DataTable, { Column } from '@/components/common/DataTable';
+import StatusBadge from '@/components/common/StatusBadge';
+import ActionButton from '@/components/common/ActionButton';
+import Modal from '@/components/common/Modal';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
 import { Helmet } from 'react-helmet-async';
 
 interface CertificationCampaign {

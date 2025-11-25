@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import LoadingOverlay from '@/app/components/LoadingOverlay';
-import { authService } from '@/lib/api/services/auth.service';
-import { Helmet } from 'react-helmet-async';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { authService } from '@/lib/api/services';
 
 export default function CompleteFirstLoginPage() {
   const navigate = useNavigate();
-  const searchParams = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);

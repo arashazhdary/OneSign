@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { platformService } from '@/lib/api/services/platform.service';
-import { Helmet } from 'react-helmet-async';
+import { platformService } from '@/lib/api/services';
 
 interface Tenant {
   id: string;

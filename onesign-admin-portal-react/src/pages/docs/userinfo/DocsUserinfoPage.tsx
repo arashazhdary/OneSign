@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { usersService } from '@/lib/api/services/users.service';
+import { usersService } from '@/lib/api/services';
 
 export default function DocsUserinfoPage() {
   const { t } = useTranslation();

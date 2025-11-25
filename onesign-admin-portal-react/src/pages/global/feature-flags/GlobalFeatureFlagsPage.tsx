@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import Modal from '@/app/components/Modal';
-import DataTable, { Column } from '@/app/components/DataTable';
+import Modal from '@/components/common/Modal';
+import DataTable, { Column } from '@/components/common/DataTable';
 import { platformService } from '@/lib/api/services';
 import { Helmet } from 'react-helmet-async';
 

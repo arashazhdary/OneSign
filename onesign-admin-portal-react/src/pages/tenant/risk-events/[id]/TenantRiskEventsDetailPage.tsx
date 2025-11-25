@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
-import LoadingOverlay from '@/app/components/LoadingOverlay';
-import StatusBadge from '@/app/components/StatusBadge';
+import LoadingOverlay from '@/components/common/LoadingOverlay';
+import StatusBadge from '@/components/common/StatusBadge';
 import { securityService } from '@/lib/api/services/security.service';
 import { Helmet } from 'react-helmet-async';
 

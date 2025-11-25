@@ -1,13 +1,13 @@
-import { redirect } from 'next/navigation';
-import { locales } from '../../i18n';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-export default async function HomePage({
-  params
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
-  // With localePrefix: 'always', all locales need prefix
-  redirect(`/${locale}/tenant/dashboard`);
+export default function HomePage() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Redirect to tenant dashboard
+    navigate('/tenant/dashboard');
+  }, [navigate]);
+
+  return null;
 }
-
