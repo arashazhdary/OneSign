@@ -42,7 +42,7 @@ export default function AccessRequestsPage() {
   const pageSize = 20;
 
   const tenantId = getTenantId();
-  const userId = user?.id || '00000000-0000-0000-0000-000000000001';
+  const userId = user?.id || '44444444-4444-4444-4444-444444444444';
 
   useEffect(() => {
     fetchRequests();

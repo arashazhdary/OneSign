@@ -51,9 +51,9 @@ export default function DelegatedAdminsPage() {
       loadData(tid);
       fetchUserScope(tid);
     } else {
-      setTenantId('00000000-0000-0000-0000-000000000000');
-      loadData('00000000-0000-0000-0000-000000000000');
-      fetchUserScope('00000000-0000-0000-0000-000000000000');
+      setTenantId('11111111-1111-1111-1111-111111111111');
+      loadData('11111111-1111-1111-1111-111111111111');
+      fetchUserScope('11111111-1111-1111-1111-111111111111');
     }
   }, []);
 

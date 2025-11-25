@@ -100,7 +100,7 @@ type Tab = 'templates' | 'scheduled' | 'results' | 'saved-queries' | 'hunt-runs'
 export default function GlobalHuntingPage() {
   const t = useTranslations();
   const [activeTab, setActiveTab] = useState<Tab>('templates');
-  const [userId] = useState('00000000-0000-0000-0000-000000000001');
+  const [userId] = useState('44444444-4444-4444-4444-444444444444');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');

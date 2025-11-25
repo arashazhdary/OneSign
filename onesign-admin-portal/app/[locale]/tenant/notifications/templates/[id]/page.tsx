@@ -191,7 +191,7 @@ export default function NotificationTemplateEditorPage() {
       // Update template via API
       await updateNotificationTemplate(templateId, {
         tenantId,
-        userId: user?.id || '00000000-0000-0000-0000-000000000001',
+        userId: user?.id || '44444444-4444-4444-4444-444444444444',
         name,
         description,
         category,

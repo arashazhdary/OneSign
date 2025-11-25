@@ -110,7 +110,7 @@ describe('TenantDashboardPage', () => {
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('00000000-0000-0000-0000-000000000000')
+        expect.stringContaining('11111111-1111-1111-1111-111111111111')
       );
     });
   });

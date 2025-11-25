@@ -34,7 +34,7 @@ type TabType = 'all' | TemplateType;
 export default function GlobalTemplatesPage() {
   const t = useTranslations();
   const locale = useLocale();
-  const [userId] = useState('00000000-0000-0000-0000-000000000001');
+  const [userId] = useState('44444444-4444-4444-4444-444444444444');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');

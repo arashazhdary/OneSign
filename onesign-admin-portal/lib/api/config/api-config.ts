@@ -6,6 +6,11 @@
  * و از یک مکان واحد برای کل پروژه استفاده می‌شود
  */
 
+import { DEFAULT_TENANT_ID, DEFAULT_USER_ID } from '@/lib/constants/test-data';
+
+// Re-export test constants for convenience
+export { DEFAULT_TENANT_ID, DEFAULT_USER_ID };
+
 /**
  * Get API base URL for services
  * در مرورگر از proxy استفاده می‌کند، در سرور از URL کامل
@@ -22,7 +27,7 @@ const getServicesBaseUrl = (): string => {
     process.env.API_SERVICES_BASE_URL || 
     process.env.NEXT_PUBLIC_API_SERVICES_BASE_URL || 
     process.env.API_BASE_URL || 
-    'http://localhost:9091'
+    'http://localhost:7000'
   );
 };
 
@@ -42,7 +47,7 @@ const getAuthBaseUrl = (): string => {
     process.env.API_AUTH_BASE_URL || 
     process.env.NEXT_PUBLIC_API_AUTH_BASE_URL || 
     process.env.API_BASE_URL || 
-    'http://localhost:9091'
+    'http://localhost:7000'
   );
 };
 

@@ -121,7 +121,7 @@ export default function TenantChangeManagementPage() {
   const t = useTranslations();
   const [activeTab, setActiveTab] = useState<Tab>('list');
   const [tenantId, setTenantIdState] = useState<string>('');
-  const [userId] = useState('00000000-0000-0000-0000-000000000001');
+  const [userId] = useState('44444444-4444-4444-4444-444444444444');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -178,7 +178,7 @@ export default function TenantChangeManagementPage() {
 
   useEffect(() => {
     const contextTenantId = getTenantId();
-    setTenantIdState(contextTenantId || '00000000-0000-0000-0000-000000000000');
+    setTenantIdState(contextTenantId || '11111111-1111-1111-1111-111111111111');
   }, []);
 
   useEffect(() => {

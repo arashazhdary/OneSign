@@ -82,7 +82,7 @@ export default function SecurityAnalyticsDashboard() {
 
   useEffect(() => {
     const contextTenantId = getTenantId();
-    setTenantIdState(contextTenantId || '00000000-0000-0000-0000-000000000000');
+    setTenantIdState(contextTenantId || '11111111-1111-1111-1111-111111111111');
   }, []);
 
   useEffect(() => {

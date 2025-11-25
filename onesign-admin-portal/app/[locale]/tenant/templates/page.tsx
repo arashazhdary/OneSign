@@ -60,7 +60,7 @@ export default function TenantTemplatesPage() {
 
   useEffect(() => {
     const contextTenantId = getTenantId();
-    setTenantIdState(contextTenantId || '00000000-0000-0000-0000-000000000000');
+    setTenantIdState(contextTenantId || '11111111-1111-1111-1111-111111111111');
   }, []);
 
   useEffect(() => {
@@ -249,7 +249,7 @@ export default function TenantTemplatesPage() {
           triggers: content.triggers || [],
           conditions: content.conditions || [],
           actions: content.actions || [],
-          userId: '00000000-0000-0000-0000-000000000001',
+          userId: '44444444-4444-4444-4444-444444444444',
         });
       } else {
         // For other types, we would use appropriate APIs
@@ -278,7 +278,7 @@ export default function TenantTemplatesPage() {
 
     try {
       if (template.type === 'workflow') {
-        await cloneTemplate(template.id, tenantId, '00000000-0000-0000-0000-000000000001', `${template.name} (Copy)`);
+        await cloneTemplate(template.id, tenantId, '44444444-4444-4444-4444-444444444444', `${template.name} (Copy)`);
         setSuccess('Template cloned successfully');
         fetchTemplates();
       } else {

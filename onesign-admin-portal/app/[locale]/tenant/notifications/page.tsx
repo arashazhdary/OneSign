@@ -49,7 +49,7 @@ type TabType = 'settings' | 'templates' | 'history' | 'rules';
 const mockRules: NotificationRuleDto[] = [
   {
     id: '1',
-    tenantId: '00000000-0000-0000-0000-000000000000',
+    tenantId: '11111111-1111-1111-1111-111111111111',
     name: 'Failed Login Alert',
     description: 'Notify admin on 3 failed login attempts',
     eventType: 'FailedLogin',
@@ -61,7 +61,7 @@ const mockRules: NotificationRuleDto[] = [
   },
   {
     id: '2',
-    tenantId: '00000000-0000-0000-0000-000000000000',
+    tenantId: '11111111-1111-1111-1111-111111111111',
     name: 'New User Registration',
     description: 'Send welcome notification to new users',
     eventType: 'UserRegistered',
@@ -132,7 +132,7 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     const contextTenantId = getTenantId();
-    setTenantIdState(contextTenantId || '00000000-0000-0000-0000-000000000000');
+    setTenantIdState(contextTenantId || '11111111-1111-1111-1111-111111111111');
   }, []);
 
   useEffect(() => {
@@ -181,7 +181,7 @@ export default function NotificationsPage() {
     if (!tenantId) return;
     try {
       // Using a mock user ID for demo purposes
-      const userId = '00000000-0000-0000-0000-000000000001';
+      const userId = '44444444-4444-4444-4444-444444444444';
       const data = await getNotificationPreferences(userId, tenantId);
       setPreferences(data);
     } catch (err) {
@@ -207,7 +207,7 @@ export default function NotificationsPage() {
 
       const channelData = {
         tenantId,
-        userId: '00000000-0000-0000-0000-000000000001',
+        userId: '44444444-4444-4444-4444-444444444444',
         type: channelType,
         name: channelName,
         configuration: config,
@@ -235,7 +235,7 @@ export default function NotificationsPage() {
     setError('');
     setSuccess('');
     try {
-      await deleteNotificationChannel(channelId, tenantId, '00000000-0000-0000-0000-000000000001');
+      await deleteNotificationChannel(channelId, tenantId, '44444444-4444-4444-4444-444444444444');
       setSuccess('Channel deleted successfully');
       fetchChannels();
     } catch (err: any) {
@@ -281,7 +281,7 @@ export default function NotificationsPage() {
       const variables = templateVariables.split(',').map(v => v.trim()).filter(v => v);
       const templateData = {
         tenantId,
-        userId: '00000000-0000-0000-0000-000000000001',
+        userId: '44444444-4444-4444-4444-444444444444',
         name: templateName,
         description: templateDescription,
         category: templateCategory,
@@ -315,7 +315,7 @@ export default function NotificationsPage() {
     setError('');
     setSuccess('');
     try {
-      await deleteNotificationTemplate(templateId, tenantId, '00000000-0000-0000-0000-000000000001');
+      await deleteNotificationTemplate(templateId, tenantId, '44444444-4444-4444-4444-444444444444');
       setSuccess('Template deleted successfully');
       fetchTemplates();
     } catch (err: any) {
@@ -416,7 +416,7 @@ export default function NotificationsPage() {
     try {
       const ruleData: CreateNotificationRuleDto = {
         tenantId,
-        userId: '00000000-0000-0000-0000-000000000001',
+        userId: '44444444-4444-4444-4444-444444444444',
         name: ruleName,
         description: ruleDescription,
         eventType: ruleEventType,
