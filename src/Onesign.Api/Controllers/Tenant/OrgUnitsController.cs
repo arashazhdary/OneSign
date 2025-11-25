@@ -9,6 +9,7 @@ using Onesign.Shared.Result;
 namespace Onesign.Api.Controllers.Tenant;
 
 [Route("api/tenant/org-units")]
+[Route("api/tenant/orgunits")]  // Alias for frontend compatibility
 public class OrgUnitsController : Onesign.Api.Controllers.TenantControllerBase
 {
     private readonly IMediator _mediator;

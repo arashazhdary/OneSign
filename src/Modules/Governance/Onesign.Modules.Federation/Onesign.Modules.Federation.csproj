@@ -13,6 +13,8 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.0" />
     <PackageReference Include="Sustainsys.Saml2" Version="2.11.0" />
     <PackageReference Include="Sustainsys.Saml2.AspNetCore2" Version="2.11.0" />
+    <!-- Override vulnerable transitive dependency from Sustainsys.Saml2 -->
+    <PackageReference Include="System.Drawing.Common" Version="8.0.11" />
   </ItemGroup>
 
   <ItemGroup>

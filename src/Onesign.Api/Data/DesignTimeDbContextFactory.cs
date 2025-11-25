@@ -9,7 +9,8 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<OnesignDbC
     public OnesignDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<OnesignDbContext>();
-        optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=OnesignDb;Trusted_Connection=True;MultipleActiveResultSets=true");
+        optionsBuilder.UseSqlServer("Data Source=.;Initial Catalog=OnesignDbV2;Integrated Security=True;TrustServerCertificate=True ; MultipleActiveResultSets=true",
+            b => b.MigrationsAssembly("Onesign.Api"));
 
         return new OnesignDbContext(optionsBuilder.Options);
     }

@@ -9,6 +9,7 @@ using Onesign.Shared.Pagination;
 namespace Onesign.Api.Controllers.Tenant;
 
 [Route("api/tenant/change-sets")]
+[Route("api/tenant/changesets")]
 [Authorize]
 public class ChangeSetsController : TenantControllerBase
 {

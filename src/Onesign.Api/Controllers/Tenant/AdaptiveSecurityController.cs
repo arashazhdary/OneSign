@@ -8,6 +8,7 @@ using Onesign.Modules.AdaptiveSecurity.Domain.Enums;
 namespace Onesign.Api.Controllers.Tenant;
 
 [Route("api/tenant/adaptive-security")]
+[Route("api/tenant/adaptivesecurity")]
 public class AdaptiveSecurityController : TenantControllerBase
 {
     private readonly IMediator _mediator;
@@ -17,25 +18,36 @@ public class AdaptiveSecurityController : TenantControllerBase
     // Adaptive Policies
 
     [HttpGet("policies")]
-    public async Task<ActionResult<List<AdaptivePolicyDto>>> GetPolicies([FromQuery] Guid tenantId, [FromQuery] bool? enabledOnly = null)
+    public async Task<IActionResult> GetPolicies(
+        [FromQuery] Guid tenantId, 
+        [FromQuery] bool? enabledOnly = null,
+        CancellationToken cancellationToken = default)
     {
-        var result = await _mediator.Send(new GetAdaptivePoliciesQuery
-        {
+        var query = new GetAdaptivePoliciesQuery 
+        { 
             TenantId = tenantId,
             EnabledOnly = enabledOnly
-        });
-        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
+        };
+        var result = await _mediator.Send(query, cancellationToken);
+
+        if (result.IsFailure)
+            return BadRequest(new { result.ErrorCode, result.ErrorMessage });
+
+        return Ok(result.Value);
     }
 
-    [HttpGet("policies/{id}")]
-    public async Task<ActionResult<AdaptivePolicyDto>> GetPolicy(Guid id)
+    [HttpGet("policies/{policyId:guid}")]
+    public async Task<ActionResult<AdaptivePolicyDto>> GetPolicy(Guid policyId)
     {
         // Implementation would use a GetAdaptivePolicyByIdQuery
-        return Ok(new AdaptivePolicyDto { Id = id });
+        return Ok(new AdaptivePolicyDto { Id = policyId });
     }
 
     [HttpPost("policies")]
-    public async Task<ActionResult<AdaptivePolicyDto>> CreatePolicy([FromQuery] Guid tenantId, [FromBody] CreateAdaptivePolicyRequest request)
+    public async Task<IActionResult> CreatePolicy(
+        [FromQuery] Guid tenantId,
+        [FromBody] CreateAdaptivePolicyRequest request,
+        CancellationToken cancellationToken = default)
     {
         var command = new CreateAdaptivePolicyCommand
         {
@@ -49,33 +61,71 @@ public class AdaptiveSecurityController : TenantControllerBase
             Priority = request.Priority
         };
 
-        var result = await _mediator.Send(command);
-        return result.IsSuccess ? CreatedAtAction(nameof(GetPolicy), new { id = result.Value!.Id }, result.Value) : BadRequest(result.ErrorMessage);
+        var result = await _mediator.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+            return BadRequest(new { result.ErrorCode, result.ErrorMessage });
+
+        return CreatedAtAction(nameof(GetPolicy), new { policyId = result.Value!.Id }, result.Value);
     }
 
-    [HttpPut("policies/{id}")]
-    public async Task<ActionResult> UpdatePolicy(Guid id, [FromBody] CreateAdaptivePolicyRequest request)
+    [HttpPut("policies/{policyId:guid}")]
+    public async Task<IActionResult> UpdatePolicy(
+        [FromQuery] Guid tenantId,
+        Guid policyId,
+        [FromBody] CreateAdaptivePolicyRequest request,
+        CancellationToken cancellationToken = default)
     {
-        // Implementation would use an UpdateAdaptivePolicyCommand
-        return Ok();
+        var command = new UpdateAdaptivePolicyCommand
+        {
+            TenantId = tenantId,
+            PolicyId = policyId,
+            Name = request.Name,
+            Description = request.Description,
+            Conditions = request.Conditions,
+            Actions = request.Actions,
+            RiskThreshold = request.RiskThreshold,
+            IsEnabled = request.IsEnabled,
+            Priority = request.Priority
+        };
+
+        var result = await _mediator.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+            return BadRequest(new { result.ErrorCode, result.ErrorMessage });
+
+        return Ok(result.Value);
     }
 
-    [HttpDelete("policies/{id}")]
-    public async Task<ActionResult> DeletePolicy(Guid id)
+    [HttpDelete("policies/{policyId:guid}")]
+    public async Task<IActionResult> DeletePolicy(
+        [FromQuery] Guid tenantId,
+        Guid policyId,
+        CancellationToken cancellationToken = default)
     {
-        // Implementation would use a DeleteAdaptivePolicyCommand
+        var command = new DeleteAdaptivePolicyCommand
+        {
+            TenantId = tenantId,
+            PolicyId = policyId
+        };
+
+        var result = await _mediator.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+            return BadRequest(new { result.ErrorCode, result.ErrorMessage });
+
         return NoContent();
     }
 
-    [HttpPost("policies/{id}/enable")]
-    public async Task<ActionResult> EnablePolicy(Guid id)
+    [HttpPost("policies/{policyId:guid}/enable")]
+    public async Task<ActionResult> EnablePolicy(Guid policyId)
     {
         // Implementation would toggle policy enabled state
         return Ok();
     }
 
-    [HttpPost("policies/{id}/disable")]
-    public async Task<ActionResult> DisablePolicy(Guid id)
+    [HttpPost("policies/{policyId:guid}/disable")]
+    public async Task<ActionResult> DisablePolicy(Guid policyId)
     {
         // Implementation would toggle policy disabled state
         return Ok();
@@ -84,24 +134,40 @@ public class AdaptiveSecurityController : TenantControllerBase
     // Security Signals
 
     [HttpGet("signals")]
-    public async Task<ActionResult<List<SecuritySignalDto>>> GetSignals(
+    public async Task<IActionResult> GetSecuritySignals(
         [FromQuery] Guid tenantId,
         [FromQuery] Guid? userId = null,
-        [FromQuery] SecuritySignalType? signalType = null,
-        [FromQuery] int limit = 100)
+        [FromQuery] string? type = null,
+        [FromQuery] int limit = 100,
+        CancellationToken cancellationToken = default)
     {
-        var result = await _mediator.Send(new GetSecuritySignalsQuery
+        SecuritySignalType? signalType = null;
+        if (!string.IsNullOrEmpty(type) && Enum.TryParse<SecuritySignalType>(type, true, out var parsedType))
+        {
+            signalType = parsedType;
+        }
+
+        var query = new GetSecuritySignalsQuery
         {
             TenantId = tenantId,
             UserId = userId,
             SignalType = signalType,
             Limit = limit
-        });
-        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
+        };
+
+        var result = await _mediator.Send(query, cancellationToken);
+
+        if (result.IsFailure)
+            return BadRequest(new { result.ErrorCode, result.ErrorMessage });
+
+        return Ok(result.Value);
     }
 
     [HttpPost("signals")]
-    public async Task<ActionResult<SecuritySignalDto>> ProcessSignal([FromQuery] Guid tenantId, [FromBody] ProcessSecuritySignalRequest request)
+    public async Task<IActionResult> ProcessSecuritySignal(
+        [FromQuery] Guid tenantId, 
+        [FromBody] ProcessSecuritySignalRequest request,
+        CancellationToken cancellationToken = default)
     {
         var command = new ProcessSecuritySignalCommand
         {
@@ -113,28 +179,42 @@ public class AdaptiveSecurityController : TenantControllerBase
             DetailsJson = request.DetailsJson
         };
 
-        var result = await _mediator.Send(command);
-        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
+        var result = await _mediator.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+            return BadRequest(new { result.ErrorCode, result.ErrorMessage });
+
+        return Ok(result.Value);
     }
 
     // User Security Context
 
-    [HttpGet("users/{userId}/context")]
-    public async Task<ActionResult<UserSecurityContextDto>> GetUserSecurityContext(Guid userId, [FromQuery] Guid tenantId)
+    [HttpGet("users/{userId:guid}/context")]
+    public async Task<IActionResult> GetUserSecurityContext(
+        Guid userId, 
+        [FromQuery] Guid tenantId,
+        CancellationToken cancellationToken = default)
     {
-        var result = await _mediator.Send(new GetUserSecurityContextQuery
+        var query = new GetUserSecurityContextQuery
         {
             TenantId = tenantId,
             UserId = userId
-        });
-        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
+        };
+
+        var result = await _mediator.Send(query, cancellationToken);
+
+        if (result.IsFailure)
+            return BadRequest(new { result.ErrorCode, result.ErrorMessage });
+
+        return Ok(result.Value);
     }
 
-    [HttpPut("users/{userId}/context")]
-    public async Task<ActionResult<UserSecurityContextDto>> UpdateUserSecurityContext(
+    [HttpPut("users/{userId:guid}/context")]
+    public async Task<IActionResult> UpdateUserSecurityContext(
         Guid userId,
         [FromQuery] Guid tenantId,
-        [FromBody] UpdateUserSecurityContextRequest request)
+        [FromBody] UpdateUserSecurityContextRequest request,
+        CancellationToken cancellationToken = default)
     {
         var command = new UpdateUserSecurityContextCommand
         {
@@ -146,18 +226,25 @@ public class AdaptiveSecurityController : TenantControllerBase
             TrustedLocations = request.TrustedLocations
         };
 
-        var result = await _mediator.Send(command);
-        return result.IsSuccess ? Ok(result.Value) : BadRequest(result.ErrorMessage);
+        var result = await _mediator.Send(command, cancellationToken);
+
+        if (result.IsFailure)
+            return BadRequest(new { result.ErrorCode, result.ErrorMessage });
+
+        return Ok(result.Value);
     }
 
-    [HttpGet("users/{userId}/risk-score")]
-    public async Task<ActionResult> GetUserRiskScore(Guid userId, [FromQuery] Guid tenantId)
+    [HttpGet("users/{userId:guid}/risk-score")]
+    public async Task<ActionResult> GetUserRiskScore(
+        Guid userId, 
+        [FromQuery] Guid tenantId,
+        CancellationToken cancellationToken = default)
     {
         var result = await _mediator.Send(new GetUserSecurityContextQuery
         {
             TenantId = tenantId,
             UserId = userId
-        });
+        }, cancellationToken);
 
         if (result.IsSuccess)
         {
@@ -203,186 +290,5 @@ public class AdaptiveSecurityController : TenantControllerBase
             HighRiskUsersCount = 0,
             AverageRiskScore = 0
         });
-    }
-
-    [HttpGet("policies")]
-    public async Task<IActionResult> GetPolicies(Guid tenantId, CancellationToken cancellationToken)
-    {
-        var query = new GetAdaptivePoliciesQuery { TenantId = tenantId };
-        var result = await _mediator.Send(query, cancellationToken);
-
-        if (result.IsFailure)
-            return BadRequest(new { result.ErrorCode, result.ErrorMessage });
-
-        return Ok(result.Value);
-    }
-
-    [HttpPost("policies")]
-    public async Task<IActionResult> CreatePolicy(
-        Guid tenantId,
-        [FromBody] CreateAdaptivePolicyRequest request,
-        CancellationToken cancellationToken)
-    {
-        var command = new CreateAdaptivePolicyCommand
-        {
-            TenantId = tenantId,
-            Name = request.Name,
-            Description = request.Description,
-            Conditions = request.Conditions,
-            Actions = request.Actions,
-            RiskThreshold = request.RiskThreshold,
-            IsEnabled = request.IsEnabled,
-            Priority = request.Priority
-        };
-
-        var result = await _mediator.Send(command, cancellationToken);
-
-        if (result.IsFailure)
-            return BadRequest(new { result.ErrorCode, result.ErrorMessage });
-
-        return CreatedAtAction(nameof(GetPolicies), new { tenantId }, result.Value);
-    }
-
-    [HttpPut("policies/{policyId:guid}")]
-    public async Task<IActionResult> UpdatePolicy(
-        Guid tenantId,
-        Guid policyId,
-        [FromBody] CreateAdaptivePolicyRequest request,
-        CancellationToken cancellationToken)
-    {
-        var command = new UpdateAdaptivePolicyCommand
-        {
-            TenantId = tenantId,
-            PolicyId = policyId,
-            Name = request.Name,
-            Description = request.Description,
-            Conditions = request.Conditions,
-            Actions = request.Actions,
-            RiskThreshold = request.RiskThreshold,
-            IsEnabled = request.IsEnabled,
-            Priority = request.Priority
-        };
-
-        var result = await _mediator.Send(command, cancellationToken);
-
-        if (result.IsFailure)
-            return BadRequest(new { result.ErrorCode, result.ErrorMessage });
-
-        return Ok(result.Value);
-    }
-
-    [HttpDelete("policies/{policyId:guid}")]
-    public async Task<IActionResult> DeletePolicy(
-        Guid tenantId,
-        Guid policyId,
-        CancellationToken cancellationToken)
-    {
-        var command = new DeleteAdaptivePolicyCommand
-        {
-            TenantId = tenantId,
-            PolicyId = policyId
-        };
-
-        var result = await _mediator.Send(command, cancellationToken);
-
-        if (result.IsFailure)
-            return BadRequest(new { result.ErrorCode, result.ErrorMessage });
-
-        return NoContent();
-    }
-
-    [HttpGet("signals")]
-    public async Task<IActionResult> GetSecuritySignals(
-        Guid tenantId,
-        [FromQuery] string? type,
-        [FromQuery] int limit = 100,
-        CancellationToken cancellationToken = default)
-    {
-        Onesign.Modules.AdaptiveSecurity.Domain.Enums.SecuritySignalType? signalType = null;
-        if (!string.IsNullOrEmpty(type) && Enum.TryParse<Onesign.Modules.AdaptiveSecurity.Domain.Enums.SecuritySignalType>(type, true, out var parsedType))
-        {
-            signalType = parsedType;
-        }
-
-        var query = new GetSecuritySignalsQuery
-        {
-            TenantId = tenantId,
-            SignalType = signalType,
-            Limit = limit
-        };
-
-        var result = await _mediator.Send(query, cancellationToken);
-
-        if (result.IsFailure)
-            return BadRequest(new { result.ErrorCode, result.ErrorMessage });
-
-        return Ok(result.Value);
-    }
-
-    [HttpPost("signals")]
-    public async Task<IActionResult> ProcessSecuritySignal(
-        Guid tenantId,
-        [FromBody] ProcessSecuritySignalRequest request,
-        CancellationToken cancellationToken)
-    {
-        var command = new ProcessSecuritySignalCommand
-        {
-            TenantId = tenantId,
-            UserId = request.UserId,
-            SessionId = request.SessionId,
-            SignalType = request.SignalType,
-            RiskScore = request.RiskScore,
-            DetailsJson = request.DetailsJson
-        };
-
-        var result = await _mediator.Send(command, cancellationToken);
-
-        if (result.IsFailure)
-            return BadRequest(new { result.ErrorCode, result.ErrorMessage });
-
-        return Ok(result.Value);
-    }
-
-    [HttpGet("users/{userId:guid}/context")]
-    public async Task<IActionResult> GetUserSecurityContext(
-        Guid tenantId,
-        Guid userId,
-        CancellationToken cancellationToken)
-    {
-        var query = new GetUserSecurityContextQuery
-        {
-            TenantId = tenantId,
-            UserId = userId
-        };
-
-        var result = await _mediator.Send(query, cancellationToken);
-
-        if (result.IsFailure)
-            return BadRequest(new { result.ErrorCode, result.ErrorMessage });
-
-        return Ok(result.Value);
-    }
-
-    [HttpPut("users/{userId:guid}/context")]
-    public async Task<IActionResult> UpdateUserSecurityContext(
-        Guid tenantId,
-        Guid userId,
-        [FromBody] UpdateUserSecurityContextRequest request,
-        CancellationToken cancellationToken)
-    {
-        var command = new UpdateUserSecurityContextCommand
-        {
-            TenantId = tenantId,
-            UserId = userId,
-            TrustedDevices = request.TrustedDevices,
-            TrustedLocations = request.TrustedLocations
-        };
-
-        var result = await _mediator.Send(command, cancellationToken);
-
-        if (result.IsFailure)
-            return BadRequest(new { result.ErrorCode, result.ErrorMessage });
-
-        return Ok(result.Value);
     }
 }

@@ -7,6 +7,7 @@ using Onesign.Shared.Localization;
 namespace Onesign.Api.Controllers.Tenant;
 
 [Route("api/tenant/trusted-devices")]
+[Route("api/tenant/trusteddevices")]
 public class TrustedDevicesController : Onesign.Api.Controllers.TenantControllerBase
 {
     private readonly IMediator _mediator;

@@ -1,7 +1,9 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using MediatR;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
+using Onesign.Api.Authentication;
 using Onesign.Api.BackgroundServices;
 using Onesign.Data.Contexts;
 using Onesign.Modules.AccessRequests.Application.Services;
@@ -35,10 +37,16 @@ using Onesign.Modules.Developer.Domain.Services;
 using Onesign.Modules.Developer.Infrastructure.EfCore.Repositories;
 using Onesign.Modules.Developer.Infrastructure.Services;
 // ماژول‌های Governance
-using Onesign.Modules.IdentityGovernance.Domain.Repositories;
-using Onesign.Modules.IdentityGovernance.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.Governance.Domain.Repositories;
+using Onesign.Modules.Governance.Infrastructure.EfCore.Repositories;
 using Onesign.Modules.IdentityLifecycle.Domain.Repositories;
+using Onesign.Modules.IdentityLifecycle.Domain.Services;
 using Onesign.Modules.IdentityLifecycle.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.IdentityLifecycle.Infrastructure.Services;
+using Onesign.Modules.IdentityInsights.Domain.Repositories;
+using Onesign.Modules.IdentityInsights.Domain.Services;
+using Onesign.Modules.IdentityInsights.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.IdentityInsights.Infrastructure.Services;
 using Onesign.Modules.Federation.Domain.Repositories;
 using Onesign.Modules.Federation.Infrastructure.EfCore.Repositories;
 // ماژول‌های Security اضافی
@@ -47,28 +55,36 @@ using Onesign.Modules.PrivilegedAccess.Infrastructure.EfCore.Repositories;
 using Onesign.Modules.PrivilegedAccess.Domain.Services;
 using Onesign.Modules.PrivilegedAccess.Infrastructure.Services;
 using Onesign.Modules.AdaptiveSecurity.Domain.Repositories;
+using Onesign.Modules.AdaptiveSecurity.Domain.Services;
 using Onesign.Modules.AdaptiveSecurity.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.AdaptiveSecurity.Infrastructure.Services;
 // ماژول‌های Platform اضافی
 using Onesign.Modules.MultiRegion.Domain.Repositories;
+using Onesign.Modules.MultiRegion.Domain.Services;
 using Onesign.Modules.MultiRegion.Infrastructure.EfCore.Repositories;
-using Onesign.Modules.Backup.Domain.Repositories;
-using Onesign.Modules.Backup.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.MultiRegion.Infrastructure.Services;
+using Onesign.Modules.Crypto.Domain.Repositories;
 using Onesign.Modules.Crypto.Domain.Services;
+using Onesign.Modules.Crypto.Infrastructure.EfCore.Repositories;
 using Onesign.Modules.Crypto.Infrastructure.Services;
+using Onesign.Modules.Deployment.Domain.Repositories;
 using Onesign.Modules.Deployment.Domain.Services;
+using Onesign.Modules.Deployment.Infrastructure.EfCore.Repositories;
 using Onesign.Modules.Deployment.Infrastructure.Services;
 // ماژول‌های Business اضافی
 using Onesign.Modules.Billing.Domain.Repositories;
 using Onesign.Modules.Billing.Infrastructure.EfCore.Repositories;
-using Onesign.Modules.UserManagement.Domain.Repositories;
-using Onesign.Modules.UserManagement.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.AccountCenter.Domain.Repositories;
+using Onesign.Modules.AccountCenter.Infrastructure.EfCore.Repositories;
 // ماژول‌های Integration اضافی
 using Onesign.Modules.Privacy.Domain.Repositories;
 using Onesign.Modules.Privacy.Infrastructure.EfCore.Repositories;
 using Onesign.Modules.Privacy.Domain.Services;
 using Onesign.Modules.Privacy.Infrastructure.Services;
 using Onesign.Modules.Extensibility.Domain.Repositories;
+using Onesign.Modules.Extensibility.Domain.Services;
 using Onesign.Modules.Extensibility.Infrastructure.EfCore.Repositories;
+using Onesign.Modules.Extensibility.Infrastructure.Services;
 using Onesign.Modules.Hunting.Application.Jobs;
 using Onesign.Modules.Hunting.Application.Services;
 using Onesign.Modules.Hunting.Domain.Repositories;
@@ -107,6 +123,7 @@ using Onesign.Modules.Tenants.Infrastructure.EfCore.Repositories;
 using Onesign.Shared.MultiTenancy;
 using Onesign.Shared.Services;
 using System.Reflection;
+using Onesign.Api.Middleware;
 
 // =====================================================
 // نقطه ورود اصلی برنامه
@@ -125,9 +142,22 @@ ConfigureBusinessServices(builder);
 ConfigureIntegrationServices(builder);
 ConfigureBackgroundServices(builder);
 
+// سرویس‌های ماژول Access Requests
 builder.Services.AddScoped<IAccessRequestWorkflowEngine, AccessRequestWorkflowEngineService>();
+builder.Services.AddScoped<IAccessRequestProvisioningService, AccessRequestProvisioningService>();
+builder.Services.AddScoped<IAccessApprovalService, AccessApprovalService>();
+builder.Services.AddScoped<IWorkflowEngine, WorkflowEngineService>();
 
 var app = builder.Build();
+
+// Seed database with test data in development
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<OnesignDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    await Onesign.Api.Data.DatabaseSeeder.SeedAsync(dbContext, logger);
+}
 
 // پیکربندی میدلورها و پایپلاین درخواست
 ConfigureMiddleware(app);
@@ -165,9 +195,10 @@ static void ConfigureSharedServices(WebApplicationBuilder builder)
     builder.Services.AddFluentValidationAutoValidation();
 
     // =====================================================
-    // مدیریت نشست کاربر
-    // ذخیره‌سازی موقت اطلاعات نشست در حافظه
+    // مدیریت نشست کاربر و کش
+    // ذخیره‌سازی موقت اطلاعات نشست و داده‌ها در حافظه
     // =====================================================
+    builder.Services.AddMemoryCache();
     builder.Services.AddDistributedMemoryCache();
     builder.Services.AddSession(options =>
     {
@@ -193,6 +224,15 @@ static void ConfigureSharedServices(WebApplicationBuilder builder)
     });
 
     // =====================================================
+    // احراز هویت و مجوزدهی
+    // در محیط توسعه، همه درخواست‌ها مجاز هستند
+    // =====================================================
+    builder.Services.AddAuthentication("Development")
+        .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, DevelopmentAuthHandler>(
+            "Development", options => { });
+    builder.Services.AddAuthorization();
+
+    // =====================================================
     // پایگاه داده
     // اتصال به SQL Server با Entity Framework Core
     // =====================================================
@@ -200,7 +240,8 @@ static void ConfigureSharedServices(WebApplicationBuilder builder)
         ?? "Server=(localdb)\\mssqllocaldb;Database=OnesignDb;Trusted_Connection=True;MultipleActiveResultSets=true";
 
     builder.Services.AddDbContext<OnesignDbContext>(options =>
-        options.UseSqlServer(connectionString));
+        options.UseSqlServer(connectionString,
+            b => b.MigrationsAssembly("Onesign.Api")));
 
     // ثبت DbContext برای هندلرهایی که به نوع پایه نیاز دارند
     builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<OnesignDbContext>());
@@ -375,8 +416,8 @@ static void ConfigureSecurityServices(WebApplicationBuilder builder)
     // ریپازیتوری‌های ماژول Privileged Access
     // مدیریت دسترسی ویژه، حساب‌های اضطراری و نشست‌های ممتاز
     // =====================================================
-    builder.Services.AddScoped<IAccessApprovalFlowRepository>(sp =>
-        new AccessApprovalFlowRepository(sp.GetRequiredService<OnesignDbContext>()));
+    builder.Services.AddScoped<IAccessApprovalFlowRepository, AccessApprovalFlowRepository>();
+    builder.Services.AddScoped<IWorkflowDefinitionRepository, WorkflowDefinitionRepository>();
     builder.Services.AddScoped<IBreakGlassAccountRepository>(sp =>
         new BreakGlassAccountRepository(sp.GetRequiredService<OnesignDbContext>()));
     builder.Services.AddScoped<IJitGrantRepository>(sp =>
@@ -400,6 +441,15 @@ static void ConfigureSecurityServices(WebApplicationBuilder builder)
         new SecuritySignalRepository(sp.GetRequiredService<OnesignDbContext>()));
     builder.Services.AddScoped<IUserSecurityContextRepository>(sp =>
         new UserSecurityContextRepository(sp.GetRequiredService<OnesignDbContext>()));
+
+    // =====================================================
+    // سرویس‌های ماژول Adaptive Security
+    // پردازش سیگنال‌ها، محاسبه ریسک و احراز هویت مبتنی بر ریسک
+    // =====================================================
+    builder.Services.AddScoped<ISecuritySignalProcessor, SecuritySignalProcessor>();
+    builder.Services.AddScoped<IRiskCalculator, RiskCalculator>();
+    builder.Services.AddScoped<IAdaptivePolicyEngine, AdaptivePolicyEngine>();
+    builder.Services.AddScoped<IRiskBasedAuthenticationService, RiskBasedAuthenticationService>();
 }
 
 // سرویس‌های حاکمیت
@@ -428,6 +478,31 @@ static void ConfigureGovernanceServices(WebApplicationBuilder builder)
         new LifecycleEventRepository(sp.GetRequiredService<OnesignDbContext>()));
     builder.Services.AddScoped<ILifecyclePolicyRepository>(sp =>
         new LifecyclePolicyRepository(sp.GetRequiredService<OnesignDbContext>()));
+
+    // =====================================================
+    // سرویس‌های ماژول Identity Lifecycle
+    // پردازش رویدادهای چرخه حیات و ارزیابی سیاست‌ها
+    // =====================================================
+    builder.Services.AddScoped<ILifecycleProcessor, LifecycleProcessorService>();
+    builder.Services.AddScoped<ILifecyclePolicyEvaluator, LifecyclePolicyEvaluatorService>();
+
+    // =====================================================
+    // ریپازیتوری‌های ماژول Identity Insights
+    // مدیریت پروفایل‌های ریسک کاربران و تنانت‌ها و بینش‌ها
+    // =====================================================
+    builder.Services.AddScoped<IUserRiskProfileRepository>(sp =>
+        new UserRiskProfileRepository(sp.GetRequiredService<OnesignDbContext>()));
+    builder.Services.AddScoped<ITenantRiskProfileRepository>(sp =>
+        new TenantRiskProfileRepository(sp.GetRequiredService<OnesignDbContext>()));
+    builder.Services.AddScoped<IInsightRepository>(sp =>
+        new InsightRepository(sp.GetRequiredService<OnesignDbContext>()));
+
+    // =====================================================
+    // سرویس‌های ماژول Identity Insights
+    // محاسبه امتیاز ریسک و تولید بینش‌ها
+    // =====================================================
+    builder.Services.AddScoped<IRiskScoringService, RiskScoringService>();
+    builder.Services.AddScoped<IInsightGenerationService, InsightGenerationService>();
 
     // =====================================================
     // ریپازیتوری‌های ماژول Federation
@@ -586,34 +661,72 @@ static void ConfigurePlatformServices(WebApplicationBuilder builder)
     builder.Services.AddScoped<IPlatformVersionService, PlatformVersionService>();
     builder.Services.AddScoped<IMigrationService, MigrationService>();
     builder.Services.AddScoped<IApiDocumentationService, ApiDocumentationService>();
+    // Shared version for PlatformController
+    builder.Services.AddScoped<Onesign.Shared.Platform.Services.IApiDocumentationService, Onesign.Shared.Platform.Services.Implementations.ApiDocumentationService>();
     builder.Services.AddScoped<IDiagnosticsService, DiagnosticsService>();
 
     // =====================================================
     // ریپازیتوری‌های ماژول Multi-Region
-    // مدیریت مناطق جغرافیایی مختلف
+    // مدیریت مناطق جغرافیایی مختلف و پشتیبان‌گیری
     // =====================================================
     builder.Services.AddScoped<IRegionRepository>(sp =>
         new RegionRepository(sp.GetRequiredService<OnesignDbContext>()));
-
-    // =====================================================
-    // ریپازیتوری‌های ماژول Backup
-    // مدیریت پشتیبان‌گیری تننت‌ها
-    // =====================================================
     builder.Services.AddScoped<ITenantBackupSetRepository>(sp =>
         new TenantBackupSetRepository(sp.GetRequiredService<OnesignDbContext>()));
+    builder.Services.AddScoped<IRegionBackupSetRepository>(sp =>
+        new RegionBackupSetRepository(sp.GetRequiredService<OnesignDbContext>()));
+    builder.Services.AddScoped<ITenantDataResidencyRepository>(sp =>
+        new TenantDataResidencyRepository(sp.GetRequiredService<OnesignDbContext>()));
+
+    // =====================================================
+    // سرویس‌های ماژول Multi-Region
+    // پشتیبان‌گیری، بازیابی، failover و نظارت بر سلامت
+    // =====================================================
+    builder.Services.AddScoped<IBackupService, BackupService>();
+    builder.Services.AddScoped<IRestoreService, RestoreService>();
+    builder.Services.AddScoped<IFailoverService, FailoverService>();
+    builder.Services.AddScoped<IRegionHealthMonitor, RegionHealthMonitor>();
+    builder.Services.AddScoped<ITenantDataResidencyService, TenantDataResidencyService>();
+
+    // =====================================================
+    // ریپازیتوری‌های ماژول Crypto
+    // مدیریت نسخه‌های کلید و مجموعه کلیدها
+    // =====================================================
+    builder.Services.AddScoped<IKeyVersionRepository>(sp =>
+        new KeyVersionRepository(sp.GetRequiredService<OnesignDbContext>()));
+    builder.Services.AddScoped<IKeySetRepository>(sp =>
+        new KeySetRepository(sp.GetRequiredService<OnesignDbContext>()));
+    builder.Services.AddScoped<IKeyRotationPolicyRepository>(sp =>
+        new KeyRotationPolicyRepository(sp.GetRequiredService<OnesignDbContext>()));
 
     // =====================================================
     // سرویس‌های ماژول Crypto
-    // مدیریت کلیدهای رمزنگاری و چرخش آن‌ها
+    // تولید، ذخیره، چرخش و ابطال کلیدهای رمزنگاری
     // =====================================================
+    builder.Services.AddScoped<IKeyGenerator, KeyGenerator>();
+    builder.Services.AddScoped<IKeyProvider, JwksKeyProvider>();
+    builder.Services.AddScoped<IKeyStore, LocalKeyStore>();
     builder.Services.AddScoped<IKeyRevocationService, KeyRevocationService>();
     builder.Services.AddScoped<IKeyRolloverService, KeyRolloverService>();
+    builder.Services.AddScoped<IKeyRotationEngine, KeyRotationEngine>();
+
+    // =====================================================
+    // ریپازیتوری‌های ماژول Deployment
+    // مدیریت محیط‌های استقرار و پیکربندی ویژگی‌ها
+    // =====================================================
+    builder.Services.AddScoped<IDeploymentEnvironmentRepository>(sp =>
+        new DeploymentEnvironmentRepository(sp.GetRequiredService<OnesignDbContext>()));
+    builder.Services.AddScoped<IEnvironmentFeatureConfigRepository>(sp =>
+        new EnvironmentFeatureConfigRepository(sp.GetRequiredService<OnesignDbContext>()));
 
     // =====================================================
     // سرویس‌های ماژول Deployment
-    // راه‌اندازی و پیکربندی محیط‌ها
+    // راه‌اندازی، مقداردهی اولیه، اعتبارسنجی لایسنس و مدیریت ویژگی‌ها
     // =====================================================
     builder.Services.AddScoped<IEnvironmentBootstrapService, EnvironmentBootstrapService>();
+    builder.Services.AddScoped<IDeploymentInitializer, DeploymentInitializer>();
+    builder.Services.AddScoped<ILicenseValidator, LicenseValidator>();
+    builder.Services.AddScoped<IFeatureGateService, FeatureGateService>();
 }
 
 /// <summary>
@@ -750,21 +863,34 @@ static void ConfigureIntegrationServices(WebApplicationBuilder builder)
 
     // =====================================================
     // سرویس‌های ماژول Privacy
-    // مدیریت حفظ، ناشناس‌سازی، حذف و صادرات داده‌ها
+    // مدیریت حفظ، ناشناس‌سازی، پردازش درخواست‌ها و صادرات داده‌ها
     // =====================================================
     builder.Services.AddScoped<IDataRetentionService, DataRetentionService>();
     builder.Services.AddScoped<IAnonymizationService, AnonymizationService>();
-    builder.Services.AddScoped<IDataDeletionService, DataDeletionService>();
     builder.Services.AddScoped<IDataExportService, DataExportService>();
+    builder.Services.AddScoped<IDataSubjectRequestProcessor, DataSubjectRequestProcessor>();
 
     // =====================================================
     // ریپازیتوری‌های ماژول Extensibility
-    // مدیریت هوک‌های ورود و اشتراک‌های وب‌هوک
+    // مدیریت هوک‌های ورود، وب‌هوک‌ها و قوانین تبدیل توکن
     // =====================================================
     builder.Services.AddScoped<ILoginHookRepository>(sp =>
         new LoginHookRepository(sp.GetRequiredService<OnesignDbContext>()));
     builder.Services.AddScoped<IWebhookSubscriptionRepository>(sp =>
         new WebhookSubscriptionRepository(sp.GetRequiredService<OnesignDbContext>()));
+    builder.Services.AddScoped<IWebhookDeliveryLogRepository>(sp =>
+        new WebhookDeliveryLogRepository(sp.GetRequiredService<OnesignDbContext>()));
+    builder.Services.AddScoped<ITokenTransformationRuleRepository>(sp =>
+        new TokenTransformationRuleRepository(sp.GetRequiredService<OnesignDbContext>()));
+
+    // =====================================================
+    // سرویس‌های ماژول Extensibility
+    // اجرای هوک‌ها، انتشار رویدادها و تحویل وب‌هوک‌ها
+    // =====================================================
+    builder.Services.AddScoped<ILoginHookExecutor, LoginHookExecutor>();
+    builder.Services.AddScoped<IEventPublisher, EventPublisher>();
+    builder.Services.AddScoped<IWebhookDeliveryService, WebhookDeliveryService>();
+    builder.Services.AddScoped<ITokenTransformationEngine, TokenTransformationEngine>();
 }
 
 /// <summary>
@@ -836,11 +962,11 @@ static void ConfigureMiddleware(WebApplication app)
     // =====================================================
     // محیط توسعه - فعال‌سازی Swagger
     // =====================================================
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwagger();
-        app.UseSwaggerUI();
-    }
+    //if (app.Environment.IsDevelopment())
+    //{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+    //}
 
     // =====================================================
     // تنظیمات پایه HTTP
@@ -853,31 +979,31 @@ static void ConfigureMiddleware(WebApplication app)
     // میدلور هدرهای امنیتی
     // اولین میدلور برای اطمینان از وجود هدرها در تمام پاسخ‌ها
     // =====================================================
-    app.UseMiddleware<Onesign.Api.Middleware.SecurityHeadersMiddleware>();
+    app.UseMiddleware<SecurityHeadersMiddleware>();
 
     // =====================================================
     // میدلور مدیریت خطای سراسری
     // باید در ابتدای پایپلاین باشد برای گرفتن تمام خطاها
     // =====================================================
-    app.UseMiddleware<Onesign.Api.Middleware.GlobalExceptionHandlerMiddleware>();
+    app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
     // =====================================================
     // میدلور محدودیت نرخ بر اساس IP
     // محافظت پایه در برابر حملات
     // =====================================================
-    app.UseMiddleware<Onesign.Api.Middleware.RateLimitMiddleware>();
+    app.UseMiddleware<RateLimitMiddleware>();
 
     // =====================================================
     // میدلور محلی‌سازی
     // باید قبل از کنترلرها باشد برای ترجمه پیام‌ها
     // =====================================================
-    app.UseMiddleware<Onesign.Api.Middleware.LocalizationMiddleware>();
+    app.UseMiddleware<LocalizationMiddleware>();
 
     // =====================================================
     // میدلور احراز هویت JWT
     // باید قبل از UseAuthorization باشد
     // =====================================================
-    app.UseMiddleware<Onesign.Api.Middleware.JwtAuthenticationMiddleware>();
+    app.UseMiddleware<JwtAuthenticationMiddleware>();
 
     // =====================================================
     // میدلورهای مدیریت مستاجر
@@ -885,13 +1011,13 @@ static void ConfigureMiddleware(WebApplication app)
     // =====================================================
 
     // استخراج و اعتبارسنجی کانتکست مستاجر
-    app.UseMiddleware<Onesign.Api.Middleware.TenantIsolationMiddleware>();
+    app.UseMiddleware<TenantIsolationMiddleware>();
 
     // بررسی وضعیت مستاجر (معلق/تعمیرات)
-    app.UseMiddleware<Onesign.Api.Middleware.TenantStatusMiddleware>();
+    app.UseMiddleware<TenantStatusMiddleware>();
 
     // اعمال محدودیت نرخ بر اساس پلن مستاجر
-    app.UseMiddleware<Onesign.Api.Middleware.TenantRateLimitMiddleware>();
+    app.UseMiddleware<TenantRateLimitMiddleware>();
 
     // =====================================================
     // میدلورهای احراز هویت و مجوزدهی فریم‌ورک

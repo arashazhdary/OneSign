@@ -5,6 +5,7 @@ using Onesign.Modules.PrivilegedAccess.Application.Commands;
 namespace Onesign.Api.Controllers.Tenant;
 
 [Route("api/tenant/privileged-access")]
+[Route("api/tenant/privilegedaccess")]
 public class PrivilegedAccessController : TenantControllerBase
 {
     private readonly IMediator _mediator;

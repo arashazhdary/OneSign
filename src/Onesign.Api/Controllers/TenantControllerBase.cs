@@ -44,7 +44,20 @@ public abstract class TenantControllerBase : ControllerBase
     /// </summary>
     protected System.Globalization.CultureInfo GetCulture()
     {
-        var cultureName = Request.Headers["Accept-Language"].FirstOrDefault() ?? "en";
-        return new System.Globalization.CultureInfo(cultureName);
+        try
+        {
+            var acceptLanguage = Request.Headers["Accept-Language"].FirstOrDefault() ?? "en";
+            // Parse Accept-Language header which can be like "en-US,en;q=0.9,fa;q=0.8"
+            // Take only the first language code before any comma or semicolon
+            var cultureName = acceptLanguage.Split(',', ';')[0].Trim();
+            if (string.IsNullOrEmpty(cultureName))
+                cultureName = "en";
+            return new System.Globalization.CultureInfo(cultureName);
+        }
+        catch
+        {
+            // Fallback to English if culture parsing fails
+            return System.Globalization.CultureInfo.InvariantCulture;
+        }
     }
 }

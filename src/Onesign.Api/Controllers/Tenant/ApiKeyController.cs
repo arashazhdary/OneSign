@@ -7,6 +7,7 @@ using Onesign.Modules.Developer.Application.Queries;
 namespace Onesign.Api.Controllers.Tenant;
 
 [Route("api/tenant/api-keys")]
+[Route("api/tenant/apikeys")]
 public class ApiKeyController : TenantControllerBase
 {
     private readonly IMediator _mediator;

@@ -9,6 +9,7 @@ using Onesign.Shared.Result;
 namespace Onesign.Api.Controllers.Tenant;
 
 [Route("api/tenant/delegated-admins")]
+[Route("api/tenant/delegatedadmins")]
 public class DelegatedAdminsController : Onesign.Api.Controllers.TenantControllerBase
 {
     private readonly IMediator _mediator;

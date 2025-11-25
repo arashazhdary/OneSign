@@ -31,15 +31,17 @@ public class AttributeMappingEntityTypeConfiguration : IEntityTypeConfiguration<
             .OnDelete(DeleteBehavior.Cascade);
 
         // Foreign key to SamlProvider (optional)
+        // Using Restrict to avoid multiple cascade paths (Tenant -> SamlProvider -> AttributeMapping)
         builder.HasOne<SamlProviderEntity>()
             .WithMany()
             .HasForeignKey(x => x.SamlProviderId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Foreign key to OidcFederationProvider (optional)
+        // Using Restrict to avoid multiple cascade paths (Tenant -> OidcFederationProvider -> AttributeMapping)
         builder.HasOne<OidcFederationProviderEntity>()
             .WithMany()
             .HasForeignKey(x => x.OidcFederationProviderId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

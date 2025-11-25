@@ -9,6 +9,7 @@ using Onesign.Shared.Pagination;
 namespace Onesign.Api.Controllers.Global;
 
 [Route("api/global/change-sets")]
+[Route("api/global/changesets")]
 [ApiController]
 [Authorize(Roles = "GlobalAdmin")]
 public class ChangeSetsController : ControllerBase

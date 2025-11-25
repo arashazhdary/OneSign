@@ -7,6 +7,7 @@ using Onesign.Modules.Developer.Application.Queries;
 namespace Onesign.Api.Controllers.Tenant;
 
 [Route("api/tenant/service-accounts")]
+[Route("api/tenant/serviceaccounts")]
 public class ServiceAccountController : TenantControllerBase
 {
     private readonly IMediator _mediator;
