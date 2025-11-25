@@ -5,7 +5,7 @@ import LoadingOverlay from '@/components/common/LoadingOverlay';
 import Modal from '@/components/common/Modal';
 import StatusBadge from '@/components/common/StatusBadge';
 import DataTable, { Column } from '@/components/common/DataTable';
-import { platformService } from '@/lib/api/services/platform.service';
+import { tenantService } from '@/lib/api/services/tenant.service';
 import { Helmet } from 'react-helmet-async';
 
 interface SAMLProvider {
@@ -117,19 +117,19 @@ export default function TenantFederationPage() {
 
   const fetchSAMLProviders = async () => {
     if (!tenantId) return;
-    const data = await platformService.getSAMLProviders(tenantId);
+    const data = await tenantService.getSAMLProviders(tenantId);
     setSamlProviders(data);
   };
 
   const fetchOIDCProviders = async () => {
     if (!tenantId) return;
-    const data = await platformService.getOIDCProviders(tenantId);
+    const data = await tenantService.getOIDCProviders(tenantId);
     setOidcProviders(data);
   };
 
   const fetchSCIMTokens = async () => {
     if (!tenantId) return;
-    const data = await platformService.getSCIMTokens(tenantId);
+    const data = await tenantService.getSCIMTokens(tenantId);
     setScimTokens(data);
   };
 
@@ -145,7 +145,7 @@ export default function TenantFederationPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.createSAMLProvider(tenantId, {
+      await tenantService.createSAMLProvider(tenantId, {
         name: samlName,
         entityId: samlEntityId,
         ssoUrl: samlSsoUrl,
@@ -176,7 +176,7 @@ export default function TenantFederationPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.createOIDCProvider(tenantId, {
+      await tenantService.createOIDCProvider(tenantId, {
         name: oidcName,
         issuer: oidcIssuer,
         clientId: oidcClientId,
@@ -211,7 +211,7 @@ export default function TenantFederationPage() {
     setError('');
     setSuccess('');
     try {
-      const data = await platformService.createSCIMToken(tenantId, {
+      const data = await tenantService.createSCIMToken(tenantId, {
         name: scimName,
         expiresAt: scimExpiresAt || null,
       });
@@ -234,7 +234,7 @@ export default function TenantFederationPage() {
     setSuccess('');
     try {
       if (activeTab === 'saml') {
-        await platformService.updateSAMLProvider(tenantId, selectedItem.id, {
+        await tenantService.updateSAMLProvider(tenantId, selectedItem.id, {
           name: samlName,
           entityId: samlEntityId,
           ssoUrl: samlSsoUrl,
@@ -242,7 +242,7 @@ export default function TenantFederationPage() {
           enabled: samlEnabled,
         });
       } else {
-        await platformService.updateOIDCProvider(tenantId, selectedItem.id, {
+        await tenantService.updateOIDCProvider(tenantId, selectedItem.id, {
           name: oidcName,
           issuer: oidcIssuer,
           clientId: oidcClientId,
@@ -274,11 +274,11 @@ export default function TenantFederationPage() {
     setSuccess('');
     try {
       if (activeTab === 'saml') {
-        await platformService.deleteSAMLProvider(tenantId, selectedItem.id);
+        await tenantService.deleteSAMLProvider(tenantId, selectedItem.id);
       } else if (activeTab === 'oidc') {
-        await platformService.deleteOIDCProvider(tenantId, selectedItem.id);
+        await tenantService.deleteOIDCProvider(tenantId, selectedItem.id);
       } else if (activeTab === 'scim') {
-        await platformService.deleteSCIMToken(tenantId, selectedItem.id);
+        await tenantService.deleteSCIMToken(tenantId, selectedItem.id);
       }
 
       setSuccess('Item deleted successfully');

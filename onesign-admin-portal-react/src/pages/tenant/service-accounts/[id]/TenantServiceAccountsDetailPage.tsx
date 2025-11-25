@@ -3,7 +3,7 @@ import { useParams, useRouter } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
 import { usersService } from '@/lib/api/services/users.service';
-import { platformService } from '@/lib/api/services/platform.service';
+import { tenantService } from '@/lib/api/services/tenant.service';
 import { Helmet } from 'react-helmet-async';
 
 interface ServiceAccount {

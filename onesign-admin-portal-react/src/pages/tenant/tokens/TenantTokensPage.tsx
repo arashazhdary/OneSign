@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { platformService } from '@/lib/api/services';
+import { tenantService } from '@/lib/api/services/tenant.service';
 import { Helmet } from 'react-helmet-async';
 
 interface Token {
@@ -31,7 +31,7 @@ export default function TenantTokensPage() {
 
   const fetchTokens = async () => {
     try {
-      const data = await platformService.getTokens?.();
+      const data = await tenantService.getTokens?.();
       const mockData: Token[] = [
         {
           id: '1',
@@ -114,7 +114,7 @@ export default function TenantTokensPage() {
 
   const handleCreate = async () => {
     try {
-      await platformService.createToken?.('tenant-id', {
+      await tenantService.createToken?.('tenant-id', {
         name: 'New Token',
         type: 'access',
         permissions: ['read', 'write'],
@@ -129,7 +129,7 @@ export default function TenantTokensPage() {
   const handleRevoke = async (tokenId: string) => {
     if (!confirm('Revoke this token? This action cannot be undone.')) return;
     try {
-      await platformService.revokeToken?.('tenant-id', tokenId);
+      await tenantService.revokeToken?.('tenant-id', tokenId);
       fetchTokens();
     } catch (error) {
       console.error('Failed to revoke token:', error);
@@ -139,7 +139,7 @@ export default function TenantTokensPage() {
   const handleRotate = async (tokenId: string) => {
     if (!confirm('Rotate this token? The old token will be invalidated.')) return;
     try {
-      await platformService.rotateToken?.('tenant-id', tokenId);
+      await tenantService.rotateToken?.('tenant-id', tokenId);
       fetchTokens();
     } catch (error) {
       console.error('Failed to rotate token:', error);

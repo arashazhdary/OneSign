@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
 import { getCurrentUserScope, CurrentUserScopeDto } from '@/lib/api/users';
-import { platformService } from '@/lib/api/services/platform.service';
+import { tenantService } from '@/lib/api/services/tenant.service';
 import { usersService } from '@/lib/api/services/users.service';
 import { Helmet } from 'react-helmet-async';
 
@@ -72,8 +72,8 @@ export default function TenantDelegatedAdminsPage() {
     try {
       setLoading(true);
       const [admins, tree, usersData] = await Promise.all([
-        platformService.getDelegatedAdmins(tid),
-        platformService.getOrgUnitsTree(tid),
+        tenantService.getDelegatedAdmins(tid),
+        tenantService.getOrgUnitsTree(tid),
         usersService.getUsers({ tenantId: tid, pageSize: 1000 })
       ]);
 
@@ -102,7 +102,7 @@ export default function TenantDelegatedAdminsPage() {
 
   const handleCreate = async () => {
     try {
-      await platformService.createDelegatedAdmin(tenantId, {
+      await tenantService.createDelegatedAdmin(tenantId, {
         tenantUserId: selectedUserId,
         orgUnitId: selectedOrgUnitId,
         scopeType: selectedScopeType
@@ -121,7 +121,7 @@ export default function TenantDelegatedAdminsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm(t('tenant.delegatedAdmins.confirmRemove'))) return;
     try {
-      await platformService.deleteDelegatedAdmin(tenantId, id);
+      await tenantService.deleteDelegatedAdmin(tenantId, id);
       loadData(tenantId);
     } catch (err: any) {
       setError(err.message || t('common.error'));

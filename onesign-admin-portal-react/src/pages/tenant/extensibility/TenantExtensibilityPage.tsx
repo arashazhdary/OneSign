@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
-import { platformService } from '@/lib/api/services';
+import { tenantService } from '@/lib/api/services/tenant.service';
 import DataTable, { Column } from '@/components/common/DataTable';
 import StatusBadge from '@/components/common/StatusBadge';
 import ActionButton from '@/components/common/ActionButton';
@@ -106,7 +106,7 @@ export default function TenantExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await platformService.getWebhooks(tenantId);
+      const data = await tenantService.getWebhooks(tenantId);
       setWebhooks(data || []);
     } catch (err) {
       console.error('Error fetching webhooks:', err);
@@ -119,7 +119,7 @@ export default function TenantExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await platformService.getLoginHooks(tenantId);
+      const data = await tenantService.getLoginHooks(tenantId);
       setLoginHooks(data || []);
     } catch (err) {
       console.error('Error fetching login hooks:', err);
@@ -132,7 +132,7 @@ export default function TenantExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await platformService.getTokenRules(tenantId);
+      const data = await tenantService.getTokenRules(tenantId);
       setTokenRules(data || []);
     } catch (err) {
       console.error('Error fetching token rules:', err);
@@ -145,7 +145,7 @@ export default function TenantExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await platformService.getEventTypes(tenantId);
+      const data = await tenantService.getEventTypes(tenantId);
       setEventTypes(data || []);
     } catch (err) {
       console.error('Error fetching event types:', err);
@@ -159,7 +159,7 @@ export default function TenantExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await platformService.createWebhook(tenantId, webhookForm);
+      await tenantService.createWebhook(tenantId, webhookForm);
       setSuccess('Webhook created successfully');
       setShowWebhookModal(false);
       fetchWebhooks();
@@ -175,7 +175,7 @@ export default function TenantExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await platformService.updateWebhook(tenantId, id, data);
+      await tenantService.updateWebhook(tenantId, id, data);
       setSuccess('Webhook updated successfully');
       setEditingWebhook(null);
       setShowWebhookModal(false);
@@ -191,7 +191,7 @@ export default function TenantExtensibilityPage() {
     if (!tenantId || !confirm('Are you sure you want to delete this webhook?')) return;
     setLoading(true);
     try {
-      await platformService.deleteWebhook(tenantId, id);
+      await tenantService.deleteWebhook(tenantId, id);
       setSuccess('Webhook deleted successfully');
       fetchWebhooks();
     } catch (err) {
@@ -205,7 +205,7 @@ export default function TenantExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await platformService.testWebhook(tenantId, id);
+      await tenantService.testWebhook(tenantId, id);
       setSuccess('Test event sent successfully');
     } catch (err) {
       setError('Failed to send test event');
@@ -219,7 +219,7 @@ export default function TenantExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await platformService.createLoginHook(tenantId, loginHookForm);
+      await tenantService.createLoginHook(tenantId, loginHookForm);
       setSuccess('Login hook created successfully');
       setShowLoginHookModal(false);
       fetchLoginHooks();
@@ -234,7 +234,7 @@ export default function TenantExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await platformService.updateLoginHook(tenantId, id, data);
+      await tenantService.updateLoginHook(tenantId, id, data);
       setSuccess('Login hook updated successfully');
       setEditingLoginHook(null);
       setShowLoginHookModal(false);
@@ -250,7 +250,7 @@ export default function TenantExtensibilityPage() {
     if (!tenantId || !confirm('Are you sure you want to delete this login hook?')) return;
     setLoading(true);
     try {
-      await platformService.deleteLoginHook(tenantId, id);
+      await tenantService.deleteLoginHook(tenantId, id);
       setSuccess('Login hook deleted successfully');
       fetchLoginHooks();
     } catch (err) {
@@ -265,7 +265,7 @@ export default function TenantExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await platformService.createTokenRule(tenantId, tokenRuleForm);
+      await tenantService.createTokenRule(tenantId, tokenRuleForm);
       setSuccess('Token rule created successfully');
       setShowTokenRuleModal(false);
       fetchTokenRules();
@@ -280,7 +280,7 @@ export default function TenantExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await platformService.updateTokenRule(tenantId, id, data);
+      await tenantService.updateTokenRule(tenantId, id, data);
       setSuccess('Token rule updated successfully');
       setEditingTokenRule(null);
       setShowTokenRuleModal(false);
@@ -296,7 +296,7 @@ export default function TenantExtensibilityPage() {
     if (!tenantId || !confirm('Are you sure you want to delete this token rule?')) return;
     setLoading(true);
     try {
-      await platformService.deleteTokenRule(tenantId, id);
+      await tenantService.deleteTokenRule(tenantId, id);
       setSuccess('Token rule deleted successfully');
       fetchTokenRules();
     } catch (err) {

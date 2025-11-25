@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
-import { platformService } from '@/lib/api/services';
+import { tenantService } from '@/lib/api/services/tenant.service';
 import { Helmet } from 'react-helmet-async';
 
 interface ExportJob {
@@ -217,7 +217,7 @@ export default function TenantExportsPage() {
 
     try {
       // Fetch from real API
-      const data = await platformService.getExportJobs?.(tenantId);
+      const data = await tenantService.getExportJobs?.(tenantId);
       setExports(data || mockExportsFallback);
     } catch (error: any) {
       console.error('Error fetching exports:', error);
@@ -234,7 +234,7 @@ export default function TenantExportsPage() {
 
     try {
       // Fetch from real API
-      const data = await platformService.getExportTemplates?.(tenantId);
+      const data = await tenantService.getExportTemplates?.(tenantId);
       setTemplates(data || mockTemplatesFallback);
     } catch (error: any) {
       console.error('Error fetching templates:', error);
@@ -248,7 +248,7 @@ export default function TenantExportsPage() {
 
     try {
       // Fetch from real API
-      const data = await platformService.getScheduledExports?.(tenantId);
+      const data = await tenantService.getScheduledExports?.(tenantId);
       setScheduledExports(data || mockScheduledExportsFallback);
     } catch (error: any) {
       console.error('Error fetching scheduled exports:', error);

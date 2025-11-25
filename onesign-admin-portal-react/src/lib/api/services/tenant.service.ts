@@ -224,6 +224,409 @@ export const tenantService = {
       return { items: [], total: 0 };
     }
   },
+
+  // ==================== TENANT API KEYS ====================
+  getApiKeys: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/api-keys');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch API keys:', error);
+      return [];
+    }
+  },
+
+  createApiKey: async (data: { name: string; scope: string[]; expiresIn?: number }): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/api-keys', data);
+    return response.data;
+  },
+
+  revokeApiKey: async (keyId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/api-keys/${keyId}`);
+  },
+
+  // ==================== TENANT BACKUPS ====================
+  getBackups: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/backups');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch backups:', error);
+      return [];
+    }
+  },
+
+  createBackup: async (data: any): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/backups', data);
+    return response.data;
+  },
+
+  restoreBackup: async (backupId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/tenant/backups/${backupId}/restore`);
+    return response.data;
+  },
+
+  downloadBackup: async (backupId: string): Promise<any> => {
+    const response = await apiClient.get(`/api/tenant/backups/${backupId}/download`, { responseType: 'blob' });
+    return response.data;
+  },
+
+  // ==================== TENANT BRANDING ====================
+  getBranding: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/tenant/branding');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch branding:', error);
+      return null;
+    }
+  },
+
+  updateBranding: async (data: any): Promise<any> => {
+    const response = await apiClient.put('/api/tenant/branding', data);
+    return response.data;
+  },
+
+  // ==================== TENANT CERTIFICATES ====================
+  getCertificates: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/certificates');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch certificates:', error);
+      return [];
+    }
+  },
+
+  createCertificate: async (data: any): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/certificates', data);
+    return response.data;
+  },
+
+  deleteCertificate: async (certId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/certificates/${certId}`);
+  },
+
+  // ==================== TENANT DATA RETENTION ====================
+  getDataRetentionPolicies: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/data-retention');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch data retention policies:', error);
+      return [];
+    }
+  },
+
+  updateDataRetentionPolicy: async (policyId: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/tenant/data-retention/${policyId}`, data);
+    return response.data;
+  },
+
+  // ==================== TENANT DELEGATED ADMINS ====================
+  getDelegatedAdmins: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/delegated-admins');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch delegated admins:', error);
+      return [];
+    }
+  },
+
+  getDelegatedAdminById: async (adminId: string): Promise<any> => {
+    try {
+      const response = await apiClient.get(`/api/tenant/delegated-admins/${adminId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch delegated admin:', error);
+      return null;
+    }
+  },
+
+  createDelegatedAdmin: async (data: any): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/delegated-admins', data);
+    return response.data;
+  },
+
+  updateDelegatedAdmin: async (adminId: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/tenant/delegated-admins/${adminId}`, data);
+    return response.data;
+  },
+
+  deleteDelegatedAdmin: async (adminId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/delegated-admins/${adminId}`);
+  },
+
+  // ==================== TENANT DOMAINS ====================
+  getDomains: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/domains');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch domains:', error);
+      return [];
+    }
+  },
+
+  addDomain: async (data: { domain: string }): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/domains', data);
+    return response.data;
+  },
+
+  verifyDomain: async (domainId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/tenant/domains/${domainId}/verify`);
+    return response.data;
+  },
+
+  deleteDomain: async (domainId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/domains/${domainId}`);
+  },
+
+  // ==================== TENANT EXPORTS ====================
+  getExports: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/exports');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch exports:', error);
+      return [];
+    }
+  },
+
+  createExport: async (data: any): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/exports', data);
+    return response.data;
+  },
+
+  downloadExport: async (exportId: string): Promise<any> => {
+    const response = await apiClient.get(`/api/tenant/exports/${exportId}/download`, { responseType: 'blob' });
+    return response.data;
+  },
+
+  // ==================== TENANT IMPORTS ====================
+  getImports: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/imports');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch imports:', error);
+      return [];
+    }
+  },
+
+  createImport: async (data: FormData): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/imports', data, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  },
+
+  // ==================== TENANT EXTENSIBILITY ====================
+  getExtensions: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/extensions');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch extensions:', error);
+      return [];
+    }
+  },
+
+  toggleExtension: async (extensionId: string, enabled: boolean): Promise<any> => {
+    const response = await apiClient.patch(`/api/tenant/extensions/${extensionId}`, { enabled });
+    return response.data;
+  },
+
+  // ==================== TENANT FEDERATION ====================
+  getIdentityProviders: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/identity-providers');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch identity providers:', error);
+      return [];
+    }
+  },
+
+  createIdentityProvider: async (data: any): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/identity-providers', data);
+    return response.data;
+  },
+
+  updateIdentityProvider: async (providerId: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/tenant/identity-providers/${providerId}`, data);
+    return response.data;
+  },
+
+  deleteIdentityProvider: async (providerId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/identity-providers/${providerId}`);
+  },
+
+  // ==================== TENANT INTEGRATIONS ====================
+  getIntegrations: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/integrations');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch integrations:', error);
+      return [];
+    }
+  },
+
+  getIntegrationById: async (integrationId: string): Promise<any> => {
+    try {
+      const response = await apiClient.get(`/api/tenant/integrations/${integrationId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch integration:', error);
+      return null;
+    }
+  },
+
+  createIntegration: async (data: any): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/integrations', data);
+    return response.data;
+  },
+
+  updateIntegration: async (integrationId: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/tenant/integrations/${integrationId}`, data);
+    return response.data;
+  },
+
+  deleteIntegration: async (integrationId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/integrations/${integrationId}`);
+  },
+
+  // ==================== TENANT SCOPES ====================
+  getScopes: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/scopes');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch scopes:', error);
+      return [];
+    }
+  },
+
+  createScope: async (data: any): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/scopes', data);
+    return response.data;
+  },
+
+  updateScope: async (scopeId: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/tenant/scopes/${scopeId}`, data);
+    return response.data;
+  },
+
+  deleteScope: async (scopeId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/scopes/${scopeId}`);
+  },
+
+  // ==================== TENANT SERVICE ACCOUNTS ====================
+  getServiceAccounts: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/service-accounts');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch service accounts:', error);
+      return [];
+    }
+  },
+
+  getServiceAccountById: async (accountId: string): Promise<any> => {
+    try {
+      const response = await apiClient.get(`/api/tenant/service-accounts/${accountId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch service account:', error);
+      return null;
+    }
+  },
+
+  createServiceAccount: async (data: any): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/service-accounts', data);
+    return response.data;
+  },
+
+  updateServiceAccount: async (accountId: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/tenant/service-accounts/${accountId}`, data);
+    return response.data;
+  },
+
+  deleteServiceAccount: async (accountId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/service-accounts/${accountId}`);
+  },
+
+  rotateServiceAccountSecret: async (accountId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/tenant/service-accounts/${accountId}/rotate-secret`);
+    return response.data;
+  },
+
+  // ==================== TENANT SETTINGS ====================
+  getSettings: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/tenant/settings');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch tenant settings:', error);
+      return null;
+    }
+  },
+
+  updateSettings: async (data: any): Promise<any> => {
+    const response = await apiClient.put('/api/tenant/settings', data);
+    return response.data;
+  },
+
+  // ==================== TENANT TOKENS ====================
+  getTokens: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/tokens');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch tokens:', error);
+      return [];
+    }
+  },
+
+  revokeToken: async (tokenId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/tokens/${tokenId}`);
+  },
+
+  revokeAllTokens: async (userId?: string): Promise<void> => {
+    await apiClient.post('/api/tenant/tokens/revoke-all', { userId });
+  },
+
+  // ==================== TENANT WEBHOOKS ====================
+  getWebhooks: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/webhooks');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch webhooks:', error);
+      return [];
+    }
+  },
+
+  createWebhook: async (data: any): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/webhooks', data);
+    return response.data;
+  },
+
+  updateWebhook: async (webhookId: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/tenant/webhooks/${webhookId}`, data);
+    return response.data;
+  },
+
+  deleteWebhook: async (webhookId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/webhooks/${webhookId}`);
+  },
+
+  testWebhook: async (webhookId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/tenant/webhooks/${webhookId}/test`);
+    return response.data;
+  },
 };
 
 export default tenantService;

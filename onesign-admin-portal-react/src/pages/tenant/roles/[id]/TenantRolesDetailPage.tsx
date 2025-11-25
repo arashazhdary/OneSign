@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'react-router-dom';
-import { platformService } from '@/lib/api/services';
+import { tenantService } from '@/lib/api/services/tenant.service';
 import { getTenantId } from '@/lib/tenant-context';
 import Breadcrumbs from '@/components/common/Breadcrumbs';
 import { Helmet } from 'react-helmet-async';
@@ -80,7 +80,7 @@ export default function TenantRolesDetailPage() {
 
     try {
       setLoading(true);
-      const result = await platformService.getRoleById(id, tenantId);
+      const result = await tenantService.getRoleById(id, tenantId);
 
       // Transform to expected format
       const roleData: RoleDetails = {
@@ -196,7 +196,7 @@ export default function TenantRolesDetailPage() {
 
   const fetchAvailablePermissions = async () => {
     try {
-      const perms = await platformService.getPermissions();
+      const perms = await tenantService.getPermissions();
       setAvailablePermissions(perms);
     } catch (err) {
       // Use mock permissions if API fails
@@ -221,7 +221,7 @@ export default function TenantRolesDetailPage() {
     setSuccess('');
 
     try {
-      await platformService.updateRole(id, {
+      await tenantService.updateRole(id, {
         name: editName,
         description: editDescription,
       }, tenantId);
@@ -241,7 +241,7 @@ export default function TenantRolesDetailPage() {
     setSuccess('');
 
     try {
-      await platformService.updateRole(id, {
+      await tenantService.updateRole(id, {
         permissions: selectedPermissions,
       }, tenantId);
 
@@ -260,7 +260,7 @@ export default function TenantRolesDetailPage() {
     setSuccess('');
 
     try {
-      await platformService.deleteRole(id, tenantId);
+      await tenantService.deleteRole(id, tenantId);
       setSuccess('Role deleted successfully');
       setTimeout(() => {
         navigate('/tenant/roles');

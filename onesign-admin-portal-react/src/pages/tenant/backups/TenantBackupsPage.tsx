@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { platformService } from '@/lib/api/services';
+import { tenantService } from '@/lib/api/services/tenant.service';
 import { useTenantStore } from '@/stores/tenantStore';
 
 // Types
@@ -136,7 +136,7 @@ export default function TenantBackupsPage() {
     setLoading(true);
     try {
       // Fetch from real API
-      const data = await platformService.getTenantBackups(tenantId);
+      const data = await tenantService.getTenantBackups(tenantId);
       setBackups(data || mockBackupsFallback);
     } catch (err: any) {
       setError(err?.message || 'Failed to fetch backups');
@@ -153,7 +153,7 @@ export default function TenantBackupsPage() {
 
     try {
       // Fetch from real API
-      const data = await platformService.getBackupSchedule?.(tenantId);
+      const data = await tenantService.getBackupSchedule?.(tenantId);
       const scheduleData = data || mockScheduleFallback;
 
       setSchedule(scheduleData);
