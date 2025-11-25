@@ -627,6 +627,44 @@ export const tenantService = {
     const response = await apiClient.post(`/api/tenant/webhooks/${webhookId}/test`);
     return response.data;
   },
+
+  getWebhookEvents: async (webhookId: string): Promise<any[]> => {
+    try {
+      const response = await apiClient.get(`/api/tenant/webhooks/${webhookId}/events`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch webhook events:', error);
+      return [];
+    }
+  },
+
+  // ==================== BRANDING ====================
+  updateBrandingSettings: async (data: any): Promise<any> => {
+    const response = await apiClient.put('/api/tenant/settings/branding', data);
+    return response.data;
+  },
+
+  // ==================== ORG UNITS ====================
+  getOrgUnitsTree: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/org-units/tree');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch org units tree:', error);
+      return [];
+    }
+  },
+
+  // ==================== TOKENS (additional methods) ====================
+  createToken: async (data: any): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/tokens', data);
+    return response.data;
+  },
+
+  rotateToken: async (tokenId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/tenant/tokens/${tokenId}/rotate`);
+    return response.data;
+  },
 };
 
 export default tenantService;

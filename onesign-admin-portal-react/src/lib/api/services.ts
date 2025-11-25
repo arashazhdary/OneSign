@@ -834,6 +834,154 @@ export const usersService = {
       throw error;
     }
   },
+
+  // Session management
+  getAccountSessions: async (userId?: string) => {
+    try {
+      const url = userId ? `/api/users/${userId}/sessions` : '/api/users/sessions';
+      const response = await apiClient.get(url);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch sessions:', error);
+      return [];
+    }
+  },
+
+  getSessionHistory: async (params?: any) => {
+    try {
+      const response = await apiClient.get('/api/users/sessions/history', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch session history:', error);
+      return [];
+    }
+  },
+
+  revokeSession: async (sessionId: string) => {
+    const response = await apiClient.delete(`/api/users/sessions/${sessionId}`);
+    return response.data;
+  },
+
+  // User scope and permissions
+  getCurrentUserScope: async () => {
+    try {
+      const response = await apiClient.get('/api/users/me/scope');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user scope:', error);
+      return null;
+    }
+  },
+
+  // User invitation
+  inviteUser: async (data: any) => {
+    const response = await apiClient.post('/api/users/invite', data);
+    return response.data;
+  },
+
+  // User status
+  updateUserStatus: async (userId: string, status: string) => {
+    const response = await apiClient.patch(`/api/users/${userId}/status`, { status });
+    return response.data;
+  },
+
+  // User organizational units
+  getUserOrgUnits: async (userId: string) => {
+    try {
+      const response = await apiClient.get(`/api/users/${userId}/org-units`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user org units:', error);
+      return [];
+    }
+  },
+
+  updateUserOrgUnits: async (userId: string, orgUnitIds: string[]) => {
+    const response = await apiClient.put(`/api/users/${userId}/org-units`, { orgUnitIds });
+    return response.data;
+  },
+
+  // User profile
+  getUserProfile: async (userId: string) => {
+    try {
+      const response = await apiClient.get(`/api/users/${userId}/profile`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user profile:', error);
+      return null;
+    }
+  },
+
+  updateUserProfile: async (userId: string, data: any) => {
+    const response = await apiClient.put(`/api/users/${userId}/profile`, data);
+    return response.data;
+  },
+
+  // User activities
+  getUserActivities: async (userId: string, params?: any) => {
+    try {
+      const response = await apiClient.get(`/api/users/${userId}/activities`, { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user activities:', error);
+      return [];
+    }
+  },
+
+  // User lifecycle
+  getUserLifecycle: async (userId: string) => {
+    try {
+      const response = await apiClient.get(`/api/users/${userId}/lifecycle`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user lifecycle:', error);
+      return null;
+    }
+  },
+
+  // User risk assessment
+  getUserRiskAssessment: async (userId: string) => {
+    try {
+      const response = await apiClient.get(`/api/users/${userId}/risk-assessment`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user risk assessment:', error);
+      return null;
+    }
+  },
+
+  // User access packages
+  getUserAccessPackages: async (userId: string) => {
+    try {
+      const response = await apiClient.get(`/api/users/${userId}/access-packages`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user access packages:', error);
+      return [];
+    }
+  },
+
+  // User privileged sessions
+  getUserPrivilegedSessions: async (userId: string) => {
+    try {
+      const response = await apiClient.get(`/api/users/${userId}/privileged-sessions`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user privileged sessions:', error);
+      return [];
+    }
+  },
+
+  // User audit trail
+  getUserAuditTrail: async (userId: string, params?: any) => {
+    try {
+      const response = await apiClient.get(`/api/users/${userId}/audit-trail`, { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user audit trail:', error);
+      return [];
+    }
+  },
 };
 
 // Governance Service
