@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '@/components/common/Modal';
 import DataTable, { Column } from '@/components/common/DataTable';
-import { platformService } from '@/lib/api/services';
+import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
 type TargetAudience = 'all' | 'specific' | 'percentage';
@@ -73,7 +73,7 @@ export default function GlobalFeatureFlagsPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getFeatureFlags();
+      const data = await globalService.getFeatureFlags();
       setFlags(data.flags || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -84,7 +84,7 @@ export default function GlobalFeatureFlagsPage() {
 
   const fetchHistory = async (flagId: string) => {
     try {
-      const data = await platformService.getFeatureFlagHistory(flagId);
+      const data = await globalService.getFeatureFlagHistory(flagId);
       setHistory(data.history || []);
       setIsHistoryModalOpen(true);
     } catch (err: any) {
@@ -97,7 +97,7 @@ export default function GlobalFeatureFlagsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.toggleFeatureFlag(flag.id, newState);
+      await globalService.toggleFeatureFlag(flag.id, newState);
       setSuccess(`Feature flag "${flag.name}" ${newState ? 'enabled' : 'disabled'} successfully`);
       fetchFlags();
     } catch (err: any) {
@@ -141,7 +141,7 @@ export default function GlobalFeatureFlagsPage() {
         };
       }
 
-      await platformService.createFeatureFlag(payload);
+      await globalService.createFeatureFlag(payload);
       setSuccess('Feature flag created successfully');
       setIsCreateModalOpen(false);
       resetForm();
@@ -159,7 +159,7 @@ export default function GlobalFeatureFlagsPage() {
     setLoading(true);
     setError('');
     try {
-      await platformService.deleteFeatureFlag(flagId);
+      await globalService.deleteFeatureFlag(flagId);
       setSuccess('Feature flag deleted successfully');
       fetchFlags();
     } catch (err: any) {

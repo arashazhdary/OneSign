@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { platformService } from '@/lib/api/services';
+import { globalService } from '@/lib/api/services/global.service';
 
 interface Backup {
   id: string;
@@ -45,97 +45,12 @@ export default function GlobalBackupsPage() {
 
   const fetchData = async () => {
     try {
-      // Mock backups
-      setBackups([
-        {
-          id: '1',
-          name: 'Full Platform Backup - Nov 23',
-          type: 'full',
-          status: 'completed',
-          size: 524288000000,
-          createdAt: '2024-11-23T02:00:00Z',
-          completedAt: '2024-11-23T04:30:00Z',
-          duration: 9000,
-          tenantCount: 1250,
-          dataSize: '487.5 GB',
-          location: 's3://backups/2024-11-23-full',
-          encryption: true,
-          checksum: 'sha256:a1b2c3d4...',
-          retentionDays: 90,
-          createdBy: 'system',
-        },
-        {
-          id: '2',
-          name: 'Incremental Backup - Nov 22',
-          type: 'incremental',
-          status: 'completed',
-          size: 52428800000,
-          createdAt: '2024-11-22T02:00:00Z',
-          completedAt: '2024-11-22T02:45:00Z',
-          duration: 2700,
-          tenantCount: 1248,
-          dataSize: '48.8 GB',
-          location: 's3://backups/2024-11-22-incr',
-          encryption: true,
-          checksum: 'sha256:e5f6g7h8...',
-          retentionDays: 30,
-          createdBy: 'system',
-        },
-        {
-          id: '3',
-          name: 'Manual Backup - Pre-Update',
-          type: 'full',
-          status: 'completed',
-          size: 520093696000,
-          createdAt: '2024-11-20T14:00:00Z',
-          completedAt: '2024-11-20T16:25:00Z',
-          duration: 8700,
-          tenantCount: 1245,
-          dataSize: '484.5 GB',
-          location: 's3://backups/2024-11-20-manual',
-          encryption: true,
-          checksum: 'sha256:i9j0k1l2...',
-          retentionDays: 180,
-          createdBy: 'admin@example.com',
-        },
+      const [backupsData, schedulesData] = await Promise.all([
+        globalService.getBackups(),
+        globalService.getBackupSchedules()
       ]);
-
-      // Mock schedules
-      setSchedules([
-        {
-          id: '1',
-          name: 'Daily Incremental',
-          frequency: 'daily',
-          time: '02:00',
-          type: 'incremental',
-          retentionDays: 30,
-          isActive: true,
-          lastRun: '2024-11-23T02:00:00Z',
-          nextRun: '2024-11-24T02:00:00Z',
-        },
-        {
-          id: '2',
-          name: 'Weekly Full Backup',
-          frequency: 'weekly',
-          time: '01:00',
-          type: 'full',
-          retentionDays: 90,
-          isActive: true,
-          lastRun: '2024-11-17T01:00:00Z',
-          nextRun: '2024-11-24T01:00:00Z',
-        },
-        {
-          id: '3',
-          name: 'Monthly Archive',
-          frequency: 'monthly',
-          time: '00:00',
-          type: 'full',
-          retentionDays: 365,
-          isActive: true,
-          lastRun: '2024-11-01T00:00:00Z',
-          nextRun: '2024-12-01T00:00:00Z',
-        },
-      ]);
+      setBackups(backupsData || []);
+      setSchedules(schedulesData || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -143,9 +58,9 @@ export default function GlobalBackupsPage() {
     }
   };
 
-  const handleCreateBackup = async () => {
+  const handleCreateBackup = async (data: { name: string; type: string; retentionDays: number }) => {
     try {
-      // TODO: createGlobalBackup not implemented
+      await globalService.createBackup(data);
       setShowCreate(false);
       fetchData();
     } catch (error) {
@@ -156,7 +71,7 @@ export default function GlobalBackupsPage() {
   const handleRestore = async (backupId: string) => {
     if (!confirm('This will restore the entire platform to this backup. Continue?')) return;
     try {
-      // TODO: restoreGlobalBackup not implemented
+      await globalService.restoreBackup(backupId);
       alert('Restore initiated successfully!');
       fetchData();
     } catch (error) {
@@ -167,7 +82,7 @@ export default function GlobalBackupsPage() {
 
   const handleDownload = async (backupId: string) => {
     try {
-      // TODO: downloadBackup not implemented
+      await globalService.downloadBackup(backupId);
       alert('Backup download started!');
     } catch (error) {
       console.error('Failed to download backup:', error);

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { platformService } from '@/lib/api/services';
+import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
 interface MaintenanceWindow {
@@ -34,7 +34,7 @@ export default function GlobalMaintenancePage() {
 
   const fetchWindows = async () => {
     try {
-      const data = await platformService.getMaintenanceWindows?.();
+      const data = await globalService.getMaintenanceWindows?.();
       const mockData: MaintenanceWindow[] = [
         {
           id: '1',
@@ -139,7 +139,7 @@ export default function GlobalMaintenancePage() {
 
   const handleCreate = async () => {
     try {
-      await platformService.createMaintenanceWindow?.({
+      await globalService.createMaintenanceWindow?.({
         title: 'New Maintenance Window',
         description: '',
         type: 'scheduled',
@@ -159,7 +159,7 @@ export default function GlobalMaintenancePage() {
   const handleCancel = async (id: string) => {
     if (!confirm('Cancel this maintenance window?')) return;
     try {
-      await platformService.cancelMaintenanceWindow?.(id);
+      await globalService.cancelMaintenanceWindow?.(id);
       fetchWindows();
     } catch (error) {
       console.error('Failed to cancel maintenance window:', error);
@@ -168,7 +168,7 @@ export default function GlobalMaintenancePage() {
 
   const handleNotify = async (id: string) => {
     try {
-      await platformService.sendMaintenanceNotification?.(id);
+      await globalService.sendMaintenanceNotification?.(id);
       fetchWindows();
     } catch (error) {
       console.error('Failed to send notification:', error);

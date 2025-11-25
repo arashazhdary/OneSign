@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { platformService } from '@/lib/api/services';
+import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
 interface License {
@@ -39,7 +39,7 @@ export default function GlobalLicensesPage() {
 
   const fetchLicenses = async () => {
     try {
-      const data = await platformService.getLicenses?.();
+      const data = await globalService.getLicenses?.();
       const mockData: License[] = [
         {
           id: '1',
@@ -143,7 +143,7 @@ export default function GlobalLicensesPage() {
 
   const handleAdd = async () => {
     try {
-      await platformService.createLicense?.({
+      await globalService.createLicense?.({
         type: 'trial',
         issuedTo: 'New Customer',
         features: [],
@@ -164,7 +164,7 @@ export default function GlobalLicensesPage() {
   const handleSuspend = async (licenseId: string) => {
     if (!confirm('Suspend this license?')) return;
     try {
-      await platformService.suspendLicense?.(licenseId);
+      await globalService.suspendLicense?.(licenseId);
       fetchLicenses();
     } catch (error) {
       console.error('Failed to suspend license:', error);
@@ -174,7 +174,7 @@ export default function GlobalLicensesPage() {
   const handleRevoke = async (licenseId: string) => {
     if (!confirm('Revoke this license? This action cannot be undone.')) return;
     try {
-      await platformService.revokeLicense?.(licenseId);
+      await globalService.revokeLicense?.(licenseId);
       fetchLicenses();
     } catch (error) {
       console.error('Failed to revoke license:', error);
@@ -183,7 +183,7 @@ export default function GlobalLicensesPage() {
 
   const handleRenew = async (licenseId: string) => {
     try {
-      await platformService.renewLicense?.(licenseId);
+      await globalService.renewLicense?.(licenseId);
       fetchLicenses();
     } catch (error) {
       console.error('Failed to renew license:', error);

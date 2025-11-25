@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { platformService } from '@/lib/api/services';
+import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
 // Types
@@ -69,7 +69,7 @@ export default function GlobalMonitoringPage() {
   const fetchMetrics = useCallback(async () => {
     try {
       // Fetch from real API
-      const data = await platformService.getPerformanceMetrics();
+      const data = await globalService.getPerformanceMetrics();
 
       // Mock system metrics for fallback
       const mockMetrics: SystemMetrics = {

@@ -577,6 +577,179 @@ export const globalService = {
     }
   },
 
+  /**
+   * GET /api/global/environments/{id}/heartbeat - وضعیت محیط
+   */
+  getEnvironmentHeartbeat: async (envId: string): Promise<any> => {
+    try {
+      const response = await apiClient.get(`/api/global/environments/${envId}/heartbeat`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch environment heartbeat:', error);
+      return null;
+    }
+  },
+
+  /**
+   * POST /api/global/environments/{id}/restart - راه‌اندازی مجدد محیط
+   */
+  restartEnvironment: async (envId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/environments/${envId}/restart`);
+    return response.data;
+  },
+
+  // ==================== BACKUPS (Spec: /api/global/backups) ====================
+
+  /**
+   * GET /api/global/backups - لیست بکاپ‌ها
+   */
+  getBackups: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/global/backups');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch backups:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/global/backups - ایجاد بکاپ
+   */
+  createBackup: async (data: { name: string; type: string; retentionDays: number }): Promise<any> => {
+    const response = await apiClient.post('/api/global/backups', data);
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/backups/{id}/restore - بازیابی بکاپ
+   */
+  restoreBackup: async (backupId: string, options?: any): Promise<any> => {
+    const response = await apiClient.post(`/api/global/backups/${backupId}/restore`, options);
+    return response.data;
+  },
+
+  /**
+   * GET /api/global/backups/{id}/download - دانلود بکاپ
+   */
+  downloadBackup: async (backupId: string): Promise<any> => {
+    const response = await apiClient.get(`/api/global/backups/${backupId}/download`, { responseType: 'blob' });
+    return response.data;
+  },
+
+  /**
+   * GET /api/global/backups/schedules - لیست زمان‌بندی‌ها
+   */
+  getBackupSchedules: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/global/backups/schedules');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch backup schedules:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/global/backups/schedules - ایجاد زمان‌بندی
+   */
+  createBackupSchedule: async (data: any): Promise<any> => {
+    const response = await apiClient.post('/api/global/backups/schedules', data);
+    return response.data;
+  },
+
+  /**
+   * PUT /api/global/backups/schedules/{id} - به‌روزرسانی زمان‌بندی
+   */
+  updateBackupSchedule: async (scheduleId: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/global/backups/schedules/${scheduleId}`, data);
+    return response.data;
+  },
+
+  /**
+   * DELETE /api/global/backups/schedules/{id} - حذف زمان‌بندی
+   */
+  deleteBackupSchedule: async (scheduleId: string): Promise<void> => {
+    await apiClient.delete(`/api/global/backups/schedules/${scheduleId}`);
+  },
+
+  // ==================== API MANAGEMENT (Spec: /api/global/api-management) ====================
+
+  /**
+   * GET /api/global/api-management/endpoints - لیست endpoint ها
+   */
+  getAPIEndpoints: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/global/api-management/endpoints');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch API endpoints:', error);
+      return { endpoints: [] };
+    }
+  },
+
+  /**
+   * PUT /api/global/api-management/endpoints/{id}/rate-limit - به‌روزرسانی rate limit
+   */
+  updateEndpointRateLimit: async (endpointId: string, data: { rateLimit: number; rateLimitWindow: string }): Promise<any> => {
+    const response = await apiClient.put(`/api/global/api-management/endpoints/${endpointId}/rate-limit`, data);
+    return response.data;
+  },
+
+  /**
+   * GET /api/global/api-management/keys - لیست کلیدهای API
+   */
+  getAPIKeys: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/global/api-management/keys');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch API keys:', error);
+      return { keys: [] };
+    }
+  },
+
+  /**
+   * POST /api/global/api-management/keys - ایجاد کلید API
+   */
+  createAPIKey: async (data: { name: string; scope: string[]; expiresIn?: number }): Promise<any> => {
+    const response = await apiClient.post('/api/global/api-management/keys', data);
+    return response.data;
+  },
+
+  /**
+   * DELETE /api/global/api-management/keys/{id} - لغو کلید API
+   */
+  revokeAPIKey: async (keyId: string): Promise<void> => {
+    await apiClient.delete(`/api/global/api-management/keys/${keyId}`);
+  },
+
+  /**
+   * GET /api/global/api-management/consumers - لیست مصرف‌کنندگان
+   */
+  getAPIConsumers: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/global/api-management/consumers');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch API consumers:', error);
+      return { consumers: [] };
+    }
+  },
+
+  /**
+   * GET /api/global/api-management/versions - لیست نسخه‌ها
+   */
+  getAPIVersions: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/global/api-management/versions');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch API versions:', error);
+      return { versions: [] };
+    }
+  },
+
   // ==================== OBSERVABILITY (Spec: /api/global/observability) ====================
 
   /**

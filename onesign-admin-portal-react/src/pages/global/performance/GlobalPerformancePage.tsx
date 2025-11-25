@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import DataTable, { Column } from '@/components/common/DataTable';
-import { platformService } from '@/lib/api/services';
+import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
 interface PerformanceMetrics {
@@ -62,7 +62,7 @@ export default function GlobalPerformancePage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getPerformanceMetrics();
+      const data = await globalService.getPerformanceMetrics();
       setMetrics(data);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -73,7 +73,7 @@ export default function GlobalPerformancePage() {
 
   const fetchSlowQueries = async () => {
     try {
-      const data = await platformService.getSlowQueries();
+      const data = await globalService.getSlowQueries();
       setSlowQueries(data.queries || []);
     } catch (err) {
       console.error('Failed to fetch slow queries');
@@ -82,7 +82,7 @@ export default function GlobalPerformancePage() {
 
   const fetchAlerts = async () => {
     try {
-      const data = await platformService.getPerformanceAlerts();
+      const data = await globalService.getPerformanceAlerts();
       setAlerts(data.alerts || []);
     } catch (err) {
       console.error('Failed to fetch alerts');
@@ -91,7 +91,7 @@ export default function GlobalPerformancePage() {
 
   const resolveAlert = async (alertId: string) => {
     try {
-      await platformService.resolvePerformanceAlert(alertId);
+      await globalService.resolvePerformanceAlert(alertId);
       setAlerts(prev => prev.map(alert =>
         alert.id === alertId ? { ...alert, resolved: true } : alert
       ));

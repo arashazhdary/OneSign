@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { platformService } from '@/lib/api/services';
+import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
 interface PlatformVersion {
@@ -88,24 +88,24 @@ export default function GlobalPlatformPage() {
     setError('');
     try {
       if (activeTab === 'version') {
-        const data = await platformService.getPlatformVersion();
+        const data = await globalService.getPlatformVersion();
         setPlatformVersion(data);
       } else if (activeTab === 'migrations') {
-        const data = await platformService.getPlatformMigrations(migrationPage, pageSize);
+        const data = await globalService.getPlatformMigrations(migrationPage, pageSize);
         setMigrations(data.items || []);
         setTotalMigrations(data.totalCount || 0);
       } else if (activeTab === 'tests') {
-        const data = await platformService.getPlatformTests(testPage, pageSize);
+        const data = await globalService.getPlatformTests(testPage, pageSize);
         setTestResults(data.items || []);
         setTotalTests(data.totalCount || 0);
       } else if (activeTab === 'health') {
-        const data = await platformService.getPlatformHealth();
+        const data = await globalService.getPlatformHealth();
         setSystemHealth(data.services || []);
       } else if (activeTab === 'diagnostics') {
-        const data = await platformService.getPlatformDiagnostics();
+        const data = await globalService.getPlatformDiagnostics();
         setDiagnostics(data.diagnostics || []);
       } else if (activeTab === 'docs') {
-        const data = await platformService.getPlatformOpenApiDocs();
+        const data = await globalService.getPlatformOpenApiDocs();
         setOpenApiSpec(data);
       }
     } catch (err) {
@@ -119,7 +119,7 @@ export default function GlobalPlatformPage() {
   const runTests = async () => {
     setError('');
     try {
-      await platformService.runPlatformTests();
+      await globalService.runPlatformTests();
       fetchData();
     } catch (err: any) {
       setError(err.response?.data?.errorMessage || t('common.error'));
@@ -130,7 +130,7 @@ export default function GlobalPlatformPage() {
     setError('');
     setApplyingMigration(true);
     try {
-      await platformService.applyPlatformMigration(migrationId);
+      await globalService.applyPlatformMigration(migrationId);
       fetchData();
     } catch (err: any) {
       setError(err.response?.data?.errorMessage || t('common.error'));
@@ -142,7 +142,7 @@ export default function GlobalPlatformPage() {
   const getTestResult = async (testId: string) => {
     setError('');
     try {
-      const data = await platformService.getPlatformTestById(testId);
+      const data = await globalService.getPlatformTestById(testId);
       setSingleTestResult(data);
     } catch (err: any) {
       setError(err.response?.data?.errorMessage || t('common.error'));
@@ -152,7 +152,7 @@ export default function GlobalPlatformPage() {
   const getTestResults = async () => {
     setError('');
     try {
-      const data = await platformService.getPlatformTestResults();
+      const data = await globalService.getPlatformTestResults();
       setTestResults(data.items || []);
       setTotalTests(data.totalCount || 0);
     } catch (err: any) {
@@ -164,7 +164,7 @@ export default function GlobalPlatformPage() {
     setError('');
     setGeneratingDocs(true);
     try {
-      await platformService.generatePlatformDocs();
+      await globalService.generatePlatformDocs();
       fetchData();
     } catch (err: any) {
       setError(err.response?.data?.errorMessage || t('common.error'));

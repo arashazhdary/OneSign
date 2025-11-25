@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import DataTable, { Column } from '@/components/common/DataTable';
 import Modal from '@/components/common/Modal';
 import StatusBadge from '@/components/common/StatusBadge';
-import { platformService } from '@/lib/api/services';
+import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
 interface Migration {
@@ -82,7 +82,7 @@ export default function GlobalMigrationsPage() {
 
   const fetchMigrations = async () => {
     try {
-      const data = await platformService.getPlatformMigrations(1, 100);
+      const data = await globalService.getPlatformMigrations(1, 100);
       setMigrations(data.migrations || []);
     } catch (err) {
       // Mock data
@@ -262,7 +262,7 @@ export default function GlobalMigrationsPage() {
     setSuccess('');
 
     try {
-      await platformService.applyPlatformMigration(migrationToRun.id);
+      await globalService.applyPlatformMigration(migrationToRun.id);
       setSuccess(`Migration ${migrationToRun.name} started successfully`);
       setShowRunModal(false);
       setMigrationToRun(null);
