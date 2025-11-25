@@ -32,8 +32,8 @@ function App() {
   const routing = useRoutes([
     ...routes,
     // Default redirects
-    { path: '/', element: <Navigate to="/admin/dashboard" replace /> },
-    { path: '*', element: <Navigate to="/admin/dashboard" replace /> },
+    { path: '/', element: <Navigate to="/tenant/dashboard" replace /> },
+    { path: '*', element: <Navigate to="/tenant/dashboard" replace /> },
   ]);
 
   return (
