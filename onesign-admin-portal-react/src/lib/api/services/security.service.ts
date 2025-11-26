@@ -372,6 +372,27 @@ export const securityService = {
     const response = await apiClient.post(`/api/tenant/security/alerts/rules/${ruleId}/toggle`);
     return response.data;
   },
+
+  /**
+   * GET /api/tenant/security/alerts - لیست هشدارها
+   */
+  getAlerts: async (tenantId: string): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/security/alerts');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch alerts:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/tenant/security/alerts/rules/{id}/mute - بی‌صدا کردن قانون هشدار
+   */
+  muteAlertRule: async (ruleId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/tenant/security/alerts/rules/${ruleId}/mute`);
+    return response.data;
+  },
 };
 
 export default securityService;

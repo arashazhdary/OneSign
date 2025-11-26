@@ -1430,6 +1430,14 @@ export const globalService = {
   deleteGlobalIntegration: async (integrationId: string): Promise<void> => {
     await apiClient.delete(`/api/global/integrations/${integrationId}`);
   },
+
+  /**
+   * POST /api/global/integrations/{id}/test - تست یکپارچه‌سازی
+   */
+  testGlobalIntegration: async (integrationId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/integrations/${integrationId}/test`);
+    return response.data;
+  },
 };
 
 export default globalService;

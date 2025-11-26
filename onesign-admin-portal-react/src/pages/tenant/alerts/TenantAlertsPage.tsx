@@ -256,7 +256,28 @@ export default function TenantAlertsPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      // Replace with actual API call
+      const ruleData = {
+        name: form.name,
+        description: form.description,
+        condition: {
+          type: form.conditionType,
+          metric: form.metric,
+          operator: form.operator,
+          value: form.value,
+        },
+        channels: form.channels.map(ch => ({
+          type: ch.type,
+          config: ch.config ? JSON.parse(ch.config) : {},
+        })),
+        severity: form.severity,
+        isEnabled: form.isEnabled,
+      };
+
+      if (editingRule) {
+        await securityService.updateAlertRule(editingRule.id, ruleData);
+      } else {
+        await securityService.createAlertRule(ruleData);
+      }
       setSuccess(editingRule ? 'Alert rule updated successfully' : 'Alert rule created successfully');
       setShowRuleModal(false);
       fetchAlertRules();
@@ -271,7 +292,7 @@ export default function TenantAlertsPage() {
     if (!tenantId || !confirm('Are you sure you want to delete this alert rule?')) return;
     setLoading(true);
     try {
-      // Replace with actual API call
+      await securityService.deleteAlertRule(id);
       setSuccess('Alert rule deleted successfully');
       fetchAlertRules();
     } catch (err: any) {
@@ -285,7 +306,7 @@ export default function TenantAlertsPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      // Replace with actual API call
+      await securityService.toggleAlertRule(id);
       setSuccess(`Alert rule ${isEnabled ? 'enabled' : 'disabled'} successfully`);
       fetchAlertRules();
     } catch (err: any) {
@@ -299,7 +320,7 @@ export default function TenantAlertsPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      // Replace with actual API call
+      await securityService.muteAlertRule(id);
       setSuccess('Alert rule muted successfully');
       fetchAlertRules();
     } catch (err: any) {
