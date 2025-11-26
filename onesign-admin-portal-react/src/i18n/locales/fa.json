@@ -4408,5 +4408,189 @@
     "allSeverities": "همه شدت‌ها",
     "affectedTenants": "سازمان‌های تحت تأثیر",
     "ruleName": "نام قانون"
+  },
+  "tenantTokens": {
+    "title": "توکن‌ها",
+    "subtitle": "مدیریت توکن‌های دسترسی و تازه‌سازی",
+    "createNewToken": "ایجاد توکن جدید",
+    "tokenName": "نام توکن",
+    "tokenType": "نوع توکن",
+    "accessToken": "توکن دسترسی",
+    "refreshToken": "توکن تازه‌سازی",
+    "expiresAt": "انقضا در",
+    "revokeToken": "لغو توکن",
+    "tokenCreated": "توکن با موفقیت ایجاد شد",
+    "tokenRevoked": "توکن با موفقیت لغو شد"
+  },
+  "tenantInsightsPage": {
+    "avgDailyLogins": "میانگین ورود روزانه",
+    "highRiskUsers": "کاربران پرخطر",
+    "createReportSubscription": "ایجاد اشتراک گزارش",
+    "editReportSubscription": "ویرایش اشتراک گزارش",
+    "userBehaviorAnalysis": "تحلیل رفتار کاربر",
+    "saveCustomView": "ذخیره نمای سفارشی"
+  },
+  "tenantAppsPage": {
+    "manageClientSecrets": "مدیریت کلیدهای محرمانه کلاینت",
+    "secretDescription": "توضیحات کلید محرمانه (مثلاً Production، Development)",
+    "orgUnitAssignments": "تخصیص واحد سازمانی",
+    "avgSessionDuration": "میانگین مدت نشست"
+  },
+  "tenantBackupsPage": {
+    "createManualBackup": "ایجاد پشتیبان دستی",
+    "configureBackupSchedule": "پیکربندی زمان‌بندی پشتیبان"
+  },
+  "tenantServiceAccountsPage": {
+    "title": "حساب‌های سرویس",
+    "createServiceAccount": "ایجاد حساب سرویس",
+    "generateNewSecret": "تولید کلید محرمانه جدید",
+    "yourNewSecret": "کلید محرمانه جدید شما",
+    "deleteServiceAccount": "حذف حساب سرویس"
+  },
+  "tenantQuotasPage": {
+    "requestQuotaIncrease": "درخواست افزایش سهمیه"
+  },
+  "tenantExportsPage": {
+    "dataExportManagement": "مدیریت خروجی داده"
+  },
+  "tenantApiUsagePage": {
+    "avgResponseTime": "میانگین زمان پاسخ"
+  },
+  "tenantAlertsPage": {
+    "createAlertRule": "ایجاد قانون هشدار"
+  },
+  "tenantDataRetentionPage": {
+    "dataRetentionPolicies": "سیاست‌های نگهداری داده",
+    "dataStorageOverview": "نمای کلی ذخیره‌سازی داده",
+    "createRetentionPolicy": "ایجاد سیاست نگهداری"
+  },
+  "tenantExtensibilityPage": {
+    "createLoginHook": "ایجاد هوک ورود",
+    "createTokenRule": "ایجاد قانون توکن",
+    "availableEventTypes": "انواع رویداد موجود"
+  },
+  "tenantImportsPage": {
+    "dataImportManagement": "مدیریت ورود داده",
+    "uploadImportFile": "آپلود فایل ورودی",
+    "configureFieldMapping": "پیکربندی نگاشت فیلد"
+  },
+  "tenantAnalyticsUsersPage": {
+    "title": "داشبورد تحلیل کاربران",
+    "authMethodsDistribution": "توزیع روش‌های احراز هویت",
+    "userLifecycleStages": "مراحل چرخه حیات کاربر",
+    "loginActivityHeatmap": "نقشه حرارتی فعالیت ورود (بر اساس ساعت و روز)"
+  },
+  "tenantSessionsPage": {
+    "activeSessionsManagement": "مدیریت نشست‌های فعال",
+    "suspiciousActivityDetected": "فعالیت مشکوک شناسایی شد",
+    "searchPlaceholder": "جستجو بر اساس نام کاربر، ایمیل یا آدرس IP..."
+  },
+  "tenantConditionalAccessPage": {
+    "conditionalAccessPolicies": "سیاست‌های دسترسی شرطی"
+  },
+  "tenantBrandingPage": {
+    "loginPageCustomization": "سفارشی‌سازی صفحه ورود",
+    "editEmailTemplate": "ویرایش قالب ایمیل"
+  },
+  "tenantHuntingPage": {
+    "customCronExpression": "عبارت کران سفارشی",
+    "valueToMatch": "مقدار برای تطبیق"
+  },
+  "tenantUsersDetailPage": {
+    "roleNotFound": "نقش یافت نشد",
+    "userLifecycleTimeline": "خط زمانی چرخه حیات کاربر"
+  },
+  "tenantAdaptiveSecurityPage": {
+    "userRiskScore": "امتیاز ریسک کاربر",
+    "highRiskUsers": "کاربران پرخطر",
+    "avgRiskScore": "میانگین امتیاز ریسک",
+    "getRiskScore": "دریافت امتیاز ریسک",
+    "searchPoliciesPlaceholder": "جستجوی سیاست‌ها..."
+  },
+  "tenantPrivacyPage": {
+    "createDataRequest": "ایجاد درخواست داده"
+  },
+  "tenantChangeManagementPage": {
+    "originalChangeSet": "مجموعه تغییرات اصلی",
+    "addApprovalComment": "نظر تأیید خود را اضافه کنید...",
+    "provideRejectionReason": "لطفاً دلیل رد را به تفصیل بنویسید..."
+  },
+  "tenantAutomationPage": {
+    "stepExecutionFlow": "جریان اجرای مراحل"
+  },
+  "placeholders": {
+    "enterPassword": "رمز عبور خود را وارد کنید",
+    "confirmPassword": "رمز عبور خود را تأیید کنید",
+    "searchTenant": "جستجوی سازمان...",
+    "enterKeyVersionId": "شناسه نسخه کلید را وارد کنید",
+    "enterTestIdToViewDetails": "شناسه تست را برای مشاهده جزئیات وارد کنید",
+    "pasteAccessToken": "توکن دسترسی خود را اینجا بچسبانید",
+    "searchInEvents": "جستجو در رویدادها...",
+    "tenantIdsCommaSeparated": "شناسه‌های سازمان (جداشده با کاما)",
+    "variantA": "نوع A",
+    "variantB": "نوع B",
+    "filterByTenantIdOrName": "فیلتر بر اساس شناسه یا نام سازمان",
+    "enterOneTenantIdPerLine": "یک شناسه سازمان در هر خط وارد کنید",
+    "enterClientId": "شناسه کلاینت را وارد کنید",
+    "enterClientSecret": "کلید محرمانه کلاینت را وارد کنید",
+    "companyName": "نام شرکت",
+    "maintenanceMessageForUsers": "پیام نگهداری برای کاربران",
+    "describeThePurposeAndScope": "هدف و محدوده این کمپین بررسی را توضیح دهید",
+    "provideJustification": "توجیه تصمیم خود را ارائه دهید",
+    "enterRoleName": "نام نقش را وارد کنید",
+    "enterRoleDescription": "توضیحات نقش را وارد کنید",
+    "describeWhatThisRoleCanDo": "توضیح دهید این نقش چه کارهایی می‌تواند انجام دهد",
+    "enterApiKeyName": "نام کلید API را وارد کنید",
+    "describeMaintenanceActivity": "فعالیت نگهداری را توضیح دهید",
+    "searchTemplates": "جستجوی قالب‌ها...",
+    "enterUserName": "نام کاربر را وارد کنید",
+    "enterTenantId": "شناسه سازمان را وارد کنید",
+    "enterReasonForSuspension": "دلیل تعلیق را وارد کنید...",
+    "enterYourNote": "یادداشت خود را وارد کنید...",
+    "enterEntityId": "شناسه موجودیت را وارد کنید",
+    "enterEntityName": "نام موجودیت را وارد کنید",
+    "from": "از",
+    "to": "تا",
+    "userIdForRiskScore": "شناسه کاربر برای امتیاز ریسک..."
+  },
+  "globalPlatformPage": {
+    "platformManagement": "مدیریت پلتفرم",
+    "buildNumber": "شماره ساخت",
+    "releaseDate": "تاریخ انتشار",
+    "appliedAt": "اعمال شده در",
+    "executionTime": "زمان اجرا",
+    "systemDiagnostics": "تشخیص سیستم",
+    "testResultDetails": "جزئیات نتیجه تست",
+    "testName": "نام تست",
+    "lastRun": "آخرین اجرا",
+    "lastChecked": "آخرین بررسی",
+    "availableEndpoints": "نقاط پایانی موجود"
+  },
+  "globalChangeManagementPage": {
+    "searchTenantPlaceholder": "جستجوی سازمان..."
+  },
+  "globalCryptoPage": {
+    "enterKeyVersionId": "شناسه نسخه کلید را وارد کنید"
+  },
+  "globalFeatureFlagsPage": {
+    "tenantIdsCommaSeparated": "شناسه‌های سازمان (جداشده با کاما)"
+  },
+  "globalHuntingPage": {
+    "filterByTenantIdOrName": "فیلتر بر اساس شناسه یا نام سازمان",
+    "enterOneTenantIdPerLine": "یک شناسه سازمان در هر خط وارد کنید"
+  },
+  "globalMaintenancePage": {
+    "describeMaintenanceActivity": "فعالیت نگهداری را توضیح دهید"
+  },
+  "globalTemplatesPage": {
+    "searchTemplates": "جستجوی قالب‌ها..."
+  },
+  "globalTenantsPage": {
+    "acmeCorporation": "شرکت اکمی",
+    "enterReasonForSuspension": "دلیل تعلیق را وارد کنید..."
+  },
+  "tenantFederationPage": {
+    "mySamlProvider": "ارائه‌دهنده SAML من",
+    "myScimIntegration": "یکپارچه‌سازی SCIM من"
   }
 }

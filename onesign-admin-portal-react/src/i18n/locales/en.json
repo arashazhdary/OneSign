@@ -4409,5 +4409,189 @@
     "allSeverities": "All Severities",
     "affectedTenants": "Affected Tenants",
     "ruleName": "Rule Name"
+  },
+  "tenantTokens": {
+    "title": "Tokens",
+    "subtitle": "Manage access and refresh tokens",
+    "createNewToken": "Create New Token",
+    "tokenName": "Token Name",
+    "tokenType": "Token Type",
+    "accessToken": "Access Token",
+    "refreshToken": "Refresh Token",
+    "expiresAt": "Expires At",
+    "revokeToken": "Revoke Token",
+    "tokenCreated": "Token created successfully",
+    "tokenRevoked": "Token revoked successfully"
+  },
+  "tenantInsightsPage": {
+    "avgDailyLogins": "Avg Daily Logins",
+    "highRiskUsers": "High Risk Users",
+    "createReportSubscription": "Create Report Subscription",
+    "editReportSubscription": "Edit Report Subscription",
+    "userBehaviorAnalysis": "User Behavior Analysis",
+    "saveCustomView": "Save Custom View"
+  },
+  "tenantAppsPage": {
+    "manageClientSecrets": "Manage Client Secrets",
+    "secretDescription": "Secret description (e.g., Production, Development)",
+    "orgUnitAssignments": "Organizational Unit Assignments",
+    "avgSessionDuration": "Avg Session Duration"
+  },
+  "tenantBackupsPage": {
+    "createManualBackup": "Create Manual Backup",
+    "configureBackupSchedule": "Configure Backup Schedule"
+  },
+  "tenantServiceAccountsPage": {
+    "title": "Service Accounts",
+    "createServiceAccount": "Create Service Account",
+    "generateNewSecret": "Generate New Secret",
+    "yourNewSecret": "Your New Secret",
+    "deleteServiceAccount": "Delete Service Account"
+  },
+  "tenantQuotasPage": {
+    "requestQuotaIncrease": "Request Quota Increase"
+  },
+  "tenantExportsPage": {
+    "dataExportManagement": "Data Export Management"
+  },
+  "tenantApiUsagePage": {
+    "avgResponseTime": "Avg Response Time"
+  },
+  "tenantAlertsPage": {
+    "createAlertRule": "Create Alert Rule"
+  },
+  "tenantDataRetentionPage": {
+    "dataRetentionPolicies": "Data Retention Policies",
+    "dataStorageOverview": "Data Storage Overview",
+    "createRetentionPolicy": "Create Retention Policy"
+  },
+  "tenantExtensibilityPage": {
+    "createLoginHook": "Create Login Hook",
+    "createTokenRule": "Create Token Rule",
+    "availableEventTypes": "Available Event Types"
+  },
+  "tenantImportsPage": {
+    "dataImportManagement": "Data Import Management",
+    "uploadImportFile": "Upload Import File",
+    "configureFieldMapping": "Configure Field Mapping"
+  },
+  "tenantAnalyticsUsersPage": {
+    "title": "User Analytics Dashboard",
+    "authMethodsDistribution": "Authentication Methods Distribution",
+    "userLifecycleStages": "User Lifecycle Stages",
+    "loginActivityHeatmap": "Login Activity Heatmap (by Hour and Day)"
+  },
+  "tenantSessionsPage": {
+    "activeSessionsManagement": "Active Sessions Management",
+    "suspiciousActivityDetected": "Suspicious Activity Detected",
+    "searchPlaceholder": "Search by user name, email, or IP address..."
+  },
+  "tenantConditionalAccessPage": {
+    "conditionalAccessPolicies": "Conditional Access Policies"
+  },
+  "tenantBrandingPage": {
+    "loginPageCustomization": "Login Page Customization",
+    "editEmailTemplate": "Edit Email Template"
+  },
+  "tenantHuntingPage": {
+    "customCronExpression": "Custom Cron Expression",
+    "valueToMatch": "Value to match"
+  },
+  "tenantUsersDetailPage": {
+    "roleNotFound": "Role Not Found",
+    "userLifecycleTimeline": "User Lifecycle Timeline"
+  },
+  "tenantAdaptiveSecurityPage": {
+    "userRiskScore": "User Risk Score",
+    "highRiskUsers": "High Risk Users",
+    "avgRiskScore": "Avg Risk Score",
+    "getRiskScore": "Get Risk Score",
+    "searchPoliciesPlaceholder": "Search policies..."
+  },
+  "tenantPrivacyPage": {
+    "createDataRequest": "Create Data Request"
+  },
+  "tenantChangeManagementPage": {
+    "originalChangeSet": "Original Change Set",
+    "addApprovalComment": "Add your approval comment...",
+    "provideRejectionReason": "Please provide a detailed reason for rejection..."
+  },
+  "tenantAutomationPage": {
+    "stepExecutionFlow": "Step Execution Flow"
+  },
+  "placeholders": {
+    "enterPassword": "Enter your password",
+    "confirmPassword": "Confirm your password",
+    "searchTenant": "Search tenant...",
+    "enterKeyVersionId": "Enter key version ID",
+    "enterTestIdToViewDetails": "Enter test ID to view details",
+    "pasteAccessToken": "Paste your access token here",
+    "searchInEvents": "Search in events...",
+    "tenantIdsCommaSeparated": "Tenant IDs (comma-separated)",
+    "variantA": "Variant A",
+    "variantB": "Variant B",
+    "filterByTenantIdOrName": "Filter by tenant ID or name",
+    "enterOneTenantIdPerLine": "Enter one tenant ID per line",
+    "enterClientId": "Enter client ID",
+    "enterClientSecret": "Enter client secret",
+    "companyName": "Company Name",
+    "maintenanceMessageForUsers": "Maintenance message for users",
+    "describeThePurposeAndScope": "Describe the purpose and scope of this review campaign",
+    "provideJustification": "Provide justification for your decision",
+    "enterRoleName": "Enter role name",
+    "enterRoleDescription": "Enter role description",
+    "describeWhatThisRoleCanDo": "Describe what this role can do",
+    "enterApiKeyName": "Enter API key name",
+    "describeMaintenanceActivity": "Describe the maintenance activity",
+    "searchTemplates": "Search templates...",
+    "enterUserName": "Enter user name",
+    "enterTenantId": "Enter tenant ID",
+    "enterReasonForSuspension": "Enter reason for suspension...",
+    "enterYourNote": "Enter your note...",
+    "enterEntityId": "Enter entity ID",
+    "enterEntityName": "Enter entity name",
+    "from": "From",
+    "to": "To",
+    "userIdForRiskScore": "User ID for Risk Score..."
+  },
+  "globalPlatformPage": {
+    "platformManagement": "Platform Management",
+    "buildNumber": "Build Number",
+    "releaseDate": "Release Date",
+    "appliedAt": "Applied At",
+    "executionTime": "Execution Time",
+    "systemDiagnostics": "System Diagnostics",
+    "testResultDetails": "Test Result Details",
+    "testName": "Test Name",
+    "lastRun": "Last Run",
+    "lastChecked": "Last Checked",
+    "availableEndpoints": "Available Endpoints"
+  },
+  "globalChangeManagementPage": {
+    "searchTenantPlaceholder": "Search tenant..."
+  },
+  "globalCryptoPage": {
+    "enterKeyVersionId": "Enter key version ID"
+  },
+  "globalFeatureFlagsPage": {
+    "tenantIdsCommaSeparated": "Tenant IDs (comma-separated)"
+  },
+  "globalHuntingPage": {
+    "filterByTenantIdOrName": "Filter by tenant ID or name",
+    "enterOneTenantIdPerLine": "Enter one tenant ID per line"
+  },
+  "globalMaintenancePage": {
+    "describeMaintenanceActivity": "Describe the maintenance activity"
+  },
+  "globalTemplatesPage": {
+    "searchTemplates": "Search templates..."
+  },
+  "globalTenantsPage": {
+    "acmeCorporation": "Acme Corporation",
+    "enterReasonForSuspension": "Enter reason for suspension..."
+  },
+  "tenantFederationPage": {
+    "mySamlProvider": "My SAML Provider",
+    "myScimIntegration": "My SCIM Integration"
   }
 }
