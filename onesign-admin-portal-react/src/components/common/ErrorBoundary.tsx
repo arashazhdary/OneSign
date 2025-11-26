@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { withTranslation, WithTranslation } from 'react-i18next';
 
-interface Props {
+interface Props extends WithTranslation {
   children: ReactNode;
   fallback?: ReactNode;
 }
@@ -63,16 +64,16 @@ class ErrorBoundary extends Component<Props, State> {
                 </svg>
               </div>
               <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-                Something went wrong
+                {this.props.t('common.somethingWentWrong')}
               </h1>
             </div>
             <p className="text-slate-600 dark:text-slate-400 mb-4">
-              An error occurred while loading the application. Please try refreshing the page.
+              {this.props.t('common.errorOccurred')}
             </p>
             {import.meta.env.DEV && this.state.error && (
               <details className="mt-4 p-4 bg-slate-100 dark:bg-slate-700 rounded text-sm">
                 <summary className="cursor-pointer font-semibold mb-2 text-slate-900 dark:text-white">
-                  Error Details (Development Only)
+                  {this.props.t('common.errorDetails')}
                 </summary>
                 <pre className="whitespace-pre-wrap text-xs text-red-600 dark:text-red-400">
                   {this.state.error.toString()}
@@ -87,7 +88,7 @@ class ErrorBoundary extends Component<Props, State> {
               }}
               className="mt-4 w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
             >
-              Reload Page
+              {this.props.t('common.reloadPage')}
             </button>
           </div>
         </div>
@@ -98,5 +99,5 @@ class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-export default ErrorBoundary;
+export default withTranslation()(ErrorBoundary);
 

@@ -144,7 +144,7 @@ export default function TenantOrgUnitsDetailPage() {
         description: data.description || '',
       });
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch org unit');
+      setError(err.message || t('common.failedToFetchOrgUnit'));
     } finally {
       setLoading(false);
     }

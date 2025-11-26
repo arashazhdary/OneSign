@@ -229,7 +229,7 @@ export default function TenantUsersPage() {
           }}
           className="w-full max-w-xs px-3 py-2 border rounded"
         >
-          {(!userScope || userScope.isGlobalAdmin) && <option value="">{t('common.all') || 'All'}</option>}
+          {(!userScope || userScope.isGlobalAdmin) && <option value="">{t('common.all')}</option>}
           {getFilteredOrgTree().map(node => (
             <option key={node.id} value={node.id}>{node.name}</option>
           ))}
@@ -379,7 +379,7 @@ export default function TenantUsersPage() {
               <tr key={user.id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.email}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.status}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.isAdmin ? 'Yes' : 'No'}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.isAdmin ? t('common.yes') : t('common.no')}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.lastLoginAt || '-'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <div className="flex gap-2">
@@ -389,7 +389,7 @@ export default function TenantUsersPage() {
                     >
                       {t('tenant.userOrgUnits.assignOrgUnits')}
                     </button>
-                    {user.status !== 'Disabled' && (
+                    {user.status !== t('common.disabled') && (
                       <button
                         onClick={() => handleDisableUser(user.id)}
                         className="text-red-600 hover:text-red-900"

@@ -19,18 +19,18 @@ export const TenantLayout: React.FC = () => {
         initial={false}
         animate={isRTL 
           ? { 
-              marginRight: `${sidebarWidth}px`, 
-              marginLeft: 0,
+              left: 0,
+              right: `${sidebarWidth}px`,
               width: `calc(100% - ${sidebarWidth}px)`
             }
           : { 
-              marginLeft: `${sidebarWidth}px`, 
-              marginRight: 0,
+              left: `${sidebarWidth}px`,
+              right: 0,
               width: `calc(100% - ${sidebarWidth}px)`
             }
         }
         transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="pt-16"
+        className="fixed pt-16 top-0 bottom-0 overflow-y-auto"
       >
         <div className="p-6 md:p-8">
           <motion.div

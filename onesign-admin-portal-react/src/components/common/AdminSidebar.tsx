@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard,
   Users,
@@ -29,6 +30,7 @@ interface MenuItem {
 }
 
 const AdminSidebar: React.FC = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const { user } = useAuthStore();
@@ -39,22 +41,22 @@ const AdminSidebar: React.FC = () => {
   const menuGroups: { id: string; label: string; items: MenuItem[] }[] = [
     {
       id: 'admin',
-      label: 'Admin',
+      label: t('common.admin'),
       items: [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
-        { id: 'users', label: 'Users', icon: Users, href: '/admin/users' },
-        { id: 'tenants', label: 'Tenants', icon: Building2, href: '/admin/tenants' },
-        { id: 'roles', label: 'Roles', icon: Shield, href: '/admin/roles' },
-        { id: 'api-keys', label: 'API Keys', icon: Key, href: '/admin/api-keys' },
-        { id: 'settings', label: 'Settings', icon: Settings, href: '/admin/settings' },
+        { id: 'dashboard', label: t('nav.dashboard'), icon: LayoutDashboard, href: '/admin/dashboard' },
+        { id: 'users', label: t('nav.users'), icon: Users, href: '/admin/users' },
+        { id: 'tenants', label: t('nav.tenants'), icon: Building2, href: '/admin/tenants' },
+        { id: 'roles', label: t('nav.roles'), icon: Shield, href: '/admin/roles' },
+        { id: 'api-keys', label: t('sidebar.apiKeys'), icon: Key, href: '/admin/api-keys' },
+        { id: 'settings', label: t('nav.settings'), icon: Settings, href: '/admin/settings' },
       ],
     },
     {
       id: 'portals',
-      label: 'Switch Portal',
+      label: t('sidebar.switchPortal'),
       items: [
-        { id: 'tenant-portal', label: 'Tenant Portal', icon: Building2, href: '/tenant/dashboard' },
-        { id: 'global-portal', label: 'Global Admin', icon: Globe, href: '/global/platform' },
+        { id: 'tenant-portal', label: t('sidebar.tenantPortal'), icon: Building2, href: '/tenant/dashboard' },
+        { id: 'global-portal', label: t('sidebar.globalAdmin'), icon: Globe, href: '/global/platform' },
       ],
     },
   ];
@@ -104,7 +106,7 @@ const AdminSidebar: React.FC = () => {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gradient-primary">OneSign</h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Admin Portal</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{t('common.adminPortal')}</p>
               </div>
             </motion.div>
           )}
@@ -139,7 +141,7 @@ const AdminSidebar: React.FC = () => {
             )} />
             <input
               type="text"
-              placeholder="Search menu..."
+              placeholder={t('common.searchMenu')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={cn(

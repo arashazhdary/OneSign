@@ -125,7 +125,7 @@ export default function TenantAppsDetailPage() {
         url: data.url || '',
       });
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch application');
+      setError(err.message || t('common.failedToFetchApplication'));
     } finally {
       setLoading(false);
     }
@@ -195,7 +195,7 @@ export default function TenantAppsDetailPage() {
       setShowEditModal(false);
       fetchApplication();
     } catch (err: any) {
-      setError(err.message || 'Failed to update application');
+      setError(err.message || t('common.failedToUpdateApplication'));
     } finally {
       setSaving(false);
     }

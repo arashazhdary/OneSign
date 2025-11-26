@@ -230,7 +230,7 @@ export default function TenantRolesDetailPage() {
       setShowEditModal(false);
       fetchData();
     } catch (err: any) {
-      setError(err?.message || 'Failed to update role');
+      setError(err?.message || t('common.failedToUpdateRole'));
     }
   };
 
@@ -249,7 +249,7 @@ export default function TenantRolesDetailPage() {
       setShowPermissionModal(false);
       fetchData();
     } catch (err: any) {
-      setError(err?.message || 'Failed to update permissions');
+      setError(err?.message || t('common.failedToUpdatePermissions'));
     }
   };
 
@@ -266,7 +266,7 @@ export default function TenantRolesDetailPage() {
         navigate('/tenant/roles');
       }, 1500);
     } catch (err: any) {
-      setError(err?.message || 'Failed to delete role');
+      setError(err?.message || t('common.failedToDeleteRole'));
       setShowDeleteConfirm(false);
     }
   };

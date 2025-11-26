@@ -18,11 +18,11 @@ export const AdminLayout: React.FC = () => {
       <motion.main
         initial={false}
         animate={isRTL 
-          ? { marginRight: sidebarWidth, marginLeft: 0 }
-          : { marginLeft: sidebarWidth, marginRight: 0 }
+          ? { marginRight: sidebarWidth }
+          : { marginLeft: sidebarWidth }
         }
         transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="pt-16 w-full"
+        className="pt-16"
       >
         <div className="p-6 md:p-8">
           <motion.div

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import {
   adminService,
@@ -7,6 +8,7 @@ import {
 } from '@/lib/api/services/admin.service';
 
 export default function AdminRolesPage() {
+  const { t } = useTranslation();
   const [roles, setRoles] = useState<PlatformRoleDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -62,7 +64,7 @@ export default function AdminRolesPage() {
       fetchRoles();
     } catch (err: any) {
       console.error('Failed to create platform role:', err);
-      setError(err.response?.data?.message || 'Failed to create role');
+      setError(err.response?.data?.message || t('common.failedToSaveRole'));
     }
   };
 
@@ -75,7 +77,7 @@ export default function AdminRolesPage() {
       fetchRoles();
     } catch (err: any) {
       console.error('Failed to delete platform role:', err);
-      setError(err.response?.data?.message || 'Failed to delete role');
+      setError(err.response?.data?.message || t('common.failedToDeleteRole'));
     }
   };
 

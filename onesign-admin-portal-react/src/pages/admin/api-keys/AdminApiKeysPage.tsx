@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import { adminService, ApiKeyDto, CreateApiKeyDto } from '@/lib/api/services/admin.service';
 
@@ -95,7 +96,7 @@ export default function AdminApiKeysPage() {
       fetchAPIKeys();
     } catch (err: any) {
       console.error('Failed to create admin API key:', err);
-      setError(err.response?.data?.message || 'Failed to create API key');
+      setError(err.response?.data?.message || t('common.failedToCreateApiKey'));
     }
   };
 
@@ -108,7 +109,7 @@ export default function AdminApiKeysPage() {
       fetchAPIKeys();
     } catch (err: any) {
       console.error('Failed to revoke admin API key:', err);
-      setError(err.response?.data?.message || 'Failed to revoke API key');
+      setError(err.response?.data?.message || t('common.failedToRevokeApiKey'));
     }
   };
 

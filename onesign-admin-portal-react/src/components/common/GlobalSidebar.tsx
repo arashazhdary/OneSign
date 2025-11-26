@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import {
   Server,
   Activity,
@@ -53,6 +54,7 @@ interface MenuItem {
 }
 
 const GlobalSidebar: React.FC = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const { user } = useAuthStore();
@@ -63,77 +65,77 @@ const GlobalSidebar: React.FC = () => {
   const menuGroups: { id: string; label: string; items: MenuItem[] }[] = [
     {
       id: 'platform',
-      label: 'Platform',
+      label: t('sidebar.platform'),
       items: [
-        { id: 'platform', label: 'Platform Overview', icon: Server, href: '/global/platform' },
-        { id: 'tenants', label: 'Tenants', icon: Building2, href: '/global/tenants' },
-        { id: 'settings', label: 'Global Settings', icon: Settings, href: '/global/settings' },
-        { id: 'billing', label: 'Billing', icon: CreditCard, href: '/global/billing' },
-        { id: 'licenses', label: 'Licenses', icon: Key, href: '/global/licenses' },
+        { id: 'platform', label: t('sidebar.platformOverview'), icon: Server, href: '/global/platform' },
+        { id: 'tenants', label: t('nav.tenants'), icon: Building2, href: '/global/tenants' },
+        { id: 'settings', label: t('common.globalSettings'), icon: Settings, href: '/global/settings' },
+        { id: 'billing', label: t('sidebar.billing'), icon: CreditCard, href: '/global/billing' },
+        { id: 'licenses', label: t('sidebar.licenses'), icon: Key, href: '/global/licenses' },
       ],
     },
     {
       id: 'monitoring',
-      label: 'Monitoring & Health',
+      label: t('sidebar.monitoringHealth'),
       items: [
-        { id: 'health', label: 'Health', icon: Activity, href: '/global/health' },
-        { id: 'monitoring', label: 'Monitoring', icon: Eye, href: '/global/monitoring' },
-        { id: 'performance', label: 'Performance', icon: Gauge, href: '/global/performance' },
-        { id: 'metrics', label: 'Metrics', icon: BarChart3, href: '/global/metrics' },
-        { id: 'diagnostics', label: 'Diagnostics', icon: Wrench, href: '/global/diagnostics' },
-        { id: 'observability', label: 'Observability', icon: Eye, href: '/global/observability' },
-        { id: 'alerts', label: 'Alerts', icon: Bell, href: '/global/alerts' },
+        { id: 'health', label: t('sidebar.health'), icon: Activity, href: '/global/health' },
+        { id: 'monitoring', label: t('sidebar.monitoring'), icon: Eye, href: '/global/monitoring' },
+        { id: 'performance', label: t('sidebar.performance'), icon: Gauge, href: '/global/performance' },
+        { id: 'metrics', label: t('sidebar.metrics'), icon: BarChart3, href: '/global/metrics' },
+        { id: 'diagnostics', label: t('sidebar.diagnostics'), icon: Wrench, href: '/global/diagnostics' },
+        { id: 'observability', label: t('sidebar.observability'), icon: Eye, href: '/global/observability' },
+        { id: 'alerts', label: t('sidebar.alerts'), icon: Bell, href: '/global/alerts' },
       ],
     },
     {
       id: 'security',
-      label: 'Security',
+      label: t('sidebar.security'),
       items: [
-        { id: 'security', label: 'Security Overview', icon: Shield, href: '/global/security' },
-        { id: 'crypto', label: 'Cryptography', icon: Lock, href: '/global/crypto' },
-        { id: 'access-reviews', label: 'Access Reviews', icon: Eye, href: '/global/access-reviews' },
-        { id: 'hunting', label: 'Threat Hunting', icon: Search, href: '/global/hunting' },
+        { id: 'security', label: t('sidebar.securityOverview'), icon: Shield, href: '/global/security' },
+        { id: 'crypto', label: t('sidebar.cryptography'), icon: Lock, href: '/global/crypto' },
+        { id: 'access-reviews', label: t('common.accessReviews'), icon: Eye, href: '/global/access-reviews' },
+        { id: 'hunting', label: t('sidebar.threatHunting'), icon: Search, href: '/global/hunting' },
       ],
     },
     {
       id: 'intelligence',
-      label: 'Intelligence',
+      label: t('sidebar.intelligence'),
       items: [
-        { id: 'insights', label: 'Insights', icon: Activity, href: '/global/insights' },
-        { id: 'copilot', label: 'AI Copilot', icon: Bot, href: '/global/copilot' },
-        { id: 'audit', label: 'Audit Logs', icon: FileText, href: '/global/audit' },
+        { id: 'insights', label: t('sidebar.insights'), icon: Activity, href: '/global/insights' },
+        { id: 'copilot', label: t('sidebar.aiCopilot'), icon: Bot, href: '/global/copilot' },
+        { id: 'audit', label: t('sidebar.auditLogs'), icon: FileText, href: '/global/audit' },
       ],
     },
     {
       id: 'infrastructure',
-      label: 'Infrastructure',
+      label: t('sidebar.infrastructure'),
       items: [
-        { id: 'environments', label: 'Environments', icon: Boxes, href: '/global/environments' },
-        { id: 'regions', label: 'Regions', icon: MapPin, href: '/global/regions' },
-        { id: 'rate-limiting', label: 'Rate Limiting', icon: Gauge, href: '/global/rate-limiting' },
-        { id: 'backups', label: 'Backups', icon: HardDrive, href: '/global/backups' },
-        { id: 'maintenance', label: 'Maintenance', icon: Wrench, href: '/global/maintenance' },
+        { id: 'environments', label: t('sidebar.environments'), icon: Boxes, href: '/global/environments' },
+        { id: 'regions', label: t('sidebar.regions'), icon: MapPin, href: '/global/regions' },
+        { id: 'rate-limiting', label: t('sidebar.rateLimiting'), icon: Gauge, href: '/global/rate-limiting' },
+        { id: 'backups', label: t('sidebar.backups'), icon: HardDrive, href: '/global/backups' },
+        { id: 'maintenance', label: t('sidebar.maintenance'), icon: Wrench, href: '/global/maintenance' },
       ],
     },
     {
       id: 'automation',
-      label: 'Automation & Changes',
+      label: t('sidebar.automationChanges'),
       items: [
-        { id: 'automation', label: 'Automation', icon: Workflow, href: '/global/automation' },
-        { id: 'change-management', label: 'Change Management', icon: RefreshCw, href: '/global/change-management' },
-        { id: 'changes-audit', label: 'Changes Audit', icon: FileSearch, href: '/global/changes/audit' },
-        { id: 'migrations', label: 'Migrations', icon: ArrowLeftRight, href: '/global/migrations' },
-        { id: 'feature-flags', label: 'Feature Flags', icon: Flag, href: '/global/feature-flags' },
+        { id: 'automation', label: t('sidebar.automation'), icon: Workflow, href: '/global/automation' },
+        { id: 'change-management', label: t('sidebar.changeManagement'), icon: RefreshCw, href: '/global/change-management' },
+        { id: 'changes-audit', label: t('sidebar.changesAudit'), icon: FileSearch, href: '/global/changes/audit' },
+        { id: 'migrations', label: t('sidebar.migrations'), icon: ArrowLeftRight, href: '/global/migrations' },
+        { id: 'feature-flags', label: t('sidebar.featureFlags'), icon: Flag, href: '/global/feature-flags' },
       ],
     },
     {
       id: 'integration',
-      label: 'Integrations',
+      label: t('sidebar.integrations'),
       items: [
-        { id: 'integrations', label: 'Integrations', icon: Network, href: '/global/integrations' },
-        { id: 'webhooks', label: 'Webhooks', icon: Webhook, href: '/global/webhooks' },
-        { id: 'api-management', label: 'API Management', icon: Cpu, href: '/global/api-management' },
-        { id: 'templates', label: 'Templates', icon: FileText, href: '/global/templates' },
+        { id: 'integrations', label: t('sidebar.integrations'), icon: Network, href: '/global/integrations' },
+        { id: 'webhooks', label: t('sidebar.webhooks'), icon: Webhook, href: '/global/webhooks' },
+        { id: 'api-management', label: t('sidebar.apiManagement'), icon: Cpu, href: '/global/api-management' },
+        { id: 'templates', label: t('sidebar.templates'), icon: FileText, href: '/global/templates' },
       ],
     },
   ];
@@ -183,7 +185,7 @@ const GlobalSidebar: React.FC = () => {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-purple-400">OneSign</h1>
-                <p className="text-xs text-slate-400">Global Admin</p>
+                <p className="text-xs text-slate-400">{t('sidebar.globalAdmin')}</p>
               </div>
             </motion.div>
           )}
@@ -207,7 +209,7 @@ const GlobalSidebar: React.FC = () => {
             className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors"
           >
             {isRTL ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-            Back to Tenant
+            {t('sidebar.backToTenant')}
           </Link>
         </div>
       )}
@@ -222,7 +224,7 @@ const GlobalSidebar: React.FC = () => {
             )} />
             <input
               type="text"
-              placeholder="Search menu..."
+              placeholder={t('common.searchMenu')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={cn(
@@ -307,7 +309,7 @@ const GlobalSidebar: React.FC = () => {
             {!sidebarCollapsed && (
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-white truncate">{user.name}</p>
-                <p className="text-xs text-slate-400 truncate">Global Admin</p>
+                <p className="text-xs text-slate-400 truncate">{t('sidebar.globalAdmin')}</p>
               </div>
             )}
           </div>

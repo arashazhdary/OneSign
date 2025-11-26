@@ -160,7 +160,7 @@ export default function TenantNotificationsPage() {
       }
     } catch (err) {
       console.error('Error loading data:', err);
-      setError(t('common.error') || 'Failed to load data');
+      setError(t('common.failedToLoadData'));
     } finally {
       setLoading(false);
     }
@@ -225,12 +225,12 @@ export default function TenantNotificationsPage() {
       resetChannelForm();
       fetchChannels();
     } catch (err: any) {
-      setError(err.message || 'Failed to save channel');
+      setError(err.message || t('common.failedToSaveChannel'));
     }
   };
 
   const handleDeleteChannel = async (channelId: string) => {
-    if (!tenantId || !confirm('Are you sure you want to delete this channel?')) return;
+    if (!tenantId || !confirm(t('common.confirmDelete'))) return;
 
     setError('');
     setSuccess('');
@@ -239,7 +239,7 @@ export default function TenantNotificationsPage() {
       setSuccess('Channel deleted successfully');
       fetchChannels();
     } catch (err: any) {
-      setError(err.message || 'Failed to delete channel');
+      setError(err.message || t('common.failedToDeleteChannel'));
     }
   };
 
@@ -305,12 +305,12 @@ export default function TenantNotificationsPage() {
       resetTemplateForm();
       fetchTemplates();
     } catch (err: any) {
-      setError(err.message || 'Failed to save template');
+      setError(err.message || t('common.failedToSaveTemplate'));
     }
   };
 
   const handleDeleteTemplate = async (templateId: string) => {
-    if (!tenantId || !confirm('Are you sure you want to delete this template?')) return;
+    if (!tenantId || !confirm(t('common.confirmDelete'))) return;
 
     setError('');
     setSuccess('');
@@ -319,7 +319,7 @@ export default function TenantNotificationsPage() {
       setSuccess('Template deleted successfully');
       fetchTemplates();
     } catch (err: any) {
-      setError(err.message || 'Failed to delete template');
+      setError(err.message || t('common.failedToDeleteTemplate'));
     }
   };
 
@@ -402,7 +402,7 @@ export default function TenantNotificationsPage() {
       setSuccess('Notification retry initiated');
       fetchNotifications();
     } catch (err: any) {
-      setError(err.message || 'Failed to retry notification');
+      setError(err.message || t('common.failedToRetryNotification'));
     }
   };
 
@@ -428,10 +428,10 @@ export default function TenantNotificationsPage() {
 
       if (editingRule) {
         await updateNotificationRule(editingRule.id, ruleData);
-        setSuccess('Rule updated successfully');
+        setSuccess(t('common.ruleUpdatedSuccessfully'));
       } else {
         await createNotificationRule(ruleData);
-        setSuccess('Rule created successfully');
+        setSuccess(t('common.ruleCreatedSuccessfully'));
       }
 
       setShowRuleModal(false);
@@ -444,17 +444,17 @@ export default function TenantNotificationsPage() {
   };
 
   const handleDeleteRule = async (ruleId: string) => {
-    if (!tenantId || !confirm('Are you sure you want to delete this rule?')) return;
+    if (!tenantId || !confirm(t('common.confirmDeleteRule'))) return;
 
     setError('');
     setSuccess('');
     try {
       await deleteNotificationRule(ruleId, tenantId);
-      setSuccess('Rule deleted successfully');
+      setSuccess(t('common.ruleDeletedSuccessfully'));
       fetchRules();
     } catch (err: any) {
       console.error('Error deleting rule:', err);
-      setError(err?.message || 'Failed to delete rule');
+      setError(err?.message || t('common.failedToDeleteRule'));
     }
   };
 
@@ -467,7 +467,7 @@ export default function TenantNotificationsPage() {
       fetchRules();
     } catch (err: any) {
       console.error('Error toggling rule:', err);
-      setError(err?.message || 'Failed to toggle rule status');
+      setError(err?.message || t('common.failedToToggleRuleStatus'));
     }
   };
 

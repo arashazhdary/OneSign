@@ -322,7 +322,7 @@ export default function TenantLifecyclePage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.lifecycle.name') || 'Name'}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.name')}</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.lifecycle.duration') || 'Duration (days)'}</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.lifecycle.approval') || 'Approval'}</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
@@ -338,7 +338,7 @@ export default function TenantLifecyclePage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{pkg.duration}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span className={`px-2 py-1 rounded text-xs ${pkg.approvalRequired ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
-                        {pkg.approvalRequired ? t('tenant.lifecycle.required') || 'Required' : t('tenant.lifecycle.notRequired') || 'Not Required'}
+                        {pkg.approvalRequired ? t('common.required') : t('common.notRequired')}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -375,9 +375,9 @@ export default function TenantLifecyclePage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.lifecycle.name') || 'Name'}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.name')}</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.lifecycle.trigger') || 'Trigger'}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.lifecycle.status') || 'Status'}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.status')}</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
                 </tr>
               </thead>
@@ -388,7 +388,7 @@ export default function TenantLifecyclePage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{policy.trigger}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span className={`px-2 py-1 rounded text-xs ${policy.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                        {policy.enabled ? t('tenant.lifecycle.enabled') || 'Enabled' : t('tenant.lifecycle.disabled') || 'Disabled'}
+                        {policy.enabled ? t('common.enabled') : t('common.disabled')}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -429,7 +429,7 @@ export default function TenantLifecyclePage() {
                   </p>
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">{t('tenant.lifecycle.status') || 'Status'}</h3>
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">{t('common.status')}</h3>
                   <p className="text-lg font-semibold">{hrSyncStatus.status}</p>
                 </div>
                 <div>
@@ -514,7 +514,7 @@ export default function TenantLifecyclePage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.lifecycle.eventType') || 'Event Type'}</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.lifecycle.userId') || 'User ID'}</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.lifecycle.timestamp') || 'Timestamp'}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.lifecycle.details') || 'Details'}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.details')}</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -548,7 +548,7 @@ export default function TenantLifecyclePage() {
             <h2 className="text-xl font-bold mb-4">{t('tenant.lifecycle.createPackage') || 'Create Access Package'}</h2>
             <form onSubmit={handleCreateAccessPackage}>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('tenant.lifecycle.name') || 'Name'}</label>
+                <label className="block text-sm font-medium mb-2">{t('common.name')}</label>
                 <input
                   type="text"
                   required
@@ -558,7 +558,7 @@ export default function TenantLifecyclePage() {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('tenant.lifecycle.description') || 'Description'}</label>
+                <label className="block text-sm font-medium mb-2">{t('common.description')}</label>
                 <textarea
                   className="w-full px-3 py-2 border rounded"
                   rows={3}
@@ -621,7 +621,7 @@ export default function TenantLifecyclePage() {
             <h2 className="text-xl font-bold mb-4">{t('tenant.lifecycle.createPolicy') || 'Create Lifecycle Policy'}</h2>
             <form onSubmit={handleCreateLifecyclePolicy}>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('tenant.lifecycle.name') || 'Name'}</label>
+                <label className="block text-sm font-medium mb-2">{t('common.name')}</label>
                 <input
                   type="text"
                   required
@@ -662,7 +662,7 @@ export default function TenantLifecyclePage() {
                     checked={policyEnabled}
                     onChange={(e) => setPolicyEnabled(e.target.checked)}
                   />
-                  {t('tenant.lifecycle.enabled') || 'Enabled'}
+                  {t('common.enabled')}
                 </label>
               </div>
               <div className="flex gap-2">

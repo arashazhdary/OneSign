@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
 import DataTable, { Column } from '@/components/common/DataTable';
 import StatusBadge from '@/components/common/StatusBadge';
@@ -47,7 +48,7 @@ export default function TenantApiKeysPage() {
       setApiKeys(data || []);
     } catch (err: any) {
       console.error('Error fetching API keys:', err);
-      setError(err?.message || 'Failed to fetch API keys');
+      setError(err?.message || t('common.failedToFetchApiKeys'));
     } finally {
       setLoading(false);
     }
@@ -69,7 +70,7 @@ export default function TenantApiKeysPage() {
       fetchAPIKeys();
       setForm({ name: '', expiresAt: '' });
     } catch (err: any) {
-      setError(err?.message || 'Failed to create API key');
+      setError(err?.message || t('common.failedToCreateApiKey'));
     } finally {
       setLoading(false);
     }
@@ -83,7 +84,7 @@ export default function TenantApiKeysPage() {
       setSuccess('API key revoked successfully');
       fetchAPIKeys();
     } catch (err: any) {
-      setError(err?.message || 'Failed to revoke API key');
+      setError(err?.message || t('common.failedToRevokeApiKey'));
     } finally {
       setLoading(false);
     }

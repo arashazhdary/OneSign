@@ -140,7 +140,7 @@ export default function TenantScopesPage() {
       resetForm();
       fetchScopes();
     } catch (error: any) {
-      setError(error?.message || 'Failed to save scope');
+      setError(error?.message || t('common.failedToSaveScope'));
       console.error('Error saving scope:', error);
     }
   };
@@ -168,7 +168,7 @@ export default function TenantScopesPage() {
       setSuccess('Scope deleted successfully');
       fetchScopes();
     } catch (error: any) {
-      setError(error?.message || 'Failed to delete scope');
+      setError(error?.message || t('common.failedToDeleteScope'));
       console.error('Error deleting scope:', error);
     }
   };
@@ -179,7 +179,7 @@ export default function TenantScopesPage() {
       setSuccess(`Scope ${scope.isEnabled ? 'disabled' : 'enabled'} successfully`);
       fetchScopes();
     } catch (error: any) {
-      setError(error?.message || 'Failed to update scope status');
+      setError(error?.message || t('common.failedToUpdateScopeStatus'));
       console.error('Error updating scope status:', error);
     }
   };

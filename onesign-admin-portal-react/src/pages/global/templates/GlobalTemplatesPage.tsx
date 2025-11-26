@@ -259,7 +259,7 @@ export default function GlobalTemplatesPage() {
       resetNewTemplate();
       fetchTemplates();
     } catch (err: any) {
-      setError(err.message || 'Failed to create template');
+      setError(err.message || t('common.failedToCreateTemplate'));
     }
   };
 
@@ -277,7 +277,7 @@ export default function GlobalTemplatesPage() {
         setSuccess('Template published successfully');
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to publish template');
+      setError(err.message || t('common.failedToPublishTemplate'));
     }
   };
 
@@ -302,7 +302,7 @@ export default function GlobalTemplatesPage() {
         setSuccess('Template deleted successfully');
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to delete template');
+      setError(err.message || t('common.failedToDeleteTemplate'));
     }
   };
 

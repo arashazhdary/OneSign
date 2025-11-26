@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
 import DataTable, { Column } from '@/components/common/DataTable';
 import StatusBadge from '@/components/common/StatusBadge';
@@ -43,6 +44,7 @@ interface AlertHistory {
 type Tab = 'rules' | 'history' | 'templates';
 
 export default function TenantAlertsPage() {
+  const { t } = useTranslation();
   const [tenantId, setTenantIdState] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -139,7 +141,7 @@ export default function TenantAlertsPage() {
       setAlertRules(data || mockRules);
     } catch (err: any) {
       console.error('Error fetching alert rules:', err);
-      setError(err?.message || 'Failed to fetch alert rules');
+      setError(err?.message || t('common.failedToFetchAlertRules'));
       // Fallback to mock data
       setAlertRules([
         {
@@ -201,7 +203,7 @@ export default function TenantAlertsPage() {
       setAlertHistory(historyData);
     } catch (err: any) {
       console.error('Error fetching alert history:', err);
-      setError(err?.message || 'Failed to fetch alert history');
+      setError(err?.message || t('common.failedToFetchAlertHistory'));
       // Fallback to mock data
       setAlertHistory([
         {
@@ -282,7 +284,7 @@ export default function TenantAlertsPage() {
       setShowRuleModal(false);
       fetchAlertRules();
     } catch (err: any) {
-      setError(err?.message || 'Failed to save alert rule');
+      setError(err?.message || t('common.failedToSaveAlertRule'));
     } finally {
       setLoading(false);
     }
@@ -296,7 +298,7 @@ export default function TenantAlertsPage() {
       setSuccess('Alert rule deleted successfully');
       fetchAlertRules();
     } catch (err: any) {
-      setError(err?.message || 'Failed to delete alert rule');
+      setError(err?.message || t('common.failedToDeleteAlertRule'));
     } finally {
       setLoading(false);
     }
@@ -310,7 +312,7 @@ export default function TenantAlertsPage() {
       setSuccess(`Alert rule ${isEnabled ? 'enabled' : 'disabled'} successfully`);
       fetchAlertRules();
     } catch (err: any) {
-      setError(err?.message || 'Failed to toggle alert rule');
+      setError(err?.message || t('common.failedToToggleAlertRule'));
     } finally {
       setLoading(false);
     }
@@ -324,7 +326,7 @@ export default function TenantAlertsPage() {
       setSuccess('Alert rule muted successfully');
       fetchAlertRules();
     } catch (err: any) {
-      setError(err?.message || 'Failed to mute alert rule');
+      setError(err?.message || t('common.failedToMuteAlertRule'));
     } finally {
       setLoading(false);
     }

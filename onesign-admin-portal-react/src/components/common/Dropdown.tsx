@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Check } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/utils/cn';
 
 export interface DropdownOption {
@@ -27,7 +28,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   options,
   value,
   onChange,
-  placeholder = 'Select an option',
+  placeholder,
   label,
   error,
   disabled = false,
@@ -35,6 +36,8 @@ const Dropdown: React.FC<DropdownProps> = ({
   searchable = false,
   multiple = false,
 }) => {
+  const { t } = useTranslation();
+  const defaultPlaceholder = placeholder || t('common.selectOption');
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedValues, setSelectedValues] = useState<Set<string>>(
@@ -133,8 +136,8 @@ const Dropdown: React.FC<DropdownProps> = ({
             )}
           >
             {multiple && selectedValues.size > 0
-              ? `${selectedValues.size} selected`
-              : selectedOption?.label || placeholder}
+              ? `${selectedValues.size} ${t('common.selected')}`
+              : selectedOption?.label || defaultPlaceholder}
           </span>
         </span>
         <ChevronDown
@@ -163,7 +166,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search..."
+                  placeholder={t('common.searchPlaceholder')}
                   className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
@@ -173,7 +176,7 @@ const Dropdown: React.FC<DropdownProps> = ({
             <div className="max-h-60 overflow-y-auto scrollbar-thin">
               {filteredOptions.length === 0 ? (
                 <div className="px-4 py-3 text-sm text-slate-500 text-center">
-                  No options found
+                  {t('common.noOptionsFound')}
                 </div>
               ) : (
                 filteredOptions.map((option, index) => {

@@ -215,7 +215,7 @@ export default function TenantWebhooksPage() {
       resetForm();
       fetchWebhooks();
     } catch (error: any) {
-      setError(error?.message || 'Failed to create webhook');
+      setError(error?.message || t('common.failedToCreateWebhook'));
       console.error('Error creating webhook:', error);
     }
   };
@@ -240,7 +240,7 @@ export default function TenantWebhooksPage() {
       resetForm();
       fetchWebhooks();
     } catch (error: any) {
-      setError(error?.message || 'Failed to update webhook');
+      setError(error?.message || t('common.failedToUpdateWebhook'));
       console.error('Error updating webhook:', error);
     }
   };
@@ -257,7 +257,7 @@ export default function TenantWebhooksPage() {
       setSuccess('Webhook deleted successfully');
       fetchWebhooks();
     } catch (error: any) {
-      setError(error?.message || 'Failed to delete webhook');
+      setError(error?.message || t('common.failedToDeleteWebhook'));
       console.error('Error deleting webhook:', error);
     }
   };
@@ -276,7 +276,7 @@ export default function TenantWebhooksPage() {
         setError(result.message || 'Test failed');
       }
     } catch (error: any) {
-      setError(error?.message || 'Failed to test webhook');
+      setError(error?.message || t('common.failedToTestWebhook'));
       console.error('Error testing webhook:', error);
     }
   };
@@ -291,7 +291,7 @@ export default function TenantWebhooksPage() {
       setSuccess(`Webhook ${!webhook.isActive ? 'enabled' : 'disabled'} successfully`);
       fetchWebhooks();
     } catch (error: any) {
-      setError(error?.message || 'Failed to toggle webhook status');
+      setError(error?.message || t('common.failedToToggleWebhookStatus'));
       console.error('Error toggling webhook:', error);
     }
   };
@@ -304,7 +304,7 @@ export default function TenantWebhooksPage() {
       // API call would go here
       setSuccess('Delivery retry initiated');
     } catch (error: any) {
-      setError(error?.message || 'Failed to retry delivery');
+      setError(error?.message || t('common.failedToRetryDelivery'));
     }
   };
 

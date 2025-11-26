@@ -209,7 +209,7 @@ export default function TenantSessionsPage() {
       setSessions(data || mockSessionsFallback);
     } catch (error: any) {
       console.error('Error fetching sessions:', error);
-      setError(error?.message || 'Failed to load sessions');
+      setError(error?.message || t('common.failedToLoadSessions'));
       // Fallback to mock data
       setSessions(mockSessionsFallback);
     } finally {
@@ -243,7 +243,7 @@ export default function TenantSessionsPage() {
       setSuccess('Session revoked successfully. User has been logged out.');
       fetchSessions();
     } catch (error: any) {
-      setError(error?.message || 'Failed to revoke session');
+      setError(error?.message || t('common.failedToRevokeSession'));
       console.error('Error revoking session:', error);
     }
   };
@@ -259,7 +259,7 @@ export default function TenantSessionsPage() {
       setSuccess('All user sessions revoked successfully');
       fetchSessions();
     } catch (error: any) {
-      setError(error?.message || 'Failed to revoke sessions');
+      setError(error?.message || t('common.failedToRevokeSessions'));
     }
   };
 
@@ -274,7 +274,7 @@ export default function TenantSessionsPage() {
       setSuccess('All suspicious sessions revoked successfully');
       fetchSessions();
     } catch (error: any) {
-      setError(error?.message || 'Failed to revoke suspicious sessions');
+      setError(error?.message || t('common.failedToRevokeSuspiciousSessions'));
     }
   };
 

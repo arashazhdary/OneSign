@@ -197,7 +197,7 @@ export default function TenantIntegrationsPage() {
       setShowConfigureModal(false);
       fetchIntegrations();
     } catch (error: any) {
-      setError(error?.message || 'Failed to configure integration');
+      setError(error?.message || t('common.failedToConfigureIntegration'));
       console.error('Error configuring integration:', error);
     }
   };
@@ -228,7 +228,7 @@ export default function TenantIntegrationsPage() {
         fetchSyncLogs();
       }, 1000);
     } catch (error: any) {
-      setError(error?.message || 'Failed to start sync');
+      setError(error?.message || t('common.failedToStartSync'));
       console.error('Error starting sync:', error);
     }
   };
@@ -239,7 +239,7 @@ export default function TenantIntegrationsPage() {
       setSuccess(`Integration ${integration.isActive ? 'disabled' : 'enabled'} successfully`);
       fetchIntegrations();
     } catch (error: any) {
-      setError(error?.message || 'Failed to update integration status');
+      setError(error?.message || t('common.failedToUpdateIntegrationStatus'));
       console.error('Error updating integration status:', error);
     }
   };
@@ -252,7 +252,7 @@ export default function TenantIntegrationsPage() {
       setSuccess('Integration deleted successfully');
       fetchIntegrations();
     } catch (error: any) {
-      setError(error?.message || 'Failed to delete integration');
+      setError(error?.message || t('common.failedToDeleteIntegration'));
       console.error('Error deleting integration:', error);
     }
   };

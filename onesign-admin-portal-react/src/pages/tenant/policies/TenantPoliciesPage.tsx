@@ -246,9 +246,9 @@ export default function TenantPoliciesPage() {
             }}
             className="px-3 py-2 border rounded"
           >
-            <option value="all">{t('common.all') || 'All'}</option>
-            <option value="true">{t('tenant.policies.enabled') || 'Enabled'}</option>
-            <option value="false">{t('tenant.policies.disabled') || 'Disabled'}</option>
+            <option value="all">{t('common.all')}</option>
+            <option value="true">{t('common.enabled')}</option>
+            <option value="false">{t('common.disabled')}</option>
           </select>
         </div>
       </div>
@@ -272,7 +272,7 @@ export default function TenantPoliciesPage() {
             <h2 className="text-xl font-bold mb-4">{t('tenant.policies.createPolicy') || 'Create Policy'}</h2>
             <form onSubmit={handleCreatePolicy}>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('tenant.policies.name') || 'Name'}</label>
+                <label className="block text-sm font-medium mb-2">{t('common.name')}</label>
                 <input
                   type="text"
                   required
@@ -282,7 +282,7 @@ export default function TenantPoliciesPage() {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('tenant.policies.description') || 'Description'}</label>
+                <label className="block text-sm font-medium mb-2">{t('common.description')}</label>
                 <textarea
                   className="w-full px-3 py-2 border rounded"
                   rows={3}
@@ -319,7 +319,7 @@ export default function TenantPoliciesPage() {
                     checked={enabled}
                     onChange={(e) => setEnabled(e.target.checked)}
                   />
-                  {t('tenant.policies.enabled') || 'Enabled'}
+                  {t('common.enabled')}
                 </label>
               </div>
               <div className="flex gap-2">
@@ -346,7 +346,7 @@ export default function TenantPoliciesPage() {
             <h2 className="text-xl font-bold mb-4">{t('tenant.policies.editPolicy') || 'Edit Policy'}</h2>
             <form onSubmit={handleUpdatePolicy}>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('tenant.policies.name') || 'Name'}</label>
+                <label className="block text-sm font-medium mb-2">{t('common.name')}</label>
                 <input
                   type="text"
                   required
@@ -356,7 +356,7 @@ export default function TenantPoliciesPage() {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('tenant.policies.description') || 'Description'}</label>
+                <label className="block text-sm font-medium mb-2">{t('common.description')}</label>
                 <textarea
                   className="w-full px-3 py-2 border rounded"
                   rows={3}
@@ -393,7 +393,7 @@ export default function TenantPoliciesPage() {
                     checked={enabled}
                     onChange={(e) => setEnabled(e.target.checked)}
                   />
-                  {t('tenant.policies.enabled') || 'Enabled'}
+                  {t('common.enabled')}
                 </label>
               </div>
               <div className="flex gap-2">
@@ -456,7 +456,7 @@ export default function TenantPoliciesPage() {
               {evaluationResult && (
                 <div className={`mb-4 p-4 rounded ${evaluationResult.allowed ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
                   <h3 className="font-semibold mb-2">{t('tenant.policies.evaluationResult') || 'Evaluation Result'}</h3>
-                  <p><strong>{t('tenant.policies.allowed') || 'Allowed'}:</strong> {evaluationResult.allowed ? 'Yes' : 'No'}</p>
+                  <p><strong>{t('common.allowed')}:</strong> {evaluationResult.allowed ? t('common.yes') : t('common.no')}</p>
                   <p><strong>{t('tenant.policies.reason') || 'Reason'}:</strong> {evaluationResult.reason}</p>
                   {evaluationResult.matchedRules.length > 0 && (
                     <div className="mt-2">
@@ -559,9 +559,9 @@ export default function TenantPoliciesPage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.policies.name') || 'Name'}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.name')}</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.policies.type') || 'Type'}</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.policies.status') || 'Status'}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.status')}</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.policies.createdAt') || 'Created'}</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
             </tr>
@@ -578,7 +578,7 @@ export default function TenantPoliciesPage() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{policy.policyType}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <span className={`px-2 py-1 rounded text-xs ${policy.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                    {policy.enabled ? t('tenant.policies.enabled') || 'Enabled' : t('tenant.policies.disabled') || 'Disabled'}
+                    {policy.enabled ? t('common.enabled') : t('common.disabled')}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

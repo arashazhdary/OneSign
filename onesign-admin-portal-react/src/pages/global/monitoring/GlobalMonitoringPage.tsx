@@ -187,7 +187,7 @@ export default function GlobalMonitoringPage() {
       setLastRefresh(new Date());
     } catch (error: any) {
       console.error('Error fetching metrics:', error);
-      setError(error?.message || 'Failed to load metrics');
+      setError(error?.message || t('common.failedToLoadMetrics'));
     }
   }, []);
 

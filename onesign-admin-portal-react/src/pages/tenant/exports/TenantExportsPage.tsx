@@ -221,7 +221,7 @@ export default function TenantExportsPage() {
       setExports(data || mockExportsFallback);
     } catch (error: any) {
       console.error('Error fetching exports:', error);
-      setError(error?.message || 'Failed to load exports');
+      setError(error?.message || t('common.failedToLoadExports'));
       // Fallback to mock data
       setExports(mockExportsFallback);
     } finally {
@@ -271,7 +271,7 @@ export default function TenantExportsPage() {
       resetForm();
       fetchExports();
     } catch (error: any) {
-      setError(error?.message || 'Failed to create export');
+      setError(error?.message || t('common.failedToCreateExport'));
       console.error('Error creating export:', error);
     }
   };
@@ -295,7 +295,7 @@ export default function TenantExportsPage() {
       setSuccess('Export deleted successfully');
       fetchExports();
     } catch (error: any) {
-      setError(error?.message || 'Failed to delete export');
+      setError(error?.message || t('common.failedToDeleteExport'));
     }
   };
 
@@ -309,7 +309,7 @@ export default function TenantExportsPage() {
       setShowTemplateModal(false);
       fetchTemplates();
     } catch (error: any) {
-      setError(error?.message || 'Failed to save template');
+      setError(error?.message || t('common.failedToSaveTemplate'));
     }
   };
 
@@ -322,7 +322,7 @@ export default function TenantExportsPage() {
       setSuccess('Schedule updated successfully');
       fetchScheduledExports();
     } catch (error: any) {
-      setError(error?.message || 'Failed to update schedule');
+      setError(error?.message || t('common.failedToUpdateSchedule'));
     }
   };
 

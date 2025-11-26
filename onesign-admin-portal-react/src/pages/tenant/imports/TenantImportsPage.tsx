@@ -179,7 +179,7 @@ export default function TenantImportsPage() {
       setImports(data || mockImportsFallback);
     } catch (error: any) {
       console.error('Error fetching imports:', error);
-      setError(error?.message || 'Failed to load imports');
+      setError(error?.message || t('common.failedToLoadData'));
       // Fallback to mock data
       setImports(mockImportsFallback);
     } finally {
@@ -233,7 +233,7 @@ export default function TenantImportsPage() {
       resetUploadForm();
       fetchImports();
     } catch (error: any) {
-      setError(error?.message || 'Failed to upload file');
+      setError(error?.message || t('common.failedToUploadFile'));
       console.error('Error uploading file:', error);
     }
   };
@@ -250,7 +250,7 @@ export default function TenantImportsPage() {
       setSuccess('Import rolled back successfully');
       fetchImports();
     } catch (error: any) {
-      setError(error?.message || 'Failed to rollback import');
+      setError(error?.message || t('common.failedToRollbackImport'));
     }
   };
 

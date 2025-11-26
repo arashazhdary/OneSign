@@ -198,7 +198,7 @@ export default function TenantObservabilityPage() {
                 value={eventType}
                 onChange={(e) => setEventType(e.target.value)}
               >
-                <option value="">{t('common.all') || 'All'}</option>
+                <option value="">{t('common.all')}</option>
                 <option value="Authentication">Authentication</option>
                 <option value="Authorization">Authorization</option>
                 <option value="UserManagement">User Management</option>
@@ -216,7 +216,7 @@ export default function TenantObservabilityPage() {
                 className="w-full px-3 py-2 border rounded"
                 value={action}
                 onChange={(e) => setAction(e.target.value)}
-                placeholder="Login, Create, Update, Delete..."
+                placeholder={t('common.placeholderAction')}
               />
             </div>
 
@@ -228,7 +228,7 @@ export default function TenantObservabilityPage() {
                 className="w-full px-3 py-2 border rounded"
                 value={actorId}
                 onChange={(e) => setActorId(e.target.value)}
-                placeholder="User ID or Email"
+                placeholder={t('common.placeholderUserIdOrEmail')}
               />
             </div>
 
@@ -240,7 +240,7 @@ export default function TenantObservabilityPage() {
                 value={resourceType}
                 onChange={(e) => setResourceType(e.target.value)}
               >
-                <option value="">{t('common.all') || 'All'}</option>
+                <option value="">{t('common.all')}</option>
                 <option value="User">User</option>
                 <option value="Application">Application</option>
                 <option value="Role">Role</option>
@@ -257,25 +257,25 @@ export default function TenantObservabilityPage() {
                 className="w-full px-3 py-2 border rounded"
                 value={resourceId}
                 onChange={(e) => setResourceId(e.target.value)}
-                placeholder="Resource ID"
+                placeholder={t('common.placeholderResourceId')}
               />
             </div>
 
             {/* IP Address */}
             <div>
-              <label className="block text-sm font-medium mb-2">{t('tenant.observability.ipAddress') || 'IP Address'}</label>
+              <label className="block text-sm font-medium mb-2">{t('audit.ipAddress')}</label>
               <input
                 type="text"
                 className="w-full px-3 py-2 border rounded"
                 value={ipAddress}
                 onChange={(e) => setIpAddress(e.target.value)}
-                placeholder="192.168.1.1"
+                placeholder={t('common.placeholderIpAddress')}
               />
             </div>
 
             {/* Success Filter */}
             <div>
-              <label className="block text-sm font-medium mb-2">{t('tenant.observability.status') || 'Status'}</label>
+              <label className="block text-sm font-medium mb-2">{t('common.status')}</label>
               <select
                 className="w-full px-3 py-2 border rounded"
                 value={successFilter === null ? 'all' : successFilter.toString()}
@@ -284,9 +284,9 @@ export default function TenantObservabilityPage() {
                   setSuccessFilter(value === 'all' ? null : value === 'true');
                 }}
               >
-                <option value="all">{t('common.all') || 'All'}</option>
-                <option value="true">{t('tenant.observability.success') || 'Success'}</option>
-                <option value="false">{t('tenant.observability.failed') || 'Failed'}</option>
+                <option value="all">{t('common.all')}</option>
+                <option value="true">{t('common.success')}</option>
+                <option value="false">{t('common.failed')}</option>
               </select>
             </div>
           </div>
@@ -328,7 +328,7 @@ export default function TenantObservabilityPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.observability.action') || 'Action'}</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.observability.actor') || 'Actor'}</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.observability.resource') || 'Resource'}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.observability.status') || 'Status'}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.status')}</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
                 </tr>
               </thead>
@@ -352,7 +352,7 @@ export default function TenantObservabilityPage() {
                       <span className={`px-2 py-1 rounded text-xs font-medium ${
                         event.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                       }`}>
-                        {event.success ? t('tenant.observability.success') || 'Success' : t('tenant.observability.failed') || 'Failed'}
+                        {event.success ? t('common.success') : t('common.failed')}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -429,11 +429,11 @@ export default function TenantObservabilityPage() {
                   <p className="text-sm text-gray-900">{selectedEvent.action}</p>
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500">{t('tenant.observability.status') || 'Status'}</h3>
+                  <h3 className="text-sm font-medium text-gray-500">{t('common.status')}</h3>
                   <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
                     selectedEvent.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                   }`}>
-                    {selectedEvent.success ? t('tenant.observability.success') || 'Success' : t('tenant.observability.failed') || 'Failed'}
+                    {selectedEvent.success ? t('common.success') : t('common.failed')}
                   </span>
                 </div>
               </div>

@@ -62,7 +62,7 @@ export default function TenantCertificatesPage() {
       setCertificates(data || mockData);
     } catch (err: any) {
       console.error('Error fetching certificates:', err);
-      setError(err.message || 'Failed to load certificates');
+      setError(err.message || t('common.failedToLoadCertificates'));
       setCertificates([]);
     } finally {
       setLoading(false);
@@ -77,7 +77,7 @@ export default function TenantCertificatesPage() {
       setFile(null);
       fetchCertificates();
     } catch (err: any) {
-      setError(err.message || 'Failed to upload certificate');
+      setError(err.message || t('common.failedToUploadCertificate'));
     }
   };
 
@@ -87,7 +87,7 @@ export default function TenantCertificatesPage() {
       await tenantService.deleteCertificate('tenant-id', id);
       fetchCertificates();
     } catch (err: any) {
-      setError(err.message || 'Failed to delete certificate');
+      setError(err.message || t('common.failedToDeleteCertificate'));
     }
   };
 

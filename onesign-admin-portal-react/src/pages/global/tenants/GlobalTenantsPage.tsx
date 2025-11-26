@@ -129,7 +129,7 @@ export default function GlobalTenantsPage() {
       setTenants(response.items || []);
     } catch (err: any) {
       console.error('Failed to fetch tenants:', err);
-      setError(err.message || 'Failed to load tenants');
+      setError(err.message || t('common.failedToLoadTenants'));
       // Use mock data as fallback
       setTenants(mockTenants);
     } finally {
@@ -196,7 +196,7 @@ export default function GlobalTenantsPage() {
       });
       fetchTenants();
     } catch (err: any) {
-      setError(err.message || 'Failed to create tenant');
+      setError(err.message || t('common.failedToCreateTenant'));
     } finally {
       setLoading(false);
     }
@@ -217,7 +217,7 @@ export default function GlobalTenantsPage() {
       setSuspendReason('');
       fetchTenants();
     } catch (err: any) {
-      setError(err.message || 'Failed to suspend tenant');
+      setError(err.message || t('common.failedToSuspendTenant'));
     } finally {
       setLoading(false);
     }
@@ -233,7 +233,7 @@ export default function GlobalTenantsPage() {
       setSuccess('Tenant activated successfully');
       fetchTenants();
     } catch (err: any) {
-      setError(err.message || 'Failed to activate tenant');
+      setError(err.message || t('common.failedToActivateTenant'));
     } finally {
       setLoading(false);
     }
@@ -253,7 +253,7 @@ export default function GlobalTenantsPage() {
       setSuccess('Tenant deleted successfully');
       fetchTenants();
     } catch (err: any) {
-      setError(err.message || 'Failed to delete tenant');
+      setError(err.message || t('common.failedToDeleteTenant'));
     } finally {
       setLoading(false);
     }

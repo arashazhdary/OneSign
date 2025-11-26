@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { tenantService } from '@/lib/api/services/tenant.service';
 import { useTenantStore } from '@/stores/tenantStore';
 
@@ -94,6 +95,7 @@ const mockBackupsFallback: Backup[] = [
 ];
 
 export default function TenantBackupsPage() {
+  const { t } = useTranslation();
   const { currentTenant } = useTenantStore();
   const tenantId = currentTenant?.id || '00000000-0000-0000-0000-000000000000';
 
@@ -139,7 +141,7 @@ export default function TenantBackupsPage() {
       const data = await tenantService.getTenantBackups(tenantId);
       setBackups(data || mockBackupsFallback);
     } catch (err: any) {
-      setError(err?.message || 'Failed to fetch backups');
+      setError(err?.message || t('common.failedToFetchBackups'));
       console.error('Error fetching backups:', err);
       // Fallback to mock data
       setBackups(mockBackupsFallback);
