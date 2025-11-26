@@ -3421,12 +3421,19 @@
       "requestUpgrade": "Request Upgrade",
       "upgradeRequested": "Upgrade request submitted successfully. Our team will contact you soon.",
       "targetPlan": "Target Plan",
-      "comments": "Comments (Optional)"
+      "comments": "Comments (Optional)",
+      "commentsPlaceholder": "Tell us about your requirements..."
     },
     "policies": {
       "title": "Policies",
       "subtitle": "Manage access and security policies",
       "createPolicy": "Create Policy",
+      "confirmDelete": "Are you sure you want to delete this policy?",
+      "rules": "Rules (JSON)",
+      "evaluatePolicy": "Evaluate Policy",
+      "userId": "User ID",
+      "resource": "Resource",
+      "action": "Action",
       "editPolicy": "Edit Policy",
       "evaluationResult": "Evaluation Result",
       "reason": "Reason",

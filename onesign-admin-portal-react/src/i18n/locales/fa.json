@@ -3420,12 +3420,19 @@
       "requestUpgrade": "درخواست ارتقا",
       "upgradeRequested": "درخواست ارتقا با موفقیت ثبت شد. تیم ما به زودی با شما تماس خواهد گرفت.",
       "targetPlan": "پلن مقصد",
-      "comments": "توضیحات (اختیاری)"
+      "comments": "توضیحات (اختیاری)",
+      "commentsPlaceholder": "نیازهای خود را شرح دهید..."
     },
     "policies": {
       "title": "سیاست‌ها",
       "subtitle": "مدیریت سیاست‌های دسترسی و امنیت",
       "createPolicy": "ایجاد سیاست",
+      "confirmDelete": "آیا از حذف این سیاست اطمینان دارید؟",
+      "rules": "قوانین (JSON)",
+      "evaluatePolicy": "ارزیابی سیاست",
+      "userId": "شناسه کاربر",
+      "resource": "منبع",
+      "action": "عملیات",
       "editPolicy": "ویرایش سیاست",
       "evaluationResult": "نتیجه ارزیابی",
       "reason": "دلیل",
