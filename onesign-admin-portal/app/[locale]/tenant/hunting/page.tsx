@@ -117,13 +117,13 @@ export default function TenantHuntingPage() {
     try {
       if (activeTab === 'queries') {
         const data = await HuntingAPI.getSavedQueries(tenantId, {
-          pageNumber: 1,
+          page: 1,
           pageSize: 100,
         });
         setQueries(data.items || []);
       } else if (activeTab === 'scheduled') {
         const data = await HuntingAPI.getScheduledHunts(tenantId, {
-          pageNumber: 1,
+          page: 1,
           pageSize: 100,
         });
         setScheduledHunts(data.items || []);

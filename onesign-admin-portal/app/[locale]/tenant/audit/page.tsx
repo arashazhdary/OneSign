@@ -41,7 +41,7 @@ export default function TenantAuditPage() {
     if (!tenantId) return;
 
     try {
-      const params: any = { tenantId, pageNumber: 1, pageSize: 100 };
+      const params: any = { tenantId, page: 1, pageSize: 100 };
       if (fromDate) params.fromDate = fromDate;
       if (toDate) params.toDate = toDate;
 

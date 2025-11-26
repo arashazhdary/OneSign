@@ -98,7 +98,7 @@ export default function TenantAppsPage() {
     if (!tenantId) return;
 
     try {
-      const params: any = { tenantId, pageNumber: 1, pageSize: 100 };
+      const params: any = { tenantId, page: 1, pageSize: 100 };
       if (selectedOrgUnitId) params.orgUnitId = selectedOrgUnitId;
 
       const data = await applicationsService.getApplications(params);
@@ -106,13 +106,13 @@ export default function TenantAppsPage() {
 
       // Fetch details for each app to get redirect URIs
       const appsWithDetails = await Promise.all(
-        apps.map(async (app: Application) => {
+        (apps as any[]).map(async (app: any) => {
           try {
-            const detailData = await applicationsService.getApplicationById(tenantId, app.id);
+            const detailData = await applicationsService.getApplicationById(tenantId, app.id) as any;
             return {
               ...app,
-              redirectUris: detailData.redirectUris || [],
-              clientSecrets: detailData.clientSecrets || []
+              redirectUris: detailData?.redirectUris || [],
+              clientSecrets: detailData?.clientSecrets || []
             };
           } catch (error) {
             console.error(`Error fetching details for app ${app.id}:`, error);
@@ -173,6 +173,7 @@ export default function TenantAppsPage() {
   };
 
   const handleAssignOrgUnits = async (app: Application) => {
+    if (!tenantId) return;
     setSelectedAppForOrgUnits(app);
     try {
       const data = await applicationsService.getApplicationOrgUnits(tenantId, app.id);

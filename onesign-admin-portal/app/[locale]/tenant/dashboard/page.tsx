@@ -37,15 +37,15 @@ export default function TenantDashboardPage() {
 
     try {
       // Fetch users count
-      const usersData = await usersService.getUsers({ tenantId, pageNumber: 1, pageSize: 1 });
+      const usersData = await usersService.getUsers({ tenantId, page: 1, pageSize: 1 });
       setStats(prev => ({ ...prev, totalUsers: usersData.totalCount || 0 }));
 
       // Fetch applications count
-      const appsData = await applicationsService.getApplications({ tenantId, pageNumber: 1, pageSize: 1 });
+      const appsData = await applicationsService.getApplications({ tenantId, page: 1, pageSize: 1 });
       setStats(prev => ({ ...prev, totalApplications: appsData.totalCount || 0 }));
 
       // Fetch recent audit events count
-      const auditData = await (securityService as any).getAuditLogs({ tenantId, pageNumber: 1, pageSize: 1 });
+      const auditData = await (securityService as any).getAuditLogs({ tenantId, page: 1, pageSize: 1 });
       setStats(prev => ({ ...prev, recentActivity: auditData.totalCount || 0 }));
     } catch (error: any) {
       console.error('Error fetching stats:', error);

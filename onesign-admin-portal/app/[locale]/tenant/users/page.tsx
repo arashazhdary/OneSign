@@ -88,7 +88,7 @@ export default function TenantUsersPage() {
       const data = await usersService.getUsers({
         tenantId,
         orgUnitId: selectedOrgUnitId || undefined,
-        pageNumber: 1,
+        page: 1,
         pageSize: 100,
       });
       setUsers(data.items || []);

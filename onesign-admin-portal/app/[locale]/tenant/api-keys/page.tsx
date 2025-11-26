@@ -45,7 +45,7 @@ export default function APIKeysPage() {
     setLoading(true);
     try {
       const data = await platformService.getApiKeys(tenantId);
-      setApiKeys(data || []);
+      setApiKeys((data || []) as unknown as APIKey[]);
     } catch (err: any) {
       console.error('Error fetching API keys:', err);
       setError(err?.message || 'Failed to fetch API keys');
@@ -155,10 +155,10 @@ export default function APIKeysPage() {
             />
           </div>
           <div className="flex gap-4">
-            <ActionButton type="submit" fullWidth>Create</ActionButton>
-            <ActionButton type="button" variant="secondary" fullWidth onClick={() => setShowModal(false)}>
+            <button type="submit" className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Create</button>
+            <button type="button" onClick={() => setShowModal(false)} className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
               Cancel
-            </ActionButton>
+            </button>
           </div>
         </form>
       </Modal>

@@ -113,7 +113,7 @@ export default function ApplicationAnalyticsDashboard() {
       // Fetch applications using applicationsService
       const appsData = await applicationsService.getApplications({
         tenantId,
-        pageNumber: 1,
+        page: 1,
         pageSize: 1000
       });
 
@@ -186,7 +186,7 @@ export default function ApplicationAnalyticsDashboard() {
           clientId: app.clientId,
           usage,
           lastUsed: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString(),
-          status: usage > 7000 ? 'healthy' : usage > 4000 ? 'warning' : 'critical'
+          status: (usage > 7000 ? 'healthy' : usage > 4000 ? 'warning' : 'critical') as 'healthy' | 'warning' | 'critical'
         };
       })
       .sort((a, b) => b.usage - a.usage)
@@ -365,7 +365,7 @@ export default function ApplicationAnalyticsDashboard() {
       <div className="bg-white p-6 rounded-lg shadow">
         <h3 className="text-lg font-semibold mb-4">Application Usage Trend</h3>
         <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={usageData}>
+          <AreaChart data={usageData as any}>
             <defs>
               <linearGradient id="colorUsage" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
@@ -395,11 +395,11 @@ export default function ApplicationAnalyticsDashboard() {
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
-                data={protocols}
+                data={protocols as any}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
                 outerRadius={100}
                 fill="#8884d8"
                 dataKey="value"
@@ -417,7 +417,7 @@ export default function ApplicationAnalyticsDashboard() {
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold mb-4">Application Health Status</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={healthStatus}>
+            <BarChart data={healthStatus as any}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="status" />
               <YAxis />
@@ -444,7 +444,7 @@ export default function ApplicationAnalyticsDashboard() {
       <div className="bg-white p-6 rounded-lg shadow">
         <h3 className="text-lg font-semibold mb-4">Token Issuance Metrics</h3>
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={tokenMetrics}>
+          <BarChart data={tokenMetrics as any}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="type" />
             <YAxis />
