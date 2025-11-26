@@ -39,7 +39,7 @@ const GoogleCallbackPage = () => {
         // Navigate to dashboard on success
         navigate('/admin/dashboard');
       } catch (err: any) {
-        setError(err.message || 'Failed to complete Google sign in');
+        setError(err.message || t('common.failedToCompleteGoogleSignIn'));
         setIsLoading(false);
         setTimeout(() => navigate('/login'), 3000);
       }

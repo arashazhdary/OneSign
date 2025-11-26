@@ -343,14 +343,14 @@ export default function TenantAutomationPage() {
                           fetchWorkflowExecutions(workflow.id);
                         }}
                         className="text-blue-600 hover:text-blue-900"
-                        title="View Executions"
+                        title={t('common.viewExecutions')}
                       >
                         Executions
                       </button>
                       <button
                         onClick={() => handleCreateTemplate(workflow)}
                         className="text-purple-600 hover:text-purple-900"
-                        title="Save as Template"
+                        title={t('common.saveAsTemplate')}
                       >
                         Template
                       </button>

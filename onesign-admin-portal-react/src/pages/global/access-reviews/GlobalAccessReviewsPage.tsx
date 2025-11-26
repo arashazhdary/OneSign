@@ -426,7 +426,7 @@ export default function GlobalAccessReviewsPage() {
       resetCampaignForm();
       fetchCampaigns();
     } catch (err: any) {
-      setError(err?.message || 'Error creating campaign');
+      setError(err?.message || t('common.errorCreatingCampaign'));
       console.error('Error creating campaign:', err);
     }
   };
@@ -452,7 +452,7 @@ export default function GlobalAccessReviewsPage() {
       setReviewJustification('');
       fetchReviewItems();
     } catch (err: any) {
-      setError(err?.message || 'Error submitting review');
+      setError(err?.message || t('common.errorSubmittingReview'));
       console.error('Error submitting review:', err);
     }
   };
@@ -466,7 +466,7 @@ export default function GlobalAccessReviewsPage() {
       setSuccess('Campaign cancelled successfully');
       fetchCampaigns();
     } catch (err: any) {
-      setError(err?.message || 'Error cancelling campaign');
+      setError(err?.message || t('common.errorCancellingCampaign'));
       console.error('Error cancelling campaign:', err);
     }
   };
@@ -514,7 +514,8 @@ export default function GlobalAccessReviewsPage() {
       label: 'Status',
       render: (campaign) => (
         <StatusBadge
-          status={campaign.status}
+          status={campaign.status}
+
         />
       ),
     },
@@ -677,7 +678,8 @@ export default function GlobalAccessReviewsPage() {
       label: 'Risk',
       render: (item) => (
         <StatusBadge
-          status={item.riskLevel}
+          status={item.riskLevel}
+
         />
       ),
     },
@@ -686,7 +688,8 @@ export default function GlobalAccessReviewsPage() {
       label: 'Status',
       render: (item) => (
         <StatusBadge
-          status={item.status}
+          status={item.status}
+
         />
       ),
     },
@@ -1049,7 +1052,7 @@ export default function GlobalAccessReviewsPage() {
           resetCampaignForm();
           setError('');
         }}
-        title="Create Access Review Campaign"
+        title={`${t('common.create')} ${t('common.accessReviewCampaign')}`}
         size="lg"
       >
         <form onSubmit={handleCreateCampaign} className="space-y-4">
@@ -1186,7 +1189,8 @@ export default function GlobalAccessReviewsPage() {
                 <div>
                   <div className="text-gray-600">Risk Level</div>
                   <StatusBadge
-                    status={selectedReviewItem.riskLevel}
+                    status={selectedReviewItem.riskLevel}
+
                   />
                 </div>
               </div>

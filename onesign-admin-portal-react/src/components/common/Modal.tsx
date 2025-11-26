@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
@@ -29,6 +30,7 @@ const Modal: React.FC<ModalProps> = ({
   footer,
   className,
 }) => {
+  const { t } = useTranslation();
   // Handle ESC key
   useEffect(() => {
     if (!isOpen || !closeOnEscape) return;
@@ -104,7 +106,7 @@ const Modal: React.FC<ModalProps> = ({
                     <button
                       onClick={onClose}
                       className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                      aria-label="Close modal"
+                      aria-label={t('common.closeModal')}
                     >
                       <X className="w-5 h-5 text-slate-500" />
                     </button>

@@ -99,7 +99,7 @@ export default function TenantPoliciesPage() {
       setPolicyDescription('');
       setPolicyRules('{}');
       setEnabled(true);
-      setSuccess(t('tenant.policies.policyCreated') || 'Policy created successfully');
+      setSuccess(t('common.policyCreated'));
       fetchPolicies();
     } catch (error: any) {
       setError(error?.message || t('common.error'));
@@ -126,7 +126,7 @@ export default function TenantPoliciesPage() {
       setPolicyName('');
       setPolicyDescription('');
       setPolicyRules('{}');
-      setSuccess(t('tenant.policies.policyUpdated') || 'Policy updated successfully');
+      setSuccess(t('common.policyUpdated'));
       fetchPolicies();
     } catch (error: any) {
       setError(error?.message || t('common.error'));
@@ -142,7 +142,7 @@ export default function TenantPoliciesPage() {
 
     try {
       await securityService.deletePolicy(tenantId, policyId);
-      setSuccess(t('tenant.policies.policyDeleted') || 'Policy deleted successfully');
+      setSuccess(t('common.policyDeleted'));
       fetchPolicies();
     } catch (error: any) {
       setError(error?.message || t('common.error'));
@@ -180,7 +180,7 @@ export default function TenantPoliciesPage() {
       setShowAssignModal(false);
       setSelectedPolicy(null);
       setAssignEntityId('');
-      setSuccess(t('tenant.policies.policyAssigned') || 'Policy assigned successfully');
+      setSuccess(t('common.policyAssigned'));
     } catch (error: any) {
       setError(error?.message || t('common.error'));
       console.error('Error assigning policy:', error);
@@ -219,7 +219,7 @@ export default function TenantPoliciesPage() {
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">{t('tenant.policies.title') || 'Policy Management'}</h1>
+        <h1 className="text-3xl font-bold">{t('common.policyManagement')}</h1>
         <button
           onClick={() => {
             setPolicyName('');
@@ -230,14 +230,14 @@ export default function TenantPoliciesPage() {
           }}
           className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
         >
-          {t('tenant.policies.createPolicy') || 'Create Policy'}
+          {t('common.createPolicy')}
         </button>
       </div>
 
       {/* Filter */}
       <div className="mb-4 flex gap-4">
         <div>
-          <label className="block text-sm font-medium mb-2">{t('tenant.policies.filter') || 'Filter'}</label>
+          <label className="block text-sm font-medium mb-2">{t('common.filter')}</label>
           <select
             value={filterEnabled === null ? 'all' : filterEnabled.toString()}
             onChange={(e) => {
@@ -269,7 +269,7 @@ export default function TenantPoliciesPage() {
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">{t('tenant.policies.createPolicy') || 'Create Policy'}</h2>
+            <h2 className="text-xl font-bold mb-4">{t('common.createPolicy')}</h2>
             <form onSubmit={handleCreatePolicy}>
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-2">{t('common.name')}</label>
@@ -291,7 +291,7 @@ export default function TenantPoliciesPage() {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('tenant.policies.type') || 'Policy Type'}</label>
+                <label className="block text-sm font-medium mb-2">{t('common.policyType')}</label>
                 <select
                   className="w-full px-3 py-2 border rounded"
                   value={policyType}
@@ -343,7 +343,7 @@ export default function TenantPoliciesPage() {
       {showEditModal && selectedPolicy && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">{t('tenant.policies.editPolicy') || 'Edit Policy'}</h2>
+            <h2 className="text-xl font-bold mb-4">{t('common.editPolicy')}</h2>
             <form onSubmit={handleUpdatePolicy}>
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-2">{t('common.name')}</label>
@@ -365,7 +365,7 @@ export default function TenantPoliciesPage() {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('tenant.policies.type') || 'Policy Type'}</label>
+                <label className="block text-sm font-medium mb-2">{t('common.policyType')}</label>
                 <select
                   className="w-full px-3 py-2 border rounded"
                   value={policyType}
@@ -562,7 +562,7 @@ export default function TenantPoliciesPage() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.name')}</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.policies.type') || 'Type'}</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.status')}</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.policies.createdAt') || 'Created'}</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.created')}</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
             </tr>
           </thead>
@@ -619,7 +619,7 @@ export default function TenantPoliciesPage() {
 
         {policies.length === 0 && (
           <div className="text-center py-8 text-gray-500">
-            {t('tenant.policies.noPolicies') || 'No policies found'}
+            {t('tenant.policies.noPolicies') || t('common.noPolicies')}
           </div>
         )}
       </div>

@@ -102,7 +102,7 @@ export default function TenantNotificationsTemplatesDetailPage() {
       }
     } catch (err: any) {
       console.error('Error fetching template:', err);
-      setError(err?.message || 'Failed to load template');
+      setError(err?.message || t('common.failedToLoadTemplate'));
 
       // Fallback to mock data
       const mockTemplate: NotificationTemplateDto = {
@@ -206,7 +206,7 @@ export default function TenantNotificationsTemplatesDetailPage() {
       fetchTemplate();
     } catch (err: any) {
       console.error('Error saving template:', err);
-      setError(err?.message || 'Failed to save template');
+      setError(err?.message || t('common.failedToSaveTemplate'));
     } finally {
       setSaving(false);
     }

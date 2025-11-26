@@ -355,7 +355,7 @@ export default function GlobalFeatureFlagsPage() {
           setIsCreateModalOpen(false);
           resetForm();
         }}
-        title="Create Feature Flag"
+        title={`${t('common.create')} ${t('common.featureFlag')}`}
         size="xl"
         footer={
           <>

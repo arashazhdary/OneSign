@@ -100,7 +100,7 @@ export default function TenantServiceAccountsPage() {
 
       <DataTable data={serviceAccounts} columns={columns} />
 
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Create Service Account">
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={`${t('common.create')} ${t('common.serviceAccount')}`}>
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>

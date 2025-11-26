@@ -337,7 +337,7 @@ export default function TenantAccessRequestsPage() {
           setShowCreateModal(false);
           resetForm();
         }}
-        title="Create Access Request"
+        title={`${t('common.create')} ${t('common.accessRequest')}`}
         size="lg"
         footer={
           <>

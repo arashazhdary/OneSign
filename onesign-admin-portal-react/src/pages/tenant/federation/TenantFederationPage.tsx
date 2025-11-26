@@ -571,7 +571,7 @@ export default function TenantFederationPage() {
             setShowCreateModal(false);
             resetSAMLForm();
           }}
-          title="Create SAML Provider"
+          title={`${t('common.create')} ${t('common.samlProvider')}`}
           size="lg"
           footer={
             <>
@@ -668,7 +668,7 @@ export default function TenantFederationPage() {
             setShowCreateModal(false);
             resetOIDCForm();
           }}
-          title="Create OIDC Provider"
+          title={`${t('common.create')} ${t('common.oidcProvider')}`}
           size="xl"
           footer={
             <>
@@ -805,7 +805,7 @@ export default function TenantFederationPage() {
             setShowCreateModal(false);
             resetSCIMForm();
           }}
-          title="Create SCIM Token"
+          title={`${t('common.create')} ${t('common.scimToken')}`}
           footer={
             <>
               <button

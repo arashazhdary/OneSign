@@ -286,7 +286,7 @@ export default function TenantImportsPage() {
         document.body.removeChild(a);
       }
     } catch (error: any) {
-      setError(error?.message || 'Failed to download template');
+      setError(error?.message || t('common.failedToDownloadTemplate'));
     }
   };
 

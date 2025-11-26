@@ -550,7 +550,7 @@ export default function TenantSecurityAnomalyDetectionPage() {
       )}
 
       {/* Create Detection Modal */}
-      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="Create Detection Rule">
+      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title={`${t('common.create')} ${t('common.detectionRule')}`}>
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Rule Name</label>

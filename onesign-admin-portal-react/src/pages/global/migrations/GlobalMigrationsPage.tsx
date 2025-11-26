@@ -268,7 +268,7 @@ export default function GlobalMigrationsPage() {
       setMigrationToRun(null);
       fetchData();
     } catch (err: any) {
-      setError(err?.message || 'Error running migration');
+      setError(err?.message || t('common.errorRunningMigration'));
     }
   };
 
@@ -284,7 +284,7 @@ export default function GlobalMigrationsPage() {
       setMigrationToRollback(null);
       fetchData();
     } catch (err: any) {
-      setError(err?.message || 'Error rolling back migration');
+      setError(err?.message || t('common.errorRollingBackMigration'));
     }
   };
 

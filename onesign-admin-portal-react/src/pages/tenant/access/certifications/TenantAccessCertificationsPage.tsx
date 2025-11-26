@@ -572,7 +572,7 @@ export default function TenantAccessCertificationsPage() {
       )}
 
       {/* Create Campaign Modal */}
-      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="Create Certification Campaign">
+      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title={`${t('common.create')} ${t('common.certificationCampaign')}`}>
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Name</label>

@@ -579,7 +579,7 @@ export default function TenantIncidentsDetailPage() {
           setShowAddNoteModal(false);
           setNewNoteContent('');
         }}
-        title="Add Note"
+        title={`${t('common.add')} ${t('common.note')}`}
         footer={
           <>
             <button

@@ -1380,7 +1380,7 @@ export default function TenantChangeManagementPage() {
       <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        title="Create Change Set"
+        title={`${t('common.create')} ${t('common.changeSet')}`}
         size="lg"
       >
         <form onSubmit={handleCreateChangeSet}>

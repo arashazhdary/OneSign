@@ -40,6 +40,7 @@ interface DelegatedAdminDetails {
 }
 
 export default function TenantDelegatedAdminsDetailPage() {
+  const { t } = useTranslation();
   const params = useParams();
   const navigate = useNavigate();
   const id = params.id as string;

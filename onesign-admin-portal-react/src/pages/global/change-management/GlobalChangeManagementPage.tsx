@@ -1013,7 +1013,7 @@ export default function GlobalChangeManagementPage() {
         <Modal
           isOpen={showRuleModal}
           onClose={() => setShowRuleModal(false)}
-          title="Create Global Approval Rule"
+          title={`${t('common.create')} ${t('common.globalApprovalRule')}`}
           size="lg"
         >
           <form onSubmit={handleCreateRule}>

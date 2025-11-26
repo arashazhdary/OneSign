@@ -421,7 +421,7 @@ export default function GlobalApiManagementPage() {
       <Modal
         isOpen={isCreateKeyModalOpen}
         onClose={() => setIsCreateKeyModalOpen(false)}
-        title="Create API Key"
+        title={`${t('common.create')} ${t('common.apiKey')}`}
         size="md"
         footer={
           <>

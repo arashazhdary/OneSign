@@ -517,7 +517,7 @@ export default function TenantAlertsPage() {
       )}
 
       {/* Create/Edit Alert Rule Modal */}
-      <Modal isOpen={showRuleModal} onClose={() => setShowRuleModal(false)} title={editingRule ? 'Edit Alert Rule' : 'Create Alert Rule'}>
+      <Modal isOpen={showRuleModal} onClose={() => setShowRuleModal(false)} title={editingRule ? `${t('common.edit')} ${t('common.alertRule')}` : `${t('common.create')} ${t('common.alertRule')}`}>
         <form onSubmit={handleSubmitRule} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>

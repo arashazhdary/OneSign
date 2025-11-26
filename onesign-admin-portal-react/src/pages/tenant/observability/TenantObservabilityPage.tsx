@@ -148,7 +148,7 @@ export default function TenantObservabilityPage() {
             onClick={handleExport}
             className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
           >
-            {t('tenant.observability.export') || 'Export Results'}
+            {t('common.exportResults')}
           </button>
         )}
       </div>
@@ -167,7 +167,7 @@ export default function TenantObservabilityPage() {
 
       {/* Search Form */}
       <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-4">{t('tenant.observability.searchFilters') || 'Search Filters'}</h2>
+        <h2 className="text-xl font-semibold mb-4">{t('common.searchFilters')}</h2>
         <form onSubmit={handleSearch}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Date Range */}
@@ -297,14 +297,14 @@ export default function TenantObservabilityPage() {
               disabled={loading}
               className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 disabled:bg-gray-400"
             >
-              {loading ? t('tenant.observability.searching') || 'Searching...' : t('tenant.observability.search') || 'Search'}
+              {loading ? t('common.searching') : t('common.search')}
             </button>
             <button
               type="button"
               onClick={clearFilters}
               className="bg-gray-300 px-6 py-2 rounded hover:bg-gray-400"
             >
-              {t('tenant.observability.clearFilters') || 'Clear Filters'}
+              {t('common.clearFilters')}
             </button>
           </div>
         </form>
@@ -315,7 +315,7 @@ export default function TenantObservabilityPage() {
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-xl font-semibold">
-              {t('tenant.observability.results') || 'Search Results'} ({searchResults.totalCount.toLocaleString()} {t('tenant.observability.events') || 'events'})
+              {t('common.results')} ({searchResults.totalCount.toLocaleString()} {t('common.events')})
             </h2>
           </div>
 
@@ -360,7 +360,7 @@ export default function TenantObservabilityPage() {
                         onClick={() => handleViewDetails(event)}
                         className="text-indigo-600 hover:text-indigo-900"
                       >
-                        {t('tenant.observability.viewDetails') || 'View Details'}
+                        {t('common.viewDetails')}
                       </button>
                     </td>
                   </tr>
@@ -371,7 +371,7 @@ export default function TenantObservabilityPage() {
 
           {searchResults.events.length === 0 && (
             <div className="text-center py-8 text-gray-500">
-              {t('tenant.observability.noResults') || 'No audit events found matching your criteria'}
+              {t('tenant.observability.noResults') || t('common.noResults')}
             </div>
           )}
 
@@ -390,7 +390,7 @@ export default function TenantObservabilityPage() {
                   disabled={pageNumber === 1}
                   className="px-3 py-1 border rounded disabled:bg-gray-100 disabled:text-gray-400"
                 >
-                  {t('common.previous') || 'Previous'}
+                  {t('common.previous')}
                 </button>
                 <button
                   onClick={() => {
@@ -400,7 +400,7 @@ export default function TenantObservabilityPage() {
                   disabled={pageNumber * pageSize >= searchResults.totalCount}
                   className="px-3 py-1 border rounded disabled:bg-gray-100 disabled:text-gray-400"
                 >
-                  {t('common.next') || 'Next'}
+                  {t('common.next')}
                 </button>
               </div>
             </div>
@@ -458,7 +458,7 @@ export default function TenantObservabilityPage() {
 
               {selectedEvent.errorMessage && (
                 <div className="border-t pt-4">
-                  <h3 className="text-sm font-medium text-gray-500 mb-2">{t('tenant.observability.error') || 'Error Message'}</h3>
+                  <h3 className="text-sm font-medium text-gray-500 mb-2">{t('common.errorMessage')}</h3>
                   <p className="text-sm text-red-600">{selectedEvent.errorMessage}</p>
                 </div>
               )}

@@ -372,7 +372,7 @@ export default function GlobalSecurityPage() {
       resetPolicyForm();
       fetchPolicies();
     } catch (err: any) {
-      setError(err?.message || 'Error creating policy');
+      setError(err?.message || t('common.errorCreatingPolicy'));
       console.error('Error creating policy:', err);
     }
   };
@@ -395,7 +395,7 @@ export default function GlobalSecurityPage() {
       resetPolicyForm();
       fetchPolicies();
     } catch (err: any) {
-      setError(err?.message || 'Error updating policy');
+      setError(err?.message || t('common.errorUpdatingPolicy'));
       console.error('Error updating policy:', err);
     }
   };
@@ -414,7 +414,7 @@ export default function GlobalSecurityPage() {
       }
       fetchPolicies();
     } catch (err: any) {
-      setError(err?.message || 'Error toggling policy');
+      setError(err?.message || t('common.errorTogglingPolicy'));
       console.error('Error toggling policy:', err);
     }
   };
@@ -431,7 +431,7 @@ export default function GlobalSecurityPage() {
       resetThreatForm();
       fetchThreats();
     } catch (err: any) {
-      setError(err?.message || 'Error creating threat rule');
+      setError(err?.message || t('common.errorCreatingThreatRule'));
       console.error('Error creating threat rule:', err);
     }
   };
@@ -445,7 +445,7 @@ export default function GlobalSecurityPage() {
       setSuccess(`Threat detection rule ${enabled ? 'enabled' : 'disabled'} successfully`);
       fetchThreats();
     } catch (err: any) {
-      setError(err?.message || 'Error toggling threat rule');
+      setError(err?.message || t('common.errorTogglingThreatRule'));
       console.error('Error toggling threat rule:', err);
     }
   };
@@ -935,12 +935,12 @@ export default function GlobalSecurityPage() {
           resetPolicyForm();
           setError('');
         }}
-        title="Create Security Policy"
+        title={t('common.create')} {t('common.policy')}
         size="lg"
       >
         <form onSubmit={handleCreatePolicy} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Policy Name</label>
+            <label className="block text-sm font-medium mb-2">{t('common.name')}</label>
             <input
               type="text"
               required
@@ -951,7 +951,7 @@ export default function GlobalSecurityPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Description</label>
+            <label className="block text-sm font-medium mb-2">{t('common.description')}</label>
             <textarea
               required
               rows={3}
@@ -963,7 +963,7 @@ export default function GlobalSecurityPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Type</label>
+              <label className="block text-sm font-medium mb-2">{t('common.type')}</label>
               <select
                 className="w-full px-3 py-2 border rounded"
                 value={policyType}
@@ -976,7 +976,7 @@ export default function GlobalSecurityPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Severity</label>
+              <label className="block text-sm font-medium mb-2">{t('common.severity')}</label>
               <select
                 className="w-full px-3 py-2 border rounded"
                 value={policySeverity}
@@ -1026,12 +1026,12 @@ export default function GlobalSecurityPage() {
           resetPolicyForm();
           setError('');
         }}
-        title="Edit Security Policy"
+        title={`${t('common.edit')} ${t('common.policy')}`}
         size="lg"
       >
         <form onSubmit={handleUpdatePolicy} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Policy Name</label>
+            <label className="block text-sm font-medium mb-2">{t('common.name')}</label>
             <input
               type="text"
               required
@@ -1042,7 +1042,7 @@ export default function GlobalSecurityPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Description</label>
+            <label className="block text-sm font-medium mb-2">{t('common.description')}</label>
             <textarea
               required
               rows={3}
@@ -1054,7 +1054,7 @@ export default function GlobalSecurityPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Type</label>
+              <label className="block text-sm font-medium mb-2">{t('common.type')}</label>
               <select
                 className="w-full px-3 py-2 border rounded"
                 value={policyType}
@@ -1067,7 +1067,7 @@ export default function GlobalSecurityPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Severity</label>
+              <label className="block text-sm font-medium mb-2">{t('common.severity')}</label>
               <select
                 className="w-full px-3 py-2 border rounded"
                 value={policySeverity}
@@ -1164,12 +1164,12 @@ export default function GlobalSecurityPage() {
           resetThreatForm();
           setError('');
         }}
-        title="Create Threat Detection Rule"
+        title={`${t('common.create')} Threat Detection Rule`}
         size="lg"
       >
         <form onSubmit={handleCreateThreat} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Rule Name</label>
+            <label className="block text-sm font-medium mb-2">{t('common.name')}</label>
             <input
               type="text"
               required
@@ -1181,7 +1181,7 @@ export default function GlobalSecurityPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Category</label>
+              <label className="block text-sm font-medium mb-2">{t('common.category')}</label>
               <select
                 className="w-full px-3 py-2 border rounded"
                 value={threatCategory}
@@ -1194,7 +1194,7 @@ export default function GlobalSecurityPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Severity</label>
+              <label className="block text-sm font-medium mb-2">{t('common.severity')}</label>
               <select
                 className="w-full px-3 py-2 border rounded"
                 value={threatSeverity}

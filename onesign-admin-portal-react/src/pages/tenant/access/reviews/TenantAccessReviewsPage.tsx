@@ -287,7 +287,7 @@ export default function TenantAccessReviewsPage() {
       />
 
       {/* Create Review Modal */}
-      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="Create Access Review">
+      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title={`${t('common.create')} ${t('common.accessReview')}`}>
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Review Name</label>

@@ -343,7 +343,7 @@ export default function TenantBillingPage() {
 
               <div className="flex gap-2">
                 <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
-                  {t('tenant.billing.submitRequest') || 'Submit Request'}
+                  {t('common.submitRequest')}
                 </button>
                 <button
                   type="button"
