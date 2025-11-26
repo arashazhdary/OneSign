@@ -10,6 +10,7 @@ import DataTable, { Column } from '@/components/common/DataTable';
 import Modal from '@/components/common/Modal';
 import Input from '@/components/common/Input';
 import Badge from '@/components/common/Badge';
+import { tenantService } from '@/lib/api/services/tenant.service';
 
 interface Role {
   id: string;
@@ -35,7 +36,7 @@ const RolesPage = () => {
     permissions: [] as string[],
   });
 
-  const availablePermissions = [
+  const [availablePermissions, setAvailablePermissions] = useState<string[]>([
     'users.read',
     'users.write',
     'users.delete',
@@ -46,47 +47,31 @@ const RolesPage = () => {
     'notifications.write',
     'settings.read',
     'settings.write',
-  ];
+  ]);
 
   useEffect(() => {
     fetchRoles();
+    fetchPermissions();
   }, []);
+
+  const fetchPermissions = async () => {
+    try {
+      const permissions = await tenantService.getAvailablePermissions();
+      if (permissions && permissions.length > 0) {
+        setAvailablePermissions(permissions);
+      }
+    } catch (error) {
+      console.error('Error fetching permissions:', error);
+    }
+  };
 
   const fetchRoles = async () => {
     setLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      const mockRoles: Role[] = [
-        {
-          id: 'role-1',
-          name: 'Team Lead',
-          description: 'Manage team members and applications',
-          userCount: 8,
-          permissions: ['users.read', 'users.write', 'apps.read', 'apps.write', 'settings.read'],
-          isSystem: false,
-          createdAt: new Date(Date.now() - 20 * 86400000).toISOString(),
-        },
-        {
-          id: 'role-2',
-          name: 'Developer',
-          description: 'Manage applications and notifications',
-          userCount: 15,
-          permissions: ['apps.read', 'apps.write', 'notifications.read', 'notifications.write'],
-          isSystem: false,
-          createdAt: new Date(Date.now() - 15 * 86400000).toISOString(),
-        },
-        {
-          id: 'role-3',
-          name: 'Observer',
-          description: 'Read-only access to resources',
-          userCount: 22,
-          permissions: ['users.read', 'apps.read', 'notifications.read', 'settings.read'],
-          isSystem: false,
-          createdAt: new Date(Date.now() - 10 * 86400000).toISOString(),
-        },
-      ];
-      setRoles(mockRoles);
+      const response = await tenantService.getRoles();
+      setRoles(response.items || []);
     } catch (error) {
+      console.error('Error fetching roles:', error);
       toast.error(t('common.error'));
     } finally {
       setLoading(false);
@@ -195,41 +180,47 @@ const RolesPage = () => {
   };
 
   const handleDelete = async (role: Role) => {
-    if (confirm(`${t('roles.deleteRole')}: ${role.name}?`)) {
-      setRoles((prev) => prev.filter((r) => r.id !== role.id));
-      toast.success('Role deleted successfully');
+    if (!confirm(`${t('roles.deleteRole')}: ${role.name}?`)) return;
+    try {
+      await tenantService.deleteRole(role.id);
+      toast.success(t('roles.roleDeleted') || 'Role deleted successfully');
+      fetchRoles();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || t('common.error'));
     }
   };
 
-  const handleAddRole = () => {
-    const newRole: Role = {
-      id: `role-${Date.now()}`,
-      name: formData.name,
-      description: formData.description,
-      userCount: 0,
-      permissions: formData.permissions,
-      isSystem: false,
-      createdAt: new Date().toISOString(),
-    };
-    setRoles((prev) => [newRole, ...prev]);
-    toast.success('Role created successfully');
-    setIsAddModalOpen(false);
-    setFormData({ name: '', description: '', permissions: [] });
+  const handleAddRole = async () => {
+    try {
+      await tenantService.createRole({
+        name: formData.name,
+        description: formData.description,
+        permissions: formData.permissions,
+      });
+      toast.success(t('roles.roleCreated') || 'Role created successfully');
+      setIsAddModalOpen(false);
+      setFormData({ name: '', description: '', permissions: [] });
+      fetchRoles();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || t('common.error'));
+    }
   };
 
-  const handleUpdateRole = () => {
-    if (selectedRole) {
-      setRoles((prev) =>
-        prev.map((r) =>
-          r.id === selectedRole.id
-            ? { ...r, name: formData.name, description: formData.description, permissions: formData.permissions }
-            : r
-        )
-      );
-      toast.success('Role updated successfully');
+  const handleUpdateRole = async () => {
+    if (!selectedRole) return;
+    try {
+      await tenantService.updateRole(selectedRole.id, {
+        name: formData.name,
+        description: formData.description,
+        permissions: formData.permissions,
+      });
+      toast.success(t('roles.roleUpdated') || 'Role updated successfully');
       setIsEditModalOpen(false);
       setSelectedRole(null);
       setFormData({ name: '', description: '', permissions: [] });
+      fetchRoles();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || t('common.error'));
     }
   };
 

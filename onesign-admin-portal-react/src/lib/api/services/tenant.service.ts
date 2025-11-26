@@ -197,12 +197,111 @@ export const tenantService = {
   },
 
   // ==================== TENANT APPLICATIONS ====================
-  getApplications: async (): Promise<any[]> => {
+  getApplications: async (params?: { page?: number; pageSize?: number; search?: string; type?: string; status?: string }): Promise<PaginatedResult<any>> => {
     try {
-      const response = await apiClient.get('/api/tenant/applications');
+      const response = await apiClient.get('/api/tenant/applications', { params });
       return response.data;
     } catch (error) {
       console.error('Failed to fetch applications:', error);
+      return { items: [], total: 0, page: 1, pageSize: 50, totalPages: 0 };
+    }
+  },
+
+  getApplicationById: async (appId: string): Promise<any> => {
+    try {
+      const response = await apiClient.get(`/api/tenant/applications/${appId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch application:', error);
+      return null;
+    }
+  },
+
+  createApplication: async (data: {
+    name: string;
+    type: 'web' | 'mobile' | 'desktop' | 'api';
+    description?: string;
+    redirectUris?: string[];
+    allowedScopes?: string[];
+  }): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/applications', data);
+    return response.data;
+  },
+
+  updateApplication: async (appId: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/tenant/applications/${appId}`, data);
+    return response.data;
+  },
+
+  deleteApplication: async (appId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/applications/${appId}`);
+  },
+
+  regenerateClientSecret: async (appId: string): Promise<{ clientSecret: string }> => {
+    const response = await apiClient.post(`/api/tenant/applications/${appId}/regenerate-secret`);
+    return response.data;
+  },
+
+  toggleApplicationStatus: async (appId: string, status: 'active' | 'inactive'): Promise<any> => {
+    const response = await apiClient.patch(`/api/tenant/applications/${appId}/status`, { status });
+    return response.data;
+  },
+
+  // ==================== TENANT ROLES ====================
+  getRoles: async (params?: { page?: number; pageSize?: number; search?: string }): Promise<PaginatedResult<any>> => {
+    try {
+      const response = await apiClient.get('/api/tenant/roles', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch roles:', error);
+      return { items: [], total: 0, page: 1, pageSize: 50, totalPages: 0 };
+    }
+  },
+
+  getRoleById: async (roleId: string): Promise<any> => {
+    try {
+      const response = await apiClient.get(`/api/tenant/roles/${roleId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch role:', error);
+      return null;
+    }
+  },
+
+  createRole: async (data: {
+    name: string;
+    description?: string;
+    permissions: string[];
+  }): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/roles', data);
+    return response.data;
+  },
+
+  updateRole: async (roleId: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/tenant/roles/${roleId}`, data);
+    return response.data;
+  },
+
+  deleteRole: async (roleId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/roles/${roleId}`);
+  },
+
+  getRolePermissions: async (roleId: string): Promise<string[]> => {
+    try {
+      const response = await apiClient.get(`/api/tenant/roles/${roleId}/permissions`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch role permissions:', error);
+      return [];
+    }
+  },
+
+  getAvailablePermissions: async (): Promise<string[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/permissions');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch available permissions:', error);
       return [];
     }
   },
@@ -215,14 +314,28 @@ export const tenantService = {
     endDate?: string;
     action?: string;
     userId?: string;
-  }): Promise<any> => {
+    resource?: string;
+    status?: string;
+  }): Promise<PaginatedResult<any>> => {
     try {
       const response = await apiClient.get('/api/tenant/audit', { params });
       return response.data;
     } catch (error) {
       console.error('Failed to fetch audit logs:', error);
-      return { items: [], total: 0 };
+      return { items: [], total: 0, page: 1, pageSize: 50, totalPages: 0 };
     }
+  },
+
+  exportAuditLogs: async (params?: {
+    startDate?: string;
+    endDate?: string;
+    format?: 'csv' | 'json' | 'pdf';
+  }): Promise<Blob> => {
+    const response = await apiClient.get('/api/tenant/audit/export', {
+      params,
+      responseType: 'blob'
+    });
+    return response.data;
   },
 
   // ==================== TENANT API KEYS ====================

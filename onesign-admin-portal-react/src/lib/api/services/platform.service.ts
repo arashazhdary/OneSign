@@ -1,6 +1,6 @@
-// Re-export from main services file
-export { platformService } from '../services';
-export default platformService;
+// Re-export platformService from main services file
+// The full implementation is in ../services.ts
+import { platformService as _platformService } from '../services.ts';
 
-// Also export from main services
-import { platformService } from '../services';
+export const platformService = _platformService;
+export default platformService;

@@ -11,6 +11,7 @@ import Modal from '@/components/common/Modal';
 import Input from '@/components/common/Input';
 import Dropdown from '@/components/common/Dropdown';
 import Badge from '@/components/common/Badge';
+import { tenantService } from '@/lib/api/services/tenant.service';
 
 interface App {
   id: string;
@@ -30,7 +31,7 @@ const AppsPage = () => {
 
   const [formData, setFormData] = useState({
     name: '',
-    type: 'web',
+    type: 'web' as 'web' | 'mobile' | 'desktop' | 'api',
     description: '',
   });
 
@@ -41,19 +42,51 @@ const AppsPage = () => {
   const fetchApps = async () => {
     setLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      const mockApps: App[] = Array.from({ length: 15 }, (_, i) => ({
-        id: `app-${i + 1}`,
-        name: `App ${i + 1}`,
-        clientId: `client_${Math.random().toString(36).substring(7)}`,
-        type: ['web', 'mobile', 'desktop', 'api'][i % 4] as any,
-        status: i % 3 === 0 ? 'inactive' : 'active',
-        createdAt: new Date(Date.now() - i * 86400000).toISOString(),
-        lastUsed: i % 2 === 0 ? new Date(Date.now() - i * 3600000).toISOString() : undefined,
-      }));
-      setApps(mockApps);
+      const response = await tenantService.getApplications();
+      setApps(response.items || []);
+    } catch (error) {
+      console.error('Error fetching apps:', error);
+      toast.error(t('common.error'));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreateApp = async () => {
+    try {
+      await tenantService.createApplication({
+        name: formData.name,
+        type: formData.type,
+        description: formData.description,
+      });
+      toast.success(t('apps.appCreated') || 'Application created successfully');
+      setIsAddModalOpen(false);
+      setFormData({ name: '', type: 'web', description: '' });
+      fetchApps();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || t('common.error'));
+    }
+  };
+
+  const handleDeleteApp = async (appId: string) => {
+    if (!confirm(t('apps.confirmDelete') || 'Are you sure you want to delete this application?')) return;
+    try {
+      await tenantService.deleteApplication(appId);
+      toast.success(t('apps.appDeleted') || 'Application deleted successfully');
+      fetchApps();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || t('common.error'));
+    }
+  };
+
+  const handleRegenerateSecret = async (appId: string) => {
+    try {
+      const result = await tenantService.regenerateClientSecret(appId);
+      toast.success(t('apps.secretRegenerated') || 'Client secret regenerated');
+      navigator.clipboard.writeText(result.clientSecret);
+      toast.success('New secret copied to clipboard');
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || t('common.error'));
     }
   };
 
@@ -133,9 +166,19 @@ const AppsPage = () => {
               toast.success('Client ID copied!');
             }}
           />
-          <Button variant="ghost" size="sm" leftIcon={<RefreshCw className="w-4 h-4" />} />
+          <Button
+            variant="ghost"
+            size="sm"
+            leftIcon={<RefreshCw className="w-4 h-4" />}
+            onClick={() => handleRegenerateSecret(app.id)}
+          />
           <Button variant="ghost" size="sm" leftIcon={<Edit className="w-4 h-4" />} />
-          <Button variant="ghost" size="sm" leftIcon={<Trash2 className="w-4 h-4 text-danger-600" />} />
+          <Button
+            variant="ghost"
+            size="sm"
+            leftIcon={<Trash2 className="w-4 h-4 text-danger-600" />}
+            onClick={() => handleDeleteApp(app.id)}
+          />
         </div>
       ),
     },
@@ -174,9 +217,17 @@ const AppsPage = () => {
                 { value: 'api', label: t('apps.api'), icon: <Code className="w-4 h-4" /> },
               ]}
               value={formData.type}
-              onChange={(value) => setFormData({ ...formData, type: value })}
+              onChange={(value) => setFormData({ ...formData, type: value as 'web' | 'mobile' | 'desktop' | 'api' })}
             />
             <Input label={t('apps.description')} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="ghost" onClick={() => setIsAddModalOpen(false)}>
+                {t('common.cancel')}
+              </Button>
+              <Button variant="primary" onClick={handleCreateApp}>
+                {t('common.create')}
+              </Button>
+            </div>
           </div>
         </Modal>
       </div>
