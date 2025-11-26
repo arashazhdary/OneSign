@@ -4591,6 +4591,121 @@
   },
   "tenantFederationPage": {
     "mySamlProvider": "ارائه‌دهنده SAML من",
-    "myScimIntegration": "یکپارچه‌سازی SCIM من"
+    "myScimIntegration": "یکپارچه‌سازی SCIM من",
+    "manageSsoAndFederation": "مدیریت SSO و فدراسیون هویت",
+    "enableThisProvider": "فعال‌سازی این ارائه‌دهنده",
+    "authorizationEndpoint": "نقطه پایانی مجوز",
+    "tokenEndpoint": "نقطه پایانی توکن",
+    "expirationDateOptional": "تاریخ انقضا (اختیاری)",
+    "entityId": "شناسه موجودیت"
+  },
+  "tenantTokensPage": {
+    "accessTokens": "توکن‌های دسترسی",
+    "manageApiKeysAndTokens": "مدیریت کلیدهای API و توکن‌های دسترسی",
+    "totalTokens": "کل توکن‌ها",
+    "totalApiCalls": "کل فراخوانی‌های API",
+    "filterByType": "فیلتر بر اساس نوع",
+    "lastUsed": "آخرین استفاده",
+    "accessTokenExpiresIn90Days": "توکن دسترسی (انقضا در ۹۰ روز)",
+    "refreshTokenExpiresIn1Year": "توکن تازه‌سازی (انقضا در ۱ سال)"
+  },
+  "tenantBrandingPage": {
+    "title": "برندسازی و سفارشی‌سازی",
+    "subtitle": "سفارشی‌سازی ظاهر سازمان شما",
+    "logosAndIcons": "لوگوها و آیکون‌ها",
+    "logoLightMode": "لوگو (حالت روشن)",
+    "logoDarkMode": "لوگو (حالت تاریک)",
+    "colorScheme": "طرح رنگ",
+    "primaryColor": "رنگ اصلی",
+    "secondaryColor": "رنگ ثانویه",
+    "accentColor": "رنگ تأکیدی",
+    "colorPreview": "پیش‌نمایش رنگ",
+    "backgroundType": "نوع پس‌زمینه",
+    "backgroundColor": "رنگ پس‌زمینه",
+    "gradientStart": "شروع گرادیان",
+    "gradientEnd": "پایان گرادیان",
+    "backgroundImageUrl": "آدرس تصویر پس‌زمینه",
+    "showLogo": "نمایش لوگو",
+    "livePreview": "پیش‌نمایش زنده",
+    "emailTemplates": "قالب‌های ایمیل",
+    "customDomain": "دامنه سفارشی",
+    "addDnsRecords": "رکوردهای DNS زیر را به دامنه خود اضافه کنید:",
+    "templateContent": "محتوای قالب"
+  },
+  "tenantApiKeysPage": {
+    "manageApiKeysForAccess": "مدیریت کلیدهای API برای دسترسی برنامه‌نویسی",
+    "expirationDateOptional": "تاریخ انقضا (اختیاری)"
+  },
+  "tenantMfaPage": {
+    "title": "مدیریت MFA",
+    "subtitle": "مدیریت احراز هویت چند عاملی و دستگاه‌های مورد اعتماد",
+    "orgUnitMfaRules": "قوانین MFA واحد سازمانی",
+    "configureMfaPerOrgUnit": "پیکربندی الزامات MFA برای هر واحد سازمانی"
+  },
+  "tenantRolesPage": {
+    "parentRoleOptional": "نقش والد (اختیاری)",
+    "resourceAction": "منبع / عملیات",
+    "currentUsers": "کاربران فعلی"
+  },
+  "severities": {
+    "critical": "بحرانی",
+    "high": "بالا",
+    "medium": "متوسط",
+    "low": "پایین"
+  },
+  "plans": {
+    "free": "رایگان",
+    "basic": "پایه",
+    "starter": "شروع‌کننده",
+    "professional": "حرفه‌ای",
+    "premium": "ویژه",
+    "enterprise": "سازمانی"
+  },
+  "operators": {
+    "equals": "برابر (==)",
+    "notEquals": "نابرابر (!=)",
+    "contains": "شامل",
+    "startsWith": "شروع با",
+    "endsWith": "پایان با",
+    "greaterThan": "بزرگتر از (>)",
+    "lessThan": "کوچکتر از (<)",
+    "greaterOrEqual": "بزرگتر یا مساوی (>=)",
+    "lessOrEqual": "کوچکتر یا مساوی (<=)"
+  },
+  "policyTypes": {
+    "security": "امنیت",
+    "compliance": "انطباق",
+    "access": "دسترسی",
+    "data": "داده"
+  },
+  "threatTypes": {
+    "anomaly": "ناهنجاری",
+    "bruteForce": "حمله جستجوی فراگیر",
+    "dataExfiltration": "استخراج داده",
+    "privilegeEscalation": "افزایش سطح دسترسی"
+  },
+  "backupTypes": {
+    "full": "پشتیبان کامل",
+    "incremental": "پشتیبان افزایشی"
+  },
+  "aiProviders": {
+    "openai": "OpenAI",
+    "azureOpenai": "Azure OpenAI",
+    "anthropic": "Anthropic"
+  },
+  "smsProviders": {
+    "twilio": "Twilio",
+    "vonage": "Vonage"
+  },
+  "emailProviders": {
+    "sendgrid": "SendGrid"
+  },
+  "timeRanges": {
+    "last7Days": "۷ روز گذشته",
+    "last30Days": "۳۰ روز گذشته",
+    "last90Days": "۹۰ روز گذشته"
+  },
+  "expirationOptions": {
+    "noExpiration": "بدون انقضا"
   }
 }

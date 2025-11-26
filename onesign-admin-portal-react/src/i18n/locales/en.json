@@ -4592,6 +4592,121 @@
   },
   "tenantFederationPage": {
     "mySamlProvider": "My SAML Provider",
-    "myScimIntegration": "My SCIM Integration"
+    "myScimIntegration": "My SCIM Integration",
+    "manageSsoAndFederation": "Manage SSO and identity federation",
+    "enableThisProvider": "Enable this provider",
+    "authorizationEndpoint": "Authorization Endpoint",
+    "tokenEndpoint": "Token Endpoint",
+    "expirationDateOptional": "Expiration Date (Optional)",
+    "entityId": "Entity ID"
+  },
+  "tenantTokensPage": {
+    "accessTokens": "Access Tokens",
+    "manageApiKeysAndTokens": "Manage API keys and access tokens",
+    "totalTokens": "Total Tokens",
+    "totalApiCalls": "Total API Calls",
+    "filterByType": "Filter by Type",
+    "lastUsed": "Last Used",
+    "accessTokenExpiresIn90Days": "Access Token (Expires in 90 days)",
+    "refreshTokenExpiresIn1Year": "Refresh Token (Expires in 1 year)"
+  },
+  "tenantBrandingPage": {
+    "title": "Branding & Customization",
+    "subtitle": "Customize your tenant appearance",
+    "logosAndIcons": "Logos & Icons",
+    "logoLightMode": "Logo (Light Mode)",
+    "logoDarkMode": "Logo (Dark Mode)",
+    "colorScheme": "Color Scheme",
+    "primaryColor": "Primary Color",
+    "secondaryColor": "Secondary Color",
+    "accentColor": "Accent Color",
+    "colorPreview": "Color Preview",
+    "backgroundType": "Background Type",
+    "backgroundColor": "Background Color",
+    "gradientStart": "Gradient Start",
+    "gradientEnd": "Gradient End",
+    "backgroundImageUrl": "Background Image URL",
+    "showLogo": "Show Logo",
+    "livePreview": "Live Preview",
+    "emailTemplates": "Email Templates",
+    "customDomain": "Custom Domain",
+    "addDnsRecords": "Add the following DNS records to your domain:",
+    "templateContent": "Template Content"
+  },
+  "tenantApiKeysPage": {
+    "manageApiKeysForAccess": "Manage API keys for programmatic access",
+    "expirationDateOptional": "Expiration Date (optional)"
+  },
+  "tenantMfaPage": {
+    "title": "MFA Management",
+    "subtitle": "Manage multi-factor authentication and trusted devices",
+    "orgUnitMfaRules": "Organization Unit MFA Rules",
+    "configureMfaPerOrgUnit": "Configure MFA requirements per organizational unit"
+  },
+  "tenantRolesPage": {
+    "parentRoleOptional": "Parent Role (Optional)",
+    "resourceAction": "Resource / Action",
+    "currentUsers": "Current users"
+  },
+  "severities": {
+    "critical": "Critical",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low"
+  },
+  "plans": {
+    "free": "Free",
+    "basic": "Basic",
+    "starter": "Starter",
+    "professional": "Professional",
+    "premium": "Premium",
+    "enterprise": "Enterprise"
+  },
+  "operators": {
+    "equals": "Equals (==)",
+    "notEquals": "Not Equals (!=)",
+    "contains": "Contains",
+    "startsWith": "Starts With",
+    "endsWith": "Ends With",
+    "greaterThan": "Greater Than (>)",
+    "lessThan": "Less Than (<)",
+    "greaterOrEqual": "Greater or Equal (>=)",
+    "lessOrEqual": "Less or Equal (<=)"
+  },
+  "policyTypes": {
+    "security": "Security",
+    "compliance": "Compliance",
+    "access": "Access",
+    "data": "Data"
+  },
+  "threatTypes": {
+    "anomaly": "Anomaly",
+    "bruteForce": "Brute Force",
+    "dataExfiltration": "Data Exfiltration",
+    "privilegeEscalation": "Privilege Escalation"
+  },
+  "backupTypes": {
+    "full": "Full Backup",
+    "incremental": "Incremental Backup"
+  },
+  "aiProviders": {
+    "openai": "OpenAI",
+    "azureOpenai": "Azure OpenAI",
+    "anthropic": "Anthropic"
+  },
+  "smsProviders": {
+    "twilio": "Twilio",
+    "vonage": "Vonage"
+  },
+  "emailProviders": {
+    "sendgrid": "SendGrid"
+  },
+  "timeRanges": {
+    "last7Days": "Last 7 Days",
+    "last30Days": "Last 30 Days",
+    "last90Days": "Last 90 Days"
+  },
+  "expirationOptions": {
+    "noExpiration": "No expiration"
   }
 }
