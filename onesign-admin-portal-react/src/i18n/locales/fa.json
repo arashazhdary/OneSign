@@ -543,7 +543,9 @@
     "appDeleted": "اپلیکیشن با موفقیت حذف شد",
     "appUpdated": "اپلیکیشن با موفقیت به‌روزرسانی شد",
     "confirmDelete": "آیا از حذف این اپلیکیشن اطمینان دارید؟",
-    "secretRegenerated": "کلید محرمانه با موفقیت تولید مجدد شد"
+    "secretRegenerated": "کلید محرمانه با موفقیت تولید مجدد شد",
+    "secretCopied": "کلید جدید در کلیپ‌بورد کپی شد",
+    "clientIdCopied": "شناسه کلاینت کپی شد!"
   },
   "dashboard": {
     "title": "داشبورد ادمین",
@@ -628,7 +630,9 @@
     "customRole": "نقش سفارشی",
     "roleCreated": "نقش با موفقیت ایجاد شد",
     "roleUpdated": "نقش با موفقیت به‌روزرسانی شد",
-    "roleDeleted": "نقش با موفقیت حذف شد"
+    "roleDeleted": "نقش با موفقیت حذف شد",
+    "enterRoleName": "نام نقش را وارد کنید",
+    "enterRoleDescription": "توضیحات نقش را وارد کنید"
   },
   "security": {
     "orgUnitRulesUpdated": "قوانین واحد سازمانی با موفقیت به‌روزرسانی شد",
@@ -681,7 +685,10 @@
     "copyKey": "کپی کلید",
     "keyCopied": "کلید API کپی شد",
     "confirmRevoke": "آیا مطمئن هستید که می‌خواهید دسترسی این کلید API را لغو کنید؟",
-    "keyRevoked": "دسترسی کلید API با موفقیت لغو شد"
+    "keyRevoked": "دسترسی کلید API با موفقیت لغو شد",
+    "keyRegenerated": "کلید API با موفقیت تولید مجدد شد",
+    "keyCreated": "کلید API با موفقیت ایجاد شد",
+    "enterKeyName": "نام کلید API را وارد کنید"
   },
   "settings": {
     "title": "تنظیمات",
@@ -1154,7 +1161,19 @@
     "emailAddress": "آدرس ایمیل",
     "emailVerificationStatus": "وضعیت تایید ایمیل",
     "shorthandUsername": "نام کاربری مختصر",
-    "lastProfileUpdate": "آخرین به‌روزرسانی پروفایل"
+    "lastProfileUpdate": "آخرین به‌روزرسانی پروفایل",
+    "subjectIdentifier": "شناسه موضوع - شناسه یکتای کاربر",
+    "phoneNumberFormat": "شماره تلفن در فرمت E.164",
+    "localeExample": "محل (مثال: fa-IR)",
+    "oneSignCustomClaims": "ادعاهای سفارشی OneSign",
+    "tenantIdentifier": "شناسه سازمان",
+    "userRoles": "نقش‌های کاربر در سازمان",
+    "organizationalUnits": "واحدهای سازمانی که کاربر به آن تعلق دارد",
+    "grantedPermissions": "مجوزهای اعطا شده",
+    "customAttributes": "ویژگی‌های سفارشی اضافی",
+    "pasteAccessToken": "توکن دسترسی خود را اینجا بچسبانید",
+    "oauth2": "OAuth 2.0",
+    "authorizationHeader": "Authorization: Bearer YOUR_ACCESS_TOKEN"
   },
   "globalHunting": {
     "title": "شکار تهدید - سراسری",

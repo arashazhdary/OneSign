@@ -543,7 +543,9 @@
     "appDeleted": "Application deleted successfully",
     "appUpdated": "Application updated successfully",
     "confirmDelete": "Are you sure you want to delete this application?",
-    "secretRegenerated": "Client secret regenerated successfully"
+    "secretRegenerated": "Client secret regenerated successfully",
+    "secretCopied": "New secret copied to clipboard",
+    "clientIdCopied": "Client ID copied!"
   },
   "dashboard": {
     "title": "Admin Dashboard",
@@ -628,7 +630,9 @@
     "customRole": "Custom Role",
     "roleCreated": "Role created successfully",
     "roleUpdated": "Role updated successfully",
-    "roleDeleted": "Role deleted successfully"
+    "roleDeleted": "Role deleted successfully",
+    "enterRoleName": "Enter role name",
+    "enterRoleDescription": "Enter role description"
   },
   "security": {
     "orgUnitRulesUpdated": "Org unit rules updated successfully",
@@ -681,7 +685,10 @@
     "copyKey": "Copy Key",
     "keyCopied": "API Key copied to clipboard",
     "confirmRevoke": "Are you sure you want to revoke this API key?",
-    "keyRevoked": "API key revoked successfully"
+    "keyRevoked": "API key revoked successfully",
+    "keyRegenerated": "API key regenerated successfully",
+    "keyCreated": "API key created successfully",
+    "enterKeyName": "Enter API key name"
   },
   "settings": {
     "title": "Settings",
@@ -1155,7 +1162,19 @@
     "emailAddress": "Email address",
     "emailVerificationStatus": "Email verification status",
     "shorthandUsername": "Shorthand username",
-    "lastProfileUpdate": "Last profile update timestamp"
+    "lastProfileUpdate": "Last profile update timestamp",
+    "subjectIdentifier": "Subject identifier - unique user ID",
+    "phoneNumberFormat": "Phone number in E.164 format",
+    "localeExample": "Locale (e.g., en-US)",
+    "oneSignCustomClaims": "OneSign Custom Claims",
+    "tenantIdentifier": "Tenant identifier",
+    "userRoles": "User roles within the tenant",
+    "organizationalUnits": "Organizational units the user belongs to",
+    "grantedPermissions": "Granted permissions",
+    "customAttributes": "Additional custom attributes",
+    "pasteAccessToken": "Paste your access token here",
+    "oauth2": "OAuth 2.0",
+    "authorizationHeader": "Authorization: Bearer YOUR_ACCESS_TOKEN"
   },
   "globalHunting": {
     "title": "Threat Hunting - Global",
