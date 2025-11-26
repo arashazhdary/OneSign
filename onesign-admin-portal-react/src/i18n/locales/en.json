@@ -334,7 +334,35 @@
     "contactAdmin": "Contact Administrator",
     "securityMessage": "Protected by enterprise-grade security",
     "welcomeMessage": "Welcome back!",
-    "invalidCredentials": "Invalid credentials"
+    "invalidCredentials": "Invalid credentials",
+    "authenticationFailed": "Authentication Failed",
+    "redirectingToLogin": "Redirecting to login...",
+    "orContinueWith": "Or continue with",
+    "passwordStrength": "Password Strength",
+    "passwordMinLength": "At least 8 characters",
+    "passwordUppercase": "One uppercase letter",
+    "passwordLowercase": "One lowercase letter",
+    "passwordNumber": "One number",
+    "passwordSpecial": "One special character",
+    "weak": "Weak",
+    "fair": "Fair",
+    "good": "Good",
+    "strong": "Strong"
+  },
+  "admin": {
+    "tenants": {
+      "title": "Tenants Management",
+      "subtitle": "Manage all platform tenants",
+      "createTenant": "Create Tenant",
+      "tenantCreated": "Tenant created successfully",
+      "tenantName": "Tenant Name",
+      "tenantSlug": "Tenant Slug",
+      "status": "Status",
+      "statusUpdated": "Status updated successfully",
+      "active": "Active",
+      "suspended": "Suspended",
+      "pending": "Pending"
+    }
   },
   "nav": {
     "dashboard": "Dashboard",

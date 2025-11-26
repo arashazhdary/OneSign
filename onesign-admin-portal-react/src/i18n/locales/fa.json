@@ -334,7 +334,35 @@
     "contactAdmin": "با مدیر سیستم تماس بگیرید",
     "securityMessage": "محافظت شده توسط امنیت سازمانی",
     "welcomeMessage": "خوش آمدید!",
-    "invalidCredentials": "اطلاعات ورود نامعتبر است"
+    "invalidCredentials": "اطلاعات ورود نامعتبر است",
+    "authenticationFailed": "احراز هویت ناموفق",
+    "redirectingToLogin": "در حال انتقال به صفحه ورود...",
+    "orContinueWith": "یا ادامه با",
+    "passwordStrength": "قدرت رمز عبور",
+    "passwordMinLength": "حداقل ۸ کاراکتر",
+    "passwordUppercase": "یک حرف بزرگ",
+    "passwordLowercase": "یک حرف کوچک",
+    "passwordNumber": "یک عدد",
+    "passwordSpecial": "یک کاراکتر خاص",
+    "weak": "ضعیف",
+    "fair": "متوسط",
+    "good": "خوب",
+    "strong": "قوی"
+  },
+  "admin": {
+    "tenants": {
+      "title": "مدیریت سازمان‌ها",
+      "subtitle": "مدیریت تمام سازمان‌های پلتفرم",
+      "createTenant": "ایجاد سازمان",
+      "tenantCreated": "سازمان با موفقیت ایجاد شد",
+      "tenantName": "نام سازمان",
+      "tenantSlug": "شناسه سازمان",
+      "status": "وضعیت",
+      "statusUpdated": "وضعیت با موفقیت به‌روزرسانی شد",
+      "active": "فعال",
+      "suspended": "تعلیق شده",
+      "pending": "در انتظار"
+    }
   },
   "nav": {
     "dashboard": "داشبورد",
