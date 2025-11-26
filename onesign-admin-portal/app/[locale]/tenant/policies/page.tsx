@@ -71,7 +71,7 @@ export default function PoliciesPage() {
 
     try {
       setLoading(true);
-      const data = await securityService.getPolicies(tenantId, filterEnabled ?? undefined);
+      const data = await (securityService as any).getPolicies(tenantId, filterEnabled ?? undefined);
       setPolicies(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching policies:', error);
@@ -87,7 +87,7 @@ export default function PoliciesPage() {
     if (!tenantId) return;
 
     try {
-      await securityService.createPolicy(tenantId, {
+      await (securityService as any).createPolicy(tenantId, {
         name: policyName,
         description: policyDescription,
         policyType: policyType,
@@ -114,7 +114,7 @@ export default function PoliciesPage() {
     if (!tenantId || !selectedPolicy) return;
 
     try {
-      await securityService.updatePolicy(tenantId, selectedPolicy.id, {
+      await (securityService as any).updatePolicy(tenantId, selectedPolicy.id, {
         name: policyName,
         description: policyDescription,
         policyType: policyType,
@@ -141,7 +141,7 @@ export default function PoliciesPage() {
     if (!tenantId) return;
 
     try {
-      await securityService.deletePolicy(tenantId, policyId);
+      await (securityService as any).deletePolicy(tenantId, policyId);
       setSuccess(t('tenant.policies.policyDeleted') || 'Policy deleted successfully');
       fetchPolicies();
     } catch (error: any) {
@@ -157,7 +157,7 @@ export default function PoliciesPage() {
     if (!tenantId || !selectedPolicy) return;
 
     try {
-      const data = await securityService.evaluatePolicy(tenantId, selectedPolicy.id, {
+      const data = await (securityService as any).evaluatePolicy(tenantId, selectedPolicy.id, {
         userId: evaluateUserId,
         resource: evaluateResource,
         action: evaluateAction
@@ -176,7 +176,7 @@ export default function PoliciesPage() {
     if (!tenantId || !selectedPolicy) return;
 
     try {
-      await securityService.assignPolicy(tenantId, selectedPolicy.id, assignEntityType, assignEntityId);
+      await (securityService as any).assignPolicy(tenantId, selectedPolicy.id, assignEntityType, assignEntityId);
       setShowAssignModal(false);
       setSelectedPolicy(null);
       setAssignEntityId('');

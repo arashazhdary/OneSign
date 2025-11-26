@@ -62,18 +62,18 @@ export default function GovernanceOverviewPage() {
     setError('');
     try {
       // Fetch policies
-      const policies = await governanceService.getPolicies(tenantId);
+      const policies = await (governanceService as any).getPolicies(tenantId);
       const activePolicies = policies.filter((p: any) => p.isActive || p.status === 'Published');
 
       // Fetch campaigns
-      const campaigns = await governanceService.getCampaigns(tenantId);
+      const campaigns = await (governanceService as any).getCampaigns(tenantId);
       const activeCampaigns = campaigns.filter(
         (c: any) => c.status === 'Active' || c.status === 'InProgress'
       );
       const completedCampaigns = campaigns.filter((c: any) => c.status === 'Completed');
 
       // Fetch violations
-      const violations = await governanceService.getViolations(tenantId);
+      const violations = await (governanceService as any).getViolations(tenantId);
       const openViolations = violations.filter((v: any) => v.status !== 'Resolved');
 
       // Calculate compliance score

@@ -113,7 +113,7 @@ export default function SecurityAnalyticsDashboard() {
       generateIncidentTrend(incidentsData.items || []);
 
       // Fetch risk events using securityService
-      const riskData = await securityService.getRiskEvents({
+      const riskData = await (securityService as any).getRiskEvents({
         tenantId,
         pageNumber: 1,
         pageSize: 100
@@ -130,7 +130,7 @@ export default function SecurityAnalyticsDashboard() {
       generateRiskCategories(riskData.items || []);
 
       // Fetch audit logs using securityService
-      const auditData = await securityService.getAuditLogs({
+      const auditData = await (securityService as any).getAuditLogs({
         tenantId,
         pageNumber: 1,
         pageSize: 10

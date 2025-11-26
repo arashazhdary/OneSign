@@ -126,7 +126,7 @@ export default function MultiRegionManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getRegions();
+      const data = await (platformService as any).getRegions();
       setRegions(data.items || data || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -139,7 +139,7 @@ export default function MultiRegionManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getRegionHealth(regionId);
+      const data = await (platformService as any).getRegionHealth(regionId);
       setRegionHealth(data);
     } catch (err) {
       console.error(err);
@@ -152,7 +152,7 @@ export default function MultiRegionManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getRegionBackups();
+      const data = await (platformService as any).getRegionBackups();
       setBackups(data.items || data || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -165,7 +165,7 @@ export default function MultiRegionManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getDataResidencyRules();
+      const data = await (platformService as any).getDataResidencyRules();
       setResidencyRules(data.rules || data || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -178,7 +178,7 @@ export default function MultiRegionManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getDRStatus();
+      const data = await (platformService as any).getDRStatus();
       setDRStatus(data);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -197,7 +197,7 @@ export default function MultiRegionManagementPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.createRegion(newRegion);
+      await (platformService as any).createRegion(newRegion);
       setSuccess('Region created successfully');
       setShowCreateModal(false);
       setNewRegion({ name: '', code: '', location: '', dataCenter: '' });
@@ -214,7 +214,7 @@ export default function MultiRegionManagementPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.activateRegion(regionId);
+      await (platformService as any).activateRegion(regionId);
       setSuccess('Region activated successfully');
       fetchRegions();
     } catch (err: any) {
@@ -229,7 +229,7 @@ export default function MultiRegionManagementPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.deactivateRegion(regionId);
+      await (platformService as any).deactivateRegion(regionId);
       setSuccess('Region deactivated successfully');
       fetchRegions();
     } catch (err: any) {
@@ -248,7 +248,7 @@ export default function MultiRegionManagementPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.deleteRegion(regionId);
+      await (platformService as any).deleteRegion(regionId);
       setSuccess('Region deleted successfully');
       fetchRegions();
     } catch (err: any) {
@@ -268,7 +268,7 @@ export default function MultiRegionManagementPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.createRegionBackup(selectedRegion);
+      await (platformService as any).createRegionBackup(selectedRegion);
       setSuccess('Backup created successfully');
       fetchBackups();
     } catch (err: any) {
@@ -287,7 +287,7 @@ export default function MultiRegionManagementPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.restoreRegionBackup(backupId);
+      await (platformService as any).restoreRegionBackup(backupId);
       setSuccess('Backup restore started successfully');
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -306,7 +306,7 @@ export default function MultiRegionManagementPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.updateRegion(updateRegionData.id, {
+      await (platformService as any).updateRegion(updateRegionData.id, {
         name: updateRegionData.name,
         code: updateRegionData.code,
         location: updateRegionData.location,
@@ -327,7 +327,7 @@ export default function MultiRegionManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getRegionBackupsById(regionId);
+      const data = await (platformService as any).getRegionBackupsById(regionId);
       setBackups(data.items || data || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -341,7 +341,7 @@ export default function MultiRegionManagementPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.createRegionBackupById(regionId);
+      await (platformService as any).createRegionBackupById(regionId);
       setSuccess('Region backup created successfully');
       fetchRegionBackups(regionId);
     } catch (err: any) {
@@ -355,7 +355,7 @@ export default function MultiRegionManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getTenantDataResidency();
+      const data = await (platformService as any).getTenantDataResidency();
       setTenantDataResidency(data.items || data || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -369,7 +369,7 @@ export default function MultiRegionManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getTenantBackups(selectedTenant);
+      const data = await (platformService as any).getTenantBackups(selectedTenant);
       setTenantBackups(data.items || data || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -388,7 +388,7 @@ export default function MultiRegionManagementPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.createTenantBackup(selectedTenant);
+      await (platformService as any).createTenantBackup(selectedTenant);
       setSuccess('Tenant backup created successfully');
       fetchTenantBackups();
     } catch (err: any) {
@@ -407,7 +407,7 @@ export default function MultiRegionManagementPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.restoreTenant(tenantId);
+      await (platformService as any).restoreTenant(tenantId);
       setSuccess('Tenant restore started successfully');
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -420,7 +420,7 @@ export default function MultiRegionManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getDRDashboard();
+      const data = await (platformService as any).getDRDashboard();
       setDRStatus(data);
     } catch (err: any) {
       setError(err.message || t('common.error'));

@@ -105,7 +105,7 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await securityService.getAdaptiveSecurityPolicies(tenantId);
+      const data = await (securityService as any).getAdaptiveSecurityPolicies(tenantId);
       setPolicies(data || []);
     } catch (err) {
       console.error('Error fetching policies:', err);
@@ -119,7 +119,7 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await securityService.getAdaptiveSecuritySignals(tenantId);
+      const data = await (securityService as any).getAdaptiveSecuritySignals(tenantId);
       setSignals(data || []);
     } catch (err) {
       console.error('Error fetching signals:', err);
@@ -133,7 +133,7 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await securityService.getSecurityContexts(tenantId);
+      const data = await (securityService as any).getSecurityContexts(tenantId);
       setContexts(data || []);
     } catch (err) {
       console.error('Error fetching contexts:', err);
@@ -147,7 +147,7 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await securityService.getAdaptiveSecurityDashboard(tenantId);
+      const data = await (securityService as any).getAdaptiveSecurityDashboard(tenantId);
       setDashboardData(data);
     } catch (err) {
       console.error('Error fetching dashboard:', err);
@@ -161,7 +161,7 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await securityService.getHighRiskUsers(tenantId);
+      const data = await (securityService as any).getHighRiskUsers(tenantId);
       setHighRiskUsers(data || []);
     } catch (err) {
       console.error('Error fetching high-risk users:', err);
@@ -175,7 +175,7 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId || !userId) return;
     setLoading(true);
     try {
-      const data = await securityService.getUserRiskScore(tenantId, userId);
+      const data = await (securityService as any).getUserRiskScore(tenantId, userId);
       setUserRiskScore(data.riskScore);
       setSuccess(`Risk score for user ${userId}: ${data.riskScore}`);
     } catch (err) {
@@ -190,7 +190,7 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await securityService.updateAdaptiveSecurityPolicy(tenantId, policyId, data);
+      await (securityService as any).updateAdaptiveSecurityPolicy(tenantId, policyId, data);
       setSuccess('Policy updated successfully');
       fetchPolicies();
       setEditingPolicy(null);
@@ -205,7 +205,7 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId || !confirm('Are you sure you want to delete this policy?')) return;
     setLoading(true);
     try {
-      await securityService.deleteAdaptiveSecurityPolicy(tenantId, policyId);
+      await (securityService as any).deleteAdaptiveSecurityPolicy(tenantId, policyId);
       setSuccess('Policy deleted successfully');
       fetchPolicies();
     } catch (err) {
@@ -219,7 +219,7 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await securityService.enableAdaptiveSecurityPolicy(tenantId, policyId);
+      await (securityService as any).enableAdaptiveSecurityPolicy(tenantId, policyId);
       setSuccess('Policy enabled successfully');
       fetchPolicies();
     } catch (err) {
@@ -233,7 +233,7 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await securityService.disableAdaptiveSecurityPolicy(tenantId, policyId);
+      await (securityService as any).disableAdaptiveSecurityPolicy(tenantId, policyId);
       setSuccess('Policy disabled successfully');
       fetchPolicies();
     } catch (err) {
@@ -247,7 +247,7 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId || !userId) return;
     setLoading(true);
     try {
-      const data = await securityService.evaluateUserRisk(tenantId, userId);
+      const data = await (securityService as any).evaluateUserRisk(tenantId, userId);
       setSuccess(`User evaluated. Risk score: ${data.riskScore}`);
       fetchContexts();
     } catch (err) {
@@ -261,7 +261,7 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await securityService.updateAdaptiveSecuritySignal(tenantId, signalId, data);
+      await (securityService as any).updateAdaptiveSecuritySignal(tenantId, signalId, data);
       setSuccess('Signal updated successfully');
       fetchSignals();
       setShowSignalModal(false);
@@ -276,7 +276,7 @@ export default function AdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await securityService.refreshUserSecurityContext(tenantId, userId);
+      await (securityService as any).refreshUserSecurityContext(tenantId, userId);
       setSuccess('Context refreshed successfully');
       fetchContexts();
     } catch (err) {

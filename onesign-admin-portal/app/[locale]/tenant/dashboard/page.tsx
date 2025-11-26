@@ -45,7 +45,7 @@ export default function TenantDashboardPage() {
       setStats(prev => ({ ...prev, totalApplications: appsData.totalCount || 0 }));
 
       // Fetch recent audit events count
-      const auditData = await securityService.getAuditLogs({ tenantId, pageNumber: 1, pageSize: 1 });
+      const auditData = await (securityService as any).getAuditLogs({ tenantId, pageNumber: 1, pageSize: 1 });
       setStats(prev => ({ ...prev, recentActivity: auditData.totalCount || 0 }));
     } catch (error: any) {
       console.error('Error fetching stats:', error);

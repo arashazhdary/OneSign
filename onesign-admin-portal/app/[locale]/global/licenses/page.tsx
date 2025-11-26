@@ -40,7 +40,7 @@ export default function LicensesPage() {
 
   const fetchLicenses = async () => {
     try {
-      const data = await platformService.getLicenses?.();
+      const data = await (platformService as any).getLicenses?.();
       const mockData: License[] = [
         {
           id: '1',
@@ -144,7 +144,7 @@ export default function LicensesPage() {
 
   const handleAdd = async () => {
     try {
-      await platformService.createLicense?.({
+      await (platformService as any).createLicense?.({
         type: 'trial',
         issuedTo: 'New Customer',
         features: [],
@@ -165,7 +165,7 @@ export default function LicensesPage() {
   const handleSuspend = async (licenseId: string) => {
     if (!confirm('Suspend this license?')) return;
     try {
-      await platformService.suspendLicense?.(licenseId);
+      await (platformService as any).suspendLicense?.(licenseId);
       fetchLicenses();
     } catch (error) {
       console.error('Failed to suspend license:', error);
@@ -175,7 +175,7 @@ export default function LicensesPage() {
   const handleRevoke = async (licenseId: string) => {
     if (!confirm('Revoke this license? This action cannot be undone.')) return;
     try {
-      await platformService.revokeLicense?.(licenseId);
+      await (platformService as any).revokeLicense?.(licenseId);
       fetchLicenses();
     } catch (error) {
       console.error('Failed to revoke license:', error);
@@ -184,7 +184,7 @@ export default function LicensesPage() {
 
   const handleRenew = async (licenseId: string) => {
     try {
-      await platformService.renewLicense?.(licenseId);
+      await (platformService as any).renewLicense?.(licenseId);
       fetchLicenses();
     } catch (error) {
       console.error('Failed to renew license:', error);

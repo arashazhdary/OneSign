@@ -92,7 +92,7 @@ export default function FederationPage() {
   const [scimName, setScimName] = useState('');
   const [scimExpiresAt, setScimExpiresAt] = useState('');
 
-  const tenantId = getTenantId();
+  const tenantId = getTenantId() || '';
 
   useEffect(() => {
     fetchData();

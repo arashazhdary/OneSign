@@ -146,7 +146,7 @@ export default function ReportsPage() {
 
   const fetchComplianceReports = async () => {
     try {
-      const data = await governanceService.getReports(tenantId);
+      const data = await (governanceService as any).getReports(tenantId);
       setComplianceReports(data);
     } catch (err) {
       console.error('Error fetching compliance reports:', err);

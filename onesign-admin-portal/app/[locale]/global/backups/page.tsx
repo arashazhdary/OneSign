@@ -148,7 +148,7 @@ export default function GlobalBackupsPage() {
   const handleCreateBackup = async () => {
     try {
       // TODO: createGlobalBackup not implemented
-      // await platformService.createGlobalBackup?.(...)
+      // await (platformService as any).createGlobalBackup?.(...)
       setShowCreate(false);
       fetchData();
     } catch (error) {
@@ -160,7 +160,7 @@ export default function GlobalBackupsPage() {
     if (!confirm('This will restore the entire platform to this backup. Continue?')) return;
     try {
       // TODO: restoreGlobalBackup not implemented
-      // await platformService.restoreGlobalBackup?.(...)
+      // await (platformService as any).restoreGlobalBackup?.(...)
       alert('Restore initiated successfully!');
       fetchData();
     } catch (error) {
@@ -172,7 +172,7 @@ export default function GlobalBackupsPage() {
   const handleDownload = async (backupId: string) => {
     try {
       // TODO: downloadBackup not implemented
-      // await platformService.downloadBackup?.(...)
+      // await (platformService as any).downloadBackup?.(...)
       alert('Backup download started!');
     } catch (error) {
       console.error('Failed to download backup:', error);

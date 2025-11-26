@@ -358,7 +358,7 @@ export default function ComplianceReportsPage() {
 
     try {
       // Try to export report via API if it exists
-      const blob = await governanceService.exportReport(
+      const blob = await (governanceService as any).exportReport(
         tenantId,
         reportId,
         format.toLowerCase() as 'pdf' | 'xlsx' | 'json'

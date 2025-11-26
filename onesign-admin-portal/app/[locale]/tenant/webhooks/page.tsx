@@ -36,7 +36,7 @@ interface WebhookDelivery {
 
   const fetchWebhooks = async () => {
     try {
-      const tenantId = getTenantId();
+      const tenantId = getTenantId() || '';
       const data = await platformService.getWebhooks(tenantId);
       setWebhooks(data);
     } catch (error) {

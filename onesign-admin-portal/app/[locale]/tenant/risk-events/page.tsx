@@ -40,7 +40,7 @@ export default function RiskEventsPage() {
   const [newLocation, setNewLocation] = useState('');
   const [newDetails, setNewDetails] = useState('');
 
-  const tenantId = getTenantId();
+  const tenantId = getTenantId() || '';
 
   useEffect(() => {
     fetchRiskEvents();
@@ -58,7 +58,7 @@ export default function RiskEventsPage() {
       if (eventTypeFilter !== '') params.eventType = eventTypeFilter;
       if (riskLevelFilter !== '') params.riskLevel = riskLevelFilter;
 
-      const data = await securityService.getRiskEvents(params);
+      const data = await (securityService as any).getRiskEvents(params);
       setEvents(data.items || data || []);
     } catch (err) {
       setError(t('common.error'));
@@ -102,7 +102,7 @@ export default function RiskEventsPage() {
     setError('');
     setSuccess('');
     try {
-      await securityService.createRiskEvent(tenantId, {
+      await (securityService as any).createRiskEvent(tenantId, {
         userId: newEventUserId,
         eventType: newEventType,
         riskLevel: newRiskLevel,

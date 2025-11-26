@@ -99,7 +99,7 @@ export default function IncidentDetailsPage() {
   const [entityName, setEntityName] = useState('');
   const [selectedPlaybookId, setSelectedPlaybookId] = useState('');
 
-  const tenantId = getTenantId();
+  const tenantId = getTenantId() || '';
 
   useEffect(() => {
     fetchIncident();

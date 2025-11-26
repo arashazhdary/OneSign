@@ -110,7 +110,7 @@ export default function GlobalSecurityPage() {
       ]);
     } catch (err) {
       console.error('Error fetching data:', err);
-      loadMockData();
+      // Mock data is loaded by individual fetch functions on error
     } finally {
       setLoading(false);
     }
@@ -525,10 +525,10 @@ export default function GlobalSecurityPage() {
       render: (policy) => (
         <StatusBadge
           status={policy.type}
-          color={
-            policy.type === 'Security' ? 'blue' :
-            policy.type === 'Compliance' ? 'purple' :
-            policy.type === 'Access' ? 'green' : 'orange'
+          variant={
+            policy.type === 'Security' ? 'info' :
+            policy.type === 'Compliance' ? 'default' :
+            policy.type === 'Access' ? 'success' : 'warning'
           }
         />
       ),
@@ -539,10 +539,10 @@ export default function GlobalSecurityPage() {
       render: (policy) => (
         <StatusBadge
           status={policy.severity}
-          color={
-            policy.severity === 'Critical' ? 'red' :
-            policy.severity === 'High' ? 'orange' :
-            policy.severity === 'Medium' ? 'yellow' : 'green'
+          variant={
+            policy.severity === 'Critical' ? 'error' :
+            policy.severity === 'High' ? 'warning' :
+            policy.severity === 'Medium' ? 'warning' : 'success'
           }
         />
       ),
@@ -553,9 +553,9 @@ export default function GlobalSecurityPage() {
       render: (policy) => (
         <StatusBadge
           status={policy.status}
-          color={
-            policy.status === 'Active' ? 'green' :
-            policy.status === 'Inactive' ? 'gray' : 'yellow'
+          variant={
+            policy.status === 'Active' ? 'success' :
+            policy.status === 'Inactive' ? 'default' : 'warning'
           }
         />
       ),
@@ -591,10 +591,10 @@ export default function GlobalSecurityPage() {
       render: (threat) => (
         <StatusBadge
           status={threat.category}
-          color={
-            threat.category === 'Brute Force' ? 'red' :
-            threat.category === 'Data Exfiltration' ? 'orange' :
-            threat.category === 'Privilege Escalation' ? 'purple' : 'blue'
+          variant={
+            threat.category === 'Brute Force' ? 'error' :
+            threat.category === 'Data Exfiltration' ? 'warning' :
+            threat.category === 'Privilege Escalation' ? 'default' : 'info'
           }
         />
       ),
@@ -605,10 +605,10 @@ export default function GlobalSecurityPage() {
       render: (threat) => (
         <StatusBadge
           status={threat.severity}
-          color={
-            threat.severity === 'Critical' ? 'red' :
-            threat.severity === 'High' ? 'orange' :
-            threat.severity === 'Medium' ? 'yellow' : 'green'
+          variant={
+            threat.severity === 'Critical' ? 'error' :
+            threat.severity === 'High' ? 'warning' :
+            threat.severity === 'Medium' ? 'warning' : 'success'
           }
         />
       ),
@@ -626,7 +626,7 @@ export default function GlobalSecurityPage() {
       render: (threat) => (
         <StatusBadge
           status={threat.enabled ? 'Enabled' : 'Disabled'}
-          color={threat.enabled ? 'green' : 'gray'}
+          variant={threat.enabled ? 'success' : 'default'}
         />
       ),
     },
@@ -647,7 +647,7 @@ export default function GlobalSecurityPage() {
       key: 'type',
       label: 'Type',
       render: (framework) => (
-        <StatusBadge status={framework.type} color="blue" />
+        <StatusBadge status={framework.type} variant="info" />
       ),
     },
     {
@@ -679,9 +679,9 @@ export default function GlobalSecurityPage() {
       render: (framework) => (
         <StatusBadge
           status={framework.status}
-          color={
-            framework.status === 'Compliant' ? 'green' :
-            framework.status === 'Non-Compliant' ? 'red' : 'yellow'
+          variant={
+            framework.status === 'Compliant' ? 'success' :
+            framework.status === 'Non-Compliant' ? 'error' : 'warning'
           }
         />
       ),
@@ -804,9 +804,9 @@ export default function GlobalSecurityPage() {
                     </div>
                     <StatusBadge
                       status={policy.severity}
-                      color={
-                        policy.severity === 'Critical' ? 'red' :
-                        policy.severity === 'High' ? 'orange' : 'yellow'
+                      variant={
+                        policy.severity === 'Critical' ? 'error' :
+                        policy.severity === 'High' ? 'warning' : 'warning'
                       }
                     />
                   </div>
@@ -823,7 +823,7 @@ export default function GlobalSecurityPage() {
                       <div className="font-medium text-sm">{threat.name}</div>
                       <div className="text-xs text-gray-500">{threat.detections} detections</div>
                     </div>
-                    <StatusBadge status={threat.category} color="red" />
+                    <StatusBadge status={threat.category} variant="error" />
                   </div>
                 ))}
               </div>

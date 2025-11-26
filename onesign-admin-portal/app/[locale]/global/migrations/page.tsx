@@ -327,10 +327,10 @@ export default function GlobalMigrationsPage() {
       render: (m) => (
         <StatusBadge
           status={m.type}
-          color={
-            m.type === 'Schema' ? 'blue' :
-            m.type === 'Data' ? 'purple' :
-            m.type === 'Index' ? 'green' : 'orange'
+          variant={
+            m.type === 'Schema' ? 'info' :
+            m.type === 'Data' ? 'default' :
+            m.type === 'Index' ? 'success' : 'warning'
           }
         />
       ),
@@ -341,11 +341,11 @@ export default function GlobalMigrationsPage() {
       render: (m) => (
         <StatusBadge
           status={m.status}
-          color={
-            m.status === 'Completed' ? 'green' :
-            m.status === 'Running' ? 'blue' :
-            m.status === 'Failed' ? 'red' :
-            m.status === 'Rolled Back' ? 'orange' : 'gray'
+          variant={
+            m.status === 'Completed' ? 'success' :
+            m.status === 'Running' ? 'info' :
+            m.status === 'Failed' ? 'error' :
+            m.status === 'Rolled Back' ? 'warning' : 'default'
           }
         />
       ),
@@ -384,10 +384,10 @@ export default function GlobalMigrationsPage() {
       render: (m) => (
         <StatusBadge
           status={m.type}
-          color={
-            m.type === 'Schema' ? 'blue' :
-            m.type === 'Data' ? 'purple' :
-            m.type === 'Index' ? 'green' : 'orange'
+          variant={
+            m.type === 'Schema' ? 'info' :
+            m.type === 'Data' ? 'default' :
+            m.type === 'Index' ? 'success' : 'warning'
           }
         />
       ),
@@ -527,9 +527,9 @@ export default function GlobalMigrationsPage() {
                   <div className="flex items-center gap-3">
                     <StatusBadge
                       status={migration.status}
-                      color={
-                        migration.status === 'Completed' ? 'green' :
-                        migration.status === 'Failed' ? 'red' : 'gray'
+                      variant={
+                        migration.status === 'Completed' ? 'success' :
+                        migration.status === 'Failed' ? 'error' : 'default'
                       }
                     />
                     <button
@@ -690,9 +690,9 @@ export default function GlobalMigrationsPage() {
                 <div>
                   <StatusBadge
                     status={selectedMigration.status}
-                    color={
-                      selectedMigration.status === 'Completed' ? 'green' :
-                      selectedMigration.status === 'Failed' ? 'red' : 'gray'
+                    variant={
+                      selectedMigration.status === 'Completed' ? 'success' :
+                      selectedMigration.status === 'Failed' ? 'error' : 'default'
                     }
                   />
                 </div>

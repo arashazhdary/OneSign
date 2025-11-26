@@ -85,7 +85,7 @@ export default function TenantAccessReviewsPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await securityService.getAccessReviews(tenantId, filterStatus || undefined);
+      const data = await (securityService as any).getAccessReviews(tenantId, filterStatus || undefined);
       setReviews(data || []);
     } catch (err: any) {
       console.error('Error fetching access reviews:', err);
@@ -101,7 +101,7 @@ export default function TenantAccessReviewsPage() {
     setError('');
     setSuccess('');
     try {
-      await securityService.createAccessReview({
+      await (securityService as any).createAccessReview({
         tenantId,
         ...createForm,
       });
@@ -138,11 +138,11 @@ export default function TenantAccessReviewsPage() {
     setLoading(true);
     setError('');
     try {
-      await securityService.submitReviewDecision(tenantId, reviewId, itemId, decision, notes);
+      await (securityService as any).submitReviewDecision(tenantId, reviewId, itemId, decision, notes);
       setSuccess(`Decision ${decision}d successfully`);
 
       // Refresh the selected review
-      const updatedReview = await securityService.getAccessReviewById(tenantId, reviewId);
+      const updatedReview = await (securityService as any).getAccessReviewById(tenantId, reviewId);
       setSelectedReview(updatedReview);
       fetchReviews();
     } catch (err: any) {
@@ -157,7 +157,7 @@ export default function TenantAccessReviewsPage() {
     setLoading(true);
     setError('');
     try {
-      await securityService.completeAccessReview(tenantId, reviewId);
+      await (securityService as any).completeAccessReview(tenantId, reviewId);
       setSuccess('Access review completed successfully');
       setShowReviewModal(false);
       setSelectedReview(null);
@@ -348,12 +348,16 @@ export default function TenantAccessReviewsPage() {
           </div>
 
           <div className="flex gap-3 mt-6">
-            <ActionButton onClick={handleCreateReview} className="flex-1">
-              Create Review
-            </ActionButton>
-            <ActionButton onClick={() => setShowCreateModal(false)} variant="secondary" className="flex-1">
-              Cancel
-            </ActionButton>
+            <div className="flex-1">
+              <ActionButton onClick={handleCreateReview}>
+                Create Review
+              </ActionButton>
+            </div>
+            <div className="flex-1">
+              <ActionButton onClick={() => setShowCreateModal(false)} variant="secondary">
+                Cancel
+              </ActionButton>
+            </div>
           </div>
         </div>
       </Modal>
@@ -363,7 +367,7 @@ export default function TenantAccessReviewsPage() {
         isOpen={showReviewModal}
         onClose={() => setShowReviewModal(false)}
         title={selectedReview?.name || 'Review Details'}
-        size="large"
+        size="lg"
       >
         {selectedReview && (
           <div className="space-y-6">
@@ -446,12 +450,16 @@ export default function TenantAccessReviewsPage() {
             {/* Actions */}
             {selectedReview.status === 'in_progress' && (
               <div className="flex gap-3 pt-4 border-t">
-                <ActionButton onClick={() => handleCompleteReview(selectedReview.id)} className="flex-1">
-                  Complete Review
-                </ActionButton>
-                <ActionButton onClick={() => setShowReviewModal(false)} variant="secondary" className="flex-1">
-                  Close
-                </ActionButton>
+                <div className="flex-1">
+                  <ActionButton onClick={() => handleCompleteReview(selectedReview.id)}>
+                    Complete Review
+                  </ActionButton>
+                </div>
+                <div className="flex-1">
+                  <ActionButton onClick={() => setShowReviewModal(false)} variant="secondary">
+                    Close
+                  </ActionButton>
+                </div>
               </div>
             )}
           </div>

@@ -98,7 +98,7 @@ export default function PrivilegedAccessPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await accessService.getPrivilegedSessions(tenantId, 'Active');
+      const data = await (accessService as any).getPrivilegedSessions(tenantId, 'Active');
       setSessions(data || []);
     } catch (err) {
       console.error('Error fetching sessions:', err);
@@ -111,7 +111,7 @@ export default function PrivilegedAccessPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await accessService.getBreakGlassAccounts(tenantId);
+      const data = await (accessService as any).getBreakGlassAccounts(tenantId);
       setBreakGlassAccounts(data || []);
     } catch (err) {
       console.error('Error fetching break-glass accounts:', err);
@@ -124,7 +124,7 @@ export default function PrivilegedAccessPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await accessService.getPrivilegedAccessRequests(tenantId);
+      const data = await (accessService as any).getPrivilegedAccessRequests(tenantId);
       setAccessRequests(data || []);
     } catch (err) {
       console.error('Error fetching access requests:', err);
@@ -137,7 +137,7 @@ export default function PrivilegedAccessPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await accessService.getPrivilegedAccessDashboard(tenantId);
+      const data = await (accessService as any).getPrivilegedAccessDashboard(tenantId);
       setDashboardData(data);
     } catch (err) {
       console.error('Error fetching dashboard:', err);
@@ -150,7 +150,7 @@ export default function PrivilegedAccessPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await accessService.getJITGrants(tenantId);
+      const data = await (accessService as any).getJITGrants(tenantId);
       setJitGrants(data || []);
     } catch (err) {
       console.error('Error fetching JIT grants:', err);
@@ -164,7 +164,7 @@ export default function PrivilegedAccessPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await accessService.requestJITAccess(tenantId, requestForm);
+      await (accessService as any).requestJITAccess(tenantId, requestForm);
       setSuccess('JIT access requested successfully');
       setShowRequestModal(false);
       fetchAccessRequests();
@@ -180,7 +180,7 @@ export default function PrivilegedAccessPage() {
     if (!tenantId || !confirm('Are you sure you want to revoke this grant?')) return;
     setLoading(true);
     try {
-      await accessService.revokeJITGrant(tenantId, grantId);
+      await (accessService as any).revokeJITGrant(tenantId, grantId);
       setSuccess('Grant revoked successfully');
       fetchJITGrants();
     } catch (err) {
@@ -194,7 +194,7 @@ export default function PrivilegedAccessPage() {
     if (!tenantId || !confirm('Are you sure you want to revoke this session?')) return;
     setLoading(true);
     try {
-      await accessService.revokePrivilegedSession(tenantId, sessionId);
+      await (accessService as any).revokePrivilegedSession(tenantId, sessionId);
       setSuccess('Session revoked successfully');
       fetchSessions();
     } catch (err) {
@@ -208,7 +208,7 @@ export default function PrivilegedAccessPage() {
     if (!tenantId || !confirm('Are you sure you want to activate this break-glass account? This action will be audited.')) return;
     setLoading(true);
     try {
-      await accessService.activateBreakGlassAccount(tenantId, accountId);
+      await (accessService as any).activateBreakGlassAccount(tenantId, accountId);
       setSuccess('Break-glass account activated');
       fetchBreakGlassAccounts();
     } catch (err) {

@@ -74,7 +74,7 @@ export default function FeatureFlagsPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getFeatureFlags();
+      const data = await (platformService as any).getFeatureFlags();
       setFlags(data.flags || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -85,7 +85,7 @@ export default function FeatureFlagsPage() {
 
   const fetchHistory = async (flagId: string) => {
     try {
-      const data = await platformService.getFeatureFlagHistory(flagId);
+      const data = await (platformService as any).getFeatureFlagHistory(flagId);
       setHistory(data.history || []);
       setIsHistoryModalOpen(true);
     } catch (err: any) {
@@ -98,7 +98,7 @@ export default function FeatureFlagsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.toggleFeatureFlag(flag.id, newState);
+      await (platformService as any).toggleFeatureFlag(flag.id, newState);
       setSuccess(`Feature flag "${flag.name}" ${newState ? 'enabled' : 'disabled'} successfully`);
       fetchFlags();
     } catch (err: any) {
@@ -142,7 +142,7 @@ export default function FeatureFlagsPage() {
         };
       }
 
-      await platformService.createFeatureFlag(payload);
+      await (platformService as any).createFeatureFlag(payload);
       setSuccess('Feature flag created successfully');
       setIsCreateModalOpen(false);
       resetForm();
@@ -160,7 +160,7 @@ export default function FeatureFlagsPage() {
     setLoading(true);
     setError('');
     try {
-      await platformService.deleteFeatureFlag(flagId);
+      await (platformService as any).deleteFeatureFlag(flagId);
       setSuccess('Feature flag deleted successfully');
       fetchFlags();
     } catch (err: any) {

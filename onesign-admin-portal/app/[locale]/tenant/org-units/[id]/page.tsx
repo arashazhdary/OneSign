@@ -114,7 +114,7 @@ export default function OrgUnitDetailPage() {
     description: '',
   });
 
-  const tenantId = getTenantId();
+  const tenantId = getTenantId() || '';
 
   useEffect(() => {
     fetchOrgUnit();

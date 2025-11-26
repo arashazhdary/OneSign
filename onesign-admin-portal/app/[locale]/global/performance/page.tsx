@@ -63,7 +63,7 @@ export default function PerformanceMonitoringPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getPerformanceMetrics();
+      const data = await (platformService as any).getPerformanceMetrics();
       setMetrics(data);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -74,7 +74,7 @@ export default function PerformanceMonitoringPage() {
 
   const fetchSlowQueries = async () => {
     try {
-      const data = await platformService.getSlowQueries();
+      const data = await (platformService as any).getSlowQueries();
       setSlowQueries(data.queries || []);
     } catch (err) {
       console.error('Failed to fetch slow queries');
@@ -83,7 +83,7 @@ export default function PerformanceMonitoringPage() {
 
   const fetchAlerts = async () => {
     try {
-      const data = await platformService.getPerformanceAlerts();
+      const data = await (platformService as any).getPerformanceAlerts();
       setAlerts(data.alerts || []);
     } catch (err) {
       console.error('Failed to fetch alerts');
@@ -92,7 +92,7 @@ export default function PerformanceMonitoringPage() {
 
   const resolveAlert = async (alertId: string) => {
     try {
-      await platformService.resolvePerformanceAlert(alertId);
+      await (platformService as any).resolvePerformanceAlert(alertId);
       setAlerts(prev => prev.map(alert =>
         alert.id === alertId ? { ...alert, resolved: true } : alert
       ));

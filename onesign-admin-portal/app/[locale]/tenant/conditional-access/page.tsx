@@ -29,7 +29,7 @@ export default function ConditionalAccessPage() {
 
   const fetchPolicies = async () => {
     try {
-      const data = await securityService.getConditionalAccessPolicies?.();
+      const data = await (securityService as any).getConditionalAccessPolicies?.();
       const mockData: ConditionalAccessPolicy[] = [
         {
           id: '1',

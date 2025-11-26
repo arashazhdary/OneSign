@@ -55,7 +55,7 @@ export default function MFAManagementPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await securityService.getUserMFAMethods(tenantId);
+      const data = await (securityService as any).getUserMFAMethods(tenantId);
       setMfaMethods(data || []);
     } catch (err) {
       console.error('Error fetching MFA methods:', err);
@@ -68,7 +68,7 @@ export default function MFAManagementPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await securityService.getTrustedDevices(tenantId);
+      const data = await (securityService as any).getTrustedDevices(tenantId);
       setTrustedDevices(data || []);
     } catch (err) {
       console.error('Error fetching trusted devices:', err);
@@ -81,7 +81,7 @@ export default function MFAManagementPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await securityService.getOrgUnitMFARules(tenantId);
+      const data = await (securityService as any).getOrgUnitMFARules(tenantId);
       setOrgUnitRules(data || []);
     } catch (err) {
       console.error('Error fetching org unit rules:', err);
@@ -94,7 +94,7 @@ export default function MFAManagementPage() {
     if (!tenantId || !confirm('Are you sure you want to disable MFA for this user?')) return;
     setLoading(true);
     try {
-      await securityService.disableMFAForUser(tenantId, userId);
+      await (securityService as any).disableMFAForUser(tenantId, userId);
       setSuccess('MFA disabled successfully');
       fetchMFAMethods();
     } catch (err) {
@@ -108,7 +108,7 @@ export default function MFAManagementPage() {
     if (!tenantId || !confirm('Are you sure you want to delete this MFA method?')) return;
     setLoading(true);
     try {
-      await securityService.deleteMFAMethod(tenantId, methodId);
+      await (securityService as any).deleteMFAMethod(tenantId, methodId);
       setSuccess('MFA method deleted successfully');
       fetchMFAMethods();
     } catch (err) {
@@ -122,7 +122,7 @@ export default function MFAManagementPage() {
     if (!tenantId || !confirm('Are you sure you want to revoke trust for this device?')) return;
     setLoading(true);
     try {
-      await securityService.revokeDeviceTrust(tenantId, deviceId);
+      await (securityService as any).revokeDeviceTrust(tenantId, deviceId);
       setSuccess('Trust revoked successfully');
       fetchTrustedDevices();
     } catch (err) {

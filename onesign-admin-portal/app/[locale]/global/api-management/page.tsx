@@ -79,7 +79,7 @@ export default function APIManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getAPIEndpoints();
+      const data = await (platformService as any).getAPIEndpoints();
       setEndpoints(data.endpoints || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -92,7 +92,7 @@ export default function APIManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getAPIKeys();
+      const data = await (platformService as any).getAPIKeys();
       setApiKeys(data.keys || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -105,7 +105,7 @@ export default function APIManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getAPIConsumers();
+      const data = await (platformService as any).getAPIConsumers();
       setConsumers(data.consumers || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -118,7 +118,7 @@ export default function APIManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getAPIVersions();
+      const data = await (platformService as any).getAPIVersions();
       setVersions(data.versions || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -132,7 +132,7 @@ export default function APIManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const data = await platformService.createAPIKey({
+      const data = await (platformService as any).createAPIKey({
         name: keyFormData.name,
         scope: keyFormData.scope,
         expiresIn: parseInt(keyFormData.expiresIn)
@@ -154,7 +154,7 @@ export default function APIManagementPage() {
     setLoading(true);
     setError('');
     try {
-      await platformService.revokeAPIKey(keyId);
+      await (platformService as any).revokeAPIKey(keyId);
       setSuccess('API Key revoked successfully');
       fetchAPIKeys();
     } catch (err: any) {
@@ -170,7 +170,7 @@ export default function APIManagementPage() {
     setLoading(true);
     setError('');
     try {
-      await platformService.updateEndpointRateLimit(selectedEndpoint.id, rateLimitForm);
+      await (platformService as any).updateEndpointRateLimit(selectedEndpoint.id, rateLimitForm);
       setSuccess('Rate limit updated successfully');
       setIsRateLimitModalOpen(false);
       fetchEndpoints();

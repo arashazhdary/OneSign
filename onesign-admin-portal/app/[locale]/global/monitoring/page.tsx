@@ -269,7 +269,7 @@ export default function MonitoringPage() {
               Auto-refresh (30s)
             </label>
             <button
-              onClick={generateMockData}
+              onClick={fetchMetrics}
               disabled={loading}
               className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 transition-all duration-200 shadow-lg hover:shadow-xl"
             >

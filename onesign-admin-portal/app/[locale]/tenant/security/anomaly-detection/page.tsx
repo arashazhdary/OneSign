@@ -101,7 +101,7 @@ export default function AnomalyDetectionPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await securityService.getThreatDetections(tenantId);
+      const data = await (securityService as any).getThreatDetections(tenantId);
       setDetections(data || []);
     } catch (err: any) {
       console.error('Error fetching threat detections:', err);
@@ -220,7 +220,7 @@ export default function AnomalyDetectionPage() {
     setError('');
     setSuccess('');
     try {
-      await securityService.createThreatDetection({
+      await (securityService as any).createThreatDetection({
         tenantId,
         ...createForm,
       });
@@ -245,7 +245,7 @@ export default function AnomalyDetectionPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await securityService.updateThreatDetection(tenantId, detectionId, { isEnabled: !isEnabled });
+      await (securityService as any).updateThreatDetection(tenantId, detectionId, { isEnabled: !isEnabled });
       setSuccess(`Detection ${!isEnabled ? 'enabled' : 'disabled'} successfully`);
       fetchDetections();
     } catch (err) {
@@ -259,7 +259,7 @@ export default function AnomalyDetectionPage() {
     if (!tenantId || !confirm('Are you sure you want to delete this detection rule?')) return;
     setLoading(true);
     try {
-      await securityService.deleteThreatDetection(tenantId, detectionId);
+      await (securityService as any).deleteThreatDetection(tenantId, detectionId);
       setSuccess('Detection deleted successfully');
       fetchDetections();
     } catch (err) {

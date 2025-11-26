@@ -144,7 +144,7 @@ export default function GlobalSettingsPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getGlobalSettings(activeTab);
+      const data = await (platformService as any).getGlobalSettings(activeTab);
       switch (activeTab) {
         case 'platform':
           setPlatformSettings(data.settings);
@@ -206,7 +206,7 @@ export default function GlobalSettingsPage() {
           break;
       }
 
-      await platformService.updateGlobalSettings(activeTab, payload);
+      await (platformService as any).updateGlobalSettings(activeTab, payload);
       setSuccess('Settings saved successfully');
       setHasChanges(false);
     } catch (err: any) {
@@ -220,7 +220,7 @@ export default function GlobalSettingsPage() {
     setLoading(true);
     setError('');
     try {
-      await platformService.testEmailConfiguration(emailSettings);
+      await (platformService as any).testEmailConfiguration(emailSettings);
       setSuccess('Test email sent successfully!');
     } catch (err: any) {
       setError(err.message || 'Failed to send test email');
@@ -233,7 +233,7 @@ export default function GlobalSettingsPage() {
     setLoading(true);
     setError('');
     try {
-      await platformService.testSMSConfiguration(smsSettings);
+      await (platformService as any).testSMSConfiguration(smsSettings);
       setSuccess('Test SMS sent successfully!');
     } catch (err: any) {
       setError(err.message || 'Failed to send test SMS');

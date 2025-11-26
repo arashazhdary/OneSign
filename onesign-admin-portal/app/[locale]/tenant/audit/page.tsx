@@ -45,7 +45,7 @@ export default function TenantAuditPage() {
       if (fromDate) params.fromDate = fromDate;
       if (toDate) params.toDate = toDate;
 
-      const data = await securityService.getAuditLogs(params);
+      const data = await (securityService as any).getAuditLogs(params);
       setEvents(data.items || []);
     } catch (error) {
       console.error('Error fetching audit events:', error);

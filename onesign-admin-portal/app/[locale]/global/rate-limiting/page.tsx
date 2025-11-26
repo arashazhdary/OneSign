@@ -33,7 +33,7 @@ export default function RateLimitingPage() {
 
   const fetchLimits = async () => {
     try {
-      const data = await platformService.getRateLimits?.();
+      const data = await (platformService as any).getRateLimits?.();
       const mockData: RateLimit[] = [
         {
           id: '1',
@@ -127,7 +127,7 @@ export default function RateLimitingPage() {
       setLimits(data || mockData);
     } catch (err) {
       console.error(err);
-      setLimits(mockData);
+      setLimits([]);
     } finally {
       setLoading(false);
     }
@@ -135,7 +135,7 @@ export default function RateLimitingPage() {
 
   const handleCreate = async () => {
     try {
-      await platformService.createRateLimit?.({
+      await (platformService as any).createRateLimit?.({
         name: 'New Rate Limit',
         type: 'global',
         limit: 1000,
@@ -153,7 +153,7 @@ export default function RateLimitingPage() {
 
   const handleToggle = async (limitId: string) => {
     try {
-      await platformService.toggleRateLimit?.(limitId);
+      await (platformService as any).toggleRateLimit?.(limitId);
       fetchLimits();
     } catch (error) {
       console.error('Failed to toggle rate limit:', error);
@@ -163,7 +163,7 @@ export default function RateLimitingPage() {
   const handleDelete = async (limitId: string) => {
     if (!confirm('Delete this rate limit?')) return;
     try {
-      await platformService.deleteRateLimit?.(limitId);
+      await (platformService as any).deleteRateLimit?.(limitId);
       fetchLimits();
     } catch (error) {
       console.error('Failed to delete rate limit:', error);

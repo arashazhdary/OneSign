@@ -98,7 +98,7 @@ export default function TenantCompliancePage() {
     setError('');
     try {
       // Fetch compliance frameworks
-      const frameworksData = await governanceService.getFrameworks();
+      const frameworksData = await (governanceService as any).getFrameworks();
 
       // Transform to include compliance status
       const frameworkStatuses: ComplianceFrameworkStatus[] = frameworksData.map(fw => {
@@ -151,7 +151,7 @@ export default function TenantCompliancePage() {
 
       // Fetch violations
       if (tenantId) {
-        const violationsData = await governanceService.getViolations(tenantId);
+        const violationsData = await (governanceService as any).getViolations(tenantId);
         const extendedViolations: ViolationExtended[] = violationsData.map(v => ({
           ...v,
           remediationSteps: [
@@ -165,7 +165,7 @@ export default function TenantCompliancePage() {
         setViolations(extendedViolations);
 
         // Fetch reports
-        const reportsData = await governanceService.getReports(tenantId);
+        const reportsData = await (governanceService as any).getReports(tenantId);
         setReports(reportsData);
       }
 
@@ -220,7 +220,7 @@ export default function TenantCompliancePage() {
     setError('');
     setSuccess('');
     try {
-      await governanceService.generateReport(tenantId, reportFramework, reportDateFrom, reportDateTo);
+      await (governanceService as any).generateReport(tenantId, reportFramework, reportDateFrom, reportDateTo);
       setSuccess('Compliance report generated successfully');
       setShowGenerateReportModal(false);
       fetchData();
@@ -233,7 +233,7 @@ export default function TenantCompliancePage() {
     if (!tenantId) return;
 
     try {
-      const blob = await governanceService.exportReport(tenantId, reportId, 'pdf');
+      const blob = await (governanceService as any).exportReport(tenantId, reportId, 'pdf');
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -254,7 +254,7 @@ export default function TenantCompliancePage() {
     setError('');
     setSuccess('');
     try {
-      await governanceService.resolveViolation(tenantId, violationId, resolution);
+      await (governanceService as any).resolveViolation(tenantId, violationId, resolution);
       setSuccess('Violation resolved successfully');
       setSelectedViolation(null);
       setShowViolationModal(false);

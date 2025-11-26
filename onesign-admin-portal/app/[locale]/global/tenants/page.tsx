@@ -125,7 +125,7 @@ export default function GlobalTenantsPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getTenants();
+      const data = await (platformService as any).getTenants();
       setTenants(data || []);
     } catch (err: any) {
       console.error('Failed to fetch tenants:', err);
@@ -141,7 +141,7 @@ export default function GlobalTenantsPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getTenantHealthGlobal(tenantId);
+      const data = await (platformService as any).getTenantHealthGlobal(tenantId);
       setTenantHealth(data);
     } catch (err: any) {
       console.error('Failed to fetch tenant health:', err);
@@ -173,7 +173,7 @@ export default function GlobalTenantsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.createTenant(newTenant);
+      await (platformService as any).createTenant(newTenant);
       setSuccess('Tenant created successfully');
       setShowCreateModal(false);
       setNewTenant({
@@ -200,7 +200,7 @@ export default function GlobalTenantsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.suspendTenant(tenantToSuspend, suspendReason);
+      await (platformService as any).suspendTenant(tenantToSuspend, suspendReason);
       setSuccess('Tenant suspended successfully');
       setShowSuspendModal(false);
       setTenantToSuspend('');
@@ -218,7 +218,7 @@ export default function GlobalTenantsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.activateTenant(tenantId);
+      await (platformService as any).activateTenant(tenantId);
       setSuccess('Tenant activated successfully');
       fetchTenants();
     } catch (err: any) {
@@ -237,7 +237,7 @@ export default function GlobalTenantsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.deleteTenant(tenantId);
+      await (platformService as any).deleteTenant(tenantId);
       setSuccess('Tenant deleted successfully');
       fetchTenants();
     } catch (err: any) {
