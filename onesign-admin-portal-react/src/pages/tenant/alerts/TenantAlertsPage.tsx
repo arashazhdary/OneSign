@@ -89,7 +89,7 @@ export default function TenantAlertsPage() {
     setLoading(true);
     try {
       // Fetch from real API
-      const data = await securityService.getAlertRules?.(tenantId);
+      const data = await securityService.getAlertRules(tenantId);
 
       // Mock data for fallback
       const mockRules: AlertRule[] = [

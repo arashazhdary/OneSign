@@ -175,7 +175,7 @@ export default function TenantImportsPage() {
 
     try {
       // Fetch from real API
-      const data = await tenantService.getImportJobs?.(tenantId);
+      const data = await tenantService.getImportJobs(tenantId);
       setImports(data || mockImportsFallback);
     } catch (error: any) {
       console.error('Error fetching imports:', error);
@@ -192,7 +192,7 @@ export default function TenantImportsPage() {
 
     try {
       // Fetch from real API
-      const data = await tenantService.getImportTemplates?.(tenantId);
+      const data = await tenantService.getImportTemplates(tenantId);
       setTemplates(data || mockTemplatesFallback);
     } catch (error: any) {
       console.error('Error fetching templates:', error);

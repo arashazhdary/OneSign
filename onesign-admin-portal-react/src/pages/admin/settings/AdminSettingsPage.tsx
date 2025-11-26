@@ -165,7 +165,7 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      await adminService.updateGlobalSettings?.('platform', platformSettings);
+      await adminService.updateGlobalSettings('platform', platformSettings);
       setSuccess('Platform settings saved successfully');
     } catch (err: any) {
       setError(err.message || 'Failed to save platform settings');
@@ -178,7 +178,7 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      await adminService.updateGlobalSettings?.('email', emailSettings);
+      await adminService.updateGlobalSettings('email', emailSettings);
       setSuccess('Email settings saved successfully');
     } catch (err: any) {
       setError(err.message || 'Failed to save email settings');
@@ -190,7 +190,7 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      await adminService.testEmailConfiguration?.(emailSettings);
+      await adminService.testEmailConfiguration(emailSettings);
       setSuccess('Test email sent successfully');
     } catch (err: any) {
       setError(err.message || 'Failed to send test email');
@@ -203,7 +203,7 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      await adminService.updateGlobalSettings?.('sms', smsSettings);
+      await adminService.updateGlobalSettings('sms', smsSettings);
       setSuccess('SMS settings saved successfully');
     } catch (err: any) {
       setError(err.message || 'Failed to save SMS settings');
@@ -215,7 +215,7 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      await adminService.testSMSConfiguration?.(smsSettings);
+      await adminService.testSMSConfiguration(smsSettings);
       setSuccess('Test SMS sent successfully');
     } catch (err: any) {
       setError(err.message || 'Failed to send test SMS');
@@ -236,7 +236,7 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      await adminService.updateGlobalSettings?.('maintenance', maintenanceSettings);
+      await adminService.updateGlobalSettings('maintenance', maintenanceSettings);
       setSuccess('Maintenance settings saved successfully');
     } catch (err: any) {
       setError(err.message || 'Failed to save maintenance settings');

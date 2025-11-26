@@ -46,7 +46,7 @@ export default function GlobalIntegrationsPage() {
 
   const fetchData = async () => {
     try {
-      const data = await globalService.getGlobalIntegrations?.();
+      const data = await globalService.getGlobalIntegrations();
       const mockIntegrations: Integration[] = [
         {
           id: '1',
@@ -247,7 +247,7 @@ export default function GlobalIntegrationsPage() {
 
   const handleToggleIntegration = async (integrationId: string) => {
     try {
-      await globalService.toggleIntegration?.(integrationId);
+      await globalService.toggleGlobalIntegration(integrationId);
       fetchData();
     } catch (error) {
       console.error('Failed to toggle integration:', error);
@@ -256,7 +256,7 @@ export default function GlobalIntegrationsPage() {
 
   const handleTestIntegration = async (integrationId: string) => {
     try {
-      await globalService.testIntegration?.(integrationId);
+      await globalService.testGlobalIntegration(integrationId);
       alert('Integration test successful!');
     } catch (error) {
       console.error('Failed to test integration:', error);
@@ -267,7 +267,7 @@ export default function GlobalIntegrationsPage() {
   const handleDeleteIntegration = async (integrationId: string) => {
     if (!confirm('Remove this integration?')) return;
     try {
-      await globalService.deleteIntegration?.(integrationId);
+      await globalService.deleteGlobalIntegration(integrationId);
       fetchData();
     } catch (error) {
       console.error('Failed to delete integration:', error);

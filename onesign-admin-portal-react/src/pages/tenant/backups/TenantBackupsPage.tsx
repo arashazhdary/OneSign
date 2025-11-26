@@ -153,7 +153,7 @@ export default function TenantBackupsPage() {
 
     try {
       // Fetch from real API
-      const data = await tenantService.getBackupSchedule?.(tenantId);
+      const data = await tenantService.getBackupSchedule(tenantId);
       const scheduleData = data || mockScheduleFallback;
 
       setSchedule(scheduleData);

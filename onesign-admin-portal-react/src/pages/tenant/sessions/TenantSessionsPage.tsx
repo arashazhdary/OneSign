@@ -222,7 +222,7 @@ export default function TenantSessionsPage() {
 
     try {
       // Fetch from real API
-      const data = await usersService.getSessionHistory?.(tenantId);
+      const data = await usersService.getSessionHistory(tenantId);
       setHistory(data || mockHistoryFallback);
     } catch (error: any) {
       console.error('Error fetching session history:', error);

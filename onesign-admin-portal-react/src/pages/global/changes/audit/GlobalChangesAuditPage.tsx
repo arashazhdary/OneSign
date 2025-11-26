@@ -85,7 +85,7 @@ export default function GlobalChangesAuditPage() {
     setError('');
     try {
       // Use global change management service
-      const data = await changeManagementService.getGlobalChangeHistory?.({
+      const data = await changeManagementService.getGlobalChangeHistory({
         ...filters,
         page: 1,
         pageSize: 100,

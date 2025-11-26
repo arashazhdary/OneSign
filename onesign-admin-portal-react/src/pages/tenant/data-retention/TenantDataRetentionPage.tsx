@@ -37,7 +37,7 @@ export default function TenantDataRetentionPage() {
 
   const fetchData = async () => {
     try {
-      const data = await tenantService.getRetentionPolicies?.();
+      const data = await tenantService.getRetentionPolicies();
       const mockPolicies: RetentionPolicy[] = [
         {
           id: '1',
@@ -178,7 +178,7 @@ export default function TenantDataRetentionPage() {
 
   const handleCreate = async () => {
     try {
-      await tenantService.createRetentionPolicy?.('tenant-id', {
+      await tenantService.createRetentionPolicy('tenant-id', {
         name: 'New Retention Policy',
         dataType: 'logs',
         retentionDays: 30,
@@ -194,7 +194,7 @@ export default function TenantDataRetentionPage() {
 
   const handleToggle = async (policyId: string) => {
     try {
-      await tenantService.toggleRetentionPolicy?.('tenant-id', policyId);
+      await tenantService.toggleRetentionPolicy('tenant-id', policyId);
       fetchData();
     } catch (error) {
       console.error('Failed to toggle retention policy:', error);
@@ -204,7 +204,7 @@ export default function TenantDataRetentionPage() {
   const handleRunNow = async (policyId: string) => {
     if (!confirm('Run this retention policy now? This will delete data according to the policy.')) return;
     try {
-      await tenantService.runRetentionPolicy?.('tenant-id', policyId);
+      await tenantService.runRetentionPolicy('tenant-id', policyId);
       fetchData();
     } catch (error) {
       console.error('Failed to run retention policy:', error);
@@ -214,7 +214,7 @@ export default function TenantDataRetentionPage() {
   const handleDelete = async (policyId: string) => {
     if (!confirm('Delete this retention policy?')) return;
     try {
-      await tenantService.deleteRetentionPolicy?.('tenant-id', policyId);
+      await tenantService.deleteRetentionPolicy('tenant-id', policyId);
       fetchData();
     } catch (error) {
       console.error('Failed to delete retention policy:', error);
