@@ -378,9 +378,9 @@ export default function GlobalAuditPage() {
   return (
     <div className="p-8 max-w-[1800px] mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Global Audit Log Viewer</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('globalAudit.title')}</h1>
         <p className="text-gray-600">
-          Cross-tenant audit investigations, compliance reports, and security event monitoring
+          {t('globalAudit.subtitle')}
         </p>
       </div>
 
@@ -394,32 +394,32 @@ export default function GlobalAuditPage() {
       {statistics && (
         <div className="mb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
-            <h3 className="text-sm font-medium text-gray-600 mb-1">Total Events</h3>
+            <h3 className="text-sm font-medium text-gray-600 mb-1">{t('globalAudit.totalEvents')}</h3>
             <p className="text-3xl font-bold text-gray-900">{statistics.totalEvents.toLocaleString()}</p>
           </div>
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-red-500">
-            <h3 className="text-sm font-medium text-gray-600 mb-1">Critical Events</h3>
+            <h3 className="text-sm font-medium text-gray-600 mb-1">{t('globalAudit.criticalEvents')}</h3>
             <p className="text-3xl font-bold text-red-600">
               {statistics.bySeverity.find(s => s.severity === 'critical')?.count || 0}
             </p>
           </div>
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
-            <h3 className="text-sm font-medium text-gray-600 mb-1">Suspicious Activities</h3>
+            <h3 className="text-sm font-medium text-gray-600 mb-1">{t('globalAudit.suspiciousActivities')}</h3>
             <p className="text-3xl font-bold text-yellow-600">{statistics.suspiciousActivities}</p>
           </div>
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
-            <h3 className="text-sm font-medium text-gray-600 mb-1">Top Category</h3>
+            <h3 className="text-sm font-medium text-gray-600 mb-1">{t('globalAudit.topCategory')}</h3>
             <p className="text-lg font-bold text-gray-900">
               {statistics.byCategory[0]?.category || 'N/A'}
             </p>
-            <p className="text-sm text-gray-500">{statistics.byCategory[0]?.count || 0} events</p>
+            <p className="text-sm text-gray-500">{statistics.byCategory[0]?.count || 0} {t('globalAudit.events')}</p>
           </div>
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
-            <h3 className="text-sm font-medium text-gray-600 mb-1">Most Active Tenant</h3>
+            <h3 className="text-sm font-medium text-gray-600 mb-1">{t('globalAudit.mostActiveTenant')}</h3>
             <p className="text-lg font-bold text-gray-900">
               {statistics.topTenants[0]?.tenantName || 'N/A'}
             </p>
-            <p className="text-sm text-gray-500">{statistics.topTenants[0]?.count || 0} events</p>
+            <p className="text-sm text-gray-500">{statistics.topTenants[0]?.count || 0} {t('globalAudit.events')}</p>
           </div>
         </div>
       )}
@@ -428,29 +428,29 @@ export default function GlobalAuditPage() {
       <div className="mb-6 bg-white rounded-lg shadow">
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Search & Filters</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{t('globalAudit.searchFilters')}</h2>
             <button
               onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
               className="text-sm text-indigo-600 hover:text-indigo-800"
             >
-              {showAdvancedFilters ? 'Hide Advanced Filters' : 'Show Advanced Filters'}
+              {showAdvancedFilters ? t('globalAudit.hideAdvancedFilters') : t('globalAudit.showAdvancedFilters')}
             </button>
           </div>
 
           {/* Basic Filters */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Search Term</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalAudit.searchTerm')}</label>
               <input
                 type="text"
                 value={filters.searchTerm || ''}
                 onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
-                placeholder="Search in events..."
+                placeholder={t('globalAudit.searchInEvents')}
                 className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalAudit.startDate')}</label>
               <input
                 type="datetime-local"
                 value={filters.startDate || ''}
@@ -459,7 +459,7 @@ export default function GlobalAuditPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalAudit.endDate')}</label>
               <input
                 type="datetime-local"
                 value={filters.endDate || ''}
@@ -473,109 +473,109 @@ export default function GlobalAuditPage() {
           {showAdvancedFilters && (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tenant ID</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalAudit.tenantId')}</label>
                 <input
                   type="text"
                   value={filters.tenantId || ''}
                   onChange={(e) => setFilters({ ...filters, tenantId: e.target.value })}
-                  placeholder="Filter by tenant..."
+                  placeholder={t('globalAudit.filterByTenant')}
                   className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">User ID</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalAudit.userId')}</label>
                 <input
                   type="text"
                   value={filters.userId || ''}
                   onChange={(e) => setFilters({ ...filters, userId: e.target.value })}
-                  placeholder="Filter by user..."
+                  placeholder={t('globalAudit.filterByUser')}
                   className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Action Type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalAudit.actionType')}</label>
                 <select
                   value={filters.action || ''}
                   onChange={(e) => setFilters({ ...filters, action: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500"
                 >
-                  <option value="">All Actions</option>
-                  <option value="CREATE">CREATE</option>
-                  <option value="UPDATE">UPDATE</option>
-                  <option value="DELETE">DELETE</option>
-                  <option value="READ">READ</option>
-                  <option value="LOGIN">LOGIN</option>
-                  <option value="LOGOUT">LOGOUT</option>
-                  <option value="EXPORT">EXPORT</option>
-                  <option value="IMPORT">IMPORT</option>
+                  <option value="">{t('globalAudit.allActions')}</option>
+                  <option value="CREATE">{t('globalAudit.actionCreate')}</option>
+                  <option value="UPDATE">{t('globalAudit.actionUpdate')}</option>
+                  <option value="DELETE">{t('globalAudit.actionDelete')}</option>
+                  <option value="READ">{t('globalAudit.actionRead')}</option>
+                  <option value="LOGIN">{t('globalAudit.actionLogin')}</option>
+                  <option value="LOGOUT">{t('globalAudit.actionLogout')}</option>
+                  <option value="EXPORT">{t('globalAudit.actionExport')}</option>
+                  <option value="IMPORT">{t('globalAudit.actionImport')}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Resource Type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalAudit.resourceType')}</label>
                 <select
                   value={filters.resourceType || ''}
                   onChange={(e) => setFilters({ ...filters, resourceType: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500"
                 >
-                  <option value="">All Resources</option>
-                  <option value="USER">USER</option>
-                  <option value="TENANT">TENANT</option>
-                  <option value="CONFIG">CONFIG</option>
-                  <option value="API_KEY">API_KEY</option>
-                  <option value="WEBHOOK">WEBHOOK</option>
-                  <option value="TEMPLATE">TEMPLATE</option>
-                  <option value="CAMPAIGN">CAMPAIGN</option>
+                  <option value="">{t('globalAudit.allResources')}</option>
+                  <option value="USER">{t('globalAudit.resourceUser')}</option>
+                  <option value="TENANT">{t('globalAudit.resourceTenant')}</option>
+                  <option value="CONFIG">{t('globalAudit.resourceConfig')}</option>
+                  <option value="API_KEY">{t('globalAudit.resourceApiKey')}</option>
+                  <option value="WEBHOOK">{t('globalAudit.resourceWebhook')}</option>
+                  <option value="TEMPLATE">{t('globalAudit.resourceTemplate')}</option>
+                  <option value="CAMPAIGN">{t('globalAudit.resourceCampaign')}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalAudit.category')}</label>
                 <select
                   value={filters.category || ''}
                   onChange={(e) => setFilters({ ...filters, category: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500"
                 >
-                  <option value="">All Categories</option>
-                  <option value="Authentication">Authentication</option>
-                  <option value="Authorization">Authorization</option>
-                  <option value="Data Access">Data Access</option>
-                  <option value="Configuration">Configuration</option>
-                  <option value="Security">Security</option>
-                  <option value="Compliance">Compliance</option>
+                  <option value="">{t('globalAudit.allCategories')}</option>
+                  <option value="Authentication">{t('globalAudit.categoryAuthentication')}</option>
+                  <option value="Authorization">{t('globalAudit.categoryAuthorization')}</option>
+                  <option value="Data Access">{t('globalAudit.categoryDataAccess')}</option>
+                  <option value="Configuration">{t('globalAudit.categoryConfiguration')}</option>
+                  <option value="Security">{t('globalAudit.categorySecurity')}</option>
+                  <option value="Compliance">{t('globalAudit.categoryCompliance')}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Severity</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalAudit.severity')}</label>
                 <select
                   value={filters.severity || ''}
                   onChange={(e) => setFilters({ ...filters, severity: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500"
                 >
-                  <option value="">All Severities</option>
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                  <option value="critical">Critical</option>
+                  <option value="">{t('globalAudit.allSeverities')}</option>
+                  <option value="low">{t('globalAudit.severityLow')}</option>
+                  <option value="medium">{t('globalAudit.severityMedium')}</option>
+                  <option value="high">{t('globalAudit.severityHigh')}</option>
+                  <option value="critical">{t('globalAudit.severityCritical')}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalAudit.statusFilter')}</label>
                 <select
                   value={filters.status || ''}
                   onChange={(e) => setFilters({ ...filters, status: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500"
                 >
-                  <option value="">All Statuses</option>
-                  <option value="success">Success</option>
-                  <option value="failure">Failure</option>
+                  <option value="">{t('globalAudit.allStatuses')}</option>
+                  <option value="success">{t('globalAudit.statusSuccess')}</option>
+                  <option value="failure">{t('globalAudit.statusFailure')}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">IP Address</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalAudit.ipAddress')}</label>
                 <input
                   type="text"
                   value={filters.ipAddress || ''}
                   onChange={(e) => setFilters({ ...filters, ipAddress: e.target.value })}
-                  placeholder="Filter by IP..."
+                  placeholder={t('globalAudit.filterByIp')}
                   className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
@@ -593,7 +593,7 @@ export default function GlobalAuditPage() {
                 disabled={loading}
                 className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Searching...' : 'Search'}
+                {loading ? t('globalAudit.searching') : t('common.search')}
               </button>
               <button
                 onClick={() => {
@@ -602,7 +602,7 @@ export default function GlobalAuditPage() {
                 }}
                 className="bg-gray-200 text-gray-700 px-6 py-2 rounded hover:bg-gray-300"
               >
-                Clear Filters
+                {t('globalAudit.clearFilters')}
               </button>
             </div>
 
@@ -616,7 +616,7 @@ export default function GlobalAuditPage() {
                   className="rounded text-indigo-600"
                 />
                 <label htmlFor="autoRefresh" className="text-sm text-gray-700">
-                  Auto-refresh ({refreshInterval / 1000}s)
+                  {t('globalAudit.autoRefresh')} ({refreshInterval / 1000}s)
                 </label>
               </div>
 
@@ -629,7 +629,7 @@ export default function GlobalAuditPage() {
                   disabled={exporting || auditEvents.length === 0}
                   className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {exporting ? 'Exporting...' : 'Export'}
+                  {exporting ? t('globalAudit.exporting') : t('common.export')}
                 </button>
                 <div
                   id="export-menu"
@@ -643,7 +643,7 @@ export default function GlobalAuditPage() {
                       }}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
-                      Export as CSV
+                      {t('globalAudit.exportAsCsv')}
                     </button>
                     <button
                       onClick={() => {
@@ -652,7 +652,7 @@ export default function GlobalAuditPage() {
                       }}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
-                      Export as JSON
+                      {t('globalAudit.exportAsJson')}
                     </button>
                     <button
                       onClick={() => {
@@ -661,7 +661,7 @@ export default function GlobalAuditPage() {
                       }}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
-                      Compliance Report
+                      {t('globalAudit.complianceReport')}
                     </button>
                   </div>
                 </div>
@@ -678,31 +678,31 @@ export default function GlobalAuditPage() {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Timestamp
+                  {t('globalAudit.timestamp')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tenant
+                  {t('globalAudit.tenant')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  User
+                  {t('globalAudit.user')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Action
+                  {t('globalAudit.action')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Resource
+                  {t('globalAudit.resource')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  IP Address
+                  {t('globalAudit.ipAddress')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
+                  {t('common.status')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Severity
+                  {t('globalAudit.severity')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  {t('common.actions')}
                 </th>
               </tr>
             </thead>
@@ -747,7 +747,7 @@ export default function GlobalAuditPage() {
                       onClick={() => viewEventDetails(event.id)}
                       className="text-indigo-600 hover:text-indigo-900 font-medium"
                     >
-                      Details
+                      {t('globalAudit.details')}
                     </button>
                   </td>
                 </tr>
@@ -755,14 +755,14 @@ export default function GlobalAuditPage() {
               {auditEvents.length === 0 && !loading && (
                 <tr>
                   <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
-                    No audit events found. Try adjusting your search filters.
+                    {t('globalAudit.noEventsFound')}
                   </td>
                 </tr>
               )}
               {loading && (
                 <tr>
                   <td colSpan={9} className="px-6 py-12 text-center text-gray-500">
-                    Loading audit events...
+                    {t('globalAudit.loadingEvents')}
                   </td>
                 </tr>
               )}
@@ -774,9 +774,9 @@ export default function GlobalAuditPage() {
         {totalEvents > pageSize && (
           <div className="px-6 py-4 flex justify-between items-center border-t bg-gray-50">
             <div className="text-sm text-gray-700">
-              Showing <span className="font-medium">{(page - 1) * pageSize + 1}</span> to{' '}
-              <span className="font-medium">{Math.min(page * pageSize, totalEvents)}</span> of{' '}
-              <span className="font-medium">{totalEvents}</span> results
+              {t('globalAudit.showing')} <span className="font-medium">{(page - 1) * pageSize + 1}</span> {t('globalAudit.to')}{' '}
+              <span className="font-medium">{Math.min(page * pageSize, totalEvents)}</span> {t('globalAudit.of')}{' '}
+              <span className="font-medium">{totalEvents}</span> {t('globalAudit.results')}
             </div>
             <div className="flex gap-2">
               <button
@@ -784,17 +784,17 @@ export default function GlobalAuditPage() {
                 disabled={page === 1}
                 className="px-4 py-2 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Previous
+                {t('common.previous')}
               </button>
               <span className="px-4 py-2 text-sm text-gray-700">
-                Page {page} of {Math.ceil(totalEvents / pageSize)}
+                {t('globalAudit.page')} {page} {t('globalAudit.of')} {Math.ceil(totalEvents / pageSize)}
               </span>
               <button
                 onClick={() => setPage(p => p + 1)}
                 disabled={page >= Math.ceil(totalEvents / pageSize)}
                 className="px-4 py-2 border border-gray-300 rounded text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Next
+                {t('common.next')}
               </button>
             </div>
           </div>
@@ -807,8 +807,8 @@ export default function GlobalAuditPage() {
           <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Audit Event Details</h2>
-                <p className="text-sm text-gray-500 mt-1">Event ID: {selectedEvent.id}</p>
+                <h2 className="text-2xl font-bold text-gray-900">{t('globalAudit.auditEventDetails')}</h2>
+                <p className="text-sm text-gray-500 mt-1">{t('globalAudit.eventId')}: {selectedEvent.id}</p>
               </div>
               <button
                 onClick={() => {
@@ -841,48 +841,48 @@ export default function GlobalAuditPage() {
               {/* Event Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">Event Information</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">{t('globalAudit.eventInformation')}</h3>
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Timestamp</label>
+                    <label className="text-sm font-medium text-gray-600">{t('globalAudit.timestamp')}</label>
                     <p className="text-gray-900">{new Date(selectedEvent.timestamp).toLocaleString()}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Action</label>
+                    <label className="text-sm font-medium text-gray-600">{t('globalAudit.action')}</label>
                     <p className="text-gray-900 font-semibold">{selectedEvent.action}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Category</label>
+                    <label className="text-sm font-medium text-gray-600">{t('globalAudit.category')}</label>
                     <p className="text-gray-900">{selectedEvent.category}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Resource Type</label>
+                    <label className="text-sm font-medium text-gray-600">{t('globalAudit.resourceType')}</label>
                     <p className="text-gray-900">{selectedEvent.resourceType}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Resource</label>
+                    <label className="text-sm font-medium text-gray-600">{t('globalAudit.resource')}</label>
                     <p className="text-gray-900 font-mono text-sm">{selectedEvent.resource}</p>
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">User & Tenant</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 border-b pb-2">{t('globalAudit.userTenant')}</h3>
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Tenant</label>
+                    <label className="text-sm font-medium text-gray-600">{t('globalAudit.tenant')}</label>
                     <p className="text-gray-900 font-semibold">{selectedEvent.tenantName}</p>
                     <p className="text-sm text-gray-500 font-mono">{selectedEvent.tenantId}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-600">User</label>
+                    <label className="text-sm font-medium text-gray-600">{t('globalAudit.user')}</label>
                     <p className="text-gray-900 font-semibold">{selectedEvent.userName}</p>
                     <p className="text-sm text-gray-500">{selectedEvent.userEmail || selectedEvent.userId}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-600">IP Address</label>
+                    <label className="text-sm font-medium text-gray-600">{t('globalAudit.ipAddress')}</label>
                     <p className="text-gray-900 font-mono">{selectedEvent.ipAddress}</p>
                   </div>
                   {selectedEvent.geoLocation && (
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Location</label>
+                      <label className="text-sm font-medium text-gray-600">{t('globalAudit.location')}</label>
                       <p className="text-gray-900">
                         {selectedEvent.geoLocation.city}, {selectedEvent.geoLocation.country}
                       </p>
@@ -900,7 +900,7 @@ export default function GlobalAuditPage() {
               {/* User Agent */}
               {selectedEvent.userAgent && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-2">User Agent</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-2">{t('globalAudit.userAgent')}</h3>
                   <p className="text-sm text-gray-700 font-mono bg-gray-50 p-3 rounded border">
                     {selectedEvent.userAgent}
                   </p>
@@ -910,7 +910,7 @@ export default function GlobalAuditPage() {
               {/* Request Data */}
               {selectedEvent.requestData && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-2">Request Data</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-2">{t('globalAudit.requestData')}</h3>
                   <pre className="text-sm text-gray-800 bg-gray-50 p-4 rounded border overflow-auto max-h-64">
                     {JSON.stringify(selectedEvent.requestData, null, 2)}
                   </pre>
@@ -920,7 +920,7 @@ export default function GlobalAuditPage() {
               {/* Response Data */}
               {selectedEvent.responseData && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-2">Response Data</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-2">{t('globalAudit.responseData')}</h3>
                   <pre className="text-sm text-gray-800 bg-gray-50 p-4 rounded border overflow-auto max-h-64">
                     {JSON.stringify(selectedEvent.responseData, null, 2)}
                   </pre>
@@ -930,7 +930,7 @@ export default function GlobalAuditPage() {
               {/* Additional Details */}
               {selectedEvent.details && Object.keys(selectedEvent.details).length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-2">Additional Details</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-2">{t('globalAudit.additionalDetails')}</h3>
                   <pre className="text-sm text-gray-800 bg-gray-50 p-4 rounded border overflow-auto max-h-64">
                     {JSON.stringify(selectedEvent.details, null, 2)}
                   </pre>
@@ -940,7 +940,7 @@ export default function GlobalAuditPage() {
               {/* Related Events */}
               {selectedEvent.relatedEvents && selectedEvent.relatedEvents.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-2">Related Events</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-2">{t('globalAudit.relatedEvents')}</h3>
                   <div className="flex flex-wrap gap-2">
                     {selectedEvent.relatedEvents.map((relatedId) => (
                       <span
@@ -960,7 +960,7 @@ export default function GlobalAuditPage() {
                 onClick={() => exportData('json')}
                 className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
               >
-                Export Event
+                {t('globalAudit.exportEvent')}
               </button>
               <button
                 onClick={() => {
@@ -969,7 +969,7 @@ export default function GlobalAuditPage() {
                 }}
                 className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-100"
               >
-                Close
+                {t('common.close')}
               </button>
             </div>
           </div>

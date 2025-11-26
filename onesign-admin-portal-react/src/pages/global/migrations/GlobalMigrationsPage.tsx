@@ -307,12 +307,12 @@ export default function GlobalMigrationsPage() {
   const historyColumns: Column<Migration>[] = [
     {
       key: 'version',
-      label: 'Version',
+      label: t('migrations.version'),
       render: (m) => <span className="font-mono font-semibold">{m.version}</span>,
     },
     {
       key: 'name',
-      label: 'Migration Name',
+      label: t('migrations.migrationName'),
       render: (m) => (
         <div>
           <div className="font-medium">{m.name}</div>
@@ -322,7 +322,7 @@ export default function GlobalMigrationsPage() {
     },
     {
       key: 'type',
-      label: 'Type',
+      label: t('migrations.type'),
       render: (m) => (
         <StatusBadge
           status={m.type}
@@ -336,7 +336,7 @@ export default function GlobalMigrationsPage() {
     },
     {
       key: 'status',
-      label: 'Status',
+      label: t('migrations.status'),
       render: (m) => (
         <StatusBadge
           status={m.status}
@@ -351,12 +351,12 @@ export default function GlobalMigrationsPage() {
     },
     {
       key: 'appliedAt',
-      label: 'Applied At',
+      label: t('migrations.appliedAt'),
       render: (m) => m.appliedAt ? new Date(m.appliedAt).toLocaleString() : 'N/A',
     },
     {
       key: 'executionTime',
-      label: 'Execution Time',
+      label: t('migrations.executionTime'),
       render: (m) => m.executionTime ? `${(m.executionTime / 1000).toFixed(2)}s` : 'N/A',
     },
   ];
@@ -364,12 +364,12 @@ export default function GlobalMigrationsPage() {
   const pendingColumns: Column<Migration>[] = [
     {
       key: 'version',
-      label: 'Version',
+      label: t('migrations.version'),
       render: (m) => <span className="font-mono font-semibold">{m.version}</span>,
     },
     {
       key: 'name',
-      label: 'Migration Name',
+      label: t('migrations.migrationName'),
       render: (m) => (
         <div>
           <div className="font-medium">{m.name}</div>
@@ -379,7 +379,7 @@ export default function GlobalMigrationsPage() {
     },
     {
       key: 'type',
-      label: 'Type',
+      label: t('migrations.type'),
       render: (m) => (
         <StatusBadge
           status={m.type}
@@ -393,7 +393,7 @@ export default function GlobalMigrationsPage() {
     },
     {
       key: 'affectedTables',
-      label: 'Affected Tables',
+      label: t('migrations.affectedTables'),
       render: (m) => (
         <div className="text-sm">
           {m.affectedTables.slice(0, 2).map((table, i) => (
@@ -407,25 +407,25 @@ export default function GlobalMigrationsPage() {
     },
     {
       key: 'dependencies',
-      label: 'Dependencies',
+      label: t('migrations.dependencies'),
       render: (m) => (
-        <span className="text-sm">{m.dependencies.length} dependencies</span>
+        <span className="text-sm">{m.dependencies.length} {t('migrations.dependencies').toLowerCase()}</span>
       ),
     },
   ];
 
   if (loading) {
-    return <div className="p-8">Loading...</div>;
+    return <div className="p-8">{t('common.loading')}...</div>;
   }
 
   return (
     <div className="p-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-          Database Migrations
+          {t('migrations.title')}
         </h1>
         <p className="text-gray-600 mt-2">
-          Manage database schema versions, run migrations, and track migration history
+          {t('migrations.subtitle')}
         </p>
       </div>
 
@@ -445,19 +445,19 @@ export default function GlobalMigrationsPage() {
       {schemaVersion && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg shadow-lg p-6">
-            <div className="text-sm opacity-90">Current Version</div>
+            <div className="text-sm opacity-90">{t('migrations.currentVersion')}</div>
             <div className="text-3xl font-bold font-mono">{schemaVersion.current}</div>
           </div>
           <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg shadow-lg p-6">
-            <div className="text-sm opacity-90">Target Version</div>
+            <div className="text-sm opacity-90">{t('migrations.targetVersion')}</div>
             <div className="text-3xl font-bold font-mono">{schemaVersion.target}</div>
           </div>
           <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-lg shadow-lg p-6">
-            <div className="text-sm opacity-90">Pending Migrations</div>
+            <div className="text-sm opacity-90">{t('migrations.pendingMigrations')}</div>
             <div className="text-3xl font-bold">{schemaVersion.pendingMigrations}</div>
           </div>
           <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg shadow-lg p-6">
-            <div className="text-sm opacity-90">Last Migration</div>
+            <div className="text-sm opacity-90">{t('migrations.lastMigration')}</div>
             <div className="text-lg font-semibold">{schemaVersion.lastMigration.substring(0, 20)}...</div>
             <div className="text-xs mt-1">{new Date(schemaVersion.lastMigrationDate).toLocaleDateString()}</div>
           </div>
@@ -474,7 +474,7 @@ export default function GlobalMigrationsPage() {
               : 'text-gray-600 hover:text-gray-800'
           }`}
         >
-          Overview
+          {t('migrations.overview')}
         </button>
         <button
           onClick={() => setActiveTab('pending')}
@@ -484,7 +484,7 @@ export default function GlobalMigrationsPage() {
               : 'text-gray-600 hover:text-gray-800'
           }`}
         >
-          Pending Migrations ({pendingMigrations.length})
+          {t('migrations.pending')} ({pendingMigrations.length})
         </button>
         <button
           onClick={() => setActiveTab('history')}
@@ -494,7 +494,7 @@ export default function GlobalMigrationsPage() {
               : 'text-gray-600 hover:text-gray-800'
           }`}
         >
-          Migration History
+          {t('migrations.history')}
         </button>
         <button
           onClick={() => setActiveTab('logs')}
@@ -504,7 +504,7 @@ export default function GlobalMigrationsPage() {
               : 'text-gray-600 hover:text-gray-800'
           }`}
         >
-          Migration Logs
+          {t('migrations.logs')}
         </button>
       </div>
 
@@ -512,7 +512,7 @@ export default function GlobalMigrationsPage() {
       {activeTab === 'overview' && (
         <div className="space-y-6">
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold mb-4">Recent Migrations</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('migrations.recentMigrations')}</h3>
             <div className="space-y-3">
               {migrations.slice(0, 5).map(migration => (
                 <div key={migration.id} className="flex items-center justify-between border-b pb-3">
@@ -535,7 +535,7 @@ export default function GlobalMigrationsPage() {
                       onClick={() => viewMigrationDetails(migration)}
                       className="text-blue-600 hover:text-blue-800 text-sm"
                     >
-                      Details
+                      {t('globalAudit.details')}
                     </button>
                   </div>
                 </div>
@@ -544,14 +544,14 @@ export default function GlobalMigrationsPage() {
           </div>
 
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold mb-4">Migration Status Distribution</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('migrations.migrationStatusDistribution')}</h3>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               {[
-                { status: 'Completed', count: migrations.filter(m => m.status === 'Completed').length, color: 'green' },
-                { status: 'Pending', count: pendingMigrations.length, color: 'gray' },
-                { status: 'Failed', count: migrations.filter(m => m.status === 'Failed').length, color: 'red' },
-                { status: 'Running', count: migrations.filter(m => m.status === 'Running').length, color: 'blue' },
-                { status: 'Rolled Back', count: migrations.filter(m => m.status === 'Rolled Back').length, color: 'orange' },
+                { status: t('migrations.statusCompleted'), count: migrations.filter(m => m.status === 'Completed').length, color: 'green' },
+                { status: t('migrations.statusPending'), count: pendingMigrations.length, color: 'gray' },
+                { status: t('migrations.statusFailed'), count: migrations.filter(m => m.status === 'Failed').length, color: 'red' },
+                { status: t('migrations.statusRunning'), count: migrations.filter(m => m.status === 'Running').length, color: 'blue' },
+                { status: t('migrations.statusRolledBack'), count: migrations.filter(m => m.status === 'Rolled Back').length, color: 'orange' },
               ].map(item => (
                 <div key={item.status} className="text-center">
                   <div className={`text-3xl font-bold ${
@@ -574,8 +574,8 @@ export default function GlobalMigrationsPage() {
       {activeTab === 'pending' && (
         <div>
           <div className="mb-4 bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded">
-            <div className="font-semibold">Warning</div>
-            <div className="text-sm">Running migrations may cause temporary service disruption. Please schedule during maintenance windows.</div>
+            <div className="font-semibold">{t('common.warning')}</div>
+            <div className="text-sm">{t('migrations.warningMigration')}</div>
           </div>
           <DataTable
             data={pendingMigrations}
@@ -586,13 +586,13 @@ export default function GlobalMigrationsPage() {
                   onClick={() => viewMigrationDetails(migration)}
                   className="text-blue-600 hover:text-blue-800 text-sm"
                 >
-                  View Details
+                  {t('migrations.viewDetails')}
                 </button>
                 <button
                   onClick={() => openRunModal(migration)}
                   className="text-green-600 hover:text-green-800 text-sm"
                 >
-                  Run
+                  {t('migrations.run')}
                 </button>
               </div>
             )}
@@ -612,14 +612,14 @@ export default function GlobalMigrationsPage() {
                   onClick={() => viewMigrationDetails(migration)}
                   className="text-blue-600 hover:text-blue-800 text-sm"
                 >
-                  Details
+                  {t('globalAudit.details')}
                 </button>
                 {migration.status === 'Completed' && (
                   <button
                     onClick={() => openRollbackModal(migration)}
                     className="text-orange-600 hover:text-orange-800 text-sm"
                   >
-                    Rollback
+                    {t('changeManagement.rollback')}
                   </button>
                 )}
               </div>
@@ -632,7 +632,7 @@ export default function GlobalMigrationsPage() {
       {activeTab === 'logs' && (
         <div className="bg-white rounded-lg shadow">
           <div className="p-4 border-b">
-            <h3 className="font-semibold">Migration Execution Logs</h3>
+            <h3 className="font-semibold">{t('migrations.migrationExecutionLogs')}</h3>
           </div>
           <div className="p-4 space-y-2 max-h-[600px] overflow-y-auto">
             {logs.map(log => (
@@ -674,18 +674,18 @@ export default function GlobalMigrationsPage() {
           setShowDetailsModal(false);
           setSelectedMigration(null);
         }}
-        title="Migration Details"
+        title={t('migrations.migrationDetails')}
         size="lg"
       >
         {selectedMigration && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-gray-600">Version</label>
+                <label className="text-sm font-medium text-gray-600">{t('migrations.version')}</label>
                 <div className="font-mono font-semibold">{selectedMigration.version}</div>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-600">Status</label>
+                <label className="text-sm font-medium text-gray-600">{t('migrations.status')}</label>
                 <div>
                   <StatusBadge
                     status={selectedMigration.status}
@@ -697,27 +697,27 @@ export default function GlobalMigrationsPage() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-600">Type</label>
+                <label className="text-sm font-medium text-gray-600">{t('migrations.type')}</label>
                 <div>{selectedMigration.type}</div>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-600">Author</label>
+                <label className="text-sm font-medium text-gray-600">{t('migrations.author')}</label>
                 <div>{selectedMigration.author}</div>
               </div>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-600">Description</label>
+              <label className="text-sm font-medium text-gray-600">{t('migrations.description')}</label>
               <div className="text-sm">{selectedMigration.description}</div>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-600">Checksum</label>
+              <label className="text-sm font-medium text-gray-600">{t('migrations.checksum')}</label>
               <div className="font-mono text-xs bg-gray-100 p-2 rounded">{selectedMigration.checksum}</div>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-600">Affected Tables</label>
+              <label className="text-sm font-medium text-gray-600">{t('migrations.affectedTables')}</label>
               <div className="flex flex-wrap gap-2 mt-1">
                 {selectedMigration.affectedTables.map((table, i) => (
                   <span key={i} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-mono rounded">
@@ -728,10 +728,10 @@ export default function GlobalMigrationsPage() {
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-600">Dependencies</label>
+              <label className="text-sm font-medium text-gray-600">{t('migrations.dependencies')}</label>
               <div className="text-sm">
                 {selectedMigration.dependencies.length === 0 ? (
-                  <span className="text-gray-500">No dependencies</span>
+                  <span className="text-gray-500">{t('migrations.noDependencies')}</span>
                 ) : (
                   <div className="flex flex-wrap gap-2 mt-1">
                     {selectedMigration.dependencies.map((dep, i) => (
@@ -746,8 +746,8 @@ export default function GlobalMigrationsPage() {
 
             {selectedMigration.executionTime && (
               <div>
-                <label className="text-sm font-medium text-gray-600">Execution Time</label>
-                <div>{(selectedMigration.executionTime / 1000).toFixed(2)} seconds</div>
+                <label className="text-sm font-medium text-gray-600">{t('migrations.executionTime')}</label>
+                <div>{(selectedMigration.executionTime / 1000).toFixed(2)} {t('migrations.seconds')}</div>
               </div>
             )}
           </div>
@@ -761,19 +761,19 @@ export default function GlobalMigrationsPage() {
           setShowRunModal(false);
           setMigrationToRun(null);
         }}
-        title="Run Migration"
+        title={t('migrations.runMigration')}
         size="md"
       >
         {migrationToRun && (
           <div className="space-y-4">
             <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded">
-              <div className="font-semibold">Warning</div>
-              <div className="text-sm">This action will modify the database schema. Ensure you have a backup before proceeding.</div>
+              <div className="font-semibold">{t('common.warning')}</div>
+              <div className="text-sm">{t('migrations.warningRun')}</div>
             </div>
 
             <div>
-              <div className="font-semibold">Migration: {migrationToRun.name}</div>
-              <div className="text-sm text-gray-600">Version: {migrationToRun.version}</div>
+              <div className="font-semibold">{t('migrations.migration')}: {migrationToRun.name}</div>
+              <div className="text-sm text-gray-600">{t('migrations.version')}: {migrationToRun.version}</div>
               <div className="text-sm text-gray-600 mt-2">{migrationToRun.description}</div>
             </div>
 
@@ -785,13 +785,13 @@ export default function GlobalMigrationsPage() {
                 }}
                 className="px-4 py-2 border rounded hover:bg-gray-50"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleRunMigration}
                 className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
               >
-                Run Migration
+                {t('migrations.runMigration')}
               </button>
             </div>
           </div>
@@ -805,19 +805,19 @@ export default function GlobalMigrationsPage() {
           setShowRollbackModal(false);
           setMigrationToRollback(null);
         }}
-        title="Rollback Migration"
+        title={t('migrations.rollbackMigration')}
         size="md"
       >
         {migrationToRollback && (
           <div className="space-y-4">
             <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded">
-              <div className="font-semibold">Danger</div>
-              <div className="text-sm">Rolling back a migration may cause data loss. This action should only be performed during a maintenance window.</div>
+              <div className="font-semibold">{t('common.danger')}</div>
+              <div className="text-sm">{t('migrations.dangerRollback')}</div>
             </div>
 
             <div>
-              <div className="font-semibold">Migration: {migrationToRollback.name}</div>
-              <div className="text-sm text-gray-600">Version: {migrationToRollback.version}</div>
+              <div className="font-semibold">{t('migrations.migration')}: {migrationToRollback.name}</div>
+              <div className="text-sm text-gray-600">{t('migrations.version')}: {migrationToRollback.version}</div>
             </div>
 
             <div className="flex gap-3 justify-end pt-4">
@@ -828,13 +828,13 @@ export default function GlobalMigrationsPage() {
                 }}
                 className="px-4 py-2 border rounded hover:bg-gray-50"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleRollbackMigration}
                 className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
               >
-                Rollback Migration
+                {t('migrations.rollbackMigration')}
               </button>
             </div>
           </div>
