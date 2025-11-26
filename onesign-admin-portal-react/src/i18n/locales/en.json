@@ -68,6 +68,7 @@
     "open": "Open",
     "required": "Required",
     "optional": "Optional",
+    "holdCtrl": "Hold Ctrl/Cmd to select multiple",
     "default": "Default",
     "custom": "Custom",
     "public": "Public",
@@ -520,7 +521,40 @@
     "manager": "Manager",
     "editor": "Editor",
     "viewer": "Viewer",
-    "customRole": "Custom Role"
+    "customRole": "Custom Role",
+    "roleCreated": "Role created successfully",
+    "roleUpdated": "Role updated successfully",
+    "roleDeleted": "Role deleted successfully"
+  },
+  "security": {
+    "orgUnitRulesUpdated": "Org unit rules updated successfully",
+    "orgUnitRules": "Org Unit Security Rules",
+    "manageRules": "Manage Rules",
+    "orgUnit": "Org Unit",
+    "mfaRequired": "MFA Required",
+    "sessionTimeout": "Session Timeout",
+    "manageOrgUnitRules": "Manage Org Unit Security Rules",
+    "orgUnitRulesDescription": "Configure security policies for specific organizational units"
+  },
+  "riskEvents": {
+    "title": "Risk Events",
+    "subtitle": "Monitor and manage security risk events",
+    "eventCreated": "Risk event created successfully",
+    "userId": "User ID",
+    "ipAddress": "IP Address",
+    "userAgent": "User Agent",
+    "location": "Location",
+    "details": "Details",
+    "severity": "Severity",
+    "eventType": "Event Type",
+    "status": "Status",
+    "createdAt": "Created At",
+    "resolvedAt": "Resolved At",
+    "resolve": "Resolve",
+    "dismiss": "Dismiss"
+  },
+  "audit": {
+    "exportLogs": "Audit logs exported successfully"
   },
   "apiKeys": {
     "title": "API Keys Management",

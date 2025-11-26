@@ -68,6 +68,7 @@
     "open": "باز کردن",
     "required": "الزامی",
     "optional": "اختیاری",
+    "holdCtrl": "برای انتخاب چندتایی Ctrl/Cmd را نگه دارید",
     "default": "پیش‌فرض",
     "custom": "سفارشی",
     "public": "عمومی",
@@ -520,7 +521,40 @@
     "manager": "مدیر",
     "editor": "ویرایشگر",
     "viewer": "بازدیدکننده",
-    "customRole": "نقش سفارشی"
+    "customRole": "نقش سفارشی",
+    "roleCreated": "نقش با موفقیت ایجاد شد",
+    "roleUpdated": "نقش با موفقیت به‌روزرسانی شد",
+    "roleDeleted": "نقش با موفقیت حذف شد"
+  },
+  "security": {
+    "orgUnitRulesUpdated": "قوانین واحد سازمانی با موفقیت به‌روزرسانی شد",
+    "orgUnitRules": "قوانین امنیتی واحد سازمانی",
+    "manageRules": "مدیریت قوانین",
+    "orgUnit": "واحد سازمانی",
+    "mfaRequired": "MFA الزامی",
+    "sessionTimeout": "مهلت نشست",
+    "manageOrgUnitRules": "مدیریت قوانین امنیتی واحد سازمانی",
+    "orgUnitRulesDescription": "پیکربندی سیاست‌های امنیتی برای واحدهای سازمانی خاص"
+  },
+  "riskEvents": {
+    "title": "رویدادهای ریسک",
+    "subtitle": "نظارت و مدیریت رویدادهای ریسک امنیتی",
+    "eventCreated": "رویداد ریسک با موفقیت ایجاد شد",
+    "userId": "شناسه کاربر",
+    "ipAddress": "آدرس IP",
+    "userAgent": "عامل کاربر",
+    "location": "موقعیت",
+    "details": "جزئیات",
+    "severity": "شدت",
+    "eventType": "نوع رویداد",
+    "status": "وضعیت",
+    "createdAt": "ایجاد شده در",
+    "resolvedAt": "حل شده در",
+    "resolve": "حل کردن",
+    "dismiss": "رد کردن"
+  },
+  "audit": {
+    "exportLogs": "رویدادها با موفقیت صادر شدند"
   },
   "apiKeys": {
     "title": "مدیریت کلیدهای API",
