@@ -180,6 +180,7 @@ export default function TenantExportsPage() {
   const [filters, setFilters] = useState<ExportFilter[]>([]);
   const [emailOnComplete, setEmailOnComplete] = useState(false);
   const [emailAddress, setEmailAddress] = useState('');
+  const [templateName, setTemplateName] = useState('');
 
   const availableFields: Record<string, string[]> = {
     Users: ['id', 'email', 'firstName', 'lastName', 'status', 'createdAt', 'lastLoginAt'],
@@ -265,7 +266,15 @@ export default function TenantExportsPage() {
     if (!tenantId) return;
 
     try {
-      // API call would go here
+      await tenantService.createExportJob(tenantId, {
+        name: exportName,
+        dataType: selectedDataType,
+        fileType: selectedFileType,
+        fields: selectedFields,
+        filters: filters.length > 0 ? filters : undefined,
+        emailOnComplete,
+        emailAddress: emailOnComplete ? emailAddress : undefined,
+      });
       setSuccess('Export job created successfully');
       setShowCreateModal(false);
       resetForm();
@@ -286,12 +295,13 @@ export default function TenantExportsPage() {
 
   const handleDeleteExport = async (exportId: string) => {
     if (!confirm('Are you sure you want to delete this export?')) return;
+    if (!tenantId) return;
 
     setError('');
     setSuccess('');
 
     try {
-      // API call would go here
+      await tenantService.deleteExportJob(tenantId, exportId);
       setSuccess('Export deleted successfully');
       fetchExports();
     } catch (error: any) {
@@ -300,11 +310,18 @@ export default function TenantExportsPage() {
   };
 
   const handleSaveTemplate = async () => {
+    if (!tenantId) return;
     setError('');
     setSuccess('');
 
     try {
-      // API call would go here
+      await tenantService.createExportTemplate(tenantId, {
+        name: templateName,
+        dataType: selectedDataType,
+        fileType: selectedFileType,
+        fields: selectedFields,
+        filters: filters.length > 0 ? filters : undefined,
+      });
       setSuccess('Template saved successfully');
       setShowTemplateModal(false);
       fetchTemplates();
@@ -314,11 +331,12 @@ export default function TenantExportsPage() {
   };
 
   const handleToggleSchedule = async (scheduleId: string) => {
+    if (!tenantId) return;
     setError('');
     setSuccess('');
 
     try {
-      // API call would go here
+      await tenantService.toggleScheduledExport(tenantId, scheduleId);
       setSuccess('Schedule updated successfully');
       fetchScheduledExports();
     } catch (error: any) {
@@ -714,6 +732,8 @@ export default function TenantExportsPage() {
               <input
                 type="text"
                 required
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
                 className="w-full px-3 py-2 border rounded"
                 placeholder="e.g., Monthly User Report"
               />

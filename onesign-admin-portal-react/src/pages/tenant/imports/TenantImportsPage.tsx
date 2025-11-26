@@ -227,7 +227,13 @@ export default function TenantImportsPage() {
     if (!tenantId || !selectedFile) return;
 
     try {
-      // API call would go here
+      await tenantService.createImportJob(
+        tenantId,
+        selectedFile,
+        selectedDataType,
+        selectedTemplate || undefined,
+        fieldMappings.length > 0 ? fieldMappings : undefined
+      );
       setSuccess('File uploaded successfully. Import job started.');
       setShowUploadModal(false);
       resetUploadForm();
@@ -246,7 +252,7 @@ export default function TenantImportsPage() {
     setSuccess('');
 
     try {
-      // API call would go here
+      await tenantService.rollbackImport(tenantId, importId);
       setSuccess('Import rolled back successfully');
       fetchImports();
     } catch (error: any) {

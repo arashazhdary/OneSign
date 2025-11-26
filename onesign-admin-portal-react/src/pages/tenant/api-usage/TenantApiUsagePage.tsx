@@ -234,7 +234,16 @@ export default function TenantApiUsagePage() {
     setSuccess('');
 
     try {
-      // API call would go here
+      const blob = await billingService.exportUsageReport(format);
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `api-usage-report.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
       setSuccess(`Usage report exported as ${format.toUpperCase()}`);
     } catch (error: any) {
       setError(error?.message || 'Failed to export report');

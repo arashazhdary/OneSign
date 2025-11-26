@@ -985,6 +985,22 @@ export const usersService = {
     return response.data;
   },
 
+  /**
+   * DELETE /api/users/{userId}/sessions - لغو تمام جلسات یک کاربر
+   */
+  revokeAllUserSessions: async (userId: string) => {
+    const response = await apiClient.delete(`/api/users/${userId}/sessions`);
+    return response.data;
+  },
+
+  /**
+   * POST /api/tenant/sessions/revoke-suspicious - لغو جلسات مشکوک
+   */
+  revokeSuspiciousSessions: async () => {
+    const response = await apiClient.post('/api/tenant/sessions/revoke-suspicious');
+    return response.data;
+  },
+
   // User scope and permissions
   getCurrentUserScope: async () => {
     try {
@@ -1724,6 +1740,35 @@ export const billingService = {
     } catch (error) {
       console.error('Failed to fetch usage:', error);
       return null;
+    }
+  },
+
+  /**
+   * GET /api/tenant/billing/usage-metrics - متریک‌های استفاده API
+   */
+  getUsageMetrics: async (tenantId?: string) => {
+    try {
+      const response = await apiClient.get('/api/tenant/billing/usage-metrics');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch usage metrics:', error);
+      return null;
+    }
+  },
+
+  /**
+   * GET /api/tenant/billing/usage-metrics/export - خروجی گزارش استفاده
+   */
+  exportUsageReport: async (format: 'csv' | 'json' | 'xlsx' = 'csv') => {
+    try {
+      const response = await apiClient.get('/api/tenant/billing/usage-metrics/export', {
+        params: { format },
+        responseType: 'blob'
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to export usage report:', error);
+      throw error;
     }
   },
 };
