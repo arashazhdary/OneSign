@@ -501,7 +501,7 @@ export default function TenantExtensibilityPage() {
       )}
 
       {/* Webhook Modal */}
-      <Modal isOpen={showWebhookModal} onClose={() => setShowWebhookModal(false)} title="Create Webhook">
+      <Modal isOpen={showWebhookModal} onClose={() => setShowWebhookModal(false)} title={`${t('common.create')} ${t('common.webhook')}`}>
         <form onSubmit={handleCreateWebhook} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Webhook URL</label>

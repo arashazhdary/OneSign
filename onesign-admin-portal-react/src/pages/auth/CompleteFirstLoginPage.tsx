@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { authService } from '@/lib/api/services';
 
 export default function CompleteFirstLoginPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [password, setPassword] = useState('');
@@ -76,7 +78,7 @@ export default function CompleteFirstLoginPage() {
       // Show success message and redirect to login
       navigate('/login?message=Password set successfully. Please sign in.');
     } catch (err: any) {
-      setError(err.message || 'Failed to set password. Please try again.');
+      setError(err.message || t('common.failedToSetPassword'));
     } finally {
       setLoading(false);
     }

@@ -134,7 +134,7 @@ export default function TenantRiskEventsPage() {
           onClick={() => setShowCreateModal(true)}
           className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
         >
-          {t('riskEvents.createEvent') || 'Create Risk Event'}
+          {t('common.createRiskEvent')}
         </button>
       </div>
 
@@ -276,7 +276,7 @@ export default function TenantRiskEventsPage() {
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-2xl w-full">
-            <h2 className="text-xl font-bold mb-4">{t('riskEvents.createEvent') || 'Create Risk Event'}</h2>
+            <h2 className="text-xl font-bold mb-4">{t('common.createRiskEvent')}</h2>
             <form onSubmit={handleCreateRiskEvent}>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">

@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { authService } from '@/lib/api/services';
 
 export default function LoginPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,7 +29,7 @@ export default function LoginPage() {
       // Redirect to dashboard
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Failed to sign in. Please check your credentials.');
+      setError(err.message || t('common.failedToSignIn'));
     } finally {
       setLoading(false);
     }
@@ -45,7 +47,7 @@ export default function LoginPage() {
       // Redirect to Google OAuth
       window.location.href = authUrl;
     } catch (err: any) {
-      setError(err.message || 'Failed to initialize Google login.');
+      setError(err.message || t('common.failedToInitializeGoogleLogin'));
       setLoading(false);
     }
   };

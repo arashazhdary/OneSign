@@ -212,7 +212,7 @@ export default function TenantPrivacyPage() {
         </div>
       )}
 
-      <Modal isOpen={showRequestModal} onClose={() => setShowRequestModal(false)} title="Create Data Request">
+      <Modal isOpen={showRequestModal} onClose={() => setShowRequestModal(false)} title={`${t('common.create')} ${t('common.dataRequest')}`}>
         <form onSubmit={handleCreateRequest} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Subject ID</label>

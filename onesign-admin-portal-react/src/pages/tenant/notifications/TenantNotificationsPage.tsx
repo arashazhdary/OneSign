@@ -439,7 +439,7 @@ export default function TenantNotificationsPage() {
       fetchRules();
     } catch (err: any) {
       console.error('Error saving rule:', err);
-      setError(err?.message || 'Failed to save rule');
+      setError(err?.message || t('common.failedToSaveRule'));
     }
   };
 
@@ -509,7 +509,7 @@ export default function TenantNotificationsPage() {
     <div className="p-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900">
-          {t('tenant.notifications.title') || 'Notification Management'}
+          {t('tenant.notifications.title')}
         </h1>
         <p className="mt-2 text-gray-600">
           Configure notification channels, templates, and delivery rules

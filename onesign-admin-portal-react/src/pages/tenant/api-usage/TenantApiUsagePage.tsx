@@ -218,7 +218,7 @@ export default function TenantApiUsagePage() {
       }
     } catch (error: any) {
       console.error('Error fetching API usage data:', error);
-      setError(error?.message || 'Failed to load API usage data');
+      setError(error?.message || t('common.failedToLoadApiUsageData'));
       // Fallback to mock data on error
       setStats(mockStatsFallback);
       setEndpoints(mockEndpointsFallback);
@@ -246,7 +246,7 @@ export default function TenantApiUsagePage() {
       document.body.removeChild(a);
       setSuccess(`Usage report exported as ${format.toUpperCase()}`);
     } catch (error: any) {
-      setError(error?.message || 'Failed to export report');
+      setError(error?.message || t('common.failedToExportReport'));
     }
   };
 

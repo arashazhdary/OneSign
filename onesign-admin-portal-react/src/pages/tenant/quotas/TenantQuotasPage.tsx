@@ -65,7 +65,7 @@ export default function TenantQuotasPage() {
       setQuotas(quotaData.quotas || mockQuotasFallback);
     } catch (err: any) {
       console.error('Error fetching quotas:', err);
-      setError(err?.message || 'Failed to load quotas');
+      setError(err?.message || t('common.failedToLoadQuotas'));
       // Fallback to mock data
       setQuotas(mockQuotasFallback);
     } finally {

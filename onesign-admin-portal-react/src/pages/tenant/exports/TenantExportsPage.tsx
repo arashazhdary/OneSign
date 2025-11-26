@@ -293,7 +293,7 @@ export default function TenantExportsPage() {
       // Open in new tab for direct download
       window.open(exportJob.downloadUrl, '_blank');
     } catch (error: any) {
-      setError(error?.message || 'Failed to download export');
+      setError(error?.message || t('common.failedToDownloadExport'));
     }
   };
 

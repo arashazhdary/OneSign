@@ -654,7 +654,7 @@ export default function TenantOrgUnitsDetailPage() {
       <Modal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
-        title="Edit Org Unit"
+        title={`${t('common.edit')} ${t('common.orgUnit')}`}
         footer={
           <>
             <button
@@ -699,7 +699,7 @@ export default function TenantOrgUnitsDetailPage() {
       <Modal
         isOpen={showAddUserModal}
         onClose={() => setShowAddUserModal(false)}
-        title="Add User to Org Unit"
+        title={`${t('common.add')} ${t('common.user')} ${t('common.to')} ${t('common.orgUnit')}`}
         footer={
           <>
             <button
@@ -725,7 +725,7 @@ export default function TenantOrgUnitsDetailPage() {
       <Modal
         isOpen={showAddApplicationModal}
         onClose={() => setShowAddApplicationModal(false)}
-        title="Add Application to Org Unit"
+        title={`${t('common.add')} ${t('common.application')} ${t('common.to')} ${t('common.orgUnit')}`}
         footer={
           <>
             <button

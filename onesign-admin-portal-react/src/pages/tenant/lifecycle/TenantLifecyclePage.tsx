@@ -177,7 +177,7 @@ export default function TenantLifecyclePage() {
       setPackageRoles('');
       setPackageDuration(30);
       setPackageApprovalRequired(true);
-      setSuccess(t('tenant.lifecycle.packageCreated') || 'Access package created successfully');
+      setSuccess(t('common.packageCreated'));
       fetchAccessPackages();
     } catch (error) {
       setError(t('common.error'));
@@ -203,7 +203,7 @@ export default function TenantLifecyclePage() {
       setPolicyName('');
       setPolicyActions('');
       setPolicyEnabled(true);
-      setSuccess(t('tenant.lifecycle.policyCreated') || 'Lifecycle policy created successfully');
+      setSuccess(t('common.policyCreated'));
       fetchLifecyclePolicies();
     } catch (error) {
       setError(t('common.error'));
@@ -248,7 +248,7 @@ export default function TenantLifecyclePage() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            {t('tenant.lifecycle.accessPackages') || 'Access Packages'}
+            {t('common.accessPackages')}
           </button>
           <button
             onClick={() => setActiveTab('policies')}
@@ -309,12 +309,12 @@ export default function TenantLifecyclePage() {
       {activeTab === 'packages' && (
         <div>
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">{t('tenant.lifecycle.accessPackages') || 'Access Packages'}</h2>
+            <h2 className="text-xl font-semibold">{t('common.accessPackages')}</h2>
             <button
               onClick={() => setShowPackageModal(true)}
               className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
             >
-              {t('tenant.lifecycle.createPackage') || 'Create Package'}
+              {t('common.create')} {t('common.package')}
             </button>
           </div>
 
@@ -351,7 +351,7 @@ export default function TenantLifecyclePage() {
             </table>
             {accessPackages.length === 0 && (
               <div className="text-center py-8 text-gray-500">
-                {t('tenant.lifecycle.noPackages') || 'No access packages found'}
+                {t('tenant.lifecycle.noPackages') || t('common.noPackages')}
               </div>
             )}
           </div>
@@ -367,7 +367,7 @@ export default function TenantLifecyclePage() {
               onClick={() => setShowPolicyModal(true)}
               className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
             >
-              {t('tenant.lifecycle.createPolicy') || 'Create Policy'}
+              {t('common.create')} Policy
             </button>
           </div>
 
@@ -401,7 +401,7 @@ export default function TenantLifecyclePage() {
             </table>
             {lifecyclePolicies.length === 0 && (
               <div className="text-center py-8 text-gray-500">
-                {t('tenant.lifecycle.noPolicies') || 'No lifecycle policies found'}
+                {t('tenant.lifecycle.noPolicies') || t('common.noPoliciesFound')}
               </div>
             )}
           </div>
@@ -423,9 +423,9 @@ export default function TenantLifecyclePage() {
                   </p>
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">{t('tenant.lifecycle.nextSync') || 'Next Sync'}</h3>
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Next Sync
                   <p className="text-lg font-semibold">
-                    {hrSyncStatus.nextSyncAt ? new Date(hrSyncStatus.nextSyncAt).toLocaleString(locale) : t('common.notScheduled') || 'Not Scheduled'}
+                    {hrSyncStatus.nextSyncAt ? new Date(hrSyncStatus.nextSyncAt).toLocaleString(locale) : t('common.notScheduled')}
                   </p>
                 </div>
                 <div>
@@ -496,7 +496,7 @@ export default function TenantLifecyclePage() {
 
           {userTimeline.length === 0 && selectedUserId && (
             <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
-              {t('tenant.lifecycle.noEvents') || 'No timeline events found'}
+              {t('tenant.lifecycle.noEvents') || t('common.noEvents')}
             </div>
           )}
         </div>
@@ -534,7 +534,7 @@ export default function TenantLifecyclePage() {
             </table>
             {lifecycleEvents.length === 0 && (
               <div className="text-center py-8 text-gray-500">
-                {t('tenant.lifecycle.noEvents') || 'No lifecycle events found'}
+                {t('tenant.lifecycle.noEvents') || t('common.noLifecycleEvents')}
               </div>
             )}
           </div>
@@ -545,7 +545,7 @@ export default function TenantLifecyclePage() {
       {showPackageModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-2xl w-full">
-            <h2 className="text-xl font-bold mb-4">{t('tenant.lifecycle.createPackage') || 'Create Access Package'}</h2>
+            <h2 className="text-xl font-bold mb-4">{t('common.create')} Access Package
             <form onSubmit={handleCreateAccessPackage}>
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-2">{t('common.name')}</label>
@@ -618,7 +618,7 @@ export default function TenantLifecyclePage() {
       {showPolicyModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-2xl w-full">
-            <h2 className="text-xl font-bold mb-4">{t('tenant.lifecycle.createPolicy') || 'Create Lifecycle Policy'}</h2>
+            <h2 className="text-xl font-bold mb-4">{t('common.create')} Lifecycle Policy
             <form onSubmit={handleCreateLifecyclePolicy}>
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-2">{t('common.name')}</label>
@@ -645,7 +645,7 @@ export default function TenantLifecyclePage() {
                 </select>
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('tenant.lifecycle.actions') || 'Actions (comma-separated)'}</label>
+                <label className="block text-sm font-medium mb-2">{t('common.actions')} (comma-separated)
                 <input
                   type="text"
                   className="w-full px-3 py-2 border rounded"

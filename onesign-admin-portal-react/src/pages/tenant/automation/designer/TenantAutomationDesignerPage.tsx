@@ -161,7 +161,7 @@ export default function TenantAutomationDesignerPage() {
       setShowSaveModal(false);
       loadWorkflows();
     } catch (error: any) {
-      setError(error?.message || 'Failed to save workflow');
+      setError(error?.message || t('common.failedToSaveWorkflow'));
       console.error('Error saving workflow:', error);
     }
   };
@@ -199,7 +199,7 @@ export default function TenantAutomationDesignerPage() {
       setWorkflow(data);
       setSuccess('Workflow deployed successfully');
     } catch (error: any) {
-      setError(error?.message || 'Failed to deploy workflow');
+      setError(error?.message || t('common.failedToDeployWorkflow'));
       console.error('Error deploying workflow:', error);
     }
   };

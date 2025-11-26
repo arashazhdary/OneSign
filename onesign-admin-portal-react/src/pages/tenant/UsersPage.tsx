@@ -65,7 +65,7 @@ const UsersPage = () => {
       setUsers(mappedUsers);
     } catch (error) {
       console.error('Error fetching users:', error);
-      toast.error(t('common.error') || 'Failed to load users');
+      toast.error(t('common.failedToLoadUsers'));
     } finally {
       setLoading(false);
     }
@@ -179,7 +179,7 @@ const UsersPage = () => {
         toast.success(t('users.userDeleted') || 'User deleted successfully');
       } catch (error) {
         console.error('Error deleting user:', error);
-        toast.error(t('common.error') || 'Failed to delete user');
+        toast.error(t('common.failedToDeleteUser'));
       }
     }
   };
@@ -236,7 +236,7 @@ const UsersPage = () => {
       }
     } catch (error) {
       console.error('Error saving user:', error);
-      toast.error(t('common.error') || 'Failed to save user');
+      toast.error(t('common.failedToSaveUser'));
     }
 
     setFormData({ name: '', email: '', role: 'user', status: 'active' });
@@ -256,7 +256,7 @@ const UsersPage = () => {
         setSelectedUsers([]);
       } catch (error) {
         console.error('Error deleting users:', error);
-        toast.error(t('common.error') || 'Failed to delete some users');
+        toast.error(t('common.failedToDeleteSomeUsers'));
       }
     }
   };

@@ -133,7 +133,7 @@ export default function TenantApiKeysPage() {
         )}
       />
 
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Create API Key">
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={`${t('common.create')} ${t('common.apiKey')}`}>
         <form onSubmit={handleCreate} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>

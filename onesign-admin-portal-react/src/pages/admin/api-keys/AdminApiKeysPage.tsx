@@ -20,6 +20,7 @@ interface AdminAPIKey {
 }
 
 export default function AdminApiKeysPage() {
+  const { t } = useTranslation();
   const [apiKeys, setApiKeys] = useState<AdminAPIKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);

@@ -517,13 +517,13 @@ export default function TenantAccessRequestsDetailPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Justification</label>
               <div className="bg-gray-50 p-4 rounded-lg text-gray-900">
-                {request.justification || 'No justification provided'}
+                {request.justification || t('common.noJustificationProvided')}
               </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Business Reason</label>
               <div className="bg-gray-50 p-4 rounded-lg text-gray-900">
-                {request.businessReason || 'No business reason provided'}
+                {request.businessReason || t('common.noBusinessReasonProvided')}
               </div>
             </div>
           </div>
@@ -673,7 +673,7 @@ export default function TenantAccessRequestsDetailPage() {
           setShowCommentModal(false);
           setNewComment('');
         }}
-        title="Add Comment"
+        title={`${t('common.add')} ${t('common.comment')}`}
         footer={
           <>
             <button

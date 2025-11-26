@@ -861,7 +861,7 @@ export default function TenantUsersDetailPage() {
       <Modal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
-        title="Edit Profile"
+        title={`${t('common.edit')} ${t('common.profile')}`}
         size="lg"
         footer={
           <>

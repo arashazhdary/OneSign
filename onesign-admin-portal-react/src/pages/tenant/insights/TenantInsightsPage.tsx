@@ -522,7 +522,7 @@ export default function TenantInsightsPage() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {posture.mfaEnabled ? (
                         <span className="px-2 py-1 rounded text-xs bg-green-100 text-green-800">
-                          {posture.mfaMethod || 'Enabled'}
+                          {posture.mfaMethod || t('common.enabled')}
                         </span>
                       ) : (
                         <span className="px-2 py-1 rounded text-xs bg-gray-100 text-gray-800">

@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 import toast from 'react-hot-toast';
+import { extractTenantId } from '@/lib/utils/tenant-extractor';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7000';
 
@@ -16,15 +17,33 @@ const apiClient: AxiosInstance = axios.create({
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     // Get token from localStorage
-    const token = localStorage.getItem('auth-token');
+    const token = localStorage.getItem('auth-token') || localStorage.getItem('accessToken');
 
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
+    // Extract tenant ID from multiple sources
+    const tenantId = extractTenantId({
+      headers: config.headers as Record<string, string>,
+      url: config.url,
+      skipStore: false, // Allow fallback to store
+    });
+
+    // Add tenant ID to headers if found
+    if (tenantId && config.headers) {
+      // Only add if not already present (to allow manual override)
+      if (!config.headers['X-Tenant-Id'] && !config.headers['x-tenant-id']) {
+        config.headers['X-Tenant-Id'] = tenantId;
+      }
+    }
+
     // Log request in development
     if (import.meta.env.DEV) {
-      console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`);
+      console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`, {
+        tenantId: tenantId || 'not found',
+        headers: config.headers,
+      });
     }
 
     return config;

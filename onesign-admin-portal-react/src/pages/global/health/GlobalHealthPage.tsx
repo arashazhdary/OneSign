@@ -269,10 +269,10 @@ export default function GlobalHealthPage() {
         <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-shadow duration-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Readiness</h3>
-            <div className={`w-3 h-3 rounded-full ${getStatusColor(readinessProbe?.status || 'NotReady')} animate-pulse shadow-lg`} />
+            <div className={`w-3 h-3 rounded-full ${getStatusColor(readinessProbe?.status || t('common.notReady'))} animate-pulse shadow-lg`} />
           </div>
           <div className="mt-2">
-            <span className={`inline-block px-3 py-1 rounded-lg text-sm font-semibold border ${getStatusBadgeColor(readinessProbe?.status || 'NotReady')}`}>
+            <span className={`inline-block px-3 py-1 rounded-lg text-sm font-semibold border ${getStatusBadgeColor(readinessProbe?.status || t('common.notReady'))}`}>
               {readinessProbe?.status || 'Unknown'}
             </span>
           </div>

@@ -335,7 +335,7 @@ export default function TenantSecurityPage() {
           </button>
         </div>
         {orgUnitRules.length === 0 ? (
-          <p className="text-gray-600">{t('security.noOrgUnitRules') || 'No org unit-specific rules configured'}</p>
+          <p className="text-gray-600">{t('security.noOrgUnitRules') || t('common.noOrgUnitRulesConfigured')}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">

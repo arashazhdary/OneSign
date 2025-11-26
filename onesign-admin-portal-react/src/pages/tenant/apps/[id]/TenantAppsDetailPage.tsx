@@ -211,7 +211,7 @@ export default function TenantAppsDetailPage() {
       setNewURI({ uri: '', type: 'web' });
       fetchRedirectURIs();
     } catch (err: any) {
-      setError(err.message || 'Failed to add redirect URI');
+      setError(err.message || t('common.failedToAddRedirectUri'));
     } finally {
       setSaving(false);
     }
@@ -224,7 +224,7 @@ export default function TenantAppsDetailPage() {
       setSuccess('Redirect URI deleted successfully');
       fetchRedirectURIs();
     } catch (err: any) {
-      setError(err.message || 'Failed to delete redirect URI');
+      setError(err.message || t('common.failedToDeleteRedirectUri'));
     }
   };
 
@@ -238,7 +238,7 @@ export default function TenantAppsDetailPage() {
       setNewSecretName('');
       fetchClientSecrets();
     } catch (err: any) {
-      setError(err.message || 'Failed to generate secret');
+      setError(err.message || t('common.failedToGenerateSecret'));
     } finally {
       setSaving(false);
     }
@@ -251,7 +251,7 @@ export default function TenantAppsDetailPage() {
       setSuccess('Client secret deleted successfully');
       fetchClientSecrets();
     } catch (err: any) {
-      setError(err.message || 'Failed to delete secret');
+      setError(err.message || t('common.failedToDeleteSecret'));
     }
   };
 
@@ -283,7 +283,7 @@ export default function TenantAppsDetailPage() {
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               {application.name}
             </h1>
-            <p className="text-gray-600 mt-2">{application.description || 'No description'}</p>
+            <p className="text-gray-600 mt-2">{application.description || t('common.noDescription')}</p>
           </div>
           <div className="flex gap-2">
             <button
@@ -610,7 +610,7 @@ export default function TenantAppsDetailPage() {
       <Modal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
-        title="Edit Application"
+        title={`${t('common.edit')} ${t('common.application')}`}
         size="lg"
         footer={
           <>
@@ -674,7 +674,7 @@ export default function TenantAppsDetailPage() {
       <Modal
         isOpen={showAddURIModal}
         onClose={() => setShowAddURIModal(false)}
-        title="Add Redirect URI"
+        title={`${t('common.add')} ${t('common.redirectUri')}`}
         footer={
           <>
             <button

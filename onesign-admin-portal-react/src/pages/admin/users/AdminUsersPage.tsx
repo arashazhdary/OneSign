@@ -26,6 +26,7 @@ const AVAILABLE_PERMISSIONS = [
 ];
 
 export default function AdminUsersPage() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [admins, setAdmins] = useState<PlatformAdminDto[]>([]);
   const [selectedAdmin, setSelectedAdmin] = useState<PlatformAdminDto | null>(null);
