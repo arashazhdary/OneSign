@@ -348,7 +348,11 @@
     "weak": "ضعیف",
     "fair": "متوسط",
     "good": "خوب",
-    "strong": "قوی"
+    "strong": "قوی",
+    "passwordRequirements": "الزامات رمز عبور",
+    "completeSetup": "تکمیل تنظیمات",
+    "completingGoogleSignIn": "در حال تکمیل ورود با گوگل...",
+    "or": "یا"
   },
   "admin": {
     "tenants": {
@@ -363,7 +367,82 @@
       "active": "فعال",
       "suspended": "تعلیق شده",
       "pending": "در انتظار"
+    },
+    "dashboard": {
+      "title": "داشبورد ادمین",
+      "totalTenants": "کل سازمان‌ها",
+      "totalUsers": "کل کاربران",
+      "systemStatus": "وضعیت سیستم",
+      "memoryUsage": "مصرف حافظه",
+      "systemHealth": "سلامت سیستم",
+      "activeAlerts": "هشدارهای فعال",
+      "recentActivities": "فعالیت‌های اخیر",
+      "quickActions": "دسترسی سریع",
+      "createTenant": "ایجاد سازمان",
+      "addAdmin": "افزودن ادمین",
+      "viewLogs": "مشاهده لاگ‌ها",
+      "unknown": "نامشخص"
+    },
+    "users": {
+      "title": "مدیران پلتفرم",
+      "totalAdmins": "کل ادمین‌ها",
+      "active": "فعال",
+      "suspended": "تعلیق شده",
+      "administrators": "مدیران",
+      "noAdministrators": "مدیری یافت نشد",
+      "admin": "ادمین",
+      "role": "نقش",
+      "status": "وضعیت",
+      "permissions": "دسترسی‌ها",
+      "lastLogin": "آخرین ورود",
+      "actions": "عملیات",
+      "createAdmin": "ایجاد مدیر جدید",
+      "editAdmin": "ویرایش مدیر",
+      "firstName": "نام",
+      "lastName": "نام خانوادگی",
+      "email": "ایمیل",
+      "noActivities": "فعالیتی یافت نشد"
     }
+  },
+  "globalWebhooks": {
+    "title": "وب‌هوک‌های پلتفرم سراسری",
+    "activeWebhooks": "وب‌هوک‌های فعال",
+    "totalDeliveries": "کل تحویل‌ها",
+    "successRate": "نرخ موفقیت",
+    "avgResponseTime": "میانگین زمان پاسخ",
+    "responseTime": "زمان پاسخ",
+    "lastDelivery": "آخرین تحویل",
+    "webhookTemplates": "قالب‌های وب‌هوک",
+    "createWebhook": "ایجاد وب‌هوک سراسری",
+    "retryStrategy": "استراتژی تلاش مجدد",
+    "exponentialBackoff": "تأخیر نمایی",
+    "maxRetries": "حداکثر تلاش مجدد"
+  },
+  "globalIntegrations": {
+    "title": "یکپارچه‌سازی‌های پلتفرم",
+    "activeIntegrations": "یکپارچه‌سازی‌های فعال",
+    "errorRate": "نرخ خطا"
+  },
+  "globalMaintenance": {
+    "title": "زمان‌بندی تعمیرات",
+    "thisWeek": "این هفته",
+    "completedThisMonth": "تکمیل شده این ماه",
+    "recurringWindows": "پنجره‌های تکراری",
+    "affectedServices": "سرویس‌های تحت تأثیر",
+    "startTime": "زمان شروع",
+    "calendarView": "نمای تقویم",
+    "scheduleMaintenance": "زمان‌بندی پنجره تعمیرات",
+    "impactLevel": "سطح تأثیر",
+    "endTime": "زمان پایان"
+  },
+  "globalAlerts": {
+    "title": "هشدارهای پلتفرم سراسری"
+  },
+  "globalTemplates": {
+    "title": "مدیریت قالب‌های سراسری",
+    "allStatus": "همه وضعیت‌ها",
+    "templateName": "نام قالب",
+    "templateContent": "محتوای قالب"
   },
   "nav": {
     "dashboard": "داشبورد",

@@ -347,6 +347,10 @@
     "passwordSpecial": "One special character",
     "weak": "Weak",
     "fair": "Fair",
+    "passwordRequirements": "Password Requirements",
+    "completeSetup": "Complete Setup",
+    "completingGoogleSignIn": "Completing Google sign in...",
+    "or": "OR",
     "good": "Good",
     "strong": "Strong"
   },
@@ -363,7 +367,82 @@
       "active": "Active",
       "suspended": "Suspended",
       "pending": "Pending"
+    },
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "totalTenants": "Total Tenants",
+      "totalUsers": "Total Users",
+      "systemStatus": "System Status",
+      "memoryUsage": "Memory Usage",
+      "systemHealth": "System Health",
+      "activeAlerts": "Active Alerts",
+      "recentActivities": "Recent Activities",
+      "quickActions": "Quick Actions",
+      "createTenant": "Create Tenant",
+      "addAdmin": "Add Admin",
+      "viewLogs": "View Logs",
+      "unknown": "Unknown"
+    },
+    "users": {
+      "title": "Platform Administrators",
+      "totalAdmins": "Total Admins",
+      "active": "Active",
+      "suspended": "Suspended",
+      "administrators": "Administrators",
+      "noAdministrators": "No administrators found",
+      "admin": "Admin",
+      "role": "Role",
+      "status": "Status",
+      "permissions": "Permissions",
+      "lastLogin": "Last Login",
+      "actions": "Actions",
+      "createAdmin": "Create New Administrator",
+      "editAdmin": "Edit Administrator",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "noActivities": "No activities found"
     }
+  },
+  "globalWebhooks": {
+    "title": "Global Platform Webhooks",
+    "activeWebhooks": "Active Webhooks",
+    "totalDeliveries": "Total Deliveries",
+    "successRate": "Success Rate",
+    "avgResponseTime": "Avg Response Time",
+    "responseTime": "Response Time",
+    "lastDelivery": "Last Delivery",
+    "webhookTemplates": "Webhook Templates",
+    "createWebhook": "Create Global Webhook",
+    "retryStrategy": "Retry Strategy",
+    "exponentialBackoff": "Exponential Backoff",
+    "maxRetries": "Max Retries"
+  },
+  "globalIntegrations": {
+    "title": "Platform Integrations",
+    "activeIntegrations": "Active Integrations",
+    "errorRate": "Error Rate"
+  },
+  "globalMaintenance": {
+    "title": "Maintenance Scheduler",
+    "thisWeek": "This Week",
+    "completedThisMonth": "Completed This Month",
+    "recurringWindows": "Recurring Windows",
+    "affectedServices": "Affected Services",
+    "startTime": "Start Time",
+    "calendarView": "Calendar View",
+    "scheduleMaintenance": "Schedule Maintenance Window",
+    "impactLevel": "Impact Level",
+    "endTime": "End Time"
+  },
+  "globalAlerts": {
+    "title": "Global Platform Alerts"
+  },
+  "globalTemplates": {
+    "title": "Global Template Management",
+    "allStatus": "All Status",
+    "templateName": "Template Name",
+    "templateContent": "Template Content"
   },
   "nav": {
     "dashboard": "Dashboard",
