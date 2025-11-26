@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { platformService } from '@/lib/api/services';
+import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
 interface KeySet {
@@ -70,7 +70,7 @@ export default function GlobalCryptoPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getCryptoKeysets();
+      const data = await globalService.getCryptoKeysets();
       setKeySets(data.items || data || []);
     } catch (err) {
       setError(t('common.error'));
@@ -82,7 +82,7 @@ export default function GlobalCryptoPage() {
   const getKeySet = async (id: string) => {
     setError('');
     try {
-      const data = await platformService.getCryptoKeyset(id);
+      const data = await globalService.getCryptoKeyset(id);
       return data;
     } catch (err) {
       setError(t('common.error'));
@@ -93,7 +93,7 @@ export default function GlobalCryptoPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.rolloverCryptoKey(id);
+      await globalService.rolloverCryptoKey(id);
       setSuccess('Keyset rollover initiated successfully');
       fetchKeySets();
     } catch (err) {
@@ -105,7 +105,7 @@ export default function GlobalCryptoPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.revokeCryptoKeyVersion(versionId);
+      await globalService.revokeCryptoKeyVersion(versionId);
       setSuccess('Key version revoked successfully');
       fetchKeySets();
     } catch (err) {
@@ -117,7 +117,7 @@ export default function GlobalCryptoPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getCryptoRotationPolicies();
+      const data = await globalService.getCryptoRotationPolicies();
       setRotationPolicies(data || []);
     } catch (err) {
       setError(t('common.error'));
@@ -136,7 +136,7 @@ export default function GlobalCryptoPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.createCryptoKeyset(newKeySet);
+      await globalService.createCryptoKeyset(newKeySet);
       setSuccess('Key set created successfully');
       setShowCreateKeySetModal(false);
       setNewKeySet({ name: '', algorithm: 'RSA', keySize: 2048, purpose: '' });
@@ -157,7 +157,7 @@ export default function GlobalCryptoPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.rotateCryptoKey(keySetId);
+      await globalService.rotateCryptoKey(keySetId);
       setSuccess('Key rotation started successfully');
       fetchKeySets();
     } catch (err) {
@@ -177,7 +177,7 @@ export default function GlobalCryptoPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.updateCryptoRotationPolicy(newPolicy);
+      await globalService.updateCryptoRotationPolicy(newPolicy);
       setSuccess('Rotation policy updated successfully');
       setShowCreatePolicyModal(false);
       setNewPolicy({

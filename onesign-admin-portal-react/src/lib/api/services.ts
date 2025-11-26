@@ -655,6 +655,77 @@ export const platformService = {
       throw error;
     }
   },
+
+  // ==================== ORG UNITS (Spec: /api/tenant/orgunits) ====================
+  getOrgUnitsTree: async (tenantId?: string) => {
+    try {
+      const response = await apiClient.get('/api/tenant/orgunits/tree');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch org units tree:', error);
+      return [];
+    }
+  },
+
+  createOrgUnit: async (data: { tenantId?: string; parentId: string | null; name: string }) => {
+    const response = await apiClient.post('/api/tenant/orgunits', data);
+    return response.data;
+  },
+
+  updateOrgUnit: async (tenantId: string, orgUnitId: string, data: { name?: string }) => {
+    const response = await apiClient.put(`/api/tenant/orgunits/${orgUnitId}`, data);
+    return response.data;
+  },
+
+  moveOrgUnit: async (tenantId: string, orgUnitId: string, newParentId: string | null) => {
+    const response = await apiClient.post(`/api/tenant/orgunits/${orgUnitId}/move`, { newParentId });
+    return response.data;
+  },
+
+  deleteOrgUnit: async (tenantId: string, orgUnitId: string) => {
+    await apiClient.delete(`/api/tenant/orgunits/${orgUnitId}`);
+  },
+
+  // ==================== ROLES (Spec: /api/tenant/authorization/roles) ====================
+  getRoles: async (tenantId?: string) => {
+    try {
+      const response = await apiClient.get('/api/tenant/authorization/roles');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch roles:', error);
+      return { items: [] };
+    }
+  },
+
+  createRole: async (data: { tenantId?: string; name: string; description?: string; permissions: string[]; parentRoleId?: string }) => {
+    const response = await apiClient.post('/api/tenant/authorization/roles', data);
+    return response.data;
+  },
+
+  updateRole: async (roleId: string, data: { name?: string; description?: string; permissions?: string[]; parentRoleId?: string }, tenantId?: string) => {
+    const response = await apiClient.put(`/api/tenant/authorization/roles/${roleId}`, data);
+    return response.data;
+  },
+
+  deleteRole: async (roleId: string, tenantId?: string) => {
+    await apiClient.delete(`/api/tenant/authorization/roles/${roleId}`);
+  },
+
+  // ==================== SECURITY POLICY (Spec: /api/tenant/security) ====================
+  getSecurityPolicy: async () => {
+    try {
+      const response = await apiClient.get('/api/tenant/security/policy');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch security policy:', error);
+      return null;
+    }
+  },
+
+  updateSecurityPolicy: async (data: any) => {
+    const response = await apiClient.put('/api/tenant/security/policy', data);
+    return response.data;
+  },
 };
 
 // Applications Service
@@ -886,6 +957,154 @@ export const usersService = {
       throw error;
     }
   },
+
+  // Session management
+  getAccountSessions: async (userId?: string) => {
+    try {
+      const url = userId ? `/api/users/${userId}/sessions` : '/api/users/sessions';
+      const response = await apiClient.get(url);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch sessions:', error);
+      return [];
+    }
+  },
+
+  getSessionHistory: async (params?: any) => {
+    try {
+      const response = await apiClient.get('/api/users/sessions/history', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch session history:', error);
+      return [];
+    }
+  },
+
+  revokeSession: async (sessionId: string) => {
+    const response = await apiClient.delete(`/api/users/sessions/${sessionId}`);
+    return response.data;
+  },
+
+  // User scope and permissions
+  getCurrentUserScope: async () => {
+    try {
+      const response = await apiClient.get('/api/users/me/scope');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user scope:', error);
+      return null;
+    }
+  },
+
+  // User invitation
+  inviteUser: async (data: any) => {
+    const response = await apiClient.post('/api/users/invite', data);
+    return response.data;
+  },
+
+  // User status
+  updateUserStatus: async (userId: string, status: string) => {
+    const response = await apiClient.patch(`/api/users/${userId}/status`, { status });
+    return response.data;
+  },
+
+  // User organizational units
+  getUserOrgUnits: async (userId: string) => {
+    try {
+      const response = await apiClient.get(`/api/users/${userId}/org-units`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user org units:', error);
+      return [];
+    }
+  },
+
+  updateUserOrgUnits: async (userId: string, orgUnitIds: string[]) => {
+    const response = await apiClient.put(`/api/users/${userId}/org-units`, { orgUnitIds });
+    return response.data;
+  },
+
+  // User profile
+  getUserProfile: async (userId: string) => {
+    try {
+      const response = await apiClient.get(`/api/users/${userId}/profile`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user profile:', error);
+      return null;
+    }
+  },
+
+  updateUserProfile: async (userId: string, data: any) => {
+    const response = await apiClient.put(`/api/users/${userId}/profile`, data);
+    return response.data;
+  },
+
+  // User activities
+  getUserActivities: async (userId: string, params?: any) => {
+    try {
+      const response = await apiClient.get(`/api/users/${userId}/activities`, { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user activities:', error);
+      return [];
+    }
+  },
+
+  // User lifecycle
+  getUserLifecycle: async (userId: string) => {
+    try {
+      const response = await apiClient.get(`/api/users/${userId}/lifecycle`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user lifecycle:', error);
+      return null;
+    }
+  },
+
+  // User risk assessment
+  getUserRiskAssessment: async (userId: string) => {
+    try {
+      const response = await apiClient.get(`/api/users/${userId}/risk-assessment`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user risk assessment:', error);
+      return null;
+    }
+  },
+
+  // User access packages
+  getUserAccessPackages: async (userId: string) => {
+    try {
+      const response = await apiClient.get(`/api/users/${userId}/access-packages`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user access packages:', error);
+      return [];
+    }
+  },
+
+  // User privileged sessions
+  getUserPrivilegedSessions: async (userId: string) => {
+    try {
+      const response = await apiClient.get(`/api/users/${userId}/privileged-sessions`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user privileged sessions:', error);
+      return [];
+    }
+  },
+
+  // User audit trail
+  getUserAuditTrail: async (userId: string, params?: any) => {
+    try {
+      const response = await apiClient.get(`/api/users/${userId}/audit-trail`, { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user audit trail:', error);
+      return [];
+    }
+  },
 };
 
 // Governance Service
@@ -984,31 +1203,12 @@ export const authService = {
   },
 };
 
-// Billing Service
+// Billing Service - Based on /api/tenant/billing spec
 export const billingService = {
-  getBillingInfo: async () => {
+  // GET /api/tenant/billing/subscription
+  getSubscription: async (tenantId?: string) => {
     try {
-      const response = await apiClient.get('/api/billing');
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch billing info:', error);
-      return null;
-    }
-  },
-
-  getInvoices: async () => {
-    try {
-      const response = await apiClient.get('/api/billing/invoices');
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch invoices:', error);
-      return [];
-    }
-  },
-
-  getSubscription: async () => {
-    try {
-      const response = await apiClient.get('/api/billing/subscription');
+      const response = await apiClient.get('/api/tenant/billing/subscription');
       return response.data;
     } catch (error) {
       console.error('Failed to fetch subscription:', error);
@@ -1016,9 +1216,53 @@ export const billingService = {
     }
   },
 
+  // GET /api/tenant/billing/quota-status
+  getQuotaStatus: async (tenantId?: string) => {
+    try {
+      const response = await apiClient.get('/api/tenant/billing/quota-status');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch quota status:', error);
+      return { quotas: [] };
+    }
+  },
+
+  // GET /api/tenant/billing/summary
+  getBillingSummary: async (tenantId?: string) => {
+    try {
+      const response = await apiClient.get('/api/tenant/billing/summary');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch billing summary:', error);
+      return null;
+    }
+  },
+
+  // GET /api/tenant/billing/invoices
+  getInvoices: async (tenantId?: string) => {
+    try {
+      const response = await apiClient.get('/api/tenant/billing/invoices');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch invoices:', error);
+      return [];
+    }
+  },
+
+  // Backwards compatibility
+  getBillingInfo: async () => {
+    try {
+      const response = await apiClient.get('/api/tenant/billing/summary');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch billing info:', error);
+      return null;
+    }
+  },
+
   updateSubscription: async (data: any) => {
     try {
-      const response = await apiClient.put('/api/billing/subscription', data);
+      const response = await apiClient.put('/api/tenant/billing/subscription', data);
       return response.data;
     } catch (error) {
       console.error('Failed to update subscription:', error);
@@ -1028,7 +1272,7 @@ export const billingService = {
 
   getUsage: async () => {
     try {
-      const response = await apiClient.get('/api/billing/usage');
+      const response = await apiClient.get('/api/tenant/billing/quota-status');
       return response.data;
     } catch (error) {
       console.error('Failed to fetch usage:', error);

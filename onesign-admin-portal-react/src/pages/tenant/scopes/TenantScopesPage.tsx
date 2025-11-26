@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
-import { platformService, applicationsService } from '@/lib/api/services';
+import { tenantService } from '@/lib/api/services/tenant.service';
+import { applicationsService } from '@/lib/api/services';
 import { Helmet } from 'react-helmet-async';
 
 interface Scope {
@@ -82,7 +83,7 @@ export default function TenantScopesPage() {
   const fetchScopes = async () => {
     if (!tenantId) return;
     try {
-      const data = await platformService.getScopes(tenantId);
+      const data = await tenantService.getScopes(tenantId);
       setScopes(data.items || data || []);
     } catch (error) {
       console.error('Error fetching scopes:', error);
@@ -94,7 +95,7 @@ export default function TenantScopesPage() {
   const fetchScopeGroups = async () => {
     if (!tenantId) return;
     try {
-      const data = await platformService.getScopeGroups(tenantId);
+      const data = await tenantService.getScopeGroups(tenantId);
       setScopeGroups(data.items || data || []);
     } catch (error) {
       console.error('Error fetching scope groups:', error);
@@ -130,9 +131,9 @@ export default function TenantScopesPage() {
 
     try {
       if (editingScope) {
-        await platformService.updateScope(tenantId, editingScope.id, payload);
+        await tenantService.updateScope(tenantId, editingScope.id, payload);
       } else {
-        await platformService.createScope(tenantId, payload);
+        await tenantService.createScope(tenantId, payload);
       }
       setSuccess(editingScope ? 'Scope updated successfully' : 'Scope created successfully');
       setShowCreateModal(false);
@@ -163,7 +164,7 @@ export default function TenantScopesPage() {
     setSuccess('');
 
     try {
-      await platformService.deleteScope(tenantId, scopeId);
+      await tenantService.deleteScope(tenantId, scopeId);
       setSuccess('Scope deleted successfully');
       fetchScopes();
     } catch (error: any) {
@@ -174,7 +175,7 @@ export default function TenantScopesPage() {
 
   const handleToggleScopeStatus = async (scope: Scope) => {
     try {
-      await platformService.updateScopeStatus(tenantId, scope.id, !scope.isEnabled);
+      await tenantService.updateScopeStatus(tenantId, scope.id, !scope.isEnabled);
       setSuccess(`Scope ${scope.isEnabled ? 'disabled' : 'enabled'} successfully`);
       fetchScopes();
     } catch (error: any) {

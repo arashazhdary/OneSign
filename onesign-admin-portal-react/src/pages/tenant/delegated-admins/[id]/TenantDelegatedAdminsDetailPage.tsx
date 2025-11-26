@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'react-router-dom';
-import { platformService } from '@/lib/api/services';
+import { tenantService } from '@/lib/api/services/tenant.service';
 import { getTenantId } from '@/lib/tenant-context';
 import Breadcrumbs from '@/components/common/Breadcrumbs';
 import { Helmet } from 'react-helmet-async';
@@ -76,7 +76,7 @@ export default function TenantDelegatedAdminsDetailPage() {
     try {
       setLoading(true);
       // Since there's no getDelegatedAdminById in the service, we'll fetch the list and find by ID
-      const admins = await platformService.getDelegatedAdmins(tenantId);
+      const admins = await tenantService.getDelegatedAdmins(tenantId);
       const adminData = admins.find((a: any) => a.id === id);
 
       if (!adminData) {
@@ -242,7 +242,7 @@ export default function TenantDelegatedAdminsDetailPage() {
     if (!tenantId) return;
 
     try {
-      const orgUnits = await platformService.getOrgUnits(tenantId);
+      const orgUnits = await tenantService.getOrgUnits(tenantId);
       setAvailableOrgUnits(orgUnits);
     } catch (err) {
       // Use mock data on error
@@ -316,7 +316,7 @@ export default function TenantDelegatedAdminsDetailPage() {
     setSuccess('');
 
     try {
-      await platformService.deleteDelegatedAdmin(tenantId, id);
+      await tenantService.deleteDelegatedAdmin(tenantId, id);
       setSuccess('Delegated admin deleted successfully');
       setTimeout(() => {
         navigate('/tenant/delegated-admins');

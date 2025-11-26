@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'react-router-dom';
-import { platformService } from '@/lib/api/services';
+import { tenantService } from '@/lib/api/services/tenant.service';
 import { getTenantId } from '@/lib/tenant-context';
 import Breadcrumbs from '@/components/common/Breadcrumbs';
 import { Helmet } from 'react-helmet-async';
@@ -66,7 +66,7 @@ export default function TenantIntegrationsDetailPage() {
 
     try {
       setLoading(true);
-      const result = await platformService.getIntegrationById(id, tenantId);
+      const result = await tenantService.getIntegrationById(id, tenantId);
 
       const integrationData: IntegrationDetails = {
         id: result.id,
@@ -169,7 +169,7 @@ export default function TenantIntegrationsDetailPage() {
     if (!tenantId) return;
 
     try {
-      const logs = await platformService.getIntegrationSyncLogs(id, tenantId);
+      const logs = await tenantService.getIntegrationSyncLogs(id, tenantId);
       setSyncLogs(logs || []);
     } catch (err) {
       console.error('Error fetching sync logs:', err);
@@ -196,7 +196,7 @@ export default function TenantIntegrationsDetailPage() {
     setSuccess('');
 
     try {
-      const result = await platformService.testIntegration(id, tenantId);
+      const result = await tenantService.testIntegration(id, tenantId);
       if (result.success) {
         setSuccess('Connection test successful');
       } else {
@@ -217,7 +217,7 @@ export default function TenantIntegrationsDetailPage() {
     setSuccess('');
 
     try {
-      await platformService.syncIntegration(id, tenantId);
+      await tenantService.syncIntegration(id, tenantId);
       setSuccess('Sync started successfully');
       // Refresh sync logs after a delay
       setTimeout(() => {
@@ -239,7 +239,7 @@ export default function TenantIntegrationsDetailPage() {
     const newStatus = integration.status === 'active' ? 'inactive' : 'active';
 
     try {
-      await platformService.updateIntegration(id, { status: newStatus }, tenantId);
+      await tenantService.updateIntegration(id, { status: newStatus }, tenantId);
       setSuccess(`Integration ${newStatus === 'active' ? 'enabled' : 'disabled'} successfully`);
       fetchData();
     } catch (err: any) {
@@ -265,7 +265,7 @@ export default function TenantIntegrationsDetailPage() {
     }
 
     try {
-      await platformService.updateIntegration(
+      await tenantService.updateIntegration(
         id,
         {
           name: editName,
@@ -289,7 +289,7 @@ export default function TenantIntegrationsDetailPage() {
     setSuccess('');
 
     try {
-      await platformService.deleteIntegration(id, tenantId);
+      await tenantService.deleteIntegration(id, tenantId);
       setSuccess('Integration deleted successfully');
       setTimeout(() => {
         navigate('/tenant/integrations');

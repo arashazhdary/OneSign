@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { platformService } from '@/lib/api/services';
+import { tenantService } from '@/lib/api/services/tenant.service';
 import { Helmet } from 'react-helmet-async';
 
 interface CustomDomain {
@@ -34,7 +34,7 @@ export default function TenantDomainsPage() {
 
   const fetchDomains = async () => {
     try {
-      const data = await platformService.getCustomDomains?.();
+      const data = await tenantService.getCustomDomains?.();
       const mockData: CustomDomain[] = [
         {
           id: '1',
@@ -124,7 +124,7 @@ export default function TenantDomainsPage() {
 
   const handleAdd = async () => {
     try {
-      await platformService.addCustomDomain?.('tenant-id', { domain: newDomain, verificationMethod });
+      await tenantService.addCustomDomain?.('tenant-id', { domain: newDomain, verificationMethod });
       setShowAdd(false);
       setNewDomain('');
       fetchDomains();
@@ -135,7 +135,7 @@ export default function TenantDomainsPage() {
 
   const handleVerify = async (domainId: string) => {
     try {
-      await platformService.verifyCustomDomain?.('tenant-id', domainId);
+      await tenantService.verifyCustomDomain?.('tenant-id', domainId);
       fetchDomains();
     } catch (error) {
       console.error('Failed to verify custom domain:', error);
@@ -145,7 +145,7 @@ export default function TenantDomainsPage() {
   const handleDelete = async (domainId: string) => {
     if (!confirm('Remove this custom domain?')) return;
     try {
-      await platformService.deleteCustomDomain?.('tenant-id', domainId);
+      await tenantService.deleteCustomDomain?.('tenant-id', domainId);
       fetchDomains();
     } catch (error) {
       console.error('Failed to delete custom domain:', error);
@@ -154,7 +154,7 @@ export default function TenantDomainsPage() {
 
   const handleSetPrimary = async (domainId: string) => {
     try {
-      await platformService.setPrimaryDomain?.('tenant-id', domainId);
+      await tenantService.setPrimaryDomain?.('tenant-id', domainId);
       fetchDomains();
     } catch (error) {
       console.error('Failed to set primary domain:', error);
@@ -163,7 +163,7 @@ export default function TenantDomainsPage() {
 
   const handleRenewSSL = async (domainId: string) => {
     try {
-      await platformService.renewDomainSSL?.('tenant-id', domainId);
+      await tenantService.renewDomainSSL?.('tenant-id', domainId);
       fetchDomains();
     } catch (error) {
       console.error('Failed to renew SSL certificate:', error);

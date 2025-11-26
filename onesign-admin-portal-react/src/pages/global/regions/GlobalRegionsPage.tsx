@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { platformService } from '@/lib/api/services';
+import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
 interface Region {
@@ -125,8 +125,9 @@ export default function GlobalRegionsPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getRegions();
-      setRegions(data.items || data || []);
+      // GET /api/global/regions
+      const data = await globalService.getRegions();
+      setRegions(data || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
     } finally {
@@ -138,7 +139,7 @@ export default function GlobalRegionsPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getRegionHealth(regionId);
+      const data = await globalService.getRegionsHealth(regionId);
       setRegionHealth(data);
     } catch (err) {
       console.error(err);
@@ -151,7 +152,7 @@ export default function GlobalRegionsPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getRegionBackups();
+      const data = await globalService.getRegionBackups();
       setBackups(data.items || data || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -164,7 +165,7 @@ export default function GlobalRegionsPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getDataResidencyRules();
+      const data = await globalService.getDataResidencyRules();
       setResidencyRules(data.rules || data || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -177,7 +178,7 @@ export default function GlobalRegionsPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getDRStatus();
+      const data = await globalService.getDRStatus();
       setDRStatus(data);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -196,7 +197,7 @@ export default function GlobalRegionsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.createRegion(newRegion);
+      await globalService.createRegion(newRegion);
       setSuccess('Region created successfully');
       setShowCreateModal(false);
       setNewRegion({ name: '', code: '', location: '', dataCenter: '' });
@@ -213,7 +214,7 @@ export default function GlobalRegionsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.activateRegion(regionId);
+      await globalService.activateRegion(regionId);
       setSuccess('Region activated successfully');
       fetchRegions();
     } catch (err: any) {
@@ -228,7 +229,7 @@ export default function GlobalRegionsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.deactivateRegion(regionId);
+      await globalService.deactivateRegion(regionId);
       setSuccess('Region deactivated successfully');
       fetchRegions();
     } catch (err: any) {
@@ -247,7 +248,7 @@ export default function GlobalRegionsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.deleteRegion(regionId);
+      await globalService.deleteRegion(regionId);
       setSuccess('Region deleted successfully');
       fetchRegions();
     } catch (err: any) {
@@ -267,7 +268,7 @@ export default function GlobalRegionsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.createRegionBackup(selectedRegion);
+      await globalService.createRegionBackup(selectedRegion);
       setSuccess('Backup created successfully');
       fetchBackups();
     } catch (err: any) {
@@ -286,7 +287,7 @@ export default function GlobalRegionsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.restoreRegionBackup(backupId);
+      await globalService.restoreRegionBackup(backupId);
       setSuccess('Backup restore started successfully');
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -305,7 +306,7 @@ export default function GlobalRegionsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.updateRegion(updateRegionData.id, {
+      await globalService.updateRegion(updateRegionData.id, {
         name: updateRegionData.name,
         code: updateRegionData.code,
         location: updateRegionData.location,
@@ -326,7 +327,7 @@ export default function GlobalRegionsPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getRegionBackupsById(regionId);
+      const data = await globalService.getRegionBackupsById(regionId);
       setBackups(data.items || data || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -340,7 +341,7 @@ export default function GlobalRegionsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.createRegionBackupById(regionId);
+      await globalService.createRegionBackupById(regionId);
       setSuccess('Region backup created successfully');
       fetchRegionBackups(regionId);
     } catch (err: any) {
@@ -354,7 +355,7 @@ export default function GlobalRegionsPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getTenantDataResidency();
+      const data = await globalService.getTenantDataResidency();
       setTenantDataResidency(data.items || data || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -368,7 +369,7 @@ export default function GlobalRegionsPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getTenantBackups(selectedTenant);
+      const data = await globalService.getTenantBackups(selectedTenant);
       setTenantBackups(data.items || data || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -387,7 +388,7 @@ export default function GlobalRegionsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.createTenantBackup(selectedTenant);
+      await globalService.createTenantBackup(selectedTenant);
       setSuccess('Tenant backup created successfully');
       fetchTenantBackups();
     } catch (err: any) {
@@ -406,7 +407,7 @@ export default function GlobalRegionsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.restoreTenant(tenantId);
+      await globalService.restoreTenant(tenantId);
       setSuccess('Tenant restore started successfully');
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -419,7 +420,7 @@ export default function GlobalRegionsPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getDRDashboard();
+      const data = await globalService.getDRDashboard();
       setDRStatus(data);
     } catch (err: any) {
       setError(err.message || t('common.error'));

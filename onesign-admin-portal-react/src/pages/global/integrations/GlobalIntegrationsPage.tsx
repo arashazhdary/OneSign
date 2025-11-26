@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { platformService } from '@/lib/api/services';
+import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
 interface Integration {
@@ -46,7 +46,7 @@ export default function GlobalIntegrationsPage() {
 
   const fetchData = async () => {
     try {
-      const data = await platformService.getGlobalIntegrations?.();
+      const data = await globalService.getGlobalIntegrations?.();
       const mockIntegrations: Integration[] = [
         {
           id: '1',
@@ -247,7 +247,7 @@ export default function GlobalIntegrationsPage() {
 
   const handleToggleIntegration = async (integrationId: string) => {
     try {
-      await platformService.toggleIntegration?.(integrationId);
+      await globalService.toggleIntegration?.(integrationId);
       fetchData();
     } catch (error) {
       console.error('Failed to toggle integration:', error);
@@ -256,7 +256,7 @@ export default function GlobalIntegrationsPage() {
 
   const handleTestIntegration = async (integrationId: string) => {
     try {
-      await platformService.testIntegration?.(integrationId);
+      await globalService.testIntegration?.(integrationId);
       alert('Integration test successful!');
     } catch (error) {
       console.error('Failed to test integration:', error);
@@ -267,7 +267,7 @@ export default function GlobalIntegrationsPage() {
   const handleDeleteIntegration = async (integrationId: string) => {
     if (!confirm('Remove this integration?')) return;
     try {
-      await platformService.deleteIntegration?.(integrationId);
+      await globalService.deleteIntegration?.(integrationId);
       fetchData();
     } catch (error) {
       console.error('Failed to delete integration:', error);

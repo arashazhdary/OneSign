@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
-import { platformService } from '@/lib/api/services';
+import { tenantService } from '@/lib/api/services/tenant.service';
 
 interface ImportJob {
   id: string;
@@ -175,7 +175,7 @@ export default function TenantImportsPage() {
 
     try {
       // Fetch from real API
-      const data = await platformService.getImportJobs?.(tenantId);
+      const data = await tenantService.getImportJobs?.(tenantId);
       setImports(data || mockImportsFallback);
     } catch (error: any) {
       console.error('Error fetching imports:', error);
@@ -192,7 +192,7 @@ export default function TenantImportsPage() {
 
     try {
       // Fetch from real API
-      const data = await platformService.getImportTemplates?.(tenantId);
+      const data = await tenantService.getImportTemplates?.(tenantId);
       setTemplates(data || mockTemplatesFallback);
     } catch (error: any) {
       console.error('Error fetching templates:', error);

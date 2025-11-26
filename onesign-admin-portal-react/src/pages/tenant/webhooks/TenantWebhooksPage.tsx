@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
-import { platformService } from '@/lib/api/services';
+import { tenantService } from '@/lib/api/services/tenant.service';
 import { Helmet } from 'react-helmet-async';
 
 interface Webhook {
@@ -36,7 +36,7 @@ interface WebhookDelivery {
   const fetchWebhooks = async () => {
     try {
       const tenantId = getTenantId();
-      const data = await platformService.getWebhooks(tenantId);
+      const data = await tenantService.getWebhooks(tenantId);
       setWebhooks(data);
     } catch (error) {
       console.error('Failed to fetch webhooks:', error);
@@ -174,7 +174,7 @@ export default function TenantWebhooksPage() {
     if (!tenantId) return;
 
     try {
-      const data = await platformService.getWebhooks(tenantId);
+      const data = await tenantService.getWebhooks(tenantId);
       setWebhooks(data);
     } catch (error) {
       console.error('Error fetching webhooks:', error);
@@ -188,7 +188,7 @@ export default function TenantWebhooksPage() {
     if (!tenantId) return;
 
     try {
-      const data = await platformService.getWebhookEvents(tenantId, webhookId);
+      const data = await tenantService.getWebhookEvents(tenantId, webhookId);
       setDeliveries(data);
     } catch (error) {
       console.error('Error fetching webhook deliveries:', error);
@@ -204,7 +204,7 @@ export default function TenantWebhooksPage() {
     if (!tenantId) return;
 
     try {
-      await platformService.createWebhook(tenantId, {
+      await tenantService.createWebhook(tenantId, {
         url: formUrl,
         events: formEvents,
         secret: formSecret,
@@ -228,7 +228,7 @@ export default function TenantWebhooksPage() {
     if (!tenantId || !selectedWebhook) return;
 
     try {
-      await platformService.updateWebhook(tenantId, selectedWebhook.id, {
+      await tenantService.updateWebhook(tenantId, selectedWebhook.id, {
         url: formUrl,
         events: formEvents,
         secret: formSecret,
@@ -253,7 +253,7 @@ export default function TenantWebhooksPage() {
     setSuccess('');
 
     try {
-      await platformService.deleteWebhook(tenantId, webhookId);
+      await tenantService.deleteWebhook(tenantId, webhookId);
       setSuccess('Webhook deleted successfully');
       fetchWebhooks();
     } catch (error: any) {
@@ -269,7 +269,7 @@ export default function TenantWebhooksPage() {
     setSuccess('');
 
     try {
-      const result = await platformService.testWebhook(tenantId, webhookId);
+      const result = await tenantService.testWebhook(tenantId, webhookId);
       if (result.success) {
         setSuccess('Test payload sent successfully');
       } else {
@@ -285,7 +285,7 @@ export default function TenantWebhooksPage() {
     if (!tenantId) return;
 
     try {
-      await platformService.updateWebhook(tenantId, webhook.id, {
+      await tenantService.updateWebhook(tenantId, webhook.id, {
         isActive: !webhook.isActive,
       });
       setSuccess(`Webhook ${!webhook.isActive ? 'enabled' : 'disabled'} successfully`);

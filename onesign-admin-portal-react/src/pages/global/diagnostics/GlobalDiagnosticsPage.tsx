@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { platformService } from '@/lib/api/services';
+import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
 interface DiagnosticTest {
@@ -36,7 +36,7 @@ export default function GlobalDiagnosticsPage() {
 
   const fetchData = async () => {
     try {
-      const data = await platformService.getDiagnostics?.();
+      const data = await globalService.getDiagnostics?.();
       const mockHealth: SystemHealth = {
         overall: 'healthy',
         score: 98,
@@ -204,7 +204,7 @@ export default function GlobalDiagnosticsPage() {
   const handleRunAll = async () => {
     setRunning(true);
     try {
-      await platformService.runDiagnostics?.();
+      await globalService.runDiagnostics?.();
       setTimeout(() => {
         setRunning(false);
         fetchData();
@@ -217,7 +217,7 @@ export default function GlobalDiagnosticsPage() {
 
   const handleRunTest = async (testId: string) => {
     try {
-      await platformService.runDiagnosticTest?.(testId);
+      await globalService.runDiagnosticTest?.(testId);
       fetchData();
     } catch (error) {
       console.error('Failed to run diagnostic test:', error);

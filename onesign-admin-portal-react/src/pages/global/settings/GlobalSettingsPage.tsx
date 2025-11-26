@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '@/components/common/Modal';
-import { platformService } from '@/lib/api/services';
+import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
 type Tab = 'platform' | 'email' | 'sms' | 'oauth' | 'security' | 'backup' | 'logs';
@@ -143,7 +143,7 @@ export default function GlobalSettingsPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getGlobalSettings(activeTab);
+      const data = await globalService.getGlobalSettings(activeTab);
       switch (activeTab) {
         case 'platform':
           setPlatformSettings(data.settings);
@@ -205,7 +205,7 @@ export default function GlobalSettingsPage() {
           break;
       }
 
-      await platformService.updateGlobalSettings(activeTab, payload);
+      await globalService.updateGlobalSettings(activeTab, payload);
       setSuccess('Settings saved successfully');
       setHasChanges(false);
     } catch (err: any) {
@@ -219,7 +219,7 @@ export default function GlobalSettingsPage() {
     setLoading(true);
     setError('');
     try {
-      await platformService.testEmailConfiguration(emailSettings);
+      await globalService.testEmailConfiguration(emailSettings);
       setSuccess('Test email sent successfully!');
     } catch (err: any) {
       setError(err.message || 'Failed to send test email');
@@ -232,7 +232,7 @@ export default function GlobalSettingsPage() {
     setLoading(true);
     setError('');
     try {
-      await platformService.testSMSConfiguration(smsSettings);
+      await globalService.testSMSConfiguration(smsSettings);
       setSuccess('Test SMS sent successfully!');
     } catch (err: any) {
       setError(err.message || 'Failed to send test SMS');
