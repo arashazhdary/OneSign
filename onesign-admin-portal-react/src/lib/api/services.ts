@@ -985,6 +985,22 @@ export const usersService = {
     return response.data;
   },
 
+  /**
+   * DELETE /api/users/{userId}/sessions - لغو تمام جلسات یک کاربر
+   */
+  revokeAllUserSessions: async (userId: string) => {
+    const response = await apiClient.delete(`/api/users/${userId}/sessions`);
+    return response.data;
+  },
+
+  /**
+   * POST /api/tenant/sessions/revoke-suspicious - لغو جلسات مشکوک
+   */
+  revokeSuspiciousSessions: async () => {
+    const response = await apiClient.post('/api/tenant/sessions/revoke-suspicious');
+    return response.data;
+  },
+
   // User scope and permissions
   getCurrentUserScope: async () => {
     try {
@@ -1521,6 +1537,70 @@ export const governanceService = {
       return null;
     }
   },
+
+  // Wrapper methods for backward compatibility with page calls
+  getCampaigns: async (tenantId?: string) => {
+    try {
+      const response = await apiClient.get('/api/tenant/governance/campaigns', {
+        params: tenantId ? { tenantId } : undefined
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch campaigns:', error);
+      return [];
+    }
+  },
+
+  // Privacy / Data Subject Requests
+  getRetentionPolicies: async (tenantId?: string) => {
+    try {
+      const response = await apiClient.get('/api/tenant/governance/privacy/retention');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch retention policies:', error);
+      return [];
+    }
+  },
+
+  updateRetentionPolicy: async (tenantId: string, category: string, data: any) => {
+    try {
+      const response = await apiClient.put(`/api/tenant/governance/privacy/retention/${category}`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to update retention policy:', error);
+      throw error;
+    }
+  },
+
+  getDataSubjectRequests: async (tenantId?: string) => {
+    try {
+      const response = await apiClient.get('/api/tenant/governance/privacy/dsr');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch data subject requests:', error);
+      return [];
+    }
+  },
+
+  createDataSubjectRequest: async (tenantId: string, data: any) => {
+    try {
+      const response = await apiClient.post('/api/tenant/governance/privacy/dsr', data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to create data subject request:', error);
+      throw error;
+    }
+  },
+
+  executeDataSubjectRequest: async (tenantId: string, requestId: string) => {
+    try {
+      const response = await apiClient.post(`/api/tenant/governance/privacy/dsr/${requestId}/execute`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to execute data subject request:', error);
+      throw error;
+    }
+  },
 };
 
 // Auth Service
@@ -1660,6 +1740,35 @@ export const billingService = {
     } catch (error) {
       console.error('Failed to fetch usage:', error);
       return null;
+    }
+  },
+
+  /**
+   * GET /api/tenant/billing/usage-metrics - متریک‌های استفاده API
+   */
+  getUsageMetrics: async (tenantId?: string) => {
+    try {
+      const response = await apiClient.get('/api/tenant/billing/usage-metrics');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch usage metrics:', error);
+      return null;
+    }
+  },
+
+  /**
+   * GET /api/tenant/billing/usage-metrics/export - خروجی گزارش استفاده
+   */
+  exportUsageReport: async (format: 'csv' | 'json' | 'xlsx' = 'csv') => {
+    try {
+      const response = await apiClient.get('/api/tenant/billing/usage-metrics/export', {
+        params: { format },
+        responseType: 'blob'
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to export usage report:', error);
+      throw error;
     }
   },
 };

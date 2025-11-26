@@ -297,11 +297,12 @@ export default function TenantWebhooksPage() {
   };
 
   const handleRetryDelivery = async (deliveryId: string) => {
+    if (!tenantId) return;
     setError('');
     setSuccess('');
 
     try {
-      // API call would go here
+      await tenantService.retryWebhookDelivery(tenantId, deliveryId);
       setSuccess('Delivery retry initiated');
     } catch (error: any) {
       setError(error?.message || t('common.failedToRetryDelivery'));

@@ -1007,6 +1007,92 @@ export const tenantService = {
       return null;
     }
   },
+
+  // ==================== IMPORT OPERATIONS ====================
+
+  /**
+   * POST /api/tenant/imports - ایجاد job import با آپلود فایل
+   */
+  createImportJob: async (tenantId: string, file: File, dataType: string, templateId?: string, fieldMappings?: any[]): Promise<any> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('dataType', dataType);
+    if (templateId) {
+      formData.append('templateId', templateId);
+    }
+    if (fieldMappings) {
+      formData.append('fieldMappings', JSON.stringify(fieldMappings));
+    }
+    const response = await apiClient.post('/api/tenant/imports', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  },
+
+  /**
+   * POST /api/tenant/imports/{id}/rollback - بازگشت import
+   */
+  rollbackImport: async (tenantId: string, importId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/tenant/imports/${importId}/rollback`);
+    return response.data;
+  },
+
+  // ==================== EXPORT OPERATIONS ====================
+
+  /**
+   * POST /api/tenant/exports - ایجاد job export
+   */
+  createExportJob: async (tenantId: string, data: {
+    name: string;
+    dataType: string;
+    fileType: 'csv' | 'json' | 'xlsx';
+    fields: string[];
+    filters?: any[];
+    emailOnComplete?: boolean;
+    emailAddress?: string;
+  }): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/exports', data);
+    return response.data;
+  },
+
+  /**
+   * DELETE /api/tenant/exports/{id} - حذف export
+   */
+  deleteExportJob: async (tenantId: string, exportId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/exports/${exportId}`);
+  },
+
+  /**
+   * POST /api/tenant/exports/templates - ایجاد template export
+   */
+  createExportTemplate: async (tenantId: string, data: {
+    name: string;
+    dataType: string;
+    fileType: 'csv' | 'json' | 'xlsx';
+    fields: string[];
+    filters?: any[];
+  }): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/exports/templates', data);
+    return response.data;
+  },
+
+  /**
+   * POST /api/tenant/exports/scheduled/{id}/toggle - فعال/غیرفعال کردن زمانبندی
+   */
+  toggleScheduledExport: async (tenantId: string, scheduleId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/tenant/exports/scheduled/${scheduleId}/toggle`);
+    return response.data;
+  },
+
+  // ==================== WEBHOOK OPERATIONS ====================
+
+  /**
+   * POST /api/tenant/webhooks/deliveries/{id}/retry - تلاش مجدد ارسال webhook
+   */
+  retryWebhookDelivery: async (tenantId: string, deliveryId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/tenant/webhooks/deliveries/${deliveryId}/retry`);
+    return response.data;
+  },
 };
 
 export default tenantService;

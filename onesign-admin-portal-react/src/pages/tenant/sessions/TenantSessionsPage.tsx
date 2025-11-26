@@ -255,7 +255,7 @@ export default function TenantSessionsPage() {
     setSuccess('');
 
     try {
-      // API call would go here
+      await usersService.revokeAllUserSessions(userId);
       setSuccess('All user sessions revoked successfully');
       fetchSessions();
     } catch (error: any) {
@@ -270,7 +270,7 @@ export default function TenantSessionsPage() {
     setSuccess('');
 
     try {
-      // API call would go here
+      await usersService.revokeSuspiciousSessions();
       setSuccess('All suspicious sessions revoked successfully');
       fetchSessions();
     } catch (error: any) {
