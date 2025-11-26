@@ -30,7 +30,13 @@ export default function GlobalMetricsPage() {
 
   const fetchMetrics = async () => {
     try {
-      // Mock metrics data
+      const data = await globalService.getPlatformMetrics({ timeRange });
+      if (data && data.length > 0) {
+        setMetrics(data);
+        setLoading(false);
+        return;
+      }
+      // Fallback to default metrics if API returns empty
       setMetrics([
         // Performance Metrics
         {

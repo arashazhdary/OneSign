@@ -36,7 +36,14 @@ export default function GlobalDiagnosticsPage() {
 
   const fetchData = async () => {
     try {
-      const data = await globalService.getDiagnostics?.();
+      const data = await globalService.getDiagnostics();
+      if (data && data.health && data.tests) {
+        setHealth(data.health);
+        setTests(data.tests);
+        setLoading(false);
+        return;
+      }
+      // Fallback to mock data if API returns empty
       const mockHealth: SystemHealth = {
         overall: 'healthy',
         score: 98,
@@ -193,9 +200,8 @@ export default function GlobalDiagnosticsPage() {
       setHealth(data?.health || mockHealth);
       setTests(data?.tests || mockTests);
     } catch (err) {
-      console.error(err);
-      setHealth(mockHealth);
-      setTests(mockTests);
+      console.error('Error fetching diagnostics data:', err);
+      // Keep existing state on error
     } finally {
       setLoading(false);
     }

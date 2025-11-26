@@ -983,6 +983,103 @@ export const globalService = {
   },
 
   /**
+   * GET /api/global/observability/performance - متریک‌های عملکرد
+   */
+  getPerformanceMetrics: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/global/observability/performance');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch performance metrics:', error);
+      return null;
+    }
+  },
+
+  /**
+   * GET /api/global/platform/metrics - متریک‌های پلتفرم
+   */
+  getPlatformMetrics: async (params?: { timeRange?: string; category?: string }): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/global/platform/metrics', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch platform metrics:', error);
+      return null;
+    }
+  },
+
+  /**
+   * POST /api/global/platform/diagnostics/run - اجرای تست‌های تشخیصی
+   */
+  runDiagnostics: async (): Promise<any> => {
+    try {
+      const response = await apiClient.post('/api/global/platform/diagnostics/run');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to run diagnostics:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * POST /api/global/platform/diagnostics/{testId}/run - اجرای یک تست تشخیصی
+   */
+  runDiagnosticTest: async (testId: string): Promise<any> => {
+    try {
+      const response = await apiClient.post(`/api/global/platform/diagnostics/${testId}/run`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to run diagnostic test:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * GET /api/global/licenses - لیست لایسنس‌ها
+   */
+  getLicenses: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/global/licenses');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch licenses:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/global/licenses - صدور لایسنس
+   */
+  issueLicense: async (data: any): Promise<any> => {
+    const response = await apiClient.post('/api/global/licenses', data);
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/licenses/{id}/suspend - تعلیق لایسنس
+   */
+  suspendLicense: async (licenseId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/licenses/${licenseId}/suspend`);
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/licenses/{id}/revoke - ابطال لایسنس
+   */
+  revokeLicense: async (licenseId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/licenses/${licenseId}/revoke`);
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/licenses/{id}/renew - تمدید لایسنس
+   */
+  renewLicense: async (licenseId: string, data?: any): Promise<any> => {
+    const response = await apiClient.post(`/api/global/licenses/${licenseId}/renew`, data);
+    return response.data;
+  },
+
+  /**
    * GET /api/global/observability/logs - لاگ‌ها
    */
   getLogs: async (params?: {
