@@ -35,6 +35,7 @@ interface TenantSubscription {
 }
 
 interface UsageData {
+  id: string;
   tenantId: string;
   tenantName: string;
   userCount: number;
@@ -127,7 +128,8 @@ export default function GlobalBillingPage() {
   const fetchUsageData = async () => {
     try {
       const data = await billingService.getGlobalUsageData();
-      setUsageData(data);
+      // Map tenantId to id for DataTable compatibility
+      setUsageData(data.map((item: any) => ({ ...item, id: item.tenantId || item.id })));
     } catch (err) {
       console.error('Error fetching usage data:', err);
     }

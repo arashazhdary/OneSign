@@ -46,8 +46,6 @@ export default function GlobalIntegrationsPage() {
   }, []);
 
   const fetchData = async () => {
-    try {
-      const data = await platformService.getGlobalIntegrations?.();
       const mockIntegrations: Integration[] = [
         {
           id: '1',
@@ -213,7 +211,6 @@ export default function GlobalIntegrationsPage() {
           updatedAt: '2024-07-10T14:00:00Z',
         },
       ];
-      setIntegrations(data || mockIntegrations);
 
       const mockWebhooks: WebhookEndpoint[] = [
         {
@@ -235,6 +232,9 @@ export default function GlobalIntegrationsPage() {
           successRate: 99.2,
         },
       ];
+
+    try {
+      const data = await (platformService as any).getGlobalIntegrations?.();
       setIntegrations(data?.integrations || mockIntegrations);
       setWebhooks(data?.webhooks || mockWebhooks);
     } catch (err) {
@@ -248,7 +248,7 @@ export default function GlobalIntegrationsPage() {
 
   const handleToggleIntegration = async (integrationId: string) => {
     try {
-      await platformService.toggleIntegration?.(integrationId);
+      await (platformService as any).toggleIntegration?.(integrationId);
       fetchData();
     } catch (error) {
       console.error('Failed to toggle integration:', error);
@@ -257,7 +257,7 @@ export default function GlobalIntegrationsPage() {
 
   const handleTestIntegration = async (integrationId: string) => {
     try {
-      await platformService.testIntegration?.(integrationId);
+      await (platformService as any).testIntegration?.(integrationId);
       alert('Integration test successful!');
     } catch (error) {
       console.error('Failed to test integration:', error);
@@ -268,7 +268,7 @@ export default function GlobalIntegrationsPage() {
   const handleDeleteIntegration = async (integrationId: string) => {
     if (!confirm('Remove this integration?')) return;
     try {
-      await platformService.deleteIntegration?.(integrationId);
+      await (platformService as any).deleteIntegration?.(integrationId);
       fetchData();
     } catch (error) {
       console.error('Failed to delete integration:', error);

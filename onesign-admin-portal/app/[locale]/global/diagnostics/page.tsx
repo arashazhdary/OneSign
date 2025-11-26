@@ -36,9 +36,7 @@ export default function DiagnosticsPage() {
   }, []);
 
   const fetchData = async () => {
-    try {
-      const data = await platformService.getDiagnostics?.();
-      const mockHealth: SystemHealth = {
+    const mockHealth: SystemHealth = {
         overall: 'healthy',
         score: 98,
         components: [
@@ -191,6 +189,9 @@ export default function DiagnosticsPage() {
           },
         },
       ];
+
+    try {
+      const data = await (platformService as any).getDiagnostics?.();
       setHealth(data?.health || mockHealth);
       setTests(data?.tests || mockTests);
     } catch (err) {
@@ -205,7 +206,7 @@ export default function DiagnosticsPage() {
   const handleRunAll = async () => {
     setRunning(true);
     try {
-      await platformService.runDiagnostics?.();
+      await (platformService as any).runDiagnostics?.();
       setTimeout(() => {
         setRunning(false);
         fetchData();
@@ -218,7 +219,7 @@ export default function DiagnosticsPage() {
 
   const handleRunTest = async (testId: string) => {
     try {
-      await platformService.runDiagnosticTest?.(testId);
+      await (platformService as any).runDiagnosticTest?.(testId);
       fetchData();
     } catch (error) {
       console.error('Failed to run diagnostic test:', error);
