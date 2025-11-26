@@ -433,7 +433,12 @@
     "desktop": "دسکتاپ",
     "api": "API",
     "regenerateSecret": "تولید مجدد Secret",
-    "lastUsed": "آخرین استفاده"
+    "lastUsed": "آخرین استفاده",
+    "appCreated": "اپلیکیشن با موفقیت ایجاد شد",
+    "appDeleted": "اپلیکیشن با موفقیت حذف شد",
+    "appUpdated": "اپلیکیشن با موفقیت به‌روزرسانی شد",
+    "confirmDelete": "آیا از حذف این اپلیکیشن اطمینان دارید؟",
+    "secretRegenerated": "کلید محرمانه با موفقیت تولید مجدد شد"
   },
   "dashboard": {
     "title": "داشبورد ادمین",
@@ -3312,6 +3317,110 @@
       "maxLength": "حداکثر طول",
       "passwordMismatch": "رمزهای عبور مطابقت ندارند",
       "selectOption": "یک گزینه انتخاب کنید"
+    }
+  },
+  "tenant": {
+    "dashboard": {
+      "title": "داشبورد سازمان",
+      "subtitle": "نمای کلی سازمان شما",
+      "totalUsers": "تعداد کاربران",
+      "totalApplications": "تعداد اپلیکیشن‌ها",
+      "recentActivity": "فعالیت‌های اخیر",
+      "activeUsers": "کاربران فعال",
+      "apiUsage": "مصرف API",
+      "storageUsed": "فضای استفاده شده"
+    },
+    "settings": {
+      "title": "تنظیمات سازمان",
+      "subtitle": "پیکربندی تنظیمات سازمان",
+      "branding": "برندینگ",
+      "brandingUpdated": "تنظیمات برندینگ با موفقیت به‌روزرسانی شد",
+      "logoUrl": "آدرس لوگو",
+      "primaryColor": "رنگ اصلی",
+      "secondaryColor": "رنگ ثانویه",
+      "faviconUrl": "آدرس فاوآیکون"
+    },
+    "observability": {
+      "title": "جستجوی پیشرفته رویدادها",
+      "subtitle": "جستجو و فیلتر کردن رویدادها",
+      "exportSuccess": "رویدادها با موفقیت صادر شدند",
+      "startDate": "تاریخ شروع",
+      "endDate": "تاریخ پایان",
+      "eventType": "نوع رویداد",
+      "action": "عملیات",
+      "actorId": "شناسه کاربر",
+      "resourceType": "نوع منبع",
+      "resourceId": "شناسه منبع",
+      "timestamp": "زمان",
+      "actor": "کاربر",
+      "resource": "منبع",
+      "noResults": "نتیجه‌ای یافت نشد",
+      "showing": "نمایش",
+      "of": "از",
+      "eventDetails": "جزئیات رویداد",
+      "connectionInfo": "اطلاعات اتصال",
+      "metadata": "متادیتا"
+    },
+    "applications": {
+      "title": "اپلیکیشن‌ها",
+      "subtitle": "مدیریت اپلیکیشن‌های OAuth",
+      "createApplication": "ایجاد اپلیکیشن",
+      "editApplication": "ویرایش اپلیکیشن",
+      "applicationCreated": "اپلیکیشن با موفقیت ایجاد شد",
+      "applicationUpdated": "اپلیکیشن با موفقیت به‌روزرسانی شد",
+      "applicationDeleted": "اپلیکیشن با موفقیت حذف شد",
+      "confirmDelete": "آیا از حذف این اپلیکیشن اطمینان دارید؟",
+      "applicationName": "نام اپلیکیشن",
+      "applicationType": "نوع اپلیکیشن",
+      "clientId": "شناسه کلاینت",
+      "clientSecret": "کلید محرمانه",
+      "redirectUris": "آدرس‌های بازگشت",
+      "addRedirectUri": "افزودن آدرس بازگشت",
+      "manageRedirectUris": "مدیریت آدرس‌های بازگشت",
+      "noRedirectUris": "آدرس بازگشتی تنظیم نشده",
+      "redirectUriAdded": "آدرس بازگشت با موفقیت اضافه شد",
+      "redirectUriRemoved": "آدرس بازگشت با موفقیت حذف شد",
+      "confirmRemoveRedirectUri": "آیا از حذف این آدرس بازگشت اطمینان دارید؟",
+      "web": "اپلیکیشن وب",
+      "mobile": "اپلیکیشن موبایل",
+      "spa": "اپلیکیشن تک‌صفحه‌ای"
+    },
+    "applicationOrgUnits": {
+      "title": "واحدهای سازمانی اپلیکیشن",
+      "selectOrgUnits": "انتخاب واحدهای سازمانی",
+      "orgUnitsAssigned": "واحدهای سازمانی با موفقیت تخصیص یافتند",
+      "orgVisibility": "نمایان بودن سازمان"
+    },
+    "orgUnits": {
+      "title": "واحدهای سازمانی",
+      "subtitle": "مدیریت ساختار سازمانی",
+      "createOrgUnit": "ایجاد واحد سازمانی",
+      "editOrgUnit": "ویرایش واحد سازمانی",
+      "deleteOrgUnit": "حذف واحد سازمانی"
+    },
+    "billing": {
+      "title": "صورتحساب و مصرف",
+      "subtitle": "مدیریت اشتراک و مشاهده مصرف",
+      "subscription": "اشتراک فعلی",
+      "plan": "پلن",
+      "price": "قیمت",
+      "startDate": "تاریخ شروع",
+      "renewalDate": "تاریخ تمدید",
+      "quotaStatus": "سهمیه و مصرف",
+      "usageSummary": "خلاصه مصرف",
+      "period": "دوره",
+      "users": "کاربران",
+      "applications": "اپلیکیشن‌ها",
+      "apiCalls": "فراخوانی API",
+      "storage": "فضای ذخیره‌سازی",
+      "used": "استفاده شده",
+      "totalUsers": "کل کاربران",
+      "activeUsers": "کاربران فعال",
+      "authEvents": "رویدادهای احراز هویت",
+      "requestUpgrade": "درخواست ارتقا",
+      "upgradeRequested": "درخواست ارتقا با موفقیت ثبت شد. تیم ما به زودی با شما تماس خواهد گرفت.",
+      "targetPlan": "پلن مقصد",
+      "comments": "توضیحات (اختیاری)"
     }
   }
 }

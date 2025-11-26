@@ -433,7 +433,12 @@
     "desktop": "Desktop",
     "api": "API",
     "regenerateSecret": "Regenerate Secret",
-    "lastUsed": "Last Used"
+    "lastUsed": "Last Used",
+    "appCreated": "Application created successfully",
+    "appDeleted": "Application deleted successfully",
+    "appUpdated": "Application updated successfully",
+    "confirmDelete": "Are you sure you want to delete this application?",
+    "secretRegenerated": "Client secret regenerated successfully"
   },
   "dashboard": {
     "title": "Admin Dashboard",
@@ -3313,6 +3318,110 @@
       "maxLength": "Maximum length is",
       "passwordMismatch": "Passwords do not match",
       "selectOption": "Select an option"
+    }
+  },
+  "tenant": {
+    "dashboard": {
+      "title": "Tenant Dashboard",
+      "subtitle": "Overview of your organization",
+      "totalUsers": "Total Users",
+      "totalApplications": "Total Applications",
+      "recentActivity": "Recent Activity",
+      "activeUsers": "Active Users",
+      "apiUsage": "API Usage",
+      "storageUsed": "Storage Used"
+    },
+    "settings": {
+      "title": "Tenant Settings",
+      "subtitle": "Configure your organization settings",
+      "branding": "Branding",
+      "brandingUpdated": "Branding settings updated successfully",
+      "logoUrl": "Logo URL",
+      "primaryColor": "Primary Color",
+      "secondaryColor": "Secondary Color",
+      "faviconUrl": "Favicon URL"
+    },
+    "observability": {
+      "title": "Advanced Audit Search",
+      "subtitle": "Search and filter audit logs",
+      "exportSuccess": "Audit logs exported successfully",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "eventType": "Event Type",
+      "action": "Action",
+      "actorId": "Actor (User ID)",
+      "resourceType": "Resource Type",
+      "resourceId": "Resource ID",
+      "timestamp": "Timestamp",
+      "actor": "Actor",
+      "resource": "Resource",
+      "noResults": "No results found",
+      "showing": "Showing",
+      "of": "of",
+      "eventDetails": "Event Details",
+      "connectionInfo": "Connection Info",
+      "metadata": "Metadata"
+    },
+    "applications": {
+      "title": "Applications",
+      "subtitle": "Manage your OAuth applications",
+      "createApplication": "Create Application",
+      "editApplication": "Edit Application",
+      "applicationCreated": "Application created successfully",
+      "applicationUpdated": "Application updated successfully",
+      "applicationDeleted": "Application deleted successfully",
+      "confirmDelete": "Are you sure you want to delete this application?",
+      "applicationName": "Application Name",
+      "applicationType": "Application Type",
+      "clientId": "Client ID",
+      "clientSecret": "Client Secret",
+      "redirectUris": "Redirect URIs",
+      "addRedirectUri": "Add Redirect URI",
+      "manageRedirectUris": "Manage Redirect URIs",
+      "noRedirectUris": "No redirect URIs configured",
+      "redirectUriAdded": "Redirect URI added successfully",
+      "redirectUriRemoved": "Redirect URI removed successfully",
+      "confirmRemoveRedirectUri": "Are you sure you want to remove this redirect URI?",
+      "web": "Web Application",
+      "mobile": "Mobile Application",
+      "spa": "Single Page Application"
+    },
+    "applicationOrgUnits": {
+      "title": "Application Org Units",
+      "selectOrgUnits": "Select Org Units",
+      "orgUnitsAssigned": "Org units assigned successfully",
+      "orgVisibility": "Organization Visibility"
+    },
+    "orgUnits": {
+      "title": "Organization Units",
+      "subtitle": "Manage organizational structure",
+      "createOrgUnit": "Create Org Unit",
+      "editOrgUnit": "Edit Org Unit",
+      "deleteOrgUnit": "Delete Org Unit"
+    },
+    "billing": {
+      "title": "Billing & Usage",
+      "subtitle": "Manage subscription and view usage",
+      "subscription": "Current Subscription",
+      "plan": "Plan",
+      "price": "Price",
+      "startDate": "Start Date",
+      "renewalDate": "Renewal Date",
+      "quotaStatus": "Quota & Usage",
+      "usageSummary": "Usage Summary",
+      "period": "Period",
+      "users": "Users",
+      "applications": "Applications",
+      "apiCalls": "API Calls",
+      "storage": "Storage",
+      "used": "used",
+      "totalUsers": "Total Users",
+      "activeUsers": "Active Users",
+      "authEvents": "Auth Events",
+      "requestUpgrade": "Request Upgrade",
+      "upgradeRequested": "Upgrade request submitted successfully. Our team will contact you soon.",
+      "targetPlan": "Target Plan",
+      "comments": "Comments (Optional)"
     }
   }
 }
