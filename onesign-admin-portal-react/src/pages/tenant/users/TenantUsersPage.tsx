@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId, setTenantId } from '@/lib/tenant-context';
 import { usersService } from '@/lib/api/services/users.service';
-import { platformService } from '@/lib/api/services';
+import { tenantService } from '@/lib/api/services/tenant.service';
 import type { TenantUserDto, CurrentUserScopeDto } from '@/lib/api/types/users';
 import { Helmet } from 'react-helmet-async';
 
@@ -101,7 +101,7 @@ export default function TenantUsersPage() {
   const fetchOrgTree = async () => {
     if (!tenantId) return;
     try {
-      const data = await platformService.getOrgUnitsTree(tenantId);
+      const data = await tenantService.getOrgUnitsTree(tenantId);
       setOrgTree(data);
     } catch (error) {
       console.error('Error fetching org tree:', error);

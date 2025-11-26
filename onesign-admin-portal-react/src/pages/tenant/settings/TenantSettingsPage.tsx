@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
-import { platformService } from '@/lib/api/services';
+import { tenantService } from '@/lib/api/services/tenant.service';
 import { Helmet } from 'react-helmet-async';
 
 interface TenantSettings {
@@ -39,7 +39,7 @@ export default function TenantSettingsPage() {
     if (!tenantId) return;
 
     try {
-      const data = await platformService.getSettings(tenantId);
+      const data = await tenantService.getSettings(tenantId);
       setSettings(data);
       setLogoUrl(data.logoUrl || '');
       setPrimaryColor(data.primaryColor || '');
@@ -59,7 +59,7 @@ export default function TenantSettingsPage() {
     if (!tenantId) return;
     
     try {
-      const data = await platformService.updateBrandingSettings(tenantId, {
+      const data = await tenantService.updateBrandingSettings(tenantId, {
         logoUrl: logoUrl || null,
         primaryColor: primaryColor || null
       });

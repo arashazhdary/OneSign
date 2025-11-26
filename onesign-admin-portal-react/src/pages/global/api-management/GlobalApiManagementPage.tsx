@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '@/components/common/Modal';
 import DataTable, { Column } from '@/components/common/DataTable';
-import { platformService } from '@/lib/api/services';
+import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
 interface APIEndpoint {
@@ -78,7 +78,7 @@ export default function GlobalApiManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getAPIEndpoints();
+      const data = await globalService.getAPIEndpoints();
       setEndpoints(data.endpoints || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -91,7 +91,7 @@ export default function GlobalApiManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getAPIKeys();
+      const data = await globalService.getAPIKeys();
       setApiKeys(data.keys || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -104,7 +104,7 @@ export default function GlobalApiManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getAPIConsumers();
+      const data = await globalService.getAPIConsumers();
       setConsumers(data.consumers || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -117,7 +117,7 @@ export default function GlobalApiManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getAPIVersions();
+      const data = await globalService.getAPIVersions();
       setVersions(data.versions || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -131,7 +131,7 @@ export default function GlobalApiManagementPage() {
     setError('');
     setSuccess('');
     try {
-      const data = await platformService.createAPIKey({
+      const data = await globalService.createAPIKey({
         name: keyFormData.name,
         scope: keyFormData.scope,
         expiresIn: parseInt(keyFormData.expiresIn)
@@ -153,7 +153,7 @@ export default function GlobalApiManagementPage() {
     setLoading(true);
     setError('');
     try {
-      await platformService.revokeAPIKey(keyId);
+      await globalService.revokeAPIKey(keyId);
       setSuccess('API Key revoked successfully');
       fetchAPIKeys();
     } catch (err: any) {
@@ -169,7 +169,7 @@ export default function GlobalApiManagementPage() {
     setLoading(true);
     setError('');
     try {
-      await platformService.updateEndpointRateLimit(selectedEndpoint.id, rateLimitForm);
+      await globalService.updateEndpointRateLimit(selectedEndpoint.id, rateLimitForm);
       setSuccess('Rate limit updated successfully');
       setIsRateLimitModalOpen(false);
       fetchEndpoints();

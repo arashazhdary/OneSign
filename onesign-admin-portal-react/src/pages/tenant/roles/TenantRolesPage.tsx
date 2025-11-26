@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
-import { platformService } from '@/lib/api/services';
+import { rolesService } from '@/lib/api/services/roles.service';
 import { Helmet } from 'react-helmet-async';
 
 interface Permission {
@@ -107,8 +107,8 @@ export default function TenantRolesPage() {
   const fetchRoles = async () => {
     if (!tenantId) return;
     try {
-      const data = await platformService.getRoles(tenantId);
-      setRoles(data.items || data || []);
+      const data = await rolesService.getRoles();
+      setRoles(data.items || []);
     } catch (error) {
       console.error('Error fetching roles:', error);
     } finally {
@@ -127,14 +127,14 @@ export default function TenantRolesPage() {
       name: roleName,
       description: roleDescription,
       permissions: selectedPermissions,
-      parentRoleId: parentRoleId || null,
+      parentRoleId: parentRoleId || undefined,
     };
 
     try {
       if (editingRole) {
-        await platformService.updateRole(editingRole.id, payload, tenantId);
+        await rolesService.updateRole(editingRole.id, payload);
       } else {
-        await platformService.createRole({ ...payload, tenantId });
+        await rolesService.createRole({ ...payload, tenantId });
       }
       setSuccess(editingRole ? 'Role updated successfully' : 'Role created successfully');
       setShowCreateModal(false);
@@ -162,7 +162,7 @@ export default function TenantRolesPage() {
     setSuccess('');
 
     try {
-      await platformService.deleteRole(roleId, tenantId);
+      await rolesService.deleteRole(roleId);
       setSuccess('Role deleted successfully');
       fetchRoles();
     } catch (error: any) {

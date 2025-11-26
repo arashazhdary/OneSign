@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { platformService } from '@/lib/api/services';
+import { adminService } from '@/lib/api/services/admin.service';
 
 interface Tenant {
   id: string;
@@ -25,7 +25,7 @@ export default function AdminTenantsPage() {
 
   const fetchTenants = async () => {
     try {
-      const data = await platformService.getAdminTenants(1, 100);
+      const data = await adminService.getAdminTenants(1, 100);
       setTenants(data.items || []);
     } catch (error) {
       console.error('Error fetching tenants:', error);
@@ -39,7 +39,7 @@ export default function AdminTenantsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.createAdminTenant({
+      await adminService.createAdminTenant({
         name: newTenantName,
         slug: newTenantSlug
       });
@@ -58,7 +58,7 @@ export default function AdminTenantsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.updateAdminTenantStatus(tenantId, newStatus);
+      await adminService.updateAdminTenantStatus(tenantId, newStatus);
       setSuccess(t('admin.tenants.statusUpdated'));
       fetchTenants();
     } catch (error: any) {

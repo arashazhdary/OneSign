@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { platformService } from '@/lib/api/services';
+import { tenantService } from '@/lib/api/services/tenant.service';
 import { Helmet } from 'react-helmet-async';
 
 interface Certificate {
@@ -32,7 +32,7 @@ export default function TenantCertificatesPage() {
   const fetchCertificates = async () => {
     setLoading(true);
     try {
-      const data = await platformService.getCertificates?.();
+      const data = await tenantService.getCertificates?.();
       const mockData: Certificate[] = [
         {
           id: '1',
@@ -72,7 +72,7 @@ export default function TenantCertificatesPage() {
   const handleUpload = async () => {
     if (!file) return;
     try {
-      await platformService.uploadCertificate?.('tenant-id', file);
+      await tenantService.uploadCertificate?.('tenant-id', file);
       setShowUpload(false);
       setFile(null);
       fetchCertificates();
@@ -84,7 +84,7 @@ export default function TenantCertificatesPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this certificate?')) return;
     try {
-      await platformService.deleteCertificate?.('tenant-id', id);
+      await tenantService.deleteCertificate?.('tenant-id', id);
       fetchCertificates();
     } catch (err: any) {
       setError(err.message || 'Failed to delete certificate');

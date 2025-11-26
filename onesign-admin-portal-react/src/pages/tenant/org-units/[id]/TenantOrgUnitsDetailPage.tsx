@@ -5,7 +5,7 @@ import { getTenantId } from '@/lib/tenant-context';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import Modal from '@/components/common/Modal';
 import StatusBadge from '@/components/common/StatusBadge';
-import { platformService } from '@/lib/api/services/platform.service';
+import { tenantService } from '@/lib/api/services/tenant.service';
 import { Helmet } from 'react-helmet-async';
 
 // Types
@@ -137,7 +137,7 @@ export default function TenantOrgUnitsDetailPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getOrgUnit(tenantId, orgUnitId);
+      const data = await tenantService.getOrgUnit(tenantId, orgUnitId);
       setOrgUnit(data);
       setEditForm({
         name: data.name || '',
@@ -152,7 +152,7 @@ export default function TenantOrgUnitsDetailPage() {
 
   const fetchUsers = async () => {
     try {
-      const data = await platformService.getOrgUnitUsers(tenantId, orgUnitId);
+      const data = await tenantService.getOrgUnitUsers(tenantId, orgUnitId);
       setUsers(data);
     } catch (err) {
       console.error('Failed to fetch users:', err);
@@ -161,7 +161,7 @@ export default function TenantOrgUnitsDetailPage() {
 
   const fetchApplications = async () => {
     try {
-      const data = await platformService.getOrgUnitApplications(tenantId, orgUnitId);
+      const data = await tenantService.getOrgUnitApplications(tenantId, orgUnitId);
       setApplications(data);
     } catch (err) {
       console.error('Failed to fetch applications:', err);
@@ -170,7 +170,7 @@ export default function TenantOrgUnitsDetailPage() {
 
   const fetchPolicies = async () => {
     try {
-      const data = await platformService.getOrgUnitPolicies(tenantId, orgUnitId);
+      const data = await tenantService.getOrgUnitPolicies(tenantId, orgUnitId);
       setPolicies(data);
     } catch (err) {
       console.error('Failed to fetch policies:', err);
@@ -179,7 +179,7 @@ export default function TenantOrgUnitsDetailPage() {
 
   const fetchHierarchy = async () => {
     try {
-      const data = await platformService.getOrgUnitHierarchy(tenantId, orgUnitId);
+      const data = await tenantService.getOrgUnitHierarchy(tenantId, orgUnitId);
       setHierarchy(data);
     } catch (err) {
       console.error('Failed to fetch hierarchy:', err);
@@ -188,7 +188,7 @@ export default function TenantOrgUnitsDetailPage() {
 
   const fetchStatistics = async () => {
     try {
-      const data = await platformService.getOrgUnitStatistics(tenantId, orgUnitId);
+      const data = await tenantService.getOrgUnitStatistics(tenantId, orgUnitId);
       setStatistics(data);
     } catch (err) {
       console.error('Failed to fetch statistics:', err);
@@ -200,7 +200,7 @@ export default function TenantOrgUnitsDetailPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.updateOrgUnit(tenantId, orgUnitId, editForm);
+      await tenantService.updateOrgUnit(tenantId, orgUnitId, editForm);
 
       setSuccess('Org unit updated successfully');
       setShowEditModal(false);
@@ -215,7 +215,7 @@ export default function TenantOrgUnitsDetailPage() {
   const handleRemoveUser = async (userId: string) => {
     if (!confirm('Are you sure you want to remove this user from the org unit?')) return;
     try {
-      await platformService.removeOrgUnitUser(tenantId, orgUnitId, userId);
+      await tenantService.removeOrgUnitUser(tenantId, orgUnitId, userId);
 
       setSuccess('User removed successfully');
       fetchUsers();
@@ -227,7 +227,7 @@ export default function TenantOrgUnitsDetailPage() {
   const handleRemoveApplication = async (applicationId: string) => {
     if (!confirm('Are you sure you want to remove this application from the org unit?')) return;
     try {
-      await platformService.removeOrgUnitApplication(tenantId, orgUnitId, applicationId);
+      await tenantService.removeOrgUnitApplication(tenantId, orgUnitId, applicationId);
 
       setSuccess('Application removed successfully');
       fetchApplications();

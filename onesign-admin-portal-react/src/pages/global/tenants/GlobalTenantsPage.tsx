@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { platformService } from '@/lib/api/services';
+import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
 interface Tenant {
@@ -124,8 +124,9 @@ export default function GlobalTenantsPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getTenants();
-      setTenants(data || []);
+      // GET /api/global/tenants
+      const response = await globalService.getTenants();
+      setTenants(response.items || []);
     } catch (err: any) {
       console.error('Failed to fetch tenants:', err);
       setError(err.message || 'Failed to load tenants');
@@ -140,8 +141,10 @@ export default function GlobalTenantsPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getTenantHealthGlobal(tenantId);
-      setTenantHealth(data);
+      // GET /api/global/tenants/{id} - for tenant health info
+      const tenant = await globalService.getTenantById(tenantId);
+      // Note: Tenant health might need a separate endpoint not in spec
+      setTenantHealth(tenant as any);
     } catch (err: any) {
       console.error('Failed to fetch tenant health:', err);
       // Mock health data as fallback
@@ -172,7 +175,14 @@ export default function GlobalTenantsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.createTenant(newTenant);
+      // POST /api/global/tenants
+      await globalService.createTenant({
+        name: newTenant.name,
+        slug: newTenant.subdomain,
+        regionId: 'default',
+        adminEmail: newTenant.adminEmail,
+        plan: newTenant.tier,
+      });
       setSuccess('Tenant created successfully');
       setShowCreateModal(false);
       setNewTenant({
@@ -199,7 +209,8 @@ export default function GlobalTenantsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.suspendTenant(tenantToSuspend, suspendReason);
+      // POST /api/global/tenants/{id}/suspend
+      await globalService.suspendTenant(tenantToSuspend, suspendReason);
       setSuccess('Tenant suspended successfully');
       setShowSuspendModal(false);
       setTenantToSuspend('');
@@ -217,7 +228,8 @@ export default function GlobalTenantsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.activateTenant(tenantId);
+      // POST /api/global/tenants/{id}/reactivate
+      await globalService.reactivateTenant(tenantId);
       setSuccess('Tenant activated successfully');
       fetchTenants();
     } catch (err: any) {
@@ -236,7 +248,8 @@ export default function GlobalTenantsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.deleteTenant(tenantId);
+      // DELETE /api/global/tenants/{id}
+      await globalService.deleteTenant(tenantId);
       setSuccess('Tenant deleted successfully');
       fetchTenants();
     } catch (err: any) {

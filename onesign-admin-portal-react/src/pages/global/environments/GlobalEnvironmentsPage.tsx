@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { platformService } from '@/lib/api/services';
+import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
 interface Environment {
@@ -74,7 +74,7 @@ export default function GlobalEnvironmentsPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getEnvironments();
+      const data = await globalService.getEnvironments();
       setEnvironments(data.items || data || []);
       if (data.items?.length > 0 && !selectedEnvironment) {
         setSelectedEnvironment(data.items[0].id);
@@ -88,7 +88,7 @@ export default function GlobalEnvironmentsPage() {
 
   const fetchHeartbeat = async (environmentId: string) => {
     try {
-      const data = await platformService.getEnvironmentHeartbeat(environmentId);
+      const data = await globalService.getEnvironmentHeartbeat(environmentId);
       setHeartbeat(data);
     } catch (err) {
       console.error('Failed to fetch heartbeat:', err);
@@ -105,7 +105,7 @@ export default function GlobalEnvironmentsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.bootstrapEnvironment(bootstrapConfig);
+      await globalService.bootstrapEnvironment(bootstrapConfig);
       setSuccess('Environment bootstrapped successfully');
       setShowBootstrapModal(false);
       setBootstrapConfig({ name: '', type: 'Development', region: '', version: '' });
@@ -126,7 +126,7 @@ export default function GlobalEnvironmentsPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.restartEnvironment(environmentId);
+      await globalService.restartEnvironment(environmentId);
       setSuccess('Environment restart initiated successfully');
       fetchEnvironments();
     } catch (err: any) {

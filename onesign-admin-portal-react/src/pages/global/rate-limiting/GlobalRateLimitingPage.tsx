@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { platformService } from '@/lib/api/services';
+import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
 interface RateLimit {
@@ -32,7 +32,7 @@ export default function GlobalRateLimitingPage() {
 
   const fetchLimits = async () => {
     try {
-      const data = await platformService.getRateLimits?.();
+      const data = await globalService.getRateLimits?.();
       const mockData: RateLimit[] = [
         {
           id: '1',
@@ -134,7 +134,7 @@ export default function GlobalRateLimitingPage() {
 
   const handleCreate = async () => {
     try {
-      await platformService.createRateLimit?.({
+      await globalService.createRateLimit?.({
         name: 'New Rate Limit',
         type: 'global',
         limit: 1000,
@@ -152,7 +152,7 @@ export default function GlobalRateLimitingPage() {
 
   const handleToggle = async (limitId: string) => {
     try {
-      await platformService.toggleRateLimit?.(limitId);
+      await globalService.toggleRateLimit?.(limitId);
       fetchLimits();
     } catch (error) {
       console.error('Failed to toggle rate limit:', error);
@@ -162,7 +162,7 @@ export default function GlobalRateLimitingPage() {
   const handleDelete = async (limitId: string) => {
     if (!confirm('Delete this rate limit?')) return;
     try {
-      await platformService.deleteRateLimit?.(limitId);
+      await globalService.deleteRateLimit?.(limitId);
       fetchLimits();
     } catch (error) {
       console.error('Failed to delete rate limit:', error);

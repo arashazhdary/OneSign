@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
-import { automationService } from '@/lib/api/services';
+import { automationService, ScheduledJobDto, ExecutionDto } from '@/lib/api/automation';
 import { Helmet } from 'react-helmet-async';
 
 // Types
@@ -98,24 +98,29 @@ export default function TenantSchedulesPage() {
     setError('');
 
     try {
-      // Fetch from real API
-      const workflows = await automationService.getWorkflows(tenantId);
-      // Map workflows to ScheduledJob format
-      const mappedSchedules = workflows.map((w: any) => ({
-        id: w.id,
-        name: w.name,
-        description: w.description || '',
-        jobType: w.trigger?.type || 'custom',
-        cronExpression: w.trigger?.schedule || '0 0 * * *',
-        enabled: w.enabled,
-        nextRun: w.nextRun || new Date().toISOString(),
-        lastRun: w.lastRun,
-        lastStatus: w.lastStatus,
-        createdAt: w.createdAt,
-        createdBy: w.createdBy || 'system',
-        executionCount: w.executionCount || 0,
-      }));
-      setSchedules(mappedSchedules);
+      // Fetch from real API - GET /api/tenant/automation/schedules
+      const schedulesData = await automationService.getSchedules();
+      if (schedulesData && schedulesData.length > 0) {
+        // Map API response to ScheduledJob format
+        const mappedSchedules = schedulesData.map((s: ScheduledJobDto) => ({
+          id: s.id,
+          name: s.name,
+          description: s.description || '',
+          jobType: s.jobType || 'custom',
+          cronExpression: s.cronExpression || '0 0 * * *',
+          enabled: s.enabled,
+          nextRun: s.nextRun || new Date().toISOString(),
+          lastRun: s.lastRun,
+          lastStatus: s.lastStatus,
+          createdAt: s.createdAt,
+          createdBy: s.createdBy || 'system',
+          executionCount: s.executionCount || 0,
+        }));
+        setSchedules(mappedSchedules);
+      } else {
+        // Fallback to mock data if API returns empty
+        setSchedules(mockSchedulesFallback);
+      }
     } catch (err: any) {
       console.error('Error fetching schedules:', err);
       setError(err?.message || 'Failed to load schedules');
@@ -186,36 +191,58 @@ export default function TenantSchedulesPage() {
         },
       ];
 
-  const fetchExecutionHistory = (jobId: string) => {
-    // Mock execution history
-    const mockExecutions: JobExecution[] = [];
-    const count = 10;
+  const fetchExecutionHistory = async (jobId: string) => {
+    try {
+      // Fetch from real API - GET /api/tenant/automation/executions
+      const executionsData = await automationService.getExecutions({ jobId });
+      if (executionsData && executionsData.length > 0) {
+        const mappedExecutions: JobExecution[] = executionsData.map((e: ExecutionDto) => ({
+          id: e.id,
+          jobId: e.jobId || jobId,
+          startedAt: e.startedAt,
+          completedAt: e.completedAt,
+          status: e.status,
+          duration: e.duration,
+          errorMessage: e.errorMessage,
+          logs: e.logs || [],
+        }));
+        setExecutions(mappedExecutions);
+      } else {
+        // Fallback to mock execution history
+        const mockExecutions: JobExecution[] = [];
+        const count = 10;
 
-    for (let i = 0; i < count; i++) {
-      const status: JobExecution['status'] = Math.random() > 0.8 ? 'Failed' : 'Success';
-      const startedAt = new Date(Date.now() - 86400000 * i - Math.random() * 86400000);
-      const duration = Math.floor(Math.random() * 60000);
+        for (let i = 0; i < count; i++) {
+          const status: JobExecution['status'] = Math.random() > 0.8 ? 'Failed' : 'Success';
+          const startedAt = new Date(Date.now() - 86400000 * i - Math.random() * 86400000);
+          const duration = Math.floor(Math.random() * 60000);
 
-      mockExecutions.push({
-        id: `exec-${i}`,
-        jobId,
-        startedAt: startedAt.toISOString(),
-        completedAt: new Date(startedAt.getTime() + duration).toISOString(),
-        status,
-        duration,
-        errorMessage: status === 'Failed' ? 'Connection timeout to external service' : undefined,
-        logs: [
-          `[${startedAt.toISOString()}] Job started`,
-          `[${new Date(startedAt.getTime() + 1000).toISOString()}] Initializing...`,
-          `[${new Date(startedAt.getTime() + 5000).toISOString()}] Processing records...`,
-          status === 'Failed'
-            ? `[${new Date(startedAt.getTime() + duration).toISOString()}] ERROR: Connection timeout`
-            : `[${new Date(startedAt.getTime() + duration).toISOString()}] Job completed successfully`,
-        ],
-      });
+          mockExecutions.push({
+            id: `exec-${i}`,
+            jobId,
+            startedAt: startedAt.toISOString(),
+            completedAt: new Date(startedAt.getTime() + duration).toISOString(),
+            status,
+            duration,
+            errorMessage: status === 'Failed' ? 'Connection timeout to external service' : undefined,
+            logs: [
+              `[${startedAt.toISOString()}] Job started`,
+              `[${new Date(startedAt.getTime() + 1000).toISOString()}] Initializing...`,
+              `[${new Date(startedAt.getTime() + 5000).toISOString()}] Processing records...`,
+              status === 'Failed'
+                ? `[${new Date(startedAt.getTime() + duration).toISOString()}] ERROR: Connection timeout`
+                : `[${new Date(startedAt.getTime() + duration).toISOString()}] Job completed successfully`,
+            ],
+          });
+        }
+        setExecutions(mockExecutions);
+      }
+    } catch (err) {
+      console.error('Error fetching execution history:', err);
+      // Fallback to mock data
+      const mockExecutions: JobExecution[] = [];
+      setExecutions(mockExecutions);
     }
-
-    setExecutions(mockExecutions);
   };
 
   const handleCreateSchedule = async () => {
@@ -229,8 +256,17 @@ export default function TenantSchedulesPage() {
     setSuccess('');
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // POST /api/tenant/automation/schedules
+      await automationService.createSchedule({
+        name: formName,
+        description: formDescription,
+        jobType: formJobType,
+        cronExpression: formCronExpression,
+        enabled: formEnabled,
+        nextRun: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        executionCount: 0,
+      });
 
       setSuccess('Schedule created successfully');
       setShowCreateModal(false);
@@ -255,8 +291,14 @@ export default function TenantSchedulesPage() {
     setSuccess('');
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // PUT /api/tenant/automation/schedules/{id}
+      await automationService.updateSchedule(selectedSchedule.id, {
+        name: formName,
+        description: formDescription,
+        jobType: formJobType,
+        cronExpression: formCronExpression,
+        enabled: formEnabled,
+      });
 
       setSuccess('Schedule updated successfully');
       setShowEditModal(false);
@@ -279,8 +321,8 @@ export default function TenantSchedulesPage() {
     setSuccess('');
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // DELETE /api/tenant/automation/schedules/{id}
+      await automationService.deleteSchedule(selectedSchedule.id);
 
       setSuccess('Schedule deleted successfully');
       setShowDeleteConfirm(false);
@@ -299,8 +341,8 @@ export default function TenantSchedulesPage() {
     setError('');
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // PUT /api/tenant/automation/schedules/{id} with toggled enabled
+      await automationService.toggleSchedule(schedule.id, !schedule.enabled);
 
       setSuccess(`Schedule ${schedule.enabled ? 'disabled' : 'enabled'} successfully`);
       fetchSchedules();

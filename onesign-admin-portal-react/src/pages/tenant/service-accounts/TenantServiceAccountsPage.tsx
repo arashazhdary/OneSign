@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getTenantId } from '@/lib/tenant-context';
-import { platformService } from '@/lib/api/services';
+import { tenantService } from '@/lib/api/services/tenant.service';
 import DataTable, { Column } from '@/components/common/DataTable';
 import StatusBadge from '@/components/common/StatusBadge';
 import ActionButton from '@/components/common/ActionButton';
@@ -42,7 +42,7 @@ export default function TenantServiceAccountsPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await platformService.getServiceAccounts(tenantId);
+      const data = await tenantService.getServiceAccounts(tenantId);
       setServiceAccounts(data || []);
     } catch (err) {
       console.error('Error fetching service accounts:', err);
@@ -56,7 +56,7 @@ export default function TenantServiceAccountsPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await platformService.createServiceAccount(tenantId, form);
+      await tenantService.createServiceAccount(tenantId, form);
       setSuccess('Service account created successfully');
       setShowModal(false);
       fetchServiceAccounts();

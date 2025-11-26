@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { platformService } from '@/lib/api/services';
+import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
 interface TenantHealth {
@@ -61,7 +61,7 @@ export default function GlobalTenantsLifecyclePage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getTenantHealthGlobal(tenantId);
+      const data = await globalService.getTenantHealthGlobal(tenantId);
       setTenantHealth(data);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -76,7 +76,7 @@ export default function GlobalTenantsLifecyclePage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getTenantMetricsGlobal(tenantId);
+      const data = await globalService.getTenantMetricsGlobal(tenantId);
       setTenantMetrics(data.metrics || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -94,7 +94,7 @@ export default function GlobalTenantsLifecyclePage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getTenantMigrationStatus(tenantId, migrationId);
+      const data = await globalService.getTenantMigrationStatus(tenantId, migrationId);
       setMigrationStatus(data);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -112,7 +112,7 @@ export default function GlobalTenantsLifecyclePage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getTenantExportStatus(tenantId, exportId);
+      const data = await globalService.getTenantExportStatus(tenantId, exportId);
       setExportStatus(data);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -138,7 +138,7 @@ export default function GlobalTenantsLifecyclePage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.suspendTenantGlobal(tenantId);
+      await globalService.suspendTenantGlobal(tenantId);
       setSuccess('Tenant suspended successfully');
       fetchTenantHealth();
     } catch (err: any) {
@@ -158,7 +158,7 @@ export default function GlobalTenantsLifecyclePage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.resumeTenantGlobal(tenantId);
+      await globalService.resumeTenantGlobal(tenantId);
       setSuccess('Tenant resumed successfully');
       fetchTenantHealth();
     } catch (err: any) {
@@ -178,7 +178,7 @@ export default function GlobalTenantsLifecyclePage() {
     setError('');
     setSuccess('');
     try {
-      const data = await platformService.migrateTenant(tenantId);
+      const data = await globalService.migrateTenant(tenantId);
       setMigrationStatus(data);
       setSuccess('Migration started successfully');
     } catch (err: any) {
@@ -198,7 +198,7 @@ export default function GlobalTenantsLifecyclePage() {
     setError('');
     setSuccess('');
     try {
-      const data = await platformService.exportTenantData(tenantId);
+      const data = await globalService.exportTenantData(tenantId);
       setExportJobs([data, ...exportJobs]);
       setSuccess('Export started successfully');
     } catch (err: any) {
@@ -218,7 +218,7 @@ export default function GlobalTenantsLifecyclePage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.importTenantData(tenantId);
+      await globalService.importTenantData(tenantId);
       setSuccess('Import started successfully');
     } catch (err: any) {
       setError(err.message || t('common.error'));

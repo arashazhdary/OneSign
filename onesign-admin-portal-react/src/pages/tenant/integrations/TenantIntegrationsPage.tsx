@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
-import { platformService } from '@/lib/api/services';
+import { tenantService } from '@/lib/api/services/tenant.service';
 import { Helmet } from 'react-helmet-async';
 
 interface Integration {
@@ -145,7 +145,7 @@ export default function TenantIntegrationsPage() {
   const fetchIntegrations = async () => {
     if (!tenantId) return;
     try {
-      const data = await platformService.getIntegrations(tenantId);
+      const data = await tenantService.getIntegrations(tenantId);
       setIntegrations(data.items || data || []);
     } catch (error) {
       console.error('Error fetching integrations:', error);
@@ -157,7 +157,7 @@ export default function TenantIntegrationsPage() {
   const fetchSyncLogs = async () => {
     if (!tenantId) return;
     try {
-      const data = await platformService.getAllIntegrationSyncLogs(tenantId);
+      const data = await tenantService.getAllIntegrationSyncLogs(tenantId);
       setSyncLogs(data.items || data || []);
     } catch (error) {
       console.error('Error fetching sync logs:', error);
@@ -192,7 +192,7 @@ export default function TenantIntegrationsPage() {
     };
 
     try {
-      await platformService.createIntegration({ ...payload, tenantId });
+      await tenantService.createIntegration({ ...payload, tenantId });
       setSuccess('Integration configured successfully');
       setShowConfigureModal(false);
       fetchIntegrations();
@@ -208,7 +208,7 @@ export default function TenantIntegrationsPage() {
     setShowTestModal(true);
 
     try {
-      const data = await platformService.testIntegration(integration.id, tenantId);
+      const data = await tenantService.testIntegration(integration.id, tenantId);
       setTestResult(`✅ Connection successful!\n\n${JSON.stringify(data, null, 2)}`);
     } catch (error: any) {
       setTestResult(`❌ Connection failed\n\n${error?.message || 'Unknown error'}`);
@@ -221,7 +221,7 @@ export default function TenantIntegrationsPage() {
     setSuccess('');
 
     try {
-      await platformService.syncIntegration(integrationId, tenantId);
+      await tenantService.syncIntegration(integrationId, tenantId);
       setSuccess('Sync started successfully');
       setTimeout(() => {
         fetchIntegrations();
@@ -235,7 +235,7 @@ export default function TenantIntegrationsPage() {
 
   const handleToggleIntegration = async (integration: Integration) => {
     try {
-      await platformService.updateIntegration(integration.id, { isActive: !integration.isActive }, tenantId);
+      await tenantService.updateIntegration(integration.id, { isActive: !integration.isActive }, tenantId);
       setSuccess(`Integration ${integration.isActive ? 'disabled' : 'enabled'} successfully`);
       fetchIntegrations();
     } catch (error: any) {
@@ -248,7 +248,7 @@ export default function TenantIntegrationsPage() {
     if (!confirm('Are you sure you want to delete this integration?')) return;
 
     try {
-      await platformService.deleteIntegration(integrationId, tenantId);
+      await tenantService.deleteIntegration(integrationId, tenantId);
       setSuccess('Integration deleted successfully');
       fetchIntegrations();
     } catch (error: any) {

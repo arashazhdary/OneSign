@@ -359,6 +359,60 @@ export const adminService = {
   revokeApiKey: async (keyId: string): Promise<void> => {
     await apiClient.delete(`/api/admin/api-keys/${keyId}`);
   },
+
+  // ==================== GLOBAL SETTINGS ====================
+  updateGlobalSettings: async (section: string, settings: any): Promise<any> => {
+    const response = await apiClient.put(`/api/admin/settings/${section}`, settings);
+    return response.data;
+  },
+
+  getGlobalSettings: async (section?: string): Promise<any> => {
+    try {
+      const url = section ? `/api/admin/settings/${section}` : '/api/admin/settings';
+      const response = await apiClient.get(url);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch global settings:', error);
+      return null;
+    }
+  },
+
+  testEmailConfiguration: async (settings: any): Promise<any> => {
+    const response = await apiClient.post('/api/admin/settings/email/test', settings);
+    return response.data;
+  },
+
+  testSMSConfiguration: async (settings: any): Promise<any> => {
+    const response = await apiClient.post('/api/admin/settings/sms/test', settings);
+    return response.data;
+  },
+
+  // ==================== ADMIN TENANTS ====================
+  getAdminTenants: async (page: number = 1, pageSize: number = 50): Promise<PaginatedResult<any>> => {
+    try {
+      const response = await apiClient.get('/api/admin/tenants', {
+        params: { page, pageSize }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch admin tenants:', error);
+      return { items: [], total: 0, page: 1, pageSize, totalPages: 0 };
+    }
+  },
+
+  createAdminTenant: async (data: { name: string; slug: string }): Promise<any> => {
+    const response = await apiClient.post('/api/admin/tenants', data);
+    return response.data;
+  },
+
+  updateAdminTenantStatus: async (tenantId: string, status: string): Promise<any> => {
+    const response = await apiClient.patch(`/api/admin/tenants/${tenantId}/status`, { status });
+    return response.data;
+  },
+
+  deleteAdminTenant: async (tenantId: string): Promise<void> => {
+    await apiClient.delete(`/api/admin/tenants/${tenantId}`);
+  },
 };
 
 export default adminService;

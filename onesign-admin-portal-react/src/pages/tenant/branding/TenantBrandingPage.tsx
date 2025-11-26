@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
-import { platformService } from '@/lib/api/services/platform.service';
+import { tenantService } from '@/lib/api/services/tenant.service';
 import { Helmet } from 'react-helmet-async';
 
 interface BrandingConfig {
@@ -97,7 +97,7 @@ export default function TenantBrandingPage() {
   const fetchBranding = async () => {
     if (!tenantId) return;
     try {
-      const data = await platformService.getBranding(tenantId);
+      const data = await tenantService.getBranding(tenantId);
       setBranding({ ...branding, ...data });
     } catch (error: any) {
       console.error('Error fetching branding:', error);
@@ -115,7 +115,7 @@ export default function TenantBrandingPage() {
     setSaving(true);
 
     try {
-      const data = await platformService.updateBranding(tenantId, branding);
+      const data = await tenantService.updateBranding(tenantId, branding);
       setBranding({ ...branding, ...data });
       setSuccess('Branding saved successfully');
     } catch (error: any) {
