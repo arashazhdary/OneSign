@@ -12,12 +12,12 @@ const GoogleCallbackPage = lazy(() => import('@/pages/auth/GoogleCallbackPage'))
 const CompleteFirstLoginPage = lazy(() => import('@/pages/auth/CompleteFirstLoginPage'));
 
 // ==================== ADMIN PAGES ====================
-const AdminDashboardPage = lazy(() => import('@/pages/admin/DashboardPage'));
-const AdminUsersPage = lazy(() => import('@/pages/admin/UsersPage'));
-const AdminTenantsPage = lazy(() => import('@/pages/admin/TenantsPage'));
-const AdminRolesPage = lazy(() => import('@/pages/admin/RolesPage'));
-const AdminApiKeysPage = lazy(() => import('@/pages/admin/ApiKeysPage'));
-const AdminSettingsPage = lazy(() => import('@/pages/admin/SettingsPage'));
+const AdminDashboardPage = lazy(() => import('@/pages/admin/dashboard/AdminDashboardPage'));
+const AdminUsersPage = lazy(() => import('@/pages/admin/users/AdminUsersPage'));
+const AdminTenantsPage = lazy(() => import('@/pages/admin/tenants/AdminTenantsPage'));
+const AdminRolesPage = lazy(() => import('@/pages/admin/roles/AdminRolesPage'));
+const AdminApiKeysPage = lazy(() => import('@/pages/admin/api-keys/AdminApiKeysPage'));
+const AdminSettingsPage = lazy(() => import('@/pages/admin/settings/AdminSettingsPage'));
 
 // ==================== DOCS PAGES ====================
 const DocsDiscoveryPage = lazy(() => import('@/pages/docs/discovery/DocsDiscoveryPage'));
@@ -61,15 +61,15 @@ const GlobalTenantsLifecyclePage = lazy(() => import('@/pages/global/tenants/lif
 const GlobalWebhooksPage = lazy(() => import('@/pages/global/webhooks/GlobalWebhooksPage'));
 
 // ==================== TENANT PAGES ====================
-const TenantDashboardPage = lazy(() => import('@/pages/tenant/DashboardPage'));
-const TenantUsersPage = lazy(() => import('@/pages/tenant/UsersPage'));
+const TenantDashboardPage = lazy(() => import('@/pages/tenant/dashboard/TenantDashboardPage'));
+const TenantUsersPage = lazy(() => import('@/pages/tenant/users/TenantUsersPage'));
 const TenantUsersDetailPage = lazy(() => import('@/pages/tenant/users/[id]/TenantUsersDetailPage'));
-const TenantAppsPage = lazy(() => import('@/pages/tenant/AppsPage'));
+const TenantAppsPage = lazy(() => import('@/pages/tenant/apps/TenantAppsPage'));
 const TenantAppsDetailPage = lazy(() => import('@/pages/tenant/apps/[id]/TenantAppsDetailPage'));
-const TenantRolesPage = lazy(() => import('@/pages/tenant/RolesPage'));
+const TenantRolesPage = lazy(() => import('@/pages/tenant/roles/TenantRolesPage'));
 const TenantRolesDetailPage = lazy(() => import('@/pages/tenant/roles/[id]/TenantRolesDetailPage'));
-const TenantAuditPage = lazy(() => import('@/pages/tenant/AuditPage'));
-const TenantSettingsPage = lazy(() => import('@/pages/tenant/SettingsPage'));
+const TenantAuditPage = lazy(() => import('@/pages/tenant/audit/TenantAuditPage'));
+const TenantSettingsPage = lazy(() => import('@/pages/tenant/settings/TenantSettingsPage'));
 
 // Tenant Advanced
 const TenantAccessCertificationsPage = lazy(() => import('@/pages/tenant/access/certifications/TenantAccessCertificationsPage'));
