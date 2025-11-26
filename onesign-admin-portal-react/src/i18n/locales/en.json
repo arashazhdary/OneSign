@@ -3523,6 +3523,24 @@
     "notifications": {
       "title": "Notifications",
       "subtitle": "Manage notification settings and templates"
+    },
+    "users": {
+      "title": "Users Management",
+      "subtitle": "Manage tenant users and permissions",
+      "inviteUser": "Invite User",
+      "userInvited": "User invited successfully",
+      "confirmDisable": "Are you sure you want to disable this user?",
+      "userDisabled": "User disabled successfully",
+      "email": "Email",
+      "status": "Status",
+      "isAdmin": "Is Admin",
+      "lastLogin": "Last Login",
+      "actions": "Actions",
+      "disable": "Disable",
+      "enable": "Enable",
+      "active": "Active",
+      "disabled": "Disabled",
+      "pending": "Pending"
     }
   },
   "global": {
