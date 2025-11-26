@@ -241,8 +241,13 @@ export default function TenantAccessCertificationsPage() {
   const handleCertify = async (itemId: string, action: 'certify' | 'revoke', notes?: string) => {
     setLoading(true);
     try {
-      // Implement actual certification API call
-      await governanceService.certifyItem(tenantId || '', itemId, action, notes);
+      // Call API with campaignId, itemId, and certification data
+      if (selectedCampaign) {
+        await governanceService.certifyItem(selectedCampaign.id, itemId, {
+          decision: action,
+          comment: notes
+        });
+      }
       setSuccess(`Access ${action === 'certify' ? 'certified' : 'revoked'} successfully`);
 
       // Update local state

@@ -1521,6 +1521,70 @@ export const governanceService = {
       return null;
     }
   },
+
+  // Wrapper methods for backward compatibility with page calls
+  getCampaigns: async (tenantId?: string) => {
+    try {
+      const response = await apiClient.get('/api/tenant/governance/campaigns', {
+        params: tenantId ? { tenantId } : undefined
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch campaigns:', error);
+      return [];
+    }
+  },
+
+  // Privacy / Data Subject Requests
+  getRetentionPolicies: async (tenantId?: string) => {
+    try {
+      const response = await apiClient.get('/api/tenant/governance/privacy/retention');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch retention policies:', error);
+      return [];
+    }
+  },
+
+  updateRetentionPolicy: async (tenantId: string, category: string, data: any) => {
+    try {
+      const response = await apiClient.put(`/api/tenant/governance/privacy/retention/${category}`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to update retention policy:', error);
+      throw error;
+    }
+  },
+
+  getDataSubjectRequests: async (tenantId?: string) => {
+    try {
+      const response = await apiClient.get('/api/tenant/governance/privacy/dsr');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch data subject requests:', error);
+      return [];
+    }
+  },
+
+  createDataSubjectRequest: async (tenantId: string, data: any) => {
+    try {
+      const response = await apiClient.post('/api/tenant/governance/privacy/dsr', data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to create data subject request:', error);
+      throw error;
+    }
+  },
+
+  executeDataSubjectRequest: async (tenantId: string, requestId: string) => {
+    try {
+      const response = await apiClient.post(`/api/tenant/governance/privacy/dsr/${requestId}/execute`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to execute data subject request:', error);
+      throw error;
+    }
+  },
 };
 
 // Auth Service
