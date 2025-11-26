@@ -778,6 +778,53 @@ export const tenantService = {
     const response = await apiClient.post(`/api/tenant/tokens/${tokenId}/rotate`);
     return response.data;
   },
+
+  // ==================== CERTIFICATES ====================
+
+  /**
+   * GET /api/tenant/certificates - لیست گواهینامه‌ها
+   */
+  getCertificates: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/certificates');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch certificates:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/tenant/certificates - آپلود گواهینامه
+   */
+  uploadCertificate: async (tenantId: string, file: File): Promise<any> => {
+    const formData = new FormData();
+    formData.append('certificate', file);
+    const response = await apiClient.post('/api/tenant/certificates', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  },
+
+  /**
+   * DELETE /api/tenant/certificates/{id} - حذف گواهینامه
+   */
+  deleteCertificate: async (tenantId: string, certificateId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/certificates/${certificateId}`);
+  },
+
+  /**
+   * GET /api/tenant/certificates/{id} - جزئیات گواهینامه
+   */
+  getCertificateById: async (certificateId: string): Promise<any> => {
+    try {
+      const response = await apiClient.get(`/api/tenant/certificates/${certificateId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch certificate:', error);
+      return null;
+    }
+  },
 };
 
 export default tenantService;

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as observabilityApi from '@/lib/api/observability';
+import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
 // Extended Audit Event Interface
@@ -215,10 +216,19 @@ export default function GlobalAuditPage() {
   };
 
   // Load statistics
-  const loadStatistics = () => {
-    // Using mock statistics for now
-    // In production, this would call an API endpoint
-    setStatistics(generateMockStatistics());
+  const loadStatistics = async () => {
+    try {
+      const data = await globalService.getAuditStatistics();
+      if (data) {
+        setStatistics(data);
+      } else {
+        // Fallback to mock statistics
+        setStatistics(generateMockStatistics());
+      }
+    } catch (err) {
+      console.error('Failed to fetch audit statistics:', err);
+      setStatistics(generateMockStatistics());
+    }
   };
 
   // Export functionality

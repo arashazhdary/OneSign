@@ -239,9 +239,6 @@ export default function GlobalAccessReviewsPage() {
           createdAt: '2024-11-20T08:00:00Z',
         },
       ]);
-    } catch (err) {
-      console.error('Error fetching campaigns:', err);
-    }
   };
 
   const fetchReviewers = async () => {

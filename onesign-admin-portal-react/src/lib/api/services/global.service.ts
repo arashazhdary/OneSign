@@ -1097,6 +1097,157 @@ export const globalService = {
       return { items: [], total: 0 };
     }
   },
+
+  // ==================== MAINTENANCE WINDOWS ====================
+
+  /**
+   * GET /api/global/maintenance/windows - لیست پنجره‌های نگهداری
+   */
+  getMaintenanceWindows: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/global/maintenance/windows');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch maintenance windows:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/global/maintenance/windows - ایجاد پنجره نگهداری
+   */
+  createMaintenanceWindow: async (data: {
+    title: string;
+    description?: string;
+    type: 'scheduled' | 'emergency' | 'planned';
+    startTime: string;
+    endTime: string;
+    affectedServices: string[];
+    impactLevel: 'none' | 'low' | 'medium' | 'high';
+    notifyUsers: boolean;
+  }): Promise<any> => {
+    const response = await apiClient.post('/api/global/maintenance/windows', data);
+    return response.data;
+  },
+
+  /**
+   * PUT /api/global/maintenance/windows/{id} - به‌روزرسانی پنجره نگهداری
+   */
+  updateMaintenanceWindow: async (windowId: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/global/maintenance/windows/${windowId}`, data);
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/maintenance/windows/{id}/cancel - لغو پنجره نگهداری
+   */
+  cancelMaintenanceWindow: async (windowId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/maintenance/windows/${windowId}/cancel`);
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/maintenance/windows/{id}/notify - ارسال اعلان نگهداری
+   */
+  sendMaintenanceNotification: async (windowId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/maintenance/windows/${windowId}/notify`);
+    return response.data;
+  },
+
+  // ==================== RATE LIMITING ====================
+
+  /**
+   * GET /api/global/rate-limits - لیست محدودیت‌های نرخ
+   */
+  getRateLimits: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/global/rate-limits');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch rate limits:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/global/rate-limits - ایجاد محدودیت نرخ
+   */
+  createRateLimit: async (data: {
+    name: string;
+    type: 'global' | 'per_tenant' | 'per_user' | 'per_ip';
+    endpoint?: string;
+    limit: number;
+    window: number;
+    windowUnit: 'second' | 'minute' | 'hour' | 'day';
+    action: 'throttle' | 'block' | 'notify';
+    exemptions: string[];
+  }): Promise<any> => {
+    const response = await apiClient.post('/api/global/rate-limits', data);
+    return response.data;
+  },
+
+  /**
+   * PUT /api/global/rate-limits/{id} - به‌روزرسانی محدودیت نرخ
+   */
+  updateRateLimit: async (limitId: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/global/rate-limits/${limitId}`, data);
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/rate-limits/{id}/toggle - فعال/غیرفعال کردن محدودیت
+   */
+  toggleRateLimit: async (limitId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/rate-limits/${limitId}/toggle`);
+    return response.data;
+  },
+
+  /**
+   * DELETE /api/global/rate-limits/{id} - حذف محدودیت نرخ
+   */
+  deleteRateLimit: async (limitId: string): Promise<void> => {
+    await apiClient.delete(`/api/global/rate-limits/${limitId}`);
+  },
+
+  // ==================== PLATFORM MIGRATIONS ====================
+
+  /**
+   * GET /api/global/platform/migrations - لیست Migration‌های پلتفرم با pagination
+   */
+  getPlatformMigrations: async (page: number = 1, pageSize: number = 20): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/global/platform/migrations', {
+        params: { page, pageSize }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch platform migrations:', error);
+      return { migrations: [], total: 0 };
+    }
+  },
+
+  /**
+   * POST /api/global/platform/migrations/{id}/apply - اعمال Migration خاص
+   */
+  applyPlatformMigration: async (migrationId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/platform/migrations/${migrationId}/apply`);
+    return response.data;
+  },
+
+  // ==================== AUDIT STATISTICS ====================
+
+  /**
+   * GET /api/global/observability/audit/statistics - آمار audit
+   */
+  getAuditStatistics: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/global/observability/audit/statistics');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch audit statistics:', error);
+      return null;
+    }
+  },
 };
 
 export default globalService;

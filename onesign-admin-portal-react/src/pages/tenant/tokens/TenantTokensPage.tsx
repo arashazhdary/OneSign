@@ -29,84 +29,89 @@ export default function TenantTokensPage() {
     fetchTokens();
   }, []);
 
+  const getMockTokens = (): Token[] => [
+    {
+      id: '1',
+      name: 'Production API Key',
+      type: 'api_key',
+      token: 'os_prod_abc123def456ghi789jkl012mno345',
+      prefix: 'os_prod_',
+      permissions: ['read', 'write', 'delete'],
+      status: 'active',
+      lastUsed: '2024-11-23T09:30:00Z',
+      usageCount: 15234,
+      createdBy: 'admin@example.com',
+      createdAt: '2024-01-15T10:00:00Z',
+      ipWhitelist: ['192.168.1.0/24', '10.0.0.0/16'],
+    },
+    {
+      id: '2',
+      name: 'Development Access Token',
+      type: 'access',
+      token: 'os_dev_pqr678stu901vwx234yz567abc890',
+      prefix: 'os_dev_',
+      permissions: ['read', 'write'],
+      status: 'active',
+      expiresAt: '2024-12-31T23:59:59Z',
+      lastUsed: '2024-11-23T08:15:00Z',
+      usageCount: 4521,
+      createdBy: 'developer@example.com',
+      createdAt: '2024-06-01T09:00:00Z',
+    },
+    {
+      id: '3',
+      name: 'CI/CD Pipeline Token',
+      type: 'api_key',
+      token: 'os_ci_def123ghi456jkl789mno012pqr345',
+      prefix: 'os_ci_',
+      permissions: ['read', 'write'],
+      status: 'active',
+      lastUsed: '2024-11-23T10:00:00Z',
+      usageCount: 28965,
+      createdBy: 'system',
+      createdAt: '2024-03-10T14:00:00Z',
+    },
+    {
+      id: '4',
+      name: 'Old Integration Token',
+      type: 'access',
+      token: 'os_int_stu901vwx234yz567abc890def123',
+      prefix: 'os_int_',
+      permissions: ['read'],
+      status: 'revoked',
+      expiresAt: '2024-10-31T23:59:59Z',
+      lastUsed: '2024-10-25T12:00:00Z',
+      usageCount: 8742,
+      createdBy: 'admin@example.com',
+      createdAt: '2024-01-01T00:00:00Z',
+    },
+    {
+      id: '5',
+      name: 'Monitoring Service Token',
+      type: 'refresh',
+      token: 'os_mon_ghi456jkl789mno012pqr345stu678',
+      prefix: 'os_mon_',
+      permissions: ['read'],
+      status: 'active',
+      expiresAt: '2025-11-23T00:00:00Z',
+      lastUsed: '2024-11-23T10:05:00Z',
+      usageCount: 125678,
+      createdBy: 'system',
+      createdAt: '2023-11-23T10:00:00Z',
+    },
+  ];
+
   const fetchTokens = async () => {
     try {
-      const data = await tenantService.getTokens?.();
-      const mockData: Token[] = [
-        {
-          id: '1',
-          name: 'Production API Key',
-          type: 'api_key',
-          token: 'os_prod_abc123def456ghi789jkl012mno345',
-          prefix: 'os_prod_',
-          permissions: ['read', 'write', 'delete'],
-          status: 'active',
-          lastUsed: '2024-11-23T09:30:00Z',
-          usageCount: 15234,
-          createdBy: 'admin@example.com',
-          createdAt: '2024-01-15T10:00:00Z',
-          ipWhitelist: ['192.168.1.0/24', '10.0.0.0/16'],
-        },
-        {
-          id: '2',
-          name: 'Development Access Token',
-          type: 'access',
-          token: 'os_dev_pqr678stu901vwx234yz567abc890',
-          prefix: 'os_dev_',
-          permissions: ['read', 'write'],
-          status: 'active',
-          expiresAt: '2024-12-31T23:59:59Z',
-          lastUsed: '2024-11-23T08:15:00Z',
-          usageCount: 4521,
-          createdBy: 'developer@example.com',
-          createdAt: '2024-06-01T09:00:00Z',
-        },
-        {
-          id: '3',
-          name: 'CI/CD Pipeline Token',
-          type: 'api_key',
-          token: 'os_ci_def123ghi456jkl789mno012pqr345',
-          prefix: 'os_ci_',
-          permissions: ['read', 'write'],
-          status: 'active',
-          lastUsed: '2024-11-23T10:00:00Z',
-          usageCount: 28965,
-          createdBy: 'system',
-          createdAt: '2024-03-10T14:00:00Z',
-        },
-        {
-          id: '4',
-          name: 'Old Integration Token',
-          type: 'access',
-          token: 'os_int_stu901vwx234yz567abc890def123',
-          prefix: 'os_int_',
-          permissions: ['read'],
-          status: 'revoked',
-          expiresAt: '2024-10-31T23:59:59Z',
-          lastUsed: '2024-10-25T12:00:00Z',
-          usageCount: 8742,
-          createdBy: 'admin@example.com',
-          createdAt: '2024-01-01T00:00:00Z',
-        },
-        {
-          id: '5',
-          name: 'Monitoring Service Token',
-          type: 'refresh',
-          token: 'os_mon_ghi456jkl789mno012pqr345stu678',
-          prefix: 'os_mon_',
-          permissions: ['read'],
-          status: 'active',
-          expiresAt: '2025-11-23T00:00:00Z',
-          lastUsed: '2024-11-23T10:05:00Z',
-          usageCount: 125678,
-          createdBy: 'system',
-          createdAt: '2023-11-23T10:00:00Z',
-        },
-      ];
-      setTokens(data || mockData);
+      const data = await tenantService.getTokens();
+      if (data && data.length > 0) {
+        setTokens(data);
+      } else {
+        setTokens(getMockTokens());
+      }
     } catch (err) {
-      console.error(err);
-      setTokens(mockData);
+      console.error('Failed to fetch tokens:', err);
+      setTokens(getMockTokens());
     } finally {
       setLoading(false);
     }
@@ -114,7 +119,7 @@ export default function TenantTokensPage() {
 
   const handleCreate = async () => {
     try {
-      await tenantService.createToken?.('tenant-id', {
+      await tenantService.createToken({
         name: 'New Token',
         type: 'access',
         permissions: ['read', 'write'],
@@ -129,7 +134,7 @@ export default function TenantTokensPage() {
   const handleRevoke = async (tokenId: string) => {
     if (!confirm('Revoke this token? This action cannot be undone.')) return;
     try {
-      await tenantService.revokeToken?.('tenant-id', tokenId);
+      await tenantService.revokeToken(tokenId);
       fetchTokens();
     } catch (error) {
       console.error('Failed to revoke token:', error);
@@ -139,7 +144,7 @@ export default function TenantTokensPage() {
   const handleRotate = async (tokenId: string) => {
     if (!confirm('Rotate this token? The old token will be invalidated.')) return;
     try {
-      await tenantService.rotateToken?.('tenant-id', tokenId);
+      await tenantService.rotateToken(tokenId);
       fetchTokens();
     } catch (error) {
       console.error('Failed to rotate token:', error);

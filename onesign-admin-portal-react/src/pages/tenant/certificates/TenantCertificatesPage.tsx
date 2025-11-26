@@ -32,7 +32,7 @@ export default function TenantCertificatesPage() {
   const fetchCertificates = async () => {
     setLoading(true);
     try {
-      const data = await tenantService.getCertificates?.();
+      const data = await tenantService.getCertificates();
       const mockData: Certificate[] = [
         {
           id: '1',
@@ -72,7 +72,7 @@ export default function TenantCertificatesPage() {
   const handleUpload = async () => {
     if (!file) return;
     try {
-      await tenantService.uploadCertificate?.('tenant-id', file);
+      await tenantService.uploadCertificate('tenant-id', file);
       setShowUpload(false);
       setFile(null);
       fetchCertificates();
@@ -84,7 +84,7 @@ export default function TenantCertificatesPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this certificate?')) return;
     try {
-      await tenantService.deleteCertificate?.('tenant-id', id);
+      await tenantService.deleteCertificate('tenant-id', id);
       fetchCertificates();
     } catch (err: any) {
       setError(err.message || 'Failed to delete certificate');

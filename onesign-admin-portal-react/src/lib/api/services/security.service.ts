@@ -250,6 +250,44 @@ export const securityService = {
     const response = await apiClient.put(`/api/tenant/adaptivesecurity/users/${userId}/context`, data);
     return response.data;
   },
+
+  // ==================== IP WHITELIST ====================
+
+  /**
+   * GET /api/tenant/security/ip-whitelist - لیست IP های مجاز
+   */
+  getIPWhitelist: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/security/ip-whitelist');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch IP whitelist:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/tenant/security/ip-whitelist - افزودن IP به لیست مجاز
+   */
+  addIPWhitelist: async (tenantId: string, data: { ipAddress: string; description: string }): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/security/ip-whitelist', data);
+    return response.data;
+  },
+
+  /**
+   * DELETE /api/tenant/security/ip-whitelist/{id} - حذف IP از لیست مجاز
+   */
+  removeIPWhitelist: async (tenantId: string, whitelistId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/security/ip-whitelist/${whitelistId}`);
+  },
+
+  /**
+   * PUT /api/tenant/security/ip-whitelist/{id} - به‌روزرسانی IP در لیست مجاز
+   */
+  updateIPWhitelist: async (whitelistId: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/tenant/security/ip-whitelist/${whitelistId}`, data);
+    return response.data;
+  },
 };
 
 export default securityService;
