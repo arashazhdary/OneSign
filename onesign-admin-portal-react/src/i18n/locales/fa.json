@@ -4707,5 +4707,170 @@
   },
   "expirationOptions": {
     "noExpiration": "بدون انقضا"
+  },
+  "loadingStates": {
+    "loading": "در حال بارگذاری...",
+    "loadingData": "در حال بارگذاری داده‌ها...",
+    "loadingDashboard": "در حال بارگذاری داشبورد...",
+    "loadingSettings": "در حال بارگذاری تنظیمات...",
+    "loadingAdministrators": "در حال بارگذاری مدیران...",
+    "loadingTenants": "در حال بارگذاری سازمان‌ها...",
+    "loadingBackups": "در حال بارگذاری پشتیبان‌ها...",
+    "loadingSchedules": "در حال بارگذاری زمان‌بندی‌ها...",
+    "loadingQuotas": "در حال بارگذاری سهمیه‌ها...",
+    "loadingCertificates": "در حال بارگذاری گواهی‌ها...",
+    "loadingSessions": "در حال بارگذاری نشست‌ها...",
+    "loadingReports": "در حال بارگذاری گزارش‌ها...",
+    "loadingAnalytics": "در حال بارگذاری تحلیل‌ها...",
+    "loadingUserAnalytics": "در حال بارگذاری تحلیل کاربران...",
+    "loadingSecurityAnalytics": "در حال بارگذاری تحلیل امنیتی...",
+    "loadingApplicationAnalytics": "در حال بارگذاری تحلیل اپلیکیشن‌ها...",
+    "loadingApiUsage": "در حال بارگذاری داده‌های استفاده API...",
+    "loadingComplianceReports": "در حال بارگذاری گزارش‌های انطباق...",
+    "loadingExports": "در حال بارگذاری خروجی‌ها...",
+    "loadingImports": "در حال بارگذاری ورودی‌ها...",
+    "loadingWebhooks": "در حال بارگذاری وب‌هوک‌ها...",
+    "loadingGovernanceData": "در حال بارگذاری داده‌های حاکمیتی...",
+    "loadingHierarchy": "در حال بارگذاری سلسله مراتب...",
+    "loadingStatistics": "در حال بارگذاری آمار...",
+    "loadingRiskAssessment": "در حال بارگذاری ارزیابی ریسک...",
+    "loadingImpactAnalysis": "در حال بارگذاری تحلیل تأثیر...",
+    "processing": "در حال پردازش...",
+    "saving": "در حال ذخیره...",
+    "deleting": "در حال حذف...",
+    "updating": "در حال به‌روزرسانی...",
+    "pleaseWait": "لطفاً صبر کنید..."
+  },
+  "emptyStates": {
+    "noDataAvailable": "داده‌ای موجود نیست",
+    "noAdministratorsFound": "مدیری یافت نشد",
+    "noActivitiesFound": "فعالیتی یافت نشد",
+    "noMetricsAvailable": "متریکی موجود نیست",
+    "noSuggestionsAvailable": "پیشنهادی موجود نیست",
+    "noInsightsAvailable": "بینشی موجود نیست",
+    "noBackupsAvailable": "پشتیبانی موجود نیست",
+    "noPlaybooksAvailable": "دستورالعملی موجود نیست",
+    "noPermissionsConfigured": "مجوزی پیکربندی نشده",
+    "noIncidentsFound": "حادثه‌ای یافت نشد",
+    "noContextsFound": "زمینه‌ای یافت نشد",
+    "noChannelsConfigured": "هنوز کانالی پیکربندی نشده",
+    "noPreferencesConfigured": "هنوز ترجیحی پیکربندی نشده",
+    "noTemplatesFound": "قالبی یافت نشد",
+    "noNotificationsFound": "اعلانی یافت نشد",
+    "noRulesConfigured": "هنوز قانونی پیکربندی نشده",
+    "noQuotasAvailable": "سهمیه‌ای موجود نیست",
+    "noLogsAvailable": "لاگی موجود نیست",
+    "noResultsFound": "نتیجه‌ای یافت نشد",
+    "noItemsToShow": "موردی برای نمایش نیست"
+  },
+  "buttons": {
+    "save": "ذخیره",
+    "cancel": "انصراف",
+    "delete": "حذف",
+    "edit": "ویرایش",
+    "create": "ایجاد",
+    "submit": "ثبت",
+    "update": "به‌روزرسانی",
+    "close": "بستن",
+    "confirm": "تأیید",
+    "apply": "اعمال",
+    "reset": "بازنشانی",
+    "clear": "پاک‌سازی",
+    "add": "افزودن",
+    "remove": "حذف",
+    "back": "بازگشت",
+    "next": "بعدی",
+    "previous": "قبلی",
+    "finish": "پایان",
+    "done": "انجام شد",
+    "retry": "تلاش مجدد",
+    "refresh": "بازخوانی",
+    "download": "دانلود",
+    "upload": "آپلود",
+    "export": "خروجی",
+    "import": "ورودی",
+    "copy": "کپی",
+    "paste": "چسباندن",
+    "search": "جستجو",
+    "filter": "فیلتر",
+    "sort": "مرتب‌سازی",
+    "view": "مشاهده",
+    "details": "جزئیات",
+    "expand": "گسترش",
+    "collapse": "جمع‌شدن",
+    "selectAll": "انتخاب همه",
+    "deselectAll": "لغو انتخاب همه",
+    "enable": "فعال",
+    "disable": "غیرفعال",
+    "activate": "فعال‌سازی",
+    "deactivate": "غیرفعال‌سازی",
+    "approve": "تأیید",
+    "reject": "رد",
+    "revoke": "لغو",
+    "verify": "تأیید اعتبار",
+    "test": "تست",
+    "run": "اجرا",
+    "stop": "توقف",
+    "pause": "مکث",
+    "resume": "ادامه"
+  },
+  "globalWebhooksPage": {
+    "createGlobalWebhook": "ایجاد وب‌هوک سراسری"
+  },
+  "globalCryptoPageExtra": {
+    "createNewKeySet": "ایجاد مجموعه کلید جدید",
+    "createRotationPolicy": "ایجاد سیاست چرخش"
+  },
+  "globalRateLimitingPage": {
+    "createRateLimit": "ایجاد محدودیت نرخ"
+  },
+  "globalHuntingPageExtra": {
+    "cancelled": "لغو شده",
+    "savedQueries": "پرسش‌های ذخیره شده"
+  },
+  "adminUsersPage": {
+    "createNewAdministrator": "ایجاد مدیر جدید",
+    "editAdministrator": "ویرایش مدیر"
+  },
+  "adminDashboardPage": {
+    "createTenant": "ایجاد سازمان",
+    "addAdmin": "افزودن مدیر"
+  },
+  "adminApiKeysPage": {
+    "createAdminApiKey": "ایجاد کلید API مدیر"
+  },
+  "globalBackupsPage": {
+    "createManualBackup": "ایجاد پشتیبان دستی"
+  },
+  "globalAutomationPage": {
+    "createGlobalTemplate": "ایجاد قالب سراسری"
+  },
+  "globalTenantsPageExtra": {
+    "createNewTenant": "ایجاد سازمان جدید"
+  },
+  "adminRolesPage": {
+    "createPlatformRole": "ایجاد نقش پلتفرم"
+  },
+  "tenantExportsPageExtra": {
+    "createExport": "ایجاد خروجی",
+    "saveAsTemplate": "ذخیره به عنوان قالب"
+  },
+  "tenantDomainsPage": {
+    "addCustomDomain": "افزودن دامنه سفارشی",
+    "addDnsRecordsToVerify": "رکوردهای DNS را برای تأیید مالکیت دامنه اضافه کنید"
+  },
+  "tenantWebhooksPage": {
+    "createWebhook": "ایجاد وب‌هوک",
+    "editWebhook": "ویرایش وب‌هوک"
+  },
+  "tableHeaders": {
+    "created": "ایجاد شده",
+    "updated": "به‌روزرسانی شده",
+    "createdAt": "ایجاد شده در",
+    "updatedAt": "به‌روزرسانی شده در",
+    "createdBy": "ایجاد شده توسط",
+    "updatedBy": "به‌روزرسانی شده توسط",
+    "additionalDetails": "جزئیات اضافی",
+    "additionalCustomAttributes": "ویژگی‌های سفارشی اضافی"
   }
 }
