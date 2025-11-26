@@ -316,7 +316,32 @@
     "globalApprovalRule": "Global Approval Rule",
     "featureFlag": "Feature Flag",
     "viewExecutions": "View Executions",
-    "saveAsTemplate": "Save as Template"
+    "saveAsTemplate": "Save as Template",
+    "na": "N/A",
+    "unknown": "Unknown",
+    "general": "General",
+    "testFailed": "Test failed",
+    "healthy": "Healthy",
+    "unhealthy": "Unhealthy",
+    "context": "Context",
+    "suggestions": "Suggestions",
+    "insights": "Insights",
+    "analysis": "Analysis",
+    "metrics": "Metrics",
+    "recommendations": "Recommendations",
+    "findings": "Findings",
+    "summary": "Summary",
+    "confidence": "Confidence",
+    "sources": "Sources",
+    "send": "Send",
+    "processing": "Processing...",
+    "analyzing": "Analyzing...",
+    "acknowledged": "Acknowledged",
+    "tenant": "Tenant",
+    "user": "User",
+    "assistant": "Assistant",
+    "messages": "Messages",
+    "lastActivity": "Last Activity"
   },
   "auth": {
     "login": "Login",
@@ -3854,5 +3879,107 @@
     "analysisMetrics": "Analysis Metrics",
     "enforcementRate": "Enforcement Rate",
     "riskScore": "Risk Score"
+  },
+  "tenantCopilot": {
+    "title": "OneSign Copilot",
+    "newConversation": "New Conversation",
+    "noConversationsYet": "No conversations yet",
+    "welcome": "Welcome to OneSign Copilot",
+    "welcomeDescription": "Ask me anything about your security posture, users, applications, or incidents.",
+    "placeholder": "Ask OneSign Copilot...",
+    "suggestedActions": "Suggested actions:",
+    "noSuggestionsAvailable": "No suggestions available",
+    "noInsightsAvailable": "No insights available",
+    "securityScore": "Security Score",
+    "noAnalysisResults": "No analysis results yet",
+    "clickToAnalyze": "Click \"Analyze Security Posture\" to start",
+    "analyzeSecurityPosture": "Analyze Security Posture",
+    "toggleHistory": "Toggle History",
+    "toggleInsightsSidebar": "Toggle Insights Sidebar",
+    "untitledConversation": "Untitled Conversation",
+    "suggestion": "Suggestion",
+    "insight": "Insight",
+    "showRecentSecurityEvents": "Show me recent security events",
+    "analyzeUserRiskScores": "Analyze user risk scores",
+    "checkApplicationCompliance": "Check application compliance",
+    "askCopilot": "Ask Copilot",
+    "recommendation": "Recommendation"
+  },
+  "globalCopilot": {
+    "title": "Copilot - Global Management",
+    "analyzeAllTenants": "Analyze All Tenants",
+    "analyzingTenants": "Analyzing Tenants...",
+    "analysisCompleted": "Analysis completed",
+    "alertAcknowledged": "Alert acknowledged",
+    "settingsSaved": "Settings saved successfully",
+    "enableCopilot": "Enable Copilot",
+    "modelProvider": "Model Provider",
+    "maxTokensPerRequest": "Max Tokens Per Request",
+    "maxConversationHistory": "Max Conversation History",
+    "rateLimitPerMinute": "Rate Limit (per minute)",
+    "retentionDays": "Retention Days",
+    "enabledContextTypes": "Enabled Context Types",
+    "saveSettings": "Save Settings",
+    "tabs": {
+      "settings": "Settings",
+      "aiQuery": "AI Query",
+      "analytics": "Analytics",
+      "platformInsights": "Platform Insights",
+      "recommendations": "Recommendations",
+      "smartAlerts": "Smart Alerts",
+      "conversationHistory": "Conversation History",
+      "knowledgeBase": "Knowledge Base"
+    },
+    "analytics": {
+      "totalConversations": "Total Conversations",
+      "totalMessages": "Total Messages",
+      "activeUsers": "Active Users",
+      "avgResponseTime": "Avg Response Time",
+      "topContextTypes": "Top Context Types",
+      "noUsageData": "No usage data available yet"
+    },
+    "insights": {
+      "affects": "Affects",
+      "tenants": "tenants",
+      "keyMetrics": "Key Metrics",
+      "noInsights": "No platform insights available. Run \"Analyze All Tenants\" to generate insights."
+    },
+    "recommendations": {
+      "impact": "Impact",
+      "effort": "Effort",
+      "viewDetails": "View Details",
+      "noRecommendations": "No recommendations available yet."
+    },
+    "alerts": {
+      "noAlerts": "No alerts at this time. All systems operational.",
+      "acknowledge": "Acknowledge"
+    },
+    "history": {
+      "enterConversationId": "Enter conversation ID to view details",
+      "viewConversation": "View Conversation",
+      "conversationDetails": "Conversation Details",
+      "noConversationsFound": "No conversations found",
+      "page": "Page"
+    },
+    "query": {
+      "title": "AI Query Interface",
+      "enterQuery": "Enter your query",
+      "queryPlaceholder": "Ask anything about your platform, tenants, or data...",
+      "executeQuery": "Execute Query",
+      "queryResponse": "Query Response",
+      "executionTime": "Execution Time",
+      "executeAction": "Execute Action",
+      "actionCommand": "Action Command",
+      "actionPlaceholder": "e.g., restart-service, clear-cache, etc.",
+      "executing": "Executing..."
+    },
+    "knowledgeBase": {
+      "title": "Knowledge Base Status",
+      "totalDocuments": "Total Documents",
+      "indexSize": "Index Size",
+      "queryLatency": "Query Latency",
+      "lastUpdated": "Last Updated",
+      "noStatus": "No knowledge base status available"
+    }
   }
 }

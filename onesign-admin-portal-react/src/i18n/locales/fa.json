@@ -316,7 +316,32 @@
     "globalApprovalRule": "قانون تایید سراسری",
     "featureFlag": "پرچم ویژگی",
     "viewExecutions": "مشاهده اجراها",
-    "saveAsTemplate": "ذخیره به عنوان قالب"
+    "saveAsTemplate": "ذخیره به عنوان قالب",
+    "na": "نامشخص",
+    "unknown": "ناشناخته",
+    "general": "عمومی",
+    "testFailed": "تست ناموفق بود",
+    "healthy": "سالم",
+    "unhealthy": "ناسالم",
+    "context": "زمینه",
+    "suggestions": "پیشنهادات",
+    "insights": "بینش‌ها",
+    "analysis": "تحلیل",
+    "metrics": "معیارها",
+    "recommendations": "توصیه‌ها",
+    "findings": "یافته‌ها",
+    "summary": "خلاصه",
+    "confidence": "اطمینان",
+    "sources": "منابع",
+    "send": "ارسال",
+    "processing": "در حال پردازش...",
+    "analyzing": "در حال تحلیل...",
+    "acknowledged": "تایید شده",
+    "tenant": "سازمان",
+    "user": "کاربر",
+    "assistant": "دستیار",
+    "messages": "پیام‌ها",
+    "lastActivity": "آخرین فعالیت"
   },
   "auth": {
     "login": "ورود",
@@ -3853,5 +3878,107 @@
     "analysisMetrics": "معیارهای تحلیل",
     "enforcementRate": "نرخ اجرا",
     "riskScore": "امتیاز ریسک"
+  },
+  "tenantCopilot": {
+    "title": "دستیار هوشمند OneSign",
+    "newConversation": "مکالمه جدید",
+    "noConversationsYet": "هنوز مکالمه‌ای وجود ندارد",
+    "welcome": "به دستیار هوشمند OneSign خوش آمدید",
+    "welcomeDescription": "هر سوالی درباره وضعیت امنیتی، کاربران، برنامه‌ها یا حوادث دارید بپرسید.",
+    "placeholder": "از دستیار هوشمند بپرسید...",
+    "suggestedActions": "اقدامات پیشنهادی:",
+    "noSuggestionsAvailable": "پیشنهادی موجود نیست",
+    "noInsightsAvailable": "بینشی موجود نیست",
+    "securityScore": "امتیاز امنیتی",
+    "noAnalysisResults": "هنوز نتیجه تحلیلی وجود ندارد",
+    "clickToAnalyze": "برای شروع روی «تحلیل وضعیت امنیتی» کلیک کنید",
+    "analyzeSecurityPosture": "تحلیل وضعیت امنیتی",
+    "toggleHistory": "تغییر وضعیت تاریخچه",
+    "toggleInsightsSidebar": "تغییر وضعیت نوار کناری بینش‌ها",
+    "untitledConversation": "مکالمه بدون عنوان",
+    "suggestion": "پیشنهاد",
+    "insight": "بینش",
+    "showRecentSecurityEvents": "رویدادهای امنیتی اخیر را نشان بده",
+    "analyzeUserRiskScores": "امتیازات ریسک کاربران را تحلیل کن",
+    "checkApplicationCompliance": "انطباق برنامه‌ها را بررسی کن",
+    "askCopilot": "از دستیار بپرس",
+    "recommendation": "توصیه"
+  },
+  "globalCopilot": {
+    "title": "دستیار هوشمند - مدیریت سراسری",
+    "analyzeAllTenants": "تحلیل همه سازمان‌ها",
+    "analyzingTenants": "در حال تحلیل سازمان‌ها...",
+    "analysisCompleted": "تحلیل کامل شد",
+    "alertAcknowledged": "هشدار تایید شد",
+    "settingsSaved": "تنظیمات با موفقیت ذخیره شد",
+    "enableCopilot": "فعال‌سازی دستیار",
+    "modelProvider": "ارائه‌دهنده مدل",
+    "maxTokensPerRequest": "حداکثر توکن در هر درخواست",
+    "maxConversationHistory": "حداکثر تاریخچه مکالمه",
+    "rateLimitPerMinute": "محدودیت نرخ (در دقیقه)",
+    "retentionDays": "روزهای نگهداری",
+    "enabledContextTypes": "انواع زمینه فعال",
+    "saveSettings": "ذخیره تنظیمات",
+    "tabs": {
+      "settings": "تنظیمات",
+      "aiQuery": "پرسش هوشمند",
+      "analytics": "تحلیل‌ها",
+      "platformInsights": "بینش‌های پلتفرم",
+      "recommendations": "توصیه‌ها",
+      "smartAlerts": "هشدارهای هوشمند",
+      "conversationHistory": "تاریخچه مکالمات",
+      "knowledgeBase": "پایگاه دانش"
+    },
+    "analytics": {
+      "totalConversations": "کل مکالمات",
+      "totalMessages": "کل پیام‌ها",
+      "activeUsers": "کاربران فعال",
+      "avgResponseTime": "میانگین زمان پاسخ",
+      "topContextTypes": "پرکاربردترین انواع زمینه",
+      "noUsageData": "هنوز داده استفاده‌ای موجود نیست"
+    },
+    "insights": {
+      "affects": "تأثیر بر",
+      "tenants": "سازمان",
+      "keyMetrics": "معیارهای کلیدی",
+      "noInsights": "بینش پلتفرمی موجود نیست. «تحلیل همه سازمان‌ها» را اجرا کنید تا بینش‌ها تولید شوند."
+    },
+    "recommendations": {
+      "impact": "تأثیر",
+      "effort": "تلاش",
+      "viewDetails": "مشاهده جزئیات",
+      "noRecommendations": "هنوز توصیه‌ای موجود نیست."
+    },
+    "alerts": {
+      "noAlerts": "هشداری در این زمان وجود ندارد. همه سیستم‌ها عملیاتی هستند.",
+      "acknowledge": "تایید"
+    },
+    "history": {
+      "enterConversationId": "شناسه مکالمه را برای مشاهده جزئیات وارد کنید",
+      "viewConversation": "مشاهده مکالمه",
+      "conversationDetails": "جزئیات مکالمه",
+      "noConversationsFound": "مکالمه‌ای یافت نشد",
+      "page": "صفحه"
+    },
+    "query": {
+      "title": "رابط پرسش هوشمند",
+      "enterQuery": "پرسش خود را وارد کنید",
+      "queryPlaceholder": "هر چیزی درباره پلتفرم، سازمان‌ها یا داده‌ها بپرسید...",
+      "executeQuery": "اجرای پرسش",
+      "queryResponse": "پاسخ پرسش",
+      "executionTime": "زمان اجرا",
+      "executeAction": "اجرای عملیات",
+      "actionCommand": "دستور عملیات",
+      "actionPlaceholder": "مثال: restart-service, clear-cache و...",
+      "executing": "در حال اجرا..."
+    },
+    "knowledgeBase": {
+      "title": "وضعیت پایگاه دانش",
+      "totalDocuments": "کل اسناد",
+      "indexSize": "اندازه ایندکس",
+      "queryLatency": "تأخیر پرسش",
+      "lastUpdated": "آخرین به‌روزرسانی",
+      "noStatus": "وضعیت پایگاه دانش موجود نیست"
+    }
   }
 }
