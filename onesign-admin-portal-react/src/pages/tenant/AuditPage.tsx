@@ -10,6 +10,7 @@ import DataTable, { Column } from '@/components/common/DataTable';
 import Badge from '@/components/common/Badge';
 import Avatar from '@/components/common/Avatar';
 import { formatRelativeTime } from '@/utils/formatters';
+import { tenantService } from '@/lib/api/services/tenant.service';
 
 interface AuditLog {
   id: string;
@@ -37,32 +38,10 @@ const AuditPage = () => {
   const fetchLogs = async () => {
     setLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      const mockLogs: AuditLog[] = Array.from({ length: 50 }, (_, i) => ({
-        id: `log-${i + 1}`,
-        action: [
-          'userLogin',
-          'userLogout',
-          'userCreated',
-          'userUpdated',
-          'userDeleted',
-          'roleCreated',
-          'settingsChanged',
-          'apiKeyGenerated',
-          'apiKeyRevoked',
-        ][i % 9],
-        user: {
-          name: `${['John', 'Jane', 'Bob', 'Alice'][i % 4]} ${['Smith', 'Doe', 'Wilson'][i % 3]}`,
-          email: `user${i}@company.com`,
-        },
-        resource: ['User', 'Role', 'Settings', 'API Key'][i % 4],
-        details: `${['Created', 'Updated', 'Deleted', 'Modified'][i % 4]} resource ID: ${Math.random().toString(36).substring(7)}`,
-        ipAddress: `192.168.${Math.floor(i / 10)}.${(i % 254) + 1}`,
-        status: i % 7 === 0 ? 'failed' : 'success',
-        timestamp: new Date(Date.now() - i * 600000).toISOString(),
-      }));
-      setLogs(mockLogs);
+      const response = await tenantService.getAuditLogs({ pageSize: 100 });
+      setLogs(response.items || []);
     } catch (error) {
+      console.error('Error fetching audit logs:', error);
       toast.error(t('common.error'));
     } finally {
       setLoading(false);
@@ -133,8 +112,22 @@ const AuditPage = () => {
     },
   ];
 
-  const handleExport = () => {
-    toast.success(t('audit.exportLogs'));
+  const handleExport = async () => {
+    try {
+      const blob = await tenantService.exportAuditLogs({ format: 'csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `audit-logs-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      toast.success(t('audit.exportLogs') || 'Audit logs exported successfully');
+    } catch (error) {
+      console.error('Error exporting audit logs:', error);
+      toast.error(t('common.error'));
+    }
   };
 
   return (

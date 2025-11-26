@@ -1,6 +1,6 @@
-// Re-export from main services file
-export { governanceService } from '../services';
-export default governanceService;
+// Re-export governanceService from main services file
+// The full implementation is in ../services.ts
+import { governanceService as _governanceService } from '../services.ts';
 
-// Also export from main services
-import { governanceService } from '../services';
+export const governanceService = _governanceService;
+export default governanceService;

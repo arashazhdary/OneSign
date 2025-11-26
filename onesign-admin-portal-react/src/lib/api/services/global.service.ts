@@ -750,6 +750,223 @@ export const globalService = {
     }
   },
 
+  // ==================== TEMPLATES (Global System Templates) ====================
+
+  /**
+   * GET /api/global/templates - لیست همه قالب‌های سیستم
+   */
+  getTemplates: async (params?: { type?: string; category?: string }): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/global/templates', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch templates:', error);
+      return [];
+    }
+  },
+
+  /**
+   * GET /api/global/templates/email - قالب‌های ایمیل
+   */
+  getEmailTemplates: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/global/templates/email');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch email templates:', error);
+      return [];
+    }
+  },
+
+  /**
+   * GET /api/global/templates/policy - قالب‌های سیاست
+   */
+  getPolicyTemplates: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/global/templates/policy');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch policy templates:', error);
+      return [];
+    }
+  },
+
+  /**
+   * GET /api/global/templates/report - قالب‌های گزارش
+   */
+  getReportTemplates: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/global/templates/report');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch report templates:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/global/templates - ایجاد قالب جدید
+   */
+  createTemplate: async (data: {
+    name: string;
+    type: 'workflow' | 'email' | 'policy' | 'report';
+    category: string;
+    description?: string;
+    content: any;
+    variables?: string[];
+  }): Promise<any> => {
+    const response = await apiClient.post('/api/global/templates', data);
+    return response.data;
+  },
+
+  /**
+   * PUT /api/global/templates/{id} - به‌روزرسانی قالب
+   */
+  updateTemplate: async (templateId: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/global/templates/${templateId}`, data);
+    return response.data;
+  },
+
+  /**
+   * DELETE /api/global/templates/{id} - حذف قالب
+   */
+  deleteTemplate: async (templateId: string): Promise<void> => {
+    await apiClient.delete(`/api/global/templates/${templateId}`);
+  },
+
+  /**
+   * POST /api/global/templates/{id}/publish - انتشار قالب
+   */
+  publishTemplate: async (templateId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/templates/${templateId}/publish`);
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/templates/{id}/unpublish - لغو انتشار قالب
+   */
+  unpublishTemplate: async (templateId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/templates/${templateId}/unpublish`);
+    return response.data;
+  },
+
+  // ==================== ALERTS (Global Platform Alerts) ====================
+
+  /**
+   * GET /api/global/alerts - لیست هشدارهای پلتفرم
+   */
+  getAlerts: async (params?: { status?: string; severity?: string; category?: string }): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/global/alerts', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch alerts:', error);
+      return [];
+    }
+  },
+
+  /**
+   * GET /api/global/alerts/{id} - جزئیات هشدار
+   */
+  getAlertById: async (alertId: string): Promise<any> => {
+    try {
+      const response = await apiClient.get(`/api/global/alerts/${alertId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch alert:', error);
+      return null;
+    }
+  },
+
+  /**
+   * POST /api/global/alerts/{id}/acknowledge - تایید هشدار
+   */
+  acknowledgeAlert: async (alertId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/alerts/${alertId}/acknowledge`);
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/alerts/{id}/resolve - حل هشدار
+   */
+  resolveAlert: async (alertId: string, data?: { notes?: string }): Promise<any> => {
+    const response = await apiClient.post(`/api/global/alerts/${alertId}/resolve`, data);
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/alerts/{id}/silence - بی‌صدا کردن هشدار
+   */
+  silenceAlert: async (alertId: string, data?: { duration?: number }): Promise<any> => {
+    const response = await apiClient.post(`/api/global/alerts/${alertId}/silence`, data);
+    return response.data;
+  },
+
+  /**
+   * GET /api/global/alerts/rules - لیست قوانین هشدار
+   */
+  getAlertRules: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/global/alerts/rules');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch alert rules:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/global/alerts/rules - ایجاد قانون هشدار
+   */
+  createAlertRule: async (data: {
+    name: string;
+    description?: string;
+    condition: string;
+    threshold: number;
+    severity: 'critical' | 'high' | 'medium' | 'low';
+    notificationChannels: string[];
+    cooldownMinutes?: number;
+  }): Promise<any> => {
+    const response = await apiClient.post('/api/global/alerts/rules', data);
+    return response.data;
+  },
+
+  /**
+   * PUT /api/global/alerts/rules/{id} - به‌روزرسانی قانون هشدار
+   */
+  updateAlertRule: async (ruleId: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/global/alerts/rules/${ruleId}`, data);
+    return response.data;
+  },
+
+  /**
+   * DELETE /api/global/alerts/rules/{id} - حذف قانون هشدار
+   */
+  deleteAlertRule: async (ruleId: string): Promise<void> => {
+    await apiClient.delete(`/api/global/alerts/rules/${ruleId}`);
+  },
+
+  /**
+   * POST /api/global/alerts/rules/{id}/toggle - فعال/غیرفعال کردن قانون
+   */
+  toggleAlertRule: async (ruleId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/alerts/rules/${ruleId}/toggle`);
+    return response.data;
+  },
+
+  /**
+   * GET /api/global/alerts/stats - آمار هشدارها
+   */
+  getAlertStats: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/global/alerts/stats');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch alert stats:', error);
+      return null;
+    }
+  },
+
   // ==================== OBSERVABILITY (Spec: /api/global/observability) ====================
 
   /**
@@ -763,6 +980,103 @@ export const globalService = {
       console.error('Failed to fetch metrics:', error);
       return null;
     }
+  },
+
+  /**
+   * GET /api/global/observability/performance - متریک‌های عملکرد
+   */
+  getPerformanceMetrics: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/global/observability/performance');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch performance metrics:', error);
+      return null;
+    }
+  },
+
+  /**
+   * GET /api/global/platform/metrics - متریک‌های پلتفرم
+   */
+  getPlatformMetrics: async (params?: { timeRange?: string; category?: string }): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/global/platform/metrics', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch platform metrics:', error);
+      return null;
+    }
+  },
+
+  /**
+   * POST /api/global/platform/diagnostics/run - اجرای تست‌های تشخیصی
+   */
+  runDiagnostics: async (): Promise<any> => {
+    try {
+      const response = await apiClient.post('/api/global/platform/diagnostics/run');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to run diagnostics:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * POST /api/global/platform/diagnostics/{testId}/run - اجرای یک تست تشخیصی
+   */
+  runDiagnosticTest: async (testId: string): Promise<any> => {
+    try {
+      const response = await apiClient.post(`/api/global/platform/diagnostics/${testId}/run`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to run diagnostic test:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * GET /api/global/licenses - لیست لایسنس‌ها
+   */
+  getLicenses: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/global/licenses');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch licenses:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/global/licenses - صدور لایسنس
+   */
+  issueLicense: async (data: any): Promise<any> => {
+    const response = await apiClient.post('/api/global/licenses', data);
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/licenses/{id}/suspend - تعلیق لایسنس
+   */
+  suspendLicense: async (licenseId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/licenses/${licenseId}/suspend`);
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/licenses/{id}/revoke - ابطال لایسنس
+   */
+  revokeLicense: async (licenseId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/licenses/${licenseId}/revoke`);
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/licenses/{id}/renew - تمدید لایسنس
+   */
+  renewLicense: async (licenseId: string, data?: any): Promise<any> => {
+    const response = await apiClient.post(`/api/global/licenses/${licenseId}/renew`, data);
+    return response.data;
   },
 
   /**

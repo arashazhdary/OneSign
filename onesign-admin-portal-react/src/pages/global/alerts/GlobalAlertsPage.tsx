@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { securityService } from '@/lib/api/services';
-import { Helmet } from 'react-helmet-async';
+import { globalService } from '@/lib/api/services/global.service';
 
 interface Alert {
   id: string;
@@ -45,112 +44,17 @@ export default function GlobalAlertsPage() {
 
   const fetchData = async () => {
     try {
-      // Mock alerts
-      setAlerts([
-        {
-          id: '1',
-          title: 'High CPU Usage on Production Servers',
-          description: 'CPU usage exceeded 90% threshold for 5 minutes',
-          severity: 'critical',
-          status: 'active',
-          category: 'performance',
-          source: 'monitoring-system',
-          triggeredAt: '2024-11-23T10:15:00Z',
-          affectedTenants: ['tenant-123', 'tenant-456'],
-          metrics: { cpu: 94, duration: '5m' },
-        },
-        {
-          id: '2',
-          title: 'Suspicious Login Attempts',
-          description: 'Multiple failed login attempts detected from unknown IP',
-          severity: 'high',
-          status: 'acknowledged',
-          category: 'security',
-          source: 'security-monitor',
-          triggeredAt: '2024-11-23T09:30:00Z',
-          acknowledgedAt: '2024-11-23T09:35:00Z',
-          acknowledgedBy: 'admin@example.com',
-          metrics: { attempts: 15, ip: '45.67.89.123' },
-        },
-        {
-          id: '3',
-          title: 'Database Replication Lag',
-          description: 'Replication lag exceeded 30 seconds',
-          severity: 'medium',
-          status: 'active',
-          category: 'system',
-          source: 'database-monitor',
-          triggeredAt: '2024-11-23T10:00:00Z',
-          metrics: { lag: '45s', database: 'primary-db' },
-        },
-        {
-          id: '4',
-          title: 'API Rate Limit Approaching',
-          description: 'API usage at 85% of rate limit',
-          severity: 'medium',
-          status: 'active',
-          category: 'performance',
-          source: 'api-gateway',
-          triggeredAt: '2024-11-23T09:45:00Z',
-          affectedTenants: ['tenant-789'],
-          metrics: { usage: '85%', limit: 10000 },
-        },
-        {
-          id: '5',
-          title: 'Payment Gateway Timeout',
-          description: 'Payment processing experiencing timeouts',
-          severity: 'high',
-          status: 'resolved',
-          category: 'business',
-          source: 'payment-service',
-          triggeredAt: '2024-11-23T08:00:00Z',
-          acknowledgedAt: '2024-11-23T08:05:00Z',
-          resolvedAt: '2024-11-23T08:30:00Z',
-          acknowledgedBy: 'admin@example.com',
-        },
+      const [alertsData, rulesData] = await Promise.all([
+        globalService.getAlerts(),
+        globalService.getAlertRules()
       ]);
 
-      // Mock alert rules
-      setRules([
-        {
-          id: '1',
-          name: 'High CPU Usage',
-          description: 'Alert when CPU usage exceeds threshold',
-          condition: 'cpu_usage > threshold',
-          threshold: 90,
-          severity: 'critical',
-          isEnabled: true,
-          notificationChannels: ['email', 'slack', 'pagerduty'],
-          cooldownMinutes: 15,
-          createdAt: '2024-01-15T00:00:00Z',
-        },
-        {
-          id: '2',
-          name: 'Failed Login Attempts',
-          description: 'Alert on multiple failed login attempts',
-          condition: 'failed_logins > threshold',
-          threshold: 10,
-          severity: 'high',
-          isEnabled: true,
-          notificationChannels: ['email', 'slack'],
-          cooldownMinutes: 30,
-          createdAt: '2024-02-20T00:00:00Z',
-        },
-        {
-          id: '3',
-          name: 'Database Lag',
-          description: 'Alert when database replication lag is high',
-          condition: 'replication_lag > threshold',
-          threshold: 30,
-          severity: 'medium',
-          isEnabled: true,
-          notificationChannels: ['email'],
-          cooldownMinutes: 10,
-          createdAt: '2024-03-10T00:00:00Z',
-        },
-      ]);
+      setAlerts(alertsData || []);
+      setRules(rulesData || []);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to fetch alerts data:', err);
+      setAlerts([]);
+      setRules([]);
     } finally {
       setLoading(false);
     }
@@ -158,8 +62,7 @@ export default function GlobalAlertsPage() {
 
   const handleAcknowledge = async (alertId: string) => {
     try {
-      // TODO: Global alerts need different endpoint
-      // await securityService.acknowledgeAlert?.(globalTenantId, alertId);
+      await globalService.acknowledgeAlert(alertId);
       fetchData();
     } catch (error) {
       console.error('Failed to acknowledge alert:', error);
@@ -168,8 +71,7 @@ export default function GlobalAlertsPage() {
 
   const handleResolve = async (alertId: string) => {
     try {
-      // TODO: Global alerts need different endpoint
-      // await securityService.resolveAlert?.(globalTenantId, alertId);
+      await globalService.resolveAlert(alertId);
       fetchData();
     } catch (error) {
       console.error('Failed to resolve alert:', error);
@@ -178,11 +80,29 @@ export default function GlobalAlertsPage() {
 
   const handleSilence = async (alertId: string) => {
     try {
-      // TODO: silenceAlert not implemented
-      // await securityService.silenceAlert?.(alertId);
+      await globalService.silenceAlert(alertId);
       fetchData();
     } catch (error) {
       console.error('Failed to silence alert:', error);
+    }
+  };
+
+  const handleToggleRule = async (ruleId: string) => {
+    try {
+      await globalService.toggleAlertRule(ruleId);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to toggle alert rule:', error);
+    }
+  };
+
+  const handleDeleteRule = async (ruleId: string) => {
+    if (!confirm('Are you sure you want to delete this alert rule?')) return;
+    try {
+      await globalService.deleteAlertRule(ruleId);
+      fetchData();
+    } catch (error) {
+      console.error('Failed to delete alert rule:', error);
     }
   };
 
@@ -492,7 +412,7 @@ export default function GlobalAlertsPage() {
                       <input
                         type="checkbox"
                         checked={rule.isEnabled}
-                        onChange={() => {}}
+                        onChange={() => handleToggleRule(rule.id)}
                         className="sr-only peer"
                       />
                       <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
@@ -500,7 +420,12 @@ export default function GlobalAlertsPage() {
                   </td>
                   <td className="px-6 py-4 text-sm">
                     <button className="text-blue-600 hover:text-blue-800 mr-3">Edit</button>
-                    <button className="text-red-600 hover:text-red-800">Delete</button>
+                    <button
+                      onClick={() => handleDeleteRule(rule.id)}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))}

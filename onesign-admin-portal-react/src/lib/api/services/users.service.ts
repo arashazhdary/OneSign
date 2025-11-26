@@ -1,6 +1,6 @@
-// Re-export from main services file
-export { usersService } from '../services';
-export default usersService;
+// Re-export usersService from main services file
+// The full implementation is in ../services.ts
+import { usersService as _usersService } from '../services.ts';
 
-// Also export from main services
-import { usersService } from '../services';
+export const usersService = _usersService;
+export default usersService;

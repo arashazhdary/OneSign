@@ -39,7 +39,13 @@ export default function GlobalLicensesPage() {
 
   const fetchLicenses = async () => {
     try {
-      const data = await globalService.getLicenses?.();
+      const data = await globalService.getLicenses();
+      if (data && data.length > 0) {
+        setLicenses(data);
+        setLoading(false);
+        return;
+      }
+      // Fallback to mock data if API returns empty
       const mockData: License[] = [
         {
           id: '1',
@@ -133,9 +139,9 @@ export default function GlobalLicensesPage() {
           maxActivations: 1,
         },
       ];
-      setLicenses(data || mockData);
+      setLicenses(mockData);
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching licenses:', err);
     } finally {
       setLoading(false);
     }
@@ -143,7 +149,7 @@ export default function GlobalLicensesPage() {
 
   const handleAdd = async () => {
     try {
-      await globalService.createLicense?.({
+      await globalService.issueLicense({
         type: 'trial',
         issuedTo: 'New Customer',
         features: [],
@@ -164,7 +170,7 @@ export default function GlobalLicensesPage() {
   const handleSuspend = async (licenseId: string) => {
     if (!confirm('Suspend this license?')) return;
     try {
-      await globalService.suspendLicense?.(licenseId);
+      await globalService.suspendLicense(licenseId);
       fetchLicenses();
     } catch (error) {
       console.error('Failed to suspend license:', error);
@@ -174,7 +180,7 @@ export default function GlobalLicensesPage() {
   const handleRevoke = async (licenseId: string) => {
     if (!confirm('Revoke this license? This action cannot be undone.')) return;
     try {
-      await globalService.revokeLicense?.(licenseId);
+      await globalService.revokeLicense(licenseId);
       fetchLicenses();
     } catch (error) {
       console.error('Failed to revoke license:', error);
@@ -183,7 +189,7 @@ export default function GlobalLicensesPage() {
 
   const handleRenew = async (licenseId: string) => {
     try {
-      await globalService.renewLicense?.(licenseId);
+      await globalService.renewLicense(licenseId);
       fetchLicenses();
     } catch (error) {
       console.error('Failed to renew license:', error);
