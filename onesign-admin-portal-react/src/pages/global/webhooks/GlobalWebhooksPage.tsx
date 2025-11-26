@@ -51,7 +51,7 @@ export default function GlobalWebhooksPage() {
 
   const fetchData = async () => {
     try {
-      const data = await globalService.getGlobalWebhooks?.();
+      const data = await globalService.getGlobalWebhooks();
       const mockWebhooks: GlobalWebhook[] = [
         {
           id: '1',
@@ -180,7 +180,7 @@ export default function GlobalWebhooksPage() {
 
   const handleCreate = async () => {
     try {
-      await globalService.createGlobalWebhook?.({
+      await globalService.createGlobalWebhook({
         name: 'New Webhook',
         url: 'https://example.com/webhook',
         events: [],
@@ -199,7 +199,7 @@ export default function GlobalWebhooksPage() {
 
   const handleToggle = async (webhookId: string) => {
     try {
-      await globalService.toggleGlobalWebhook?.(webhookId);
+      await globalService.toggleGlobalWebhook(webhookId);
       fetchData();
     } catch (error) {
       console.error('Failed to toggle global webhook:', error);
@@ -208,7 +208,7 @@ export default function GlobalWebhooksPage() {
 
   const handleTest = async (webhookId: string) => {
     try {
-      await globalService.testGlobalWebhook?.(webhookId);
+      await globalService.testGlobalWebhook(webhookId);
     } catch (error) {
       console.error('Failed to test global webhook:', error);
     }
@@ -217,7 +217,7 @@ export default function GlobalWebhooksPage() {
   const handleDelete = async (webhookId: string) => {
     if (!confirm('Delete this webhook?')) return;
     try {
-      await globalService.deleteGlobalWebhook?.(webhookId);
+      await globalService.deleteGlobalWebhook(webhookId);
       fetchData();
     } catch (error) {
       console.error('Failed to delete global webhook:', error);

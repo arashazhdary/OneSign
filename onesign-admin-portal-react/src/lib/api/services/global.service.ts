@@ -1248,6 +1248,188 @@ export const globalService = {
       return null;
     }
   },
+
+  // ==================== HEALTH ENDPOINTS ====================
+
+  /**
+   * GET /api/health - وضعیت سلامت کلی
+   */
+  getHealthStatus: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/health');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch health status:', error);
+      return null;
+    }
+  },
+
+  /**
+   * GET /api/health/live - بررسی liveness
+   */
+  getLivenessProbe: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/health/live');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch liveness probe:', error);
+      return null;
+    }
+  },
+
+  /**
+   * GET /api/health/ready - بررسی readiness
+   */
+  getReadinessProbe: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/health/ready');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch readiness probe:', error);
+      return null;
+    }
+  },
+
+  /**
+   * GET /api/health/regions - سلامت مناطق
+   */
+  getRegionsHealthStatus: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/health/regions');
+      return response.data?.regions || response.data || [];
+    } catch (error) {
+      console.error('Failed to fetch regions health:', error);
+      return [];
+    }
+  },
+
+  // ==================== GLOBAL WEBHOOKS ====================
+
+  /**
+   * GET /api/global/webhooks - لیست وب‌هوک‌های پلتفرم
+   */
+  getGlobalWebhooks: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/global/webhooks');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch global webhooks:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/global/webhooks - ایجاد وب‌هوک پلتفرم
+   */
+  createGlobalWebhook: async (data: {
+    name: string;
+    url: string;
+    events: string[];
+    secret?: string;
+    isActive: boolean;
+    retryStrategy: 'exponential' | 'linear' | 'none';
+    maxRetries: number;
+    timeout: number;
+    headers?: Record<string, string>;
+  }): Promise<any> => {
+    const response = await apiClient.post('/api/global/webhooks', data);
+    return response.data;
+  },
+
+  /**
+   * PUT /api/global/webhooks/{id} - به‌روزرسانی وب‌هوک
+   */
+  updateGlobalWebhook: async (webhookId: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/global/webhooks/${webhookId}`, data);
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/webhooks/{id}/toggle - فعال/غیرفعال کردن وب‌هوک
+   */
+  toggleGlobalWebhook: async (webhookId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/webhooks/${webhookId}/toggle`);
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/webhooks/{id}/test - تست وب‌هوک
+   */
+  testGlobalWebhook: async (webhookId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/webhooks/${webhookId}/test`);
+    return response.data;
+  },
+
+  /**
+   * DELETE /api/global/webhooks/{id} - حذف وب‌هوک
+   */
+  deleteGlobalWebhook: async (webhookId: string): Promise<void> => {
+    await apiClient.delete(`/api/global/webhooks/${webhookId}`);
+  },
+
+  /**
+   * GET /api/global/webhooks/{id}/logs - لاگ‌های وب‌هوک
+   */
+  getGlobalWebhookLogs: async (webhookId: string): Promise<any[]> => {
+    try {
+      const response = await apiClient.get(`/api/global/webhooks/${webhookId}/logs`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch webhook logs:', error);
+      return [];
+    }
+  },
+
+  /**
+   * GET /api/global/webhooks/logs - همه لاگ‌های وب‌هوک
+   */
+  getAllWebhookLogs: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/global/webhooks/logs');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch all webhook logs:', error);
+      return [];
+    }
+  },
+
+  // ==================== TENANT INTEGRATIONS & IMPORTS/EXPORTS ====================
+
+  /**
+   * GET /api/global/integrations - لیست یکپارچه‌سازی‌ها
+   */
+  getGlobalIntegrations: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/global/integrations');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch global integrations:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/global/integrations - ایجاد یکپارچه‌سازی
+   */
+  createGlobalIntegration: async (data: any): Promise<any> => {
+    const response = await apiClient.post('/api/global/integrations', data);
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/integrations/{id}/toggle - فعال/غیرفعال کردن
+   */
+  toggleGlobalIntegration: async (integrationId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/integrations/${integrationId}/toggle`);
+    return response.data;
+  },
+
+  /**
+   * DELETE /api/global/integrations/{id} - حذف یکپارچه‌سازی
+   */
+  deleteGlobalIntegration: async (integrationId: string): Promise<void> => {
+    await apiClient.delete(`/api/global/integrations/${integrationId}`);
+  },
 };
 
 export default globalService;
