@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { globalService } from '@/lib/api/services/global.service';
 import {
   getGlobalTemplates,
   createGlobalTemplate,
@@ -10,7 +11,6 @@ import {
   EVENT_TYPES,
   ACTION_TYPES,
 } from '@/lib/api/automation';
-import { Helmet } from 'react-helmet-async';
 
 interface Template {
   id: string;
@@ -72,49 +72,94 @@ export default function GlobalTemplatesPage() {
     setError('');
 
     try {
-      const workflowTemplates = await getGlobalTemplates();
+      // Fetch all template types in parallel
+      const [workflowTemplates, emailTemplates, policyTemplates, reportTemplates] = await Promise.all([
+        getGlobalTemplates(),
+        globalService.getEmailTemplates(),
+        globalService.getPolicyTemplates(),
+        globalService.getReportTemplates(),
+      ]);
 
-      // Convert to unified Template format
+      // Convert workflow templates to unified Template format
+      const workflowItems: Template[] = (workflowTemplates || []).map((wt: AutomationWorkflowDto) => ({
+        id: wt.id,
+        name: wt.name,
+        type: 'workflow' as TemplateType,
+        category: wt.severity || 'General',
+        description: wt.description || '',
+        content: {
+          triggers: wt.triggers,
+          conditions: wt.conditions,
+          actions: wt.actions,
+          tenantCanDisable: wt.tenantCanDisable,
+          tenantCanOverrideConditions: wt.tenantCanOverrideConditions,
+        },
+        variables: extractVariables(wt),
+        isPublished: wt.isEnabled,
+        isEnforced: wt.isEnforced,
+        createdAt: wt.createdAt,
+        updatedAt: wt.updatedAt || wt.createdAt,
+        usageCount: 0,
+      }));
+
+      // Convert email templates
+      const emailItems: Template[] = (emailTemplates || []).map((et: any) => ({
+        id: et.id,
+        name: et.name,
+        type: 'email' as TemplateType,
+        category: et.category || 'General',
+        description: et.description || '',
+        content: et.content || {},
+        variables: et.variables || [],
+        isPublished: et.isPublished ?? true,
+        createdAt: et.createdAt,
+        updatedAt: et.updatedAt || et.createdAt,
+        usageCount: et.usageCount || 0,
+      }));
+
+      // Convert policy templates
+      const policyItems: Template[] = (policyTemplates || []).map((pt: any) => ({
+        id: pt.id,
+        name: pt.name,
+        type: 'policy' as TemplateType,
+        category: pt.category || 'Security',
+        description: pt.description || '',
+        content: pt.content || {},
+        variables: pt.variables || [],
+        isPublished: pt.isPublished ?? true,
+        isEnforced: pt.isEnforced,
+        createdAt: pt.createdAt,
+        updatedAt: pt.updatedAt || pt.createdAt,
+        usageCount: pt.usageCount || 0,
+      }));
+
+      // Convert report templates
+      const reportItems: Template[] = (reportTemplates || []).map((rt: any) => ({
+        id: rt.id,
+        name: rt.name,
+        type: 'report' as TemplateType,
+        category: rt.category || 'Compliance',
+        description: rt.description || '',
+        content: rt.content || {},
+        variables: rt.variables || [],
+        isPublished: rt.isPublished ?? true,
+        createdAt: rt.createdAt,
+        updatedAt: rt.updatedAt || rt.createdAt,
+        usageCount: rt.usageCount || 0,
+      }));
+
       const allTemplates: Template[] = [
-        // Workflow templates
-        ...workflowTemplates.map((wt: AutomationWorkflowDto) => ({
-          id: wt.id,
-          name: wt.name,
-          type: 'workflow' as TemplateType,
-          category: wt.severity || 'General',
-          description: wt.description || '',
-          content: {
-            triggers: wt.triggers,
-            conditions: wt.conditions,
-            actions: wt.actions,
-            tenantCanDisable: wt.tenantCanDisable,
-            tenantCanOverrideConditions: wt.tenantCanOverrideConditions,
-          },
-          variables: extractVariables(wt),
-          isPublished: wt.isEnabled,
-          isEnforced: wt.isEnforced,
-          createdAt: wt.createdAt,
-          updatedAt: wt.updatedAt || wt.createdAt,
-          usageCount: 0,
-        })),
-        // Mock system email templates
-        ...getMockSystemEmailTemplates(),
-        // Mock system policy templates
-        ...getMockSystemPolicyTemplates(),
-        // Mock system report templates
-        ...getMockSystemReportTemplates(),
+        ...workflowItems,
+        ...emailItems,
+        ...policyItems,
+        ...reportItems,
       ];
 
       setTemplates(allTemplates);
     } catch (err) {
       console.error('Error fetching templates:', err);
-      setError('Failed to load templates. Using mock data.');
-      // Fallback to mock data
-      setTemplates([
-        ...getMockSystemEmailTemplates(),
-        ...getMockSystemPolicyTemplates(),
-        ...getMockSystemReportTemplates(),
-      ]);
+      setError('Failed to load templates');
+      setTemplates([]);
     } finally {
       setLoading(false);
     }
@@ -133,87 +178,6 @@ export default function GlobalTemplatesPage() {
     });
     return [...new Set(variables)];
   };
-
-  const getMockSystemEmailTemplates = (): Template[] => [
-    {
-      id: 'sys-email-1',
-      name: 'System Alert - High Risk Activity',
-      type: 'email',
-      category: 'Security',
-      description: 'Global template for high-risk activity notifications',
-      content: {
-        subject: 'ALERT: High Risk Activity Detected - {{tenantName}}',
-        body: 'High risk activity detected for user {{userName}} at {{timestamp}}',
-        htmlTemplate: '<h1>Security Alert</h1><p>Details: {{details}}</p>',
-      },
-      variables: ['tenantName', 'userName', 'timestamp', 'details'],
-      isPublished: true,
-      createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-      updatedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-      usageCount: 245,
-    },
-    {
-      id: 'sys-email-2',
-      name: 'Tenant Provisioning Confirmation',
-      type: 'email',
-      category: 'Onboarding',
-      description: 'Template for new tenant provisioning',
-      content: {
-        subject: 'Your {{productName}} tenant is ready',
-        body: 'Welcome! Your tenant {{tenantName}} has been provisioned.',
-      },
-      variables: ['productName', 'tenantName', 'adminEmail'],
-      isPublished: true,
-      createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
-      updatedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-      usageCount: 89,
-    },
-  ];
-
-  const getMockSystemPolicyTemplates = (): Template[] => [
-    {
-      id: 'sys-policy-1',
-      name: 'Standard MFA Enforcement Policy',
-      type: 'policy',
-      category: 'Security',
-      description: 'Global template for MFA enforcement',
-      content: {
-        policyType: 'MFA',
-        rules: [
-          { condition: 'userRisk > Medium', action: 'enforce' },
-          { condition: 'signInLocation != trusted', action: 'enforce' },
-        ],
-        exceptions: ['emergencyAccess'],
-      },
-      variables: ['userRisk', 'signInLocation'],
-      isPublished: true,
-      isEnforced: true,
-      createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
-      updatedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      usageCount: 567,
-    },
-  ];
-
-  const getMockSystemReportTemplates = (): Template[] => [
-    {
-      id: 'sys-report-1',
-      name: 'Compliance Summary Report',
-      type: 'report',
-      category: 'Compliance',
-      description: 'Global template for compliance reporting',
-      content: {
-        sections: ['overview', 'userActivity', 'accessReviews', 'incidents'],
-        metrics: ['compliantUsers', 'pendingReviews', 'riskScore'],
-        format: 'PDF',
-        schedule: 'monthly',
-      },
-      variables: ['reportPeriod', 'tenantId'],
-      isPublished: true,
-      createdAt: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
-      updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      usageCount: 123,
-    },
-  ];
 
   const filterTemplates = () => {
     let filtered = templates;

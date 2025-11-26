@@ -982,13 +982,138 @@ export const usersService = {
       return [];
     }
   },
+
+  // Account profile management (for current user)
+  getAccountProfile: async () => {
+    try {
+      const response = await apiClient.get('/api/tenant/account/profile');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch account profile:', error);
+      return null;
+    }
+  },
+
+  updateAccountProfile: async (data: {
+    firstName?: string;
+    lastName?: string;
+    displayName?: string;
+    phone?: string;
+    timezone?: string;
+    language?: string;
+    avatar?: string;
+  }) => {
+    try {
+      const response = await apiClient.put('/api/tenant/account/profile', data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to update account profile:', error);
+      throw error;
+    }
+  },
+
+  // Password management
+  changePassword: async (data: { currentPassword: string; newPassword: string; confirmPassword: string }) => {
+    try {
+      const response = await apiClient.post('/api/tenant/account/change-password', data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to change password:', error);
+      throw error;
+    }
+  },
+
+  // Account security settings
+  getAccountSecuritySettings: async () => {
+    try {
+      const response = await apiClient.get('/api/tenant/account/security');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch account security settings:', error);
+      return null;
+    }
+  },
+
+  updateAccountSecuritySettings: async (data: any) => {
+    try {
+      const response = await apiClient.put('/api/tenant/account/security', data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to update account security settings:', error);
+      throw error;
+    }
+  },
+
+  // Account notifications preferences
+  getNotificationPreferences: async () => {
+    try {
+      const response = await apiClient.get('/api/tenant/account/notifications');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch notification preferences:', error);
+      return null;
+    }
+  },
+
+  updateNotificationPreferences: async (data: any) => {
+    try {
+      const response = await apiClient.put('/api/tenant/account/notifications', data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to update notification preferences:', error);
+      throw error;
+    }
+  },
+
+  // Account activity
+  getAccountActivity: async (params?: any) => {
+    try {
+      const response = await apiClient.get('/api/tenant/account/activity', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch account activity:', error);
+      return [];
+    }
+  },
+
+  // Account linked accounts (social logins)
+  getLinkedAccounts: async () => {
+    try {
+      const response = await apiClient.get('/api/tenant/account/linked-accounts');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch linked accounts:', error);
+      return [];
+    }
+  },
+
+  linkAccount: async (provider: string, data: any) => {
+    try {
+      const response = await apiClient.post(`/api/tenant/account/linked-accounts/${provider}`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to link account:', error);
+      throw error;
+    }
+  },
+
+  unlinkAccount: async (provider: string) => {
+    try {
+      const response = await apiClient.delete(`/api/tenant/account/linked-accounts/${provider}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to unlink account:', error);
+      throw error;
+    }
+  },
 };
 
 // Governance Service
 export const governanceService = {
-  getAccessReviews: async () => {
+  // Access Reviews
+  getAccessReviews: async (params?: any) => {
     try {
-      const response = await apiClient.get('/api/governance/access-reviews');
+      const response = await apiClient.get('/api/tenant/governance/reviews', { params });
       return response.data;
     } catch (error) {
       console.error('Failed to fetch access reviews:', error);
@@ -996,9 +1121,30 @@ export const governanceService = {
     }
   },
 
-  getCertificationCampaigns: async () => {
+  getAccessReviewById: async (reviewId: string) => {
     try {
-      const response = await apiClient.get('/api/governance/certifications');
+      const response = await apiClient.get(`/api/tenant/governance/reviews/${reviewId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch access review:', error);
+      return null;
+    }
+  },
+
+  certifyAccessReview: async (reviewId: string, data: { decision: string; comment?: string }) => {
+    try {
+      const response = await apiClient.post(`/api/tenant/governance/reviews/${reviewId}/certify`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to certify access review:', error);
+      throw error;
+    }
+  },
+
+  // Certification Campaigns
+  getCertificationCampaigns: async (params?: any) => {
+    try {
+      const response = await apiClient.get('/api/tenant/governance/campaigns', { params });
       return response.data;
     } catch (error) {
       console.error('Failed to fetch certification campaigns:', error);
@@ -1006,13 +1152,250 @@ export const governanceService = {
     }
   },
 
-  getComplianceReports: async () => {
+  getCampaignById: async (campaignId: string) => {
     try {
-      const response = await apiClient.get('/api/governance/compliance');
+      const response = await apiClient.get(`/api/tenant/governance/campaigns/${campaignId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch campaign:', error);
+      return null;
+    }
+  },
+
+  createCampaign: async (data: any) => {
+    try {
+      const response = await apiClient.post('/api/tenant/governance/campaigns', data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to create campaign:', error);
+      throw error;
+    }
+  },
+
+  updateCampaign: async (campaignId: string, data: any) => {
+    try {
+      const response = await apiClient.put(`/api/tenant/governance/campaigns/${campaignId}`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to update campaign:', error);
+      throw error;
+    }
+  },
+
+  startCampaign: async (campaignId: string) => {
+    try {
+      const response = await apiClient.post(`/api/tenant/governance/campaigns/${campaignId}/start`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to start campaign:', error);
+      throw error;
+    }
+  },
+
+  closeCampaign: async (campaignId: string) => {
+    try {
+      const response = await apiClient.post(`/api/tenant/governance/campaigns/${campaignId}/close`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to close campaign:', error);
+      throw error;
+    }
+  },
+
+  getCampaignItems: async (campaignId: string, params?: any) => {
+    try {
+      const response = await apiClient.get(`/api/tenant/governance/campaigns/${campaignId}/items`, { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch campaign items:', error);
+      return [];
+    }
+  },
+
+  certifyItem: async (campaignId: string, itemId: string, data: { decision: string; comment?: string }) => {
+    try {
+      const response = await apiClient.post(`/api/tenant/governance/campaigns/${campaignId}/items/${itemId}/certify`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to certify item:', error);
+      throw error;
+    }
+  },
+
+  bulkCertify: async (campaignId: string, data: { itemIds: string[]; decision: string; comment?: string }) => {
+    try {
+      const response = await apiClient.post(`/api/tenant/governance/campaigns/${campaignId}/bulk-certify`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to bulk certify items:', error);
+      throw error;
+    }
+  },
+
+  // Compliance
+  getComplianceReports: async (params?: any) => {
+    try {
+      const response = await apiClient.get('/api/tenant/governance/compliance', { params });
       return response.data;
     } catch (error) {
       console.error('Failed to fetch compliance reports:', error);
       return [];
+    }
+  },
+
+  getFrameworks: async () => {
+    try {
+      const response = await apiClient.get('/api/tenant/governance/compliance/frameworks');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch compliance frameworks:', error);
+      return [];
+    }
+  },
+
+  getFrameworkById: async (frameworkId: string) => {
+    try {
+      const response = await apiClient.get(`/api/tenant/governance/compliance/frameworks/${frameworkId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch framework:', error);
+      return null;
+    }
+  },
+
+  getViolations: async (params?: any) => {
+    try {
+      const response = await apiClient.get('/api/tenant/governance/compliance/violations', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch violations:', error);
+      return [];
+    }
+  },
+
+  getViolationById: async (violationId: string) => {
+    try {
+      const response = await apiClient.get(`/api/tenant/governance/compliance/violations/${violationId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch violation:', error);
+      return null;
+    }
+  },
+
+  resolveViolation: async (violationId: string, data: { resolution: string; notes?: string }) => {
+    try {
+      const response = await apiClient.post(`/api/tenant/governance/compliance/violations/${violationId}/resolve`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to resolve violation:', error);
+      throw error;
+    }
+  },
+
+  // Reports
+  getReports: async (params?: any) => {
+    try {
+      const response = await apiClient.get('/api/tenant/governance/reports', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch reports:', error);
+      return [];
+    }
+  },
+
+  generateReport: async (data: { type: string; frameworkId?: string; params?: any }) => {
+    try {
+      const response = await apiClient.post('/api/tenant/governance/reports/generate', data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to generate report:', error);
+      throw error;
+    }
+  },
+
+  exportReport: async (reportId: string, format: 'pdf' | 'csv' | 'excel' = 'pdf') => {
+    try {
+      const response = await apiClient.get(`/api/tenant/governance/reports/${reportId}/export`, {
+        params: { format },
+        responseType: 'blob'
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to export report:', error);
+      throw error;
+    }
+  },
+
+  scheduleReport: async (data: { type: string; schedule: string; recipients: string[] }) => {
+    try {
+      const response = await apiClient.post('/api/tenant/governance/reports/schedule', data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to schedule report:', error);
+      throw error;
+    }
+  },
+
+  // Global governance (for platform admins)
+  getGlobalAccessReviews: async (params?: any) => {
+    try {
+      const response = await apiClient.get('/api/global/governance/reviews', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch global access reviews:', error);
+      return [];
+    }
+  },
+
+  getGlobalCampaigns: async (params?: any) => {
+    try {
+      const response = await apiClient.get('/api/global/governance/campaigns', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch global campaigns:', error);
+      return [];
+    }
+  },
+
+  getGlobalComplianceStatus: async () => {
+    try {
+      const response = await apiClient.get('/api/global/governance/compliance/status');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch global compliance status:', error);
+      return null;
+    }
+  },
+
+  getGlobalViolations: async (params?: any) => {
+    try {
+      const response = await apiClient.get('/api/global/governance/compliance/violations', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch global violations:', error);
+      return [];
+    }
+  },
+
+  // Statistics
+  getGovernanceStats: async () => {
+    try {
+      const response = await apiClient.get('/api/tenant/governance/stats');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch governance stats:', error);
+      return null;
+    }
+  },
+
+  getCertificationStats: async () => {
+    try {
+      const response = await apiClient.get('/api/tenant/governance/certifications/stats');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch certification stats:', error);
+      return null;
     }
   },
 };

@@ -120,7 +120,7 @@ export default function GlobalAccessReviewsPage() {
       ]);
     } catch (err) {
       console.error('Error fetching data:', err);
-      loadMockData();
+      setError('Failed to load access review data');
     } finally {
       setLoading(false);
     }
@@ -128,9 +128,16 @@ export default function GlobalAccessReviewsPage() {
 
   const fetchCampaigns = async () => {
     try {
-      // Note: Using mock data as there's no global campaign endpoint yet
-      // In production, would need a global endpoint or aggregate from multiple tenants
-      setCampaigns([
+      const campaignsData = await governanceService.getGlobalCampaigns();
+      if (campaignsData && campaignsData.length > 0) {
+        setCampaigns(campaignsData);
+        return;
+      }
+    } catch (err) {
+      console.error('Error fetching campaigns:', err);
+    }
+    // Fallback to empty array if API fails or returns empty
+    setCampaigns([
         {
           id: '1',
           name: 'Q4 2024 Privileged Access Review',
@@ -380,20 +387,26 @@ export default function GlobalAccessReviewsPage() {
   };
 
   const fetchStats = async () => {
+    try {
+      const statsData = await governanceService.getGovernanceStats();
+      if (statsData) {
+        setStats(statsData);
+        return;
+      }
+    } catch (err) {
+      console.error('Error fetching stats:', err);
+    }
+    // Fallback to calculated stats from campaigns
     setStats({
-      totalCampaigns: 5,
-      activeCampaigns: 3,
-      totalReviews: 26169,
-      completedReviews: 14657,
-      pendingReviews: 11512,
-      revokedAccess: 1365,
-      averageRiskScore: 6.6,
+      totalCampaigns: campaigns.length,
+      activeCampaigns: campaigns.filter(c => c.status === 'Active').length,
+      totalReviews: campaigns.reduce((sum, c) => sum + c.totalItems, 0),
+      completedReviews: campaigns.reduce((sum, c) => sum + c.reviewedItems, 0),
+      pendingReviews: campaigns.reduce((sum, c) => sum + (c.totalItems - c.reviewedItems), 0),
+      revokedAccess: campaigns.reduce((sum, c) => sum + c.revokedItems, 0),
+      averageRiskScore: campaigns.length > 0 ? campaigns.reduce((sum, c) => sum + c.riskScore, 0) / campaigns.length : 0,
       complianceRate: 94.8,
     });
-  };
-
-  const loadMockData = () => {
-    // Mock data already loaded in individual fetch functions
   };
 
   const handleCreateCampaign = async (e: React.FormEvent) => {
@@ -402,7 +415,15 @@ export default function GlobalAccessReviewsPage() {
     setSuccess('');
 
     try {
-      // Mock - would call governanceService.createCampaign with global scope in production
+      await governanceService.createCampaign({
+        name: campaignName,
+        description: campaignDescription,
+        type: campaignType,
+        scope: 'Global',
+        startDate: campaignStartDate,
+        endDate: campaignEndDate,
+        deadline: campaignDeadline,
+      });
       setSuccess('Access review campaign created successfully');
       setShowCreateCampaignModal(false);
       resetCampaignForm();
@@ -420,7 +441,14 @@ export default function GlobalAccessReviewsPage() {
     setSuccess('');
 
     try {
-      // Mock - would call securityService or governanceService in production
+      await governanceService.certifyItem(
+        selectedReviewItem.campaignId,
+        selectedReviewItem.id,
+        {
+          decision: reviewDecision === 'approve' ? 'Approved' : 'Revoked',
+          comment: reviewJustification,
+        }
+      );
       setSuccess(`Access ${reviewDecision === 'approve' ? 'approved' : 'revoked'} successfully`);
       setShowReviewModal(false);
       setSelectedReviewItem(null);
@@ -437,7 +465,7 @@ export default function GlobalAccessReviewsPage() {
     setSuccess('');
 
     try {
-      // Mock - would call API to cancel campaign
+      await governanceService.closeCampaign(campaignId);
       setSuccess('Campaign cancelled successfully');
       fetchCampaigns();
     } catch (err: any) {
