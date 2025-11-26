@@ -2807,7 +2807,18 @@
     "maintenanceMode": "Maintenance Mode",
     "enableMaintenanceMode": "Enable Maintenance Mode",
     "maintenanceMessage": "Maintenance Message",
-    "scheduledMaintenance": "Scheduled Maintenance"
+    "scheduledMaintenance": "Scheduled Maintenance",
+    "platformManagement": "Platform Management",
+    "buildNumber": "Build Number",
+    "releaseDate": "Release Date",
+    "appliedAt": "Applied At",
+    "executionTime": "Execution Time",
+    "systemDiagnostics": "System Diagnostics",
+    "testResultDetails": "Test Result Details",
+    "testName": "Test Name",
+    "lastRun": "Last Run",
+    "lastChecked": "Last Checked",
+    "availableEndpoints": "Available Endpoints"
   },
   "globalPerformance": {
     "title": "Performance",
@@ -2953,7 +2964,15 @@
     "apiCreated": "API created successfully",
     "apiUpdated": "API updated successfully",
     "policyCreated": "Policy created successfully",
-    "policyApplied": "Policy applied successfully"
+    "policyApplied": "Policy applied successfully",
+    "totalEndpoints": "Total Endpoints",
+    "activeKeys": "Active Keys",
+    "totalRequests": "Total Requests",
+    "avgErrorRate": "Avg Error Rate",
+    "keyName": "Key Name",
+    "expiresInDays": "Expires In (days)",
+    "rateLimitRequests": "Rate Limit (requests)",
+    "timeWindow": "Time Window"
   },
   "globalMonitoring": {
     "title": "Monitoring",
@@ -4084,5 +4103,57 @@
       "lastUpdated": "Last Updated",
       "noStatus": "No knowledge base status available"
     }
+  },
+  "globalSettingsPage": {
+    "title": "Global Settings",
+    "maintenanceMode": "Maintenance Mode",
+    "allowNewRegistrations": "Allow New Registrations",
+    "allowGuestAccess": "Allow Guest Access",
+    "platformName": "Platform Name",
+    "supportEmail": "Support Email",
+    "fromEmail": "From Email",
+    "fromName": "From Name",
+    "fromNumber": "From Number",
+    "clientSecret": "Client Secret",
+    "sessionTimeoutMinutes": "Session Timeout (minutes)",
+    "passwordMinLength": "Password Min Length",
+    "passwordRequirements": "Password Requirements",
+    "requireUppercaseLetters": "Require Uppercase Letters",
+    "requireNumbers": "Require Numbers",
+    "requireSpecialCharacters": "Require Special Characters",
+    "maxLoginAttempts": "Max Login Attempts",
+    "lockoutDurationMinutes": "Lockout Duration (minutes)",
+    "requireTwoFactorAuth": "Require Two-Factor Authentication",
+    "enableAutomatedBackups": "Enable Automated Backups",
+    "backupLocation": "Backup Location",
+    "logLevel": "Log Level",
+    "logRetentionDays": "Log Retention (days)",
+    "enableRemoteLogging": "Enable Remote Logging",
+    "remoteEndpoint": "Remote Endpoint"
+  },
+  "globalIntegrationsPage": {
+    "title": "Platform Integrations",
+    "activeIntegrations": "Active Integrations",
+    "errorRate": "Error Rate",
+    "activeWebhooks": "Active Webhooks",
+    "successRate": "Success Rate",
+    "lastDelivery": "Last Delivery"
+  },
+  "globalCryptoPage": {
+    "title": "Cryptography Management",
+    "createNewKeySet": "Create New Key Set",
+    "keySize": "Key Size",
+    "lastRotated": "Last Rotated"
+  },
+  "globalObservabilityPage": {
+    "title": "Global Observability - Audit Logs",
+    "searchFilters": "Search Filters",
+    "searchTerm": "Search Term",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "eventType": "Event Type",
+    "eventInformation": "Event Information",
+    "userAgent": "User Agent",
+    "additionalDetails": "Additional Details"
   }
 }

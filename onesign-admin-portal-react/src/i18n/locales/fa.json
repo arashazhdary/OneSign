@@ -2806,7 +2806,18 @@
     "maintenanceMode": "حالت نگهداری",
     "enableMaintenanceMode": "فعال‌سازی حالت نگهداری",
     "maintenanceMessage": "پیام نگهداری",
-    "scheduledMaintenance": "نگهداری برنامه‌ریزی شده"
+    "scheduledMaintenance": "نگهداری برنامه‌ریزی شده",
+    "platformManagement": "مدیریت پلتفرم",
+    "buildNumber": "شماره ساخت",
+    "releaseDate": "تاریخ انتشار",
+    "appliedAt": "اعمال شده در",
+    "executionTime": "زمان اجرا",
+    "systemDiagnostics": "تشخیص سیستم",
+    "testResultDetails": "جزئیات نتیجه تست",
+    "testName": "نام تست",
+    "lastRun": "آخرین اجرا",
+    "lastChecked": "آخرین بررسی",
+    "availableEndpoints": "نقاط پایانی در دسترس"
   },
   "globalPerformance": {
     "title": "عملکرد",
@@ -2952,7 +2963,15 @@
     "apiCreated": "API با موفقیت ایجاد شد",
     "apiUpdated": "API با موفقیت به‌روزرسانی شد",
     "policyCreated": "سیاست با موفقیت ایجاد شد",
-    "policyApplied": "سیاست با موفقیت اعمال شد"
+    "policyApplied": "سیاست با موفقیت اعمال شد",
+    "totalEndpoints": "کل نقاط پایانی",
+    "activeKeys": "کلیدهای فعال",
+    "totalRequests": "کل درخواست‌ها",
+    "avgErrorRate": "میانگین نرخ خطا",
+    "keyName": "نام کلید",
+    "expiresInDays": "انقضا در (روز)",
+    "rateLimitRequests": "محدودیت نرخ (درخواست‌ها)",
+    "timeWindow": "پنجره زمانی"
   },
   "globalMonitoring": {
     "title": "نظارت",
@@ -4083,5 +4102,57 @@
       "lastUpdated": "آخرین به‌روزرسانی",
       "noStatus": "وضعیت پایگاه دانش موجود نیست"
     }
+  },
+  "globalSettingsPage": {
+    "title": "تنظیمات سراسری",
+    "maintenanceMode": "حالت نگهداری",
+    "allowNewRegistrations": "اجازه ثبت‌نام جدید",
+    "allowGuestAccess": "اجازه دسترسی مهمان",
+    "platformName": "نام پلتفرم",
+    "supportEmail": "ایمیل پشتیبانی",
+    "fromEmail": "ایمیل فرستنده",
+    "fromName": "نام فرستنده",
+    "fromNumber": "شماره فرستنده",
+    "clientSecret": "کلید محرمانه کلاینت",
+    "sessionTimeoutMinutes": "مهلت نشست (دقیقه)",
+    "passwordMinLength": "حداقل طول رمز عبور",
+    "passwordRequirements": "الزامات رمز عبور",
+    "requireUppercaseLetters": "الزام حروف بزرگ",
+    "requireNumbers": "الزام اعداد",
+    "requireSpecialCharacters": "الزام کاراکترهای خاص",
+    "maxLoginAttempts": "حداکثر تلاش ورود",
+    "lockoutDurationMinutes": "مدت قفل (دقیقه)",
+    "requireTwoFactorAuth": "الزام احراز هویت دو مرحله‌ای",
+    "enableAutomatedBackups": "فعال‌سازی پشتیبان‌گیری خودکار",
+    "backupLocation": "محل پشتیبان‌گیری",
+    "logLevel": "سطح لاگ",
+    "logRetentionDays": "نگهداری لاگ (روز)",
+    "enableRemoteLogging": "فعال‌سازی لاگ از راه دور",
+    "remoteEndpoint": "نقطه پایانی از راه دور"
+  },
+  "globalIntegrationsPage": {
+    "title": "یکپارچه‌سازی‌های پلتفرم",
+    "activeIntegrations": "یکپارچه‌سازی‌های فعال",
+    "errorRate": "نرخ خطا",
+    "activeWebhooks": "وب‌هوک‌های فعال",
+    "successRate": "نرخ موفقیت",
+    "lastDelivery": "آخرین تحویل"
+  },
+  "globalCryptoPage": {
+    "title": "مدیریت رمزنگاری",
+    "createNewKeySet": "ایجاد مجموعه کلید جدید",
+    "keySize": "اندازه کلید",
+    "lastRotated": "آخرین چرخش"
+  },
+  "globalObservabilityPage": {
+    "title": "مشاهده‌پذیری سراسری - لاگ‌های حسابرسی",
+    "searchFilters": "فیلترهای جستجو",
+    "searchTerm": "عبارت جستجو",
+    "startDate": "تاریخ شروع",
+    "endDate": "تاریخ پایان",
+    "eventType": "نوع رویداد",
+    "eventInformation": "اطلاعات رویداد",
+    "userAgent": "عامل کاربر",
+    "additionalDetails": "جزئیات اضافی"
   }
 }
