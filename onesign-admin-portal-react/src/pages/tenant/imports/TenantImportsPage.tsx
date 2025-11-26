@@ -40,6 +40,7 @@ interface ImportTemplate {
   dataType: string;
   fileType: 'csv' | 'json' | 'xlsx';
   fieldMappings: FieldMapping[];
+  downloadUrl?: string;
   createdAt: string;
 }
 
@@ -175,11 +176,11 @@ export default function TenantImportsPage() {
 
     try {
       // Fetch from real API
-      const data = await tenantService.getImportJobs?.(tenantId);
+      const data = await tenantService.getImportJobs(tenantId);
       setImports(data || mockImportsFallback);
     } catch (error: any) {
       console.error('Error fetching imports:', error);
-      setError(error?.message || 'Failed to load imports');
+      setError(error?.message || t('common.failedToLoadData'));
       // Fallback to mock data
       setImports(mockImportsFallback);
     } finally {
@@ -192,7 +193,7 @@ export default function TenantImportsPage() {
 
     try {
       // Fetch from real API
-      const data = await tenantService.getImportTemplates?.(tenantId);
+      const data = await tenantService.getImportTemplates(tenantId);
       setTemplates(data || mockTemplatesFallback);
     } catch (error: any) {
       console.error('Error fetching templates:', error);
@@ -227,13 +228,19 @@ export default function TenantImportsPage() {
     if (!tenantId || !selectedFile) return;
 
     try {
-      // API call would go here
+      await tenantService.createImportJob(
+        tenantId,
+        selectedFile,
+        selectedDataType,
+        selectedTemplate || undefined,
+        fieldMappings.length > 0 ? fieldMappings : undefined
+      );
       setSuccess('File uploaded successfully. Import job started.');
       setShowUploadModal(false);
       resetUploadForm();
       fetchImports();
     } catch (error: any) {
-      setError(error?.message || 'Failed to upload file');
+      setError(error?.message || t('common.failedToUploadFile'));
       console.error('Error uploading file:', error);
     }
   };
@@ -246,11 +253,11 @@ export default function TenantImportsPage() {
     setSuccess('');
 
     try {
-      // API call would go here
+      await tenantService.rollbackImport(tenantId, importId);
       setSuccess('Import rolled back successfully');
       fetchImports();
     } catch (error: any) {
-      setError(error?.message || 'Failed to rollback import');
+      setError(error?.message || t('common.failedToRollbackImport'));
     }
   };
 
@@ -258,8 +265,29 @@ export default function TenantImportsPage() {
     const template = templates.find(t => t.id === templateId);
     if (!template) return;
 
-    setSuccess(`Downloading ${template.name}...`);
-    // Download logic would go here
+    try {
+      setSuccess(`Downloading ${template.name}...`);
+      // If template has downloadUrl, open it
+      if (template.downloadUrl) {
+        window.open(template.downloadUrl, '_blank');
+      } else {
+        // Generate a sample CSV template based on fieldMappings
+        const headers = template.fieldMappings.map(m => m.targetField).join(',');
+        const sampleRow = template.fieldMappings.map(m => `[${m.dataType}]`).join(',');
+        const csvContent = `${headers}\n${sampleRow}`;
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${template.name.toLowerCase().replace(/\s+/g, '_')}_template.${template.fileType}`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }
+    } catch (error: any) {
+      setError(error?.message || 'Failed to download template');
+    }
   };
 
   const openPreviewModal = () => {

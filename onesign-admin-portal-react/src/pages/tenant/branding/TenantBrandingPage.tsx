@@ -101,7 +101,7 @@ export default function TenantBrandingPage() {
       setBranding({ ...branding, ...data });
     } catch (error: any) {
       console.error('Error fetching branding:', error);
-      setError(error?.message || 'Failed to fetch branding');
+      setError(error?.message || t('common.failedToFetchBranding'));
     } finally {
       setLoading(false);
     }
@@ -119,7 +119,7 @@ export default function TenantBrandingPage() {
       setBranding({ ...branding, ...data });
       setSuccess('Branding saved successfully');
     } catch (error: any) {
-      setError(error?.message || 'Failed to save branding');
+      setError(error?.message || t('common.failedToSaveBranding'));
       console.error('Error saving branding:', error);
     } finally {
       setSaving(false);

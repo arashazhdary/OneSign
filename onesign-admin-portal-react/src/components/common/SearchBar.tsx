@@ -11,12 +11,14 @@ interface SearchBarProps {
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({
-  placeholder = 'Search...',
+  placeholder,
   value: controlledValue,
   onChange,
   onSearch,
   className,
 }) => {
+  const { t } = useTranslation();
+  const defaultPlaceholder = placeholder || t('common.searchPlaceholder');
   const [internalValue, setInternalValue] = useState('');
   const value = controlledValue !== undefined ? controlledValue : internalValue;
 
@@ -47,7 +49,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         value={value}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
-        placeholder={placeholder}
+        placeholder={defaultPlaceholder}
         className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
       />
       {value && (

@@ -778,6 +778,321 @@ export const tenantService = {
     const response = await apiClient.post(`/api/tenant/tokens/${tokenId}/rotate`);
     return response.data;
   },
+
+  // ==================== CERTIFICATES ====================
+
+  /**
+   * GET /api/tenant/certificates - لیست گواهینامه‌ها
+   */
+  getCertificates: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/certificates');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch certificates:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/tenant/certificates - آپلود گواهینامه
+   */
+  uploadCertificate: async (tenantId: string, file: File): Promise<any> => {
+    const formData = new FormData();
+    formData.append('certificate', file);
+    const response = await apiClient.post('/api/tenant/certificates', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  },
+
+  /**
+   * DELETE /api/tenant/certificates/{id} - حذف گواهینامه
+   */
+  deleteCertificate: async (tenantId: string, certificateId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/certificates/${certificateId}`);
+  },
+
+  /**
+   * GET /api/tenant/certificates/{id} - جزئیات گواهینامه
+   */
+  getCertificateById: async (certificateId: string): Promise<any> => {
+    try {
+      const response = await apiClient.get(`/api/tenant/certificates/${certificateId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch certificate:', error);
+      return null;
+    }
+  },
+
+  // ==================== CUSTOM DOMAINS ====================
+
+  /**
+   * GET /api/tenant/domains - لیست دامنه‌های سفارشی
+   */
+  getCustomDomains: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/domains');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch custom domains:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/tenant/domains - افزودن دامنه سفارشی
+   */
+  addCustomDomain: async (tenantId: string, data: { domain: string; verificationMethod: string }): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/domains', data);
+    return response.data;
+  },
+
+  /**
+   * POST /api/tenant/domains/{id}/verify - تایید دامنه
+   */
+  verifyCustomDomain: async (tenantId: string, domainId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/tenant/domains/${domainId}/verify`);
+    return response.data;
+  },
+
+  /**
+   * DELETE /api/tenant/domains/{id} - حذف دامنه
+   */
+  deleteCustomDomain: async (tenantId: string, domainId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/domains/${domainId}`);
+  },
+
+  /**
+   * POST /api/tenant/domains/{id}/primary - تنظیم دامنه اصلی
+   */
+  setPrimaryDomain: async (tenantId: string, domainId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/tenant/domains/${domainId}/primary`);
+    return response.data;
+  },
+
+  /**
+   * POST /api/tenant/domains/{id}/renew-ssl - تمدید SSL
+   */
+  renewDomainSSL: async (tenantId: string, domainId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/tenant/domains/${domainId}/renew-ssl`);
+    return response.data;
+  },
+
+  // ==================== IMPORT/EXPORT ====================
+
+  /**
+   * GET /api/tenant/imports - لیست job‌های import
+   */
+  getImportJobs: async (tenantId: string): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/imports');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch import jobs:', error);
+      return [];
+    }
+  },
+
+  /**
+   * GET /api/tenant/imports/templates - لیست template‌های import
+   */
+  getImportTemplates: async (tenantId: string): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/imports/templates');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch import templates:', error);
+      return [];
+    }
+  },
+
+  /**
+   * GET /api/tenant/exports - لیست job‌های export
+   */
+  getExportJobs: async (tenantId: string): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/exports');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch export jobs:', error);
+      return [];
+    }
+  },
+
+  /**
+   * GET /api/tenant/exports/templates - لیست template‌های export
+   */
+  getExportTemplates: async (tenantId: string): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/exports/templates');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch export templates:', error);
+      return [];
+    }
+  },
+
+  /**
+   * GET /api/tenant/exports/scheduled - لیست export‌های زمانبندی شده
+   */
+  getScheduledExports: async (tenantId: string): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/exports/scheduled');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch scheduled exports:', error);
+      return [];
+    }
+  },
+
+  // ==================== DATA RETENTION ====================
+
+  /**
+   * GET /api/tenant/retention-policies - لیست سیاست‌های نگهداری داده
+   */
+  getRetentionPolicies: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/retention-policies');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch retention policies:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/tenant/retention-policies - ایجاد سیاست نگهداری
+   */
+  createRetentionPolicy: async (tenantId: string, data: any): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/retention-policies', data);
+    return response.data;
+  },
+
+  /**
+   * POST /api/tenant/retention-policies/{id}/toggle - فعال/غیرفعال سیاست
+   */
+  toggleRetentionPolicy: async (tenantId: string, policyId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/tenant/retention-policies/${policyId}/toggle`);
+    return response.data;
+  },
+
+  /**
+   * POST /api/tenant/retention-policies/{id}/run - اجرای دستی سیاست
+   */
+  runRetentionPolicy: async (tenantId: string, policyId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/tenant/retention-policies/${policyId}/run`);
+    return response.data;
+  },
+
+  /**
+   * DELETE /api/tenant/retention-policies/{id} - حذف سیاست
+   */
+  deleteRetentionPolicy: async (tenantId: string, policyId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/retention-policies/${policyId}`);
+  },
+
+  // ==================== BACKUP SCHEDULE ====================
+
+  /**
+   * GET /api/tenant/backups/schedule - تنظیمات زمانبندی پشتیبان
+   */
+  getBackupSchedule: async (tenantId: string): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/tenant/backups/schedule');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch backup schedule:', error);
+      return null;
+    }
+  },
+
+  // ==================== IMPORT OPERATIONS ====================
+
+  /**
+   * POST /api/tenant/imports - ایجاد job import با آپلود فایل
+   */
+  createImportJob: async (tenantId: string, file: File, dataType: string, templateId?: string, fieldMappings?: any[]): Promise<any> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('dataType', dataType);
+    if (templateId) {
+      formData.append('templateId', templateId);
+    }
+    if (fieldMappings) {
+      formData.append('fieldMappings', JSON.stringify(fieldMappings));
+    }
+    const response = await apiClient.post('/api/tenant/imports', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  },
+
+  /**
+   * POST /api/tenant/imports/{id}/rollback - بازگشت import
+   */
+  rollbackImport: async (tenantId: string, importId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/tenant/imports/${importId}/rollback`);
+    return response.data;
+  },
+
+  // ==================== EXPORT OPERATIONS ====================
+
+  /**
+   * POST /api/tenant/exports - ایجاد job export
+   */
+  createExportJob: async (tenantId: string, data: {
+    name: string;
+    dataType: string;
+    fileType: 'csv' | 'json' | 'xlsx';
+    fields: string[];
+    filters?: any[];
+    emailOnComplete?: boolean;
+    emailAddress?: string;
+  }): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/exports', data);
+    return response.data;
+  },
+
+  /**
+   * DELETE /api/tenant/exports/{id} - حذف export
+   */
+  deleteExportJob: async (tenantId: string, exportId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/exports/${exportId}`);
+  },
+
+  /**
+   * POST /api/tenant/exports/templates - ایجاد template export
+   */
+  createExportTemplate: async (tenantId: string, data: {
+    name: string;
+    dataType: string;
+    fileType: 'csv' | 'json' | 'xlsx';
+    fields: string[];
+    filters?: any[];
+  }): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/exports/templates', data);
+    return response.data;
+  },
+
+  /**
+   * POST /api/tenant/exports/scheduled/{id}/toggle - فعال/غیرفعال کردن زمانبندی
+   */
+  toggleScheduledExport: async (tenantId: string, scheduleId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/tenant/exports/scheduled/${scheduleId}/toggle`);
+    return response.data;
+  },
+
+  // ==================== WEBHOOK OPERATIONS ====================
+
+  /**
+   * POST /api/tenant/webhooks/deliveries/{id}/retry - تلاش مجدد ارسال webhook
+   */
+  retryWebhookDelivery: async (tenantId: string, deliveryId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/tenant/webhooks/deliveries/${deliveryId}/retry`);
+    return response.data;
+  },
 };
 
 export default tenantService;

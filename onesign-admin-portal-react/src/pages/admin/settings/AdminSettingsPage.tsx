@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { adminService } from '@/lib/api/services/admin.service';
 import { Helmet } from 'react-helmet-async';
 
@@ -165,10 +166,10 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      await adminService.updateGlobalSettings?.('platform', platformSettings);
+      await adminService.updateGlobalSettings('platform', platformSettings);
       setSuccess('Platform settings saved successfully');
     } catch (err: any) {
-      setError(err.message || 'Failed to save platform settings');
+      setError(err.message || t('common.failedToSavePlatformSettings'));
     }
   };
 
@@ -178,10 +179,10 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      await adminService.updateGlobalSettings?.('email', emailSettings);
+      await adminService.updateGlobalSettings('email', emailSettings);
       setSuccess('Email settings saved successfully');
     } catch (err: any) {
-      setError(err.message || 'Failed to save email settings');
+      setError(err.message || t('common.failedToSaveEmailSettings'));
     }
   };
 
@@ -190,10 +191,10 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      await adminService.testEmailConfiguration?.(emailSettings);
+      await adminService.testEmailConfiguration(emailSettings);
       setSuccess('Test email sent successfully');
     } catch (err: any) {
-      setError(err.message || 'Failed to send test email');
+      setError(err.message || t('common.failedToSendTestEmail'));
     }
   };
 
@@ -203,10 +204,10 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      await adminService.updateGlobalSettings?.('sms', smsSettings);
+      await adminService.updateGlobalSettings('sms', smsSettings);
       setSuccess('SMS settings saved successfully');
     } catch (err: any) {
-      setError(err.message || 'Failed to save SMS settings');
+      setError(err.message || t('common.failedToSaveSMSSettings'));
     }
   };
 
@@ -215,10 +216,10 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      await adminService.testSMSConfiguration?.(smsSettings);
+      await adminService.testSMSConfiguration(smsSettings);
       setSuccess('Test SMS sent successfully');
     } catch (err: any) {
-      setError(err.message || 'Failed to send test SMS');
+      setError(err.message || t('common.failedToSendTestSMS'));
     }
   };
 
@@ -236,10 +237,10 @@ export default function AdminSettingsPage() {
     setSuccess('');
 
     try {
-      await adminService.updateGlobalSettings?.('maintenance', maintenanceSettings);
+      await adminService.updateGlobalSettings('maintenance', maintenanceSettings);
       setSuccess('Maintenance settings saved successfully');
     } catch (err: any) {
-      setError(err.message || 'Failed to save maintenance settings');
+      setError(err.message || t('common.failedToSaveMaintenanceSettings'));
     }
   };
 

@@ -75,7 +75,7 @@ describe('ForgotPasswordPage', () => {
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
-          'http://localhost:9091/api/auth/forgot-password?tenantId=context-tenant-id',
+          'http://localhost:7000/api/auth/forgot-password?tenantId=context-tenant-id',
           expect.any(Object)
         );
       });
@@ -95,7 +95,7 @@ describe('ForgotPasswordPage', () => {
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
-          'http://localhost:9091/api/auth/forgot-password?tenantId=00000000-0000-0000-0000-000000000000',
+          'http://localhost:7000/api/auth/forgot-password?tenantId=00000000-0000-0000-0000-000000000000',
           expect.any(Object)
         );
       });
@@ -117,7 +117,7 @@ describe('ForgotPasswordPage', () => {
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
-          'http://localhost:9091/api/auth/forgot-password?tenantId=test-tenant',
+          'http://localhost:7000/api/auth/forgot-password?tenantId=test-tenant',
           expect.objectContaining({
             method: 'POST',
             headers: {

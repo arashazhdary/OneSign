@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocale } from '@/hooks/useLocale';
 import { globalService } from '@/lib/api/services/global.service';
 import {
   getGlobalTemplates,
@@ -258,7 +259,7 @@ export default function GlobalTemplatesPage() {
       resetNewTemplate();
       fetchTemplates();
     } catch (err: any) {
-      setError(err.message || 'Failed to create template');
+      setError(err.message || t('common.failedToCreateTemplate'));
     }
   };
 
@@ -276,7 +277,7 @@ export default function GlobalTemplatesPage() {
         setSuccess('Template published successfully');
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to publish template');
+      setError(err.message || t('common.failedToPublishTemplate'));
     }
   };
 
@@ -301,7 +302,7 @@ export default function GlobalTemplatesPage() {
         setSuccess('Template deleted successfully');
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to delete template');
+      setError(err.message || t('common.failedToDeleteTemplate'));
     }
   };
 

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocale } from '@/hooks/useLocale';
 import { getTenantId } from '@/lib/tenant-context';
 import { billingService } from '@/lib/api/services';
 import { Helmet } from 'react-helmet-async';
@@ -168,7 +169,7 @@ export default function TenantBillingPage() {
               <p className="text-sm text-gray-600">{subscription.planTier}</p>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-gray-500 mb-1">{t('tenant.billing.status') || 'Status'}</h3>
+              <h3 className="text-sm font-medium text-gray-500 mb-1">{t('common.status')}</h3>
               <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
                 subscription.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
               }`}>

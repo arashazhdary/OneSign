@@ -203,7 +203,7 @@ export default function TenantIntegrationsDetailPage() {
         setError(result.message || 'Connection test failed');
       }
     } catch (err: any) {
-      setError(err?.message || 'Failed to test connection');
+      setError(err?.message || t('common.failedToTestConnection'));
     } finally {
       setTesting(false);
     }
@@ -224,7 +224,7 @@ export default function TenantIntegrationsDetailPage() {
         fetchSyncLogs();
       }, 2000);
     } catch (err: any) {
-      setError(err?.message || 'Failed to start sync');
+      setError(err?.message || t('common.failedToStartSync'));
     } finally {
       setSyncing(false);
     }
@@ -243,7 +243,7 @@ export default function TenantIntegrationsDetailPage() {
       setSuccess(`Integration ${newStatus === 'active' ? 'enabled' : 'disabled'} successfully`);
       fetchData();
     } catch (err: any) {
-      setError(err?.message || 'Failed to update integration status');
+      setError(err?.message || t('common.failedToUpdateIntegrationStatus'));
     }
   };
 
@@ -278,7 +278,7 @@ export default function TenantIntegrationsDetailPage() {
       setShowEditModal(false);
       fetchData();
     } catch (err: any) {
-      setError(err?.message || 'Failed to update integration');
+      setError(err?.message || t('common.failedToUpdateIntegration'));
     }
   };
 
@@ -295,7 +295,7 @@ export default function TenantIntegrationsDetailPage() {
         navigate('/tenant/integrations');
       }, 1500);
     } catch (err: any) {
-      setError(err?.message || 'Failed to delete integration');
+      setError(err?.message || t('common.failedToDeleteIntegration'));
       setShowDeleteConfirm(false);
     }
   };

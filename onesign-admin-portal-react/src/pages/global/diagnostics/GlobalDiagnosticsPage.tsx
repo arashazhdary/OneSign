@@ -210,7 +210,7 @@ export default function GlobalDiagnosticsPage() {
   const handleRunAll = async () => {
     setRunning(true);
     try {
-      await globalService.runDiagnostics?.();
+      await globalService.runDiagnostics();
       setTimeout(() => {
         setRunning(false);
         fetchData();
@@ -223,7 +223,7 @@ export default function GlobalDiagnosticsPage() {
 
   const handleRunTest = async (testId: string) => {
     try {
-      await globalService.runDiagnosticTest?.(testId);
+      await globalService.runDiagnosticTest(testId);
       fetchData();
     } catch (error) {
       console.error('Failed to run diagnostic test:', error);

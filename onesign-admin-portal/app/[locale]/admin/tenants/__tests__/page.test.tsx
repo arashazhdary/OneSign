@@ -174,7 +174,7 @@ describe('AdminTenantsPage', () => {
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
-        'http://localhost:9091/api/admin/tenants/1/status',
+        'http://localhost:7000/api/admin/tenants/1/status',
         expect.objectContaining({
           method: 'PATCH',
           body: JSON.stringify({ status: 'Suspended' })

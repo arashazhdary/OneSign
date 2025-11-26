@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { tenantService } from '@/lib/api/services/tenant.service';
 import { getTenantId } from '@/lib/tenant-context';
 import Breadcrumbs from '@/components/common/Breadcrumbs';
@@ -274,7 +275,7 @@ export default function TenantDelegatedAdminsDetailPage() {
       setSuccess('Delegated admin suspended successfully');
       fetchData();
     } catch (err: any) {
-      setError(err?.message || 'Failed to suspend delegated admin');
+      setError(err?.message || t('common.failedToSuspendDelegatedAdmin'));
     }
   };
 
@@ -289,7 +290,7 @@ export default function TenantDelegatedAdminsDetailPage() {
       setSuccess('Delegated admin activated successfully');
       fetchData();
     } catch (err: any) {
-      setError(err?.message || 'Failed to activate delegated admin');
+      setError(err?.message || t('common.failedToActivateDelegatedAdmin'));
     }
   };
 
@@ -305,7 +306,7 @@ export default function TenantDelegatedAdminsDetailPage() {
       setShowEditScopesModal(false);
       fetchData();
     } catch (err: any) {
-      setError(err?.message || 'Failed to update scopes');
+      setError(err?.message || t('common.failedToUpdateScopes'));
     }
   };
 
@@ -322,7 +323,7 @@ export default function TenantDelegatedAdminsDetailPage() {
         navigate('/tenant/delegated-admins');
       }, 1500);
     } catch (err: any) {
-      setError(err?.message || 'Failed to delete delegated admin');
+      setError(err?.message || t('common.failedToDeleteDelegatedAdmin'));
       setShowDeleteConfirm(false);
     }
   };

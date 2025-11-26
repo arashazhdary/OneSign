@@ -28,7 +28,7 @@ export default function TenantConditionalAccessPage() {
 
   const fetchPolicies = async () => {
     try {
-      const data = await securityService.getConditionalAccessPolicies?.();
+      const data = await securityService.getConditionalAccessPolicies();
       const mockData: ConditionalAccessPolicy[] = [
         {
           id: '1',

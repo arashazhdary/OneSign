@@ -250,6 +250,149 @@ export const securityService = {
     const response = await apiClient.put(`/api/tenant/adaptivesecurity/users/${userId}/context`, data);
     return response.data;
   },
+
+  // ==================== IP WHITELIST ====================
+
+  /**
+   * GET /api/tenant/security/ip-whitelist - لیست IP های مجاز
+   */
+  getIPWhitelist: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/security/ip-whitelist');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch IP whitelist:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/tenant/security/ip-whitelist - افزودن IP به لیست مجاز
+   */
+  addIPWhitelist: async (tenantId: string, data: { ipAddress: string; description: string }): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/security/ip-whitelist', data);
+    return response.data;
+  },
+
+  /**
+   * DELETE /api/tenant/security/ip-whitelist/{id} - حذف IP از لیست مجاز
+   */
+  removeIPWhitelist: async (tenantId: string, whitelistId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/security/ip-whitelist/${whitelistId}`);
+  },
+
+  /**
+   * PUT /api/tenant/security/ip-whitelist/{id} - به‌روزرسانی IP در لیست مجاز
+   */
+  updateIPWhitelist: async (whitelistId: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/tenant/security/ip-whitelist/${whitelistId}`, data);
+    return response.data;
+  },
+
+  // ==================== CONDITIONAL ACCESS ====================
+
+  /**
+   * GET /api/tenant/security/conditional-access - لیست سیاست‌های دسترسی شرطی
+   */
+  getConditionalAccessPolicies: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/security/conditional-access');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch conditional access policies:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/tenant/security/conditional-access - ایجاد سیاست دسترسی شرطی
+   */
+  createConditionalAccessPolicy: async (data: any): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/security/conditional-access', data);
+    return response.data;
+  },
+
+  /**
+   * PUT /api/tenant/security/conditional-access/{id} - به‌روزرسانی سیاست
+   */
+  updateConditionalAccessPolicy: async (policyId: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/tenant/security/conditional-access/${policyId}`, data);
+    return response.data;
+  },
+
+  /**
+   * DELETE /api/tenant/security/conditional-access/{id} - حذف سیاست
+   */
+  deleteConditionalAccessPolicy: async (policyId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/security/conditional-access/${policyId}`);
+  },
+
+  // ==================== ALERTS ====================
+
+  /**
+   * GET /api/tenant/security/alerts/rules - لیست قوانین هشدار
+   */
+  getAlertRules: async (tenantId: string): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/security/alerts/rules');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch alert rules:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/tenant/security/alerts/rules - ایجاد قانون هشدار
+   */
+  createAlertRule: async (data: any): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/security/alerts/rules', data);
+    return response.data;
+  },
+
+  /**
+   * PUT /api/tenant/security/alerts/rules/{id} - به‌روزرسانی قانون هشدار
+   */
+  updateAlertRule: async (ruleId: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/tenant/security/alerts/rules/${ruleId}`, data);
+    return response.data;
+  },
+
+  /**
+   * DELETE /api/tenant/security/alerts/rules/{id} - حذف قانون هشدار
+   */
+  deleteAlertRule: async (ruleId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/security/alerts/rules/${ruleId}`);
+  },
+
+  /**
+   * POST /api/tenant/security/alerts/rules/{id}/toggle - فعال/غیرفعال کردن قانون
+   */
+  toggleAlertRule: async (ruleId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/tenant/security/alerts/rules/${ruleId}/toggle`);
+    return response.data;
+  },
+
+  /**
+   * GET /api/tenant/security/alerts - لیست هشدارها
+   */
+  getAlerts: async (tenantId: string): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/security/alerts');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch alerts:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/tenant/security/alerts/rules/{id}/mute - بی‌صدا کردن قانون هشدار
+   */
+  muteAlertRule: async (ruleId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/tenant/security/alerts/rules/${ruleId}/mute`);
+    return response.data;
+  },
 };
 
 export default securityService;

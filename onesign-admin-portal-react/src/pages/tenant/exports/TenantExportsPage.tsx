@@ -180,6 +180,7 @@ export default function TenantExportsPage() {
   const [filters, setFilters] = useState<ExportFilter[]>([]);
   const [emailOnComplete, setEmailOnComplete] = useState(false);
   const [emailAddress, setEmailAddress] = useState('');
+  const [templateName, setTemplateName] = useState('');
 
   const availableFields: Record<string, string[]> = {
     Users: ['id', 'email', 'firstName', 'lastName', 'status', 'createdAt', 'lastLoginAt'],
@@ -217,11 +218,11 @@ export default function TenantExportsPage() {
 
     try {
       // Fetch from real API
-      const data = await tenantService.getExportJobs?.(tenantId);
+      const data = await tenantService.getExportJobs(tenantId);
       setExports(data || mockExportsFallback);
     } catch (error: any) {
       console.error('Error fetching exports:', error);
-      setError(error?.message || 'Failed to load exports');
+      setError(error?.message || t('common.failedToLoadExports'));
       // Fallback to mock data
       setExports(mockExportsFallback);
     } finally {
@@ -234,7 +235,7 @@ export default function TenantExportsPage() {
 
     try {
       // Fetch from real API
-      const data = await tenantService.getExportTemplates?.(tenantId);
+      const data = await tenantService.getExportTemplates(tenantId);
       setTemplates(data || mockTemplatesFallback);
     } catch (error: any) {
       console.error('Error fetching templates:', error);
@@ -248,7 +249,7 @@ export default function TenantExportsPage() {
 
     try {
       // Fetch from real API
-      const data = await tenantService.getScheduledExports?.(tenantId);
+      const data = await tenantService.getScheduledExports(tenantId);
       setScheduledExports(data || mockScheduledExportsFallback);
     } catch (error: any) {
       console.error('Error fetching scheduled exports:', error);
@@ -265,13 +266,21 @@ export default function TenantExportsPage() {
     if (!tenantId) return;
 
     try {
-      // API call would go here
+      await tenantService.createExportJob(tenantId, {
+        name: exportName,
+        dataType: selectedDataType,
+        fileType: selectedFileType,
+        fields: selectedFields,
+        filters: filters.length > 0 ? filters : undefined,
+        emailOnComplete,
+        emailAddress: emailOnComplete ? emailAddress : undefined,
+      });
       setSuccess('Export job created successfully');
       setShowCreateModal(false);
       resetForm();
       fetchExports();
     } catch (error: any) {
-      setError(error?.message || 'Failed to create export');
+      setError(error?.message || t('common.failedToCreateExport'));
       console.error('Error creating export:', error);
     }
   };
@@ -279,50 +288,63 @@ export default function TenantExportsPage() {
   const handleDownload = async (exportJob: ExportJob) => {
     if (!exportJob.downloadUrl) return;
 
-    setSuccess(`Downloading ${exportJob.name}...`);
-    // Download logic would go here
-    // window.open(exportJob.downloadUrl, '_blank');
+    try {
+      setSuccess(`Downloading ${exportJob.name}...`);
+      // Open in new tab for direct download
+      window.open(exportJob.downloadUrl, '_blank');
+    } catch (error: any) {
+      setError(error?.message || 'Failed to download export');
+    }
   };
 
   const handleDeleteExport = async (exportId: string) => {
     if (!confirm('Are you sure you want to delete this export?')) return;
+    if (!tenantId) return;
 
     setError('');
     setSuccess('');
 
     try {
-      // API call would go here
+      await tenantService.deleteExportJob(tenantId, exportId);
       setSuccess('Export deleted successfully');
       fetchExports();
     } catch (error: any) {
-      setError(error?.message || 'Failed to delete export');
+      setError(error?.message || t('common.failedToDeleteExport'));
     }
   };
 
   const handleSaveTemplate = async () => {
+    if (!tenantId) return;
     setError('');
     setSuccess('');
 
     try {
-      // API call would go here
+      await tenantService.createExportTemplate(tenantId, {
+        name: templateName,
+        dataType: selectedDataType,
+        fileType: selectedFileType,
+        fields: selectedFields,
+        filters: filters.length > 0 ? filters : undefined,
+      });
       setSuccess('Template saved successfully');
       setShowTemplateModal(false);
       fetchTemplates();
     } catch (error: any) {
-      setError(error?.message || 'Failed to save template');
+      setError(error?.message || t('common.failedToSaveTemplate'));
     }
   };
 
   const handleToggleSchedule = async (scheduleId: string) => {
+    if (!tenantId) return;
     setError('');
     setSuccess('');
 
     try {
-      // API call would go here
+      await tenantService.toggleScheduledExport(tenantId, scheduleId);
       setSuccess('Schedule updated successfully');
       fetchScheduledExports();
     } catch (error: any) {
-      setError(error?.message || 'Failed to update schedule');
+      setError(error?.message || t('common.failedToUpdateSchedule'));
     }
   };
 
@@ -714,6 +736,8 @@ export default function TenantExportsPage() {
               <input
                 type="text"
                 required
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
                 className="w-full px-3 py-2 border rounded"
                 placeholder="e.g., Monthly User Report"
               />

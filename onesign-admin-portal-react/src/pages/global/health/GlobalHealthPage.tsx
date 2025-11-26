@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
+import { globalService } from '@/lib/api/services/global.service';
 
 // Types
 interface HealthStatus {
@@ -78,44 +79,40 @@ export default function GlobalHealthPage() {
     setLoading(true);
     setError('');
     try {
-      // Fetch all health endpoints in parallel
-      const [healthRes, liveRes, readyRes, regionsRes] = await Promise.all([
-        fetch('http://localhost:9091/api/health'),
-        fetch('http://localhost:9091/api/health/live'),
-        fetch('http://localhost:9091/api/health/ready'),
-        fetch('http://localhost:9091/api/health/regions'),
+      // Fetch all health endpoints in parallel using service methods
+      const [healthData, liveData, readyData, regionsData] = await Promise.all([
+        globalService.getHealthStatus(),
+        globalService.getLivenessProbe(),
+        globalService.getReadinessProbe(),
+        globalService.getRegionsHealthStatus(),
       ]);
 
-      if (healthRes.ok) {
-        const data = await healthRes.json();
-        setHealthStatus(data);
+      if (healthData) {
+        setHealthStatus(healthData);
 
         // Add to history
         setHealthHistory(prev => {
           const newPoint: HealthHistoryPoint = {
             timestamp: new Date().toISOString(),
-            uptime: data.uptime || 0,
-            responseTime: data.components?.reduce((sum: number, c: ComponentHealth) => sum + c.responseTime, 0) / (data.components?.length || 1) || 0,
+            uptime: healthData.uptime || 0,
+            responseTime: healthData.components?.reduce((sum: number, c: ComponentHealth) => sum + c.responseTime, 0) / (healthData.components?.length || 1) || 0,
           };
           const updated = [...prev, newPoint];
-          // Keep only last 24 points (for 24 hours with 30s refresh = 2880 points, but we'll keep last 48 for demo)
+          // Keep only last 48 points for demo
           return updated.slice(-48);
         });
       }
 
-      if (liveRes.ok) {
-        const data = await liveRes.json();
-        setLivenessProbe(data);
+      if (liveData) {
+        setLivenessProbe(liveData);
       }
 
-      if (readyRes.ok) {
-        const data = await readyRes.json();
-        setReadinessProbe(data);
+      if (readyData) {
+        setReadinessProbe(readyData);
       }
 
-      if (regionsRes.ok) {
-        const data = await regionsRes.json();
-        setRegionsHealth(data.regions || data || []);
+      if (regionsData && regionsData.length > 0) {
+        setRegionsHealth(regionsData);
       }
 
       setLastRefresh(new Date());

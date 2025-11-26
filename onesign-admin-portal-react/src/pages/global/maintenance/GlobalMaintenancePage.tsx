@@ -34,7 +34,7 @@ export default function GlobalMaintenancePage() {
 
   const fetchWindows = async () => {
     try {
-      const data = await globalService.getMaintenanceWindows?.();
+      const data = await globalService.getMaintenanceWindows();
       const mockData: MaintenanceWindow[] = [
         {
           id: '1',
@@ -139,7 +139,7 @@ export default function GlobalMaintenancePage() {
 
   const handleCreate = async () => {
     try {
-      await globalService.createMaintenanceWindow?.({
+      await globalService.createMaintenanceWindow({
         title: 'New Maintenance Window',
         description: '',
         type: 'scheduled',
@@ -159,7 +159,7 @@ export default function GlobalMaintenancePage() {
   const handleCancel = async (id: string) => {
     if (!confirm('Cancel this maintenance window?')) return;
     try {
-      await globalService.cancelMaintenanceWindow?.(id);
+      await globalService.cancelMaintenanceWindow(id);
       fetchWindows();
     } catch (error) {
       console.error('Failed to cancel maintenance window:', error);
@@ -168,7 +168,7 @@ export default function GlobalMaintenancePage() {
 
   const handleNotify = async (id: string) => {
     try {
-      await globalService.sendMaintenanceNotification?.(id);
+      await globalService.sendMaintenanceNotification(id);
       fetchWindows();
     } catch (error) {
       console.error('Failed to send notification:', error);

@@ -141,7 +141,7 @@ export default function TenantRolesPage() {
       resetForm();
       fetchRoles();
     } catch (error: any) {
-      setError(error?.message || 'Failed to save role');
+      setError(error?.message || t('common.failedToSaveRole'));
       console.error('Error saving role:', error);
     }
   };
@@ -166,7 +166,7 @@ export default function TenantRolesPage() {
       setSuccess('Role deleted successfully');
       fetchRoles();
     } catch (error: any) {
-      setError(error?.message || 'Failed to delete role');
+      setError(error?.message || t('common.failedToDeleteRole'));
       console.error('Error deleting role:', error);
     }
   };

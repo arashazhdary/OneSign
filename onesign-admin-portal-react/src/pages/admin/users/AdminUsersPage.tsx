@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 import {
   adminService,
@@ -93,7 +94,7 @@ export default function AdminUsersPage() {
       setShowCreateModal(false);
       resetForm();
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Failed to create administrator');
+      setError(err.response?.data?.message || err.message || t('common.failedToCreateAdministrator'));
     }
   };
 
@@ -120,7 +121,7 @@ export default function AdminUsersPage() {
       setSelectedAdmin(null);
       resetForm();
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Failed to update administrator');
+      setError(err.response?.data?.message || err.message || t('common.failedToUpdateAdministrator'));
     }
   };
 
@@ -136,7 +137,7 @@ export default function AdminUsersPage() {
       setAdmins(admins.filter(a => a.id !== adminId));
       setSuccess('Administrator deleted successfully');
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Failed to delete administrator');
+      setError(err.response?.data?.message || err.message || t('common.failedToDeleteAdministrator'));
     }
   };
 
@@ -152,7 +153,7 @@ export default function AdminUsersPage() {
       setAdmins(admins.map(a => a.id === adminId ? updatedAdmin : a));
       setSuccess('Administrator suspended successfully');
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Failed to suspend administrator');
+      setError(err.response?.data?.message || err.message || t('common.failedToSuspendAdministrator'));
     }
   };
 
@@ -166,7 +167,7 @@ export default function AdminUsersPage() {
       setAdmins(admins.map(a => a.id === adminId ? updatedAdmin : a));
       setSuccess('Administrator activated successfully');
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Failed to activate administrator');
+      setError(err.response?.data?.message || err.message || t('common.failedToActivateAdministrator'));
     }
   };
 

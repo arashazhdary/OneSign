@@ -30,103 +30,108 @@ export default function GlobalRateLimitingPage() {
     fetchLimits();
   }, []);
 
+  const getMockData = (): RateLimit[] => [
+    {
+      id: '1',
+      name: 'Global API Rate Limit',
+      type: 'global',
+      limit: 10000,
+      window: 1,
+      windowUnit: 'minute',
+      isEnabled: true,
+      action: 'throttle',
+      exemptions: ['admin@example.com', '192.168.1.0/24'],
+      createdAt: '2024-01-01T00:00:00Z',
+      stats: {
+        totalRequests: 45678901,
+        blockedRequests: 12345,
+        throttledRequests: 234567,
+      },
+    },
+    {
+      id: '2',
+      name: 'Authentication Endpoint',
+      type: 'per_ip',
+      endpoint: '/api/auth/login',
+      limit: 5,
+      window: 15,
+      windowUnit: 'minute',
+      isEnabled: true,
+      action: 'block',
+      exemptions: ['10.0.0.0/8'],
+      createdAt: '2024-01-15T10:00:00Z',
+      stats: {
+        totalRequests: 567890,
+        blockedRequests: 8901,
+        throttledRequests: 0,
+      },
+    },
+    {
+      id: '3',
+      name: 'Tenant API Calls',
+      type: 'per_tenant',
+      limit: 1000,
+      window: 1,
+      windowUnit: 'hour',
+      isEnabled: true,
+      action: 'throttle',
+      exemptions: ['tenant-enterprise-1', 'tenant-enterprise-2'],
+      createdAt: '2024-02-01T09:00:00Z',
+      stats: {
+        totalRequests: 12345678,
+        blockedRequests: 0,
+        throttledRequests: 123456,
+      },
+    },
+    {
+      id: '4',
+      name: 'User Data Export',
+      type: 'per_user',
+      endpoint: '/api/exports',
+      limit: 10,
+      window: 1,
+      windowUnit: 'day',
+      isEnabled: true,
+      action: 'block',
+      exemptions: [],
+      createdAt: '2024-03-10T14:00:00Z',
+      stats: {
+        totalRequests: 45678,
+        blockedRequests: 234,
+        throttledRequests: 0,
+      },
+    },
+    {
+      id: '5',
+      name: 'Webhook Delivery',
+      type: 'global',
+      endpoint: '/webhooks/*',
+      limit: 100,
+      window: 1,
+      windowUnit: 'second',
+      isEnabled: true,
+      action: 'throttle',
+      exemptions: [],
+      createdAt: '2024-04-20T08:00:00Z',
+      stats: {
+        totalRequests: 8901234,
+        blockedRequests: 0,
+        throttledRequests: 56789,
+      },
+    },
+  ];
+
   const fetchLimits = async () => {
     try {
-      const data = await globalService.getRateLimits?.();
-      const mockData: RateLimit[] = [
-        {
-          id: '1',
-          name: 'Global API Rate Limit',
-          type: 'global',
-          limit: 10000,
-          window: 1,
-          windowUnit: 'minute',
-          isEnabled: true,
-          action: 'throttle',
-          exemptions: ['admin@example.com', '192.168.1.0/24'],
-          createdAt: '2024-01-01T00:00:00Z',
-          stats: {
-            totalRequests: 45678901,
-            blockedRequests: 12345,
-            throttledRequests: 234567,
-          },
-        },
-        {
-          id: '2',
-          name: 'Authentication Endpoint',
-          type: 'per_ip',
-          endpoint: '/api/auth/login',
-          limit: 5,
-          window: 15,
-          windowUnit: 'minute',
-          isEnabled: true,
-          action: 'block',
-          exemptions: ['10.0.0.0/8'],
-          createdAt: '2024-01-15T10:00:00Z',
-          stats: {
-            totalRequests: 567890,
-            blockedRequests: 8901,
-            throttledRequests: 0,
-          },
-        },
-        {
-          id: '3',
-          name: 'Tenant API Calls',
-          type: 'per_tenant',
-          limit: 1000,
-          window: 1,
-          windowUnit: 'hour',
-          isEnabled: true,
-          action: 'throttle',
-          exemptions: ['tenant-enterprise-1', 'tenant-enterprise-2'],
-          createdAt: '2024-02-01T09:00:00Z',
-          stats: {
-            totalRequests: 12345678,
-            blockedRequests: 0,
-            throttledRequests: 123456,
-          },
-        },
-        {
-          id: '4',
-          name: 'User Data Export',
-          type: 'per_user',
-          endpoint: '/api/exports',
-          limit: 10,
-          window: 1,
-          windowUnit: 'day',
-          isEnabled: true,
-          action: 'block',
-          exemptions: [],
-          createdAt: '2024-03-10T14:00:00Z',
-          stats: {
-            totalRequests: 45678,
-            blockedRequests: 234,
-            throttledRequests: 0,
-          },
-        },
-        {
-          id: '5',
-          name: 'Webhook Delivery',
-          type: 'global',
-          endpoint: '/webhooks/*',
-          limit: 100,
-          window: 1,
-          windowUnit: 'second',
-          isEnabled: true,
-          action: 'throttle',
-          exemptions: [],
-          createdAt: '2024-04-20T08:00:00Z',
-          stats: {
-            totalRequests: 8901234,
-            blockedRequests: 0,
-            throttledRequests: 56789,
-          },
-        },
-      ];
-      setLimits(data || mockData);
+      const data = await globalService.getRateLimits();
+      if (data && data.length > 0) {
+        setLimits(data);
+      } else {
+        setLimits(getMockData());
+      }
     } catch (err) {
-      console.error(err);
-      setLimits(mockData);
+      console.error('Failed to fetch rate limits:', err);
+      setLimits(getMockData());
     } finally {
       setLoading(false);
     }
@@ -134,7 +139,7 @@ export default function GlobalRateLimitingPage() {
 
   const handleCreate = async () => {
     try {
-      await globalService.createRateLimit?.({
+      await globalService.createRateLimit({
         name: 'New Rate Limit',
         type: 'global',
         limit: 1000,
@@ -152,7 +157,7 @@ export default function GlobalRateLimitingPage() {
 
   const handleToggle = async (limitId: string) => {
     try {
-      await globalService.toggleRateLimit?.(limitId);
+      await globalService.toggleRateLimit(limitId);
       fetchLimits();
     } catch (error) {
       console.error('Failed to toggle rate limit:', error);
@@ -162,7 +167,7 @@ export default function GlobalRateLimitingPage() {
   const handleDelete = async (limitId: string) => {
     if (!confirm('Delete this rate limit?')) return;
     try {
-      await globalService.deleteRateLimit?.(limitId);
+      await globalService.deleteRateLimit(limitId);
       fetchLimits();
     } catch (error) {
       console.error('Failed to delete rate limit:', error);

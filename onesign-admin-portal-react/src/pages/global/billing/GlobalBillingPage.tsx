@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocale } from '@/hooks/useLocale';
 import DataTable, { Column } from '@/components/common/DataTable';
 import Modal from '@/components/common/Modal';
 import StatusBadge from '@/components/common/StatusBadge';
@@ -303,7 +304,8 @@ export default function GlobalBillingPage() {
       label: t('global.billing.status'),
       render: (plan) => (
         <StatusBadge
-          status={plan.isActive ? 'Active' : 'Inactive'}
+          status={plan.isActive ? 'Active' : 'Inactive'}
+
         />
       )
     }

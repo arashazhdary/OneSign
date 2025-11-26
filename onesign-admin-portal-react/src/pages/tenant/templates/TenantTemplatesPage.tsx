@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocale } from '@/hooks/useLocale';
 import { getTenantId } from '@/lib/tenant-context';
 import {
   getAvailableTemplates,
@@ -268,7 +269,7 @@ export default function TenantTemplatesPage() {
       resetNewTemplate();
       fetchTemplates();
     } catch (err: any) {
-      setError(err.message || 'Failed to create template');
+      setError(err.message || t('common.failedToCreateTemplate'));
     }
   };
 
@@ -293,7 +294,7 @@ export default function TenantTemplatesPage() {
         setSuccess('Template cloned successfully');
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to clone template');
+      setError(err.message || t('common.failedToCloneTemplate'));
     }
   };
 

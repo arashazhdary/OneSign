@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard,
   Users,
@@ -48,6 +49,7 @@ import {
 import { cn } from '@/utils/cn';
 import { useUIStore } from '@/stores/uiStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useDirection } from '@/hooks/useDirection';
 
 interface MenuItem {
   id: string;
@@ -59,133 +61,135 @@ interface MenuItem {
 }
 
 const TenantSidebar: React.FC = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const { user } = useAuthStore();
+  const { isRTL } = useDirection();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedGroups, setExpandedGroups] = useState<string[]>(['core', 'security']);
 
   const menuGroups: { id: string; label: string; items: MenuItem[] }[] = [
     {
       id: 'core',
-      label: 'Core',
+      label: t('sidebar.core'),
       items: [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/tenant/dashboard' },
-        { id: 'users', label: 'Users', icon: Users, href: '/tenant/users' },
-        { id: 'apps', label: 'Applications', icon: AppWindow, href: '/tenant/apps' },
-        { id: 'roles', label: 'Roles', icon: Shield, href: '/tenant/roles' },
-        { id: 'audit', label: 'Audit Logs', icon: FileText, href: '/tenant/audit' },
-        { id: 'settings', label: 'Settings', icon: Settings, href: '/tenant/settings' },
+        { id: 'dashboard', label: t('nav.dashboard'), icon: LayoutDashboard, href: '/tenant/dashboard' },
+        { id: 'users', label: t('nav.users'), icon: Users, href: '/tenant/users' },
+        { id: 'apps', label: t('sidebar.applications'), icon: AppWindow, href: '/tenant/apps' },
+        { id: 'roles', label: t('nav.roles'), icon: Shield, href: '/tenant/roles' },
+        { id: 'audit', label: t('sidebar.auditLogs'), icon: FileText, href: '/tenant/audit' },
+        { id: 'settings', label: t('nav.settings'), icon: Settings, href: '/tenant/settings' },
       ],
     },
     {
       id: 'identity',
-      label: 'Identity Management',
+      label: t('sidebar.identityManagement'),
       items: [
-        { id: 'org-units', label: 'Org Units', icon: Building2, href: '/tenant/org-units' },
-        { id: 'delegated-admins', label: 'Delegated Admins', icon: UserCog, href: '/tenant/delegated-admins' },
-        { id: 'service-accounts', label: 'Service Accounts', icon: ServerCog, href: '/tenant/service-accounts' },
-        { id: 'federation', label: 'Federation', icon: Network, href: '/tenant/federation' },
-        { id: 'sessions', label: 'Sessions', icon: Clock, href: '/tenant/sessions' },
-        { id: 'tokens', label: 'Tokens', icon: Key, href: '/tenant/tokens' },
+        { id: 'org-units', label: t('sidebar.orgUnits'), icon: Building2, href: '/tenant/org-units' },
+        { id: 'delegated-admins', label: t('sidebar.delegatedAdmins'), icon: UserCog, href: '/tenant/delegated-admins' },
+        { id: 'service-accounts', label: t('sidebar.serviceAccounts'), icon: ServerCog, href: '/tenant/service-accounts' },
+        { id: 'federation', label: t('sidebar.federation'), icon: Network, href: '/tenant/federation' },
+        { id: 'sessions', label: t('sidebar.sessions'), icon: Clock, href: '/tenant/sessions' },
+        { id: 'tokens', label: t('sidebar.tokens'), icon: Key, href: '/tenant/tokens' },
       ],
     },
     {
       id: 'security',
-      label: 'Security',
+      label: t('sidebar.security'),
       items: [
-        { id: 'security', label: 'Security Overview', icon: ShieldCheck, href: '/tenant/security' },
-        { id: 'adaptive-security', label: 'Adaptive Security', icon: Zap, href: '/tenant/adaptive-security' },
-        { id: 'mfa-management', label: 'MFA Management', icon: Fingerprint, href: '/tenant/mfa-management' },
-        { id: 'conditional-access', label: 'Conditional Access', icon: Lock, href: '/tenant/conditional-access' },
-        { id: 'certificates', label: 'Certificates', icon: FileCode, href: '/tenant/certificates' },
-        { id: 'ip-whitelist', label: 'IP Whitelist', icon: Globe, href: '/tenant/ip-whitelist' },
-        { id: 'privileged-access', label: 'Privileged Access', icon: Shield, href: '/tenant/privileged-access' },
+        { id: 'security', label: t('sidebar.securityOverview'), icon: ShieldCheck, href: '/tenant/security' },
+        { id: 'adaptive-security', label: t('sidebar.adaptiveSecurity'), icon: Zap, href: '/tenant/adaptive-security' },
+        { id: 'mfa-management', label: t('sidebar.mfaManagement'), icon: Fingerprint, href: '/tenant/mfa-management' },
+        { id: 'conditional-access', label: t('sidebar.conditionalAccess'), icon: Lock, href: '/tenant/conditional-access' },
+        { id: 'certificates', label: t('sidebar.certificates'), icon: FileCode, href: '/tenant/certificates' },
+        { id: 'ip-whitelist', label: t('sidebar.ipWhitelist'), icon: Globe, href: '/tenant/ip-whitelist' },
+        { id: 'privileged-access', label: t('sidebar.privilegedAccess'), icon: Shield, href: '/tenant/privileged-access' },
       ],
     },
     {
       id: 'access',
-      label: 'Access Management',
+      label: t('common.accessManagement'),
       items: [
-        { id: 'access-requests', label: 'Access Requests', icon: Clipboard, href: '/tenant/access-requests' },
-        { id: 'access-certifications', label: 'Certifications', icon: FileText, href: '/tenant/access/certifications' },
-        { id: 'access-reviews', label: 'Access Reviews', icon: Eye, href: '/tenant/access/reviews' },
-        { id: 'scopes', label: 'Scopes', icon: Layers, href: '/tenant/scopes' },
-        { id: 'policies', label: 'Policies', icon: Scale, href: '/tenant/policies' },
+        { id: 'access-requests', label: t('common.accessRequests'), icon: Clipboard, href: '/tenant/access-requests' },
+        { id: 'access-certifications', label: t('common.certifications'), icon: FileText, href: '/tenant/access/certifications' },
+        { id: 'access-reviews', label: t('common.accessReviews'), icon: Eye, href: '/tenant/access/reviews' },
+        { id: 'scopes', label: t('sidebar.scopes'), icon: Layers, href: '/tenant/scopes' },
+        { id: 'policies', label: t('sidebar.policies'), icon: Scale, href: '/tenant/policies' },
       ],
     },
     {
       id: 'governance',
-      label: 'Governance & Compliance',
+      label: t('sidebar.governanceCompliance'),
       items: [
-        { id: 'governance', label: 'Governance', icon: Scale, href: '/tenant/governance' },
-        { id: 'compliance', label: 'Compliance', icon: ShieldCheck, href: '/tenant/compliance' },
-        { id: 'privacy', label: 'Privacy', icon: Lock, href: '/tenant/privacy' },
-        { id: 'data-retention', label: 'Data Retention', icon: Database, href: '/tenant/data-retention' },
-        { id: 'reports', label: 'Reports', icon: BarChart3, href: '/tenant/reports' },
+        { id: 'governance', label: t('sidebar.governance'), icon: Scale, href: '/tenant/governance' },
+        { id: 'compliance', label: t('sidebar.compliance'), icon: ShieldCheck, href: '/tenant/compliance' },
+        { id: 'privacy', label: t('sidebar.privacy'), icon: Lock, href: '/tenant/privacy' },
+        { id: 'data-retention', label: t('sidebar.dataRetention'), icon: Database, href: '/tenant/data-retention' },
+        { id: 'reports', label: t('sidebar.reports'), icon: BarChart3, href: '/tenant/reports' },
       ],
     },
     {
       id: 'intelligence',
-      label: 'Intelligence',
+      label: t('sidebar.intelligence'),
       items: [
-        { id: 'insights', label: 'Insights', icon: Activity, href: '/tenant/insights' },
-        { id: 'analytics', label: 'Analytics', icon: BarChart3, href: '/tenant/analytics' },
-        { id: 'incidents', label: 'Incidents', icon: AlertTriangle, href: '/tenant/incidents' },
-        { id: 'risk-events', label: 'Risk Events', icon: Target, href: '/tenant/risk-events' },
-        { id: 'alerts', label: 'Alerts', icon: Bell, href: '/tenant/alerts' },
-        { id: 'hunting', label: 'Threat Hunting', icon: Search, href: '/tenant/hunting' },
-        { id: 'copilot', label: 'Security Copilot', icon: Bot, href: '/tenant/copilot' },
+        { id: 'insights', label: t('sidebar.insights'), icon: Activity, href: '/tenant/insights' },
+        { id: 'analytics', label: t('sidebar.analytics'), icon: BarChart3, href: '/tenant/analytics' },
+        { id: 'incidents', label: t('sidebar.incidents'), icon: AlertTriangle, href: '/tenant/incidents' },
+        { id: 'risk-events', label: t('sidebar.riskEvents'), icon: Target, href: '/tenant/risk-events' },
+        { id: 'alerts', label: t('sidebar.alerts'), icon: Bell, href: '/tenant/alerts' },
+        { id: 'hunting', label: t('sidebar.threatHunting'), icon: Search, href: '/tenant/hunting' },
+        { id: 'copilot', label: t('sidebar.securityCopilot'), icon: Bot, href: '/tenant/copilot' },
       ],
     },
     {
       id: 'automation',
-      label: 'Automation',
+      label: t('sidebar.automation'),
       items: [
-        { id: 'automation', label: 'Workflows', icon: Workflow, href: '/tenant/automation' },
-        { id: 'schedules', label: 'Schedules', icon: Clock, href: '/tenant/schedules' },
-        { id: 'lifecycle', label: 'Lifecycle', icon: Boxes, href: '/tenant/lifecycle' },
-        { id: 'change-management', label: 'Change Management', icon: FileText, href: '/tenant/change-management' },
+        { id: 'automation', label: t('sidebar.workflows'), icon: Workflow, href: '/tenant/automation' },
+        { id: 'schedules', label: t('sidebar.schedules'), icon: Clock, href: '/tenant/schedules' },
+        { id: 'lifecycle', label: t('sidebar.lifecycle'), icon: Boxes, href: '/tenant/lifecycle' },
+        { id: 'change-management', label: t('sidebar.changeManagement'), icon: FileText, href: '/tenant/change-management' },
       ],
     },
     {
       id: 'integration',
-      label: 'Integrations',
+      label: t('sidebar.integrations'),
       items: [
-        { id: 'integrations', label: 'Integrations', icon: Boxes, href: '/tenant/integrations' },
-        { id: 'webhooks', label: 'Webhooks', icon: Webhook, href: '/tenant/webhooks' },
-        { id: 'api-keys', label: 'API Keys', icon: Key, href: '/tenant/api-keys' },
-        { id: 'api-usage', label: 'API Usage', icon: Activity, href: '/tenant/api-usage' },
-        { id: 'extensibility', label: 'Extensibility', icon: FileCode, href: '/tenant/extensibility' },
+        { id: 'integrations', label: t('sidebar.integrations'), icon: Boxes, href: '/tenant/integrations' },
+        { id: 'webhooks', label: t('sidebar.webhooks'), icon: Webhook, href: '/tenant/webhooks' },
+        { id: 'api-keys', label: t('sidebar.apiKeys'), icon: Key, href: '/tenant/api-keys' },
+        { id: 'api-usage', label: t('sidebar.apiUsage'), icon: Activity, href: '/tenant/api-usage' },
+        { id: 'extensibility', label: t('sidebar.extensibility'), icon: FileCode, href: '/tenant/extensibility' },
       ],
     },
     {
       id: 'operations',
-      label: 'Operations',
+      label: t('sidebar.operations'),
       items: [
-        { id: 'backups', label: 'Backups', icon: HardDrive, href: '/tenant/backups' },
-        { id: 'imports', label: 'Imports', icon: FileUp, href: '/tenant/imports' },
-        { id: 'exports', label: 'Exports', icon: FileDown, href: '/tenant/exports' },
-        { id: 'observability', label: 'Observability', icon: Eye, href: '/tenant/observability' },
-        { id: 'quotas', label: 'Quotas', icon: BarChart3, href: '/tenant/quotas' },
+        { id: 'backups', label: t('sidebar.backups'), icon: HardDrive, href: '/tenant/backups' },
+        { id: 'imports', label: t('common.imports'), icon: FileUp, href: '/tenant/imports' },
+        { id: 'exports', label: t('common.exports'), icon: FileDown, href: '/tenant/exports' },
+        { id: 'observability', label: t('sidebar.observability'), icon: Eye, href: '/tenant/observability' },
+        { id: 'quotas', label: t('sidebar.quotas'), icon: BarChart3, href: '/tenant/quotas' },
       ],
     },
     {
       id: 'customization',
-      label: 'Customization',
+      label: t('common.customization'),
       items: [
-        { id: 'branding', label: 'Branding', icon: Palette, href: '/tenant/branding' },
-        { id: 'templates', label: 'Templates', icon: FileText, href: '/tenant/templates' },
-        { id: 'notifications', label: 'Notifications', icon: Bell, href: '/tenant/notifications' },
-        { id: 'domains', label: 'Domains', icon: Globe, href: '/tenant/domains' },
+        { id: 'branding', label: t('sidebar.branding'), icon: Palette, href: '/tenant/branding' },
+        { id: 'templates', label: t('sidebar.templates'), icon: FileText, href: '/tenant/templates' },
+        { id: 'notifications', label: t('common.notifications'), icon: Bell, href: '/tenant/notifications' },
+        { id: 'domains', label: t('sidebar.domains'), icon: Globe, href: '/tenant/domains' },
       ],
     },
     {
       id: 'billing',
-      label: 'Billing & Account',
+      label: t('sidebar.billingAccount'),
       items: [
-        { id: 'account', label: 'Account', icon: Users, href: '/tenant/account' },
-        { id: 'billing', label: 'Billing', icon: CreditCard, href: '/tenant/billing' },
+        { id: 'account', label: t('sidebar.account'), icon: Users, href: '/tenant/account' },
+        { id: 'billing', label: t('sidebar.billing'), icon: CreditCard, href: '/tenant/billing' },
       ],
     },
   ];
@@ -213,7 +217,12 @@ const TenantSidebar: React.FC = () => {
       initial={false}
       animate={{ width: sidebarCollapsed ? '80px' : '280px' }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="fixed left-0 top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-40 flex flex-col"
+      className={cn(
+        "fixed top-0 h-screen bg-white dark:bg-slate-900 z-40 flex flex-col",
+        isRTL 
+          ? "right-0 border-l border-slate-200 dark:border-slate-800"
+          : "left-0 border-r border-slate-200 dark:border-slate-800"
+      )}
     >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
@@ -239,7 +248,10 @@ const TenantSidebar: React.FC = () => {
           onClick={toggleSidebar}
           className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
         >
-          {sidebarCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
+          {sidebarCollapsed 
+            ? (isRTL ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />)
+            : (isRTL ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />)
+          }
         </button>
       </div>
 
@@ -247,13 +259,19 @@ const TenantSidebar: React.FC = () => {
       {!sidebarCollapsed && (
         <div className="p-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className={cn(
+              "absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400",
+              isRTL ? "right-3" : "left-3"
+            )} />
             <input
               type="text"
-              placeholder="Search menu..."
+              placeholder={t('common.searchMenu')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={cn(
+                "w-full py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500",
+                isRTL ? "pr-10 pl-4" : "pl-10 pr-4"
+              )}
             />
           </div>
         </div>

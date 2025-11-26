@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
+import { DEFAULT_TENANT_ID } from '@/lib/constants/testIds';
 import * as AutomationAPI from '@/lib/api/automation';
 import {
   AutomationWorkflowDto,
@@ -76,7 +77,7 @@ export default function TenantAutomationPage() {
 
   useEffect(() => {
     const contextTenantId = getTenantId();
-    setTenantIdState(contextTenantId || '00000000-0000-0000-0000-000000000000');
+    setTenantIdState(contextTenantId || DEFAULT_TENANT_ID);
   }, []);
 
   useEffect(() => {
@@ -228,13 +229,12 @@ export default function TenantAutomationPage() {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Succeeded': return 'bg-green-100 text-green-800';
-      case 'Failed': return 'bg-red-100 text-red-800';
-      case 'Running': return 'bg-blue-100 text-blue-800';
-      case 'Skipped': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-yellow-100 text-yellow-800';
-    }
+    const statusLower = status.toLowerCase();
+    if (statusLower === 'succeeded' || statusLower === 'success') return 'bg-green-100 text-green-800';
+    if (statusLower === 'failed' || statusLower === 'failure') return 'bg-red-100 text-red-800';
+    if (statusLower === 'running' || statusLower === 'inprogress') return 'bg-blue-100 text-blue-800';
+    if (statusLower === 'skipped') return 'bg-gray-100 text-gray-800';
+    return 'bg-yellow-100 text-yellow-800';
   };
 
   const getSeverityColor = (severity: string) => {

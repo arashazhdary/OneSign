@@ -222,7 +222,7 @@ export default function GlobalSettingsPage() {
       await globalService.testEmailConfiguration(emailSettings);
       setSuccess('Test email sent successfully!');
     } catch (err: any) {
-      setError(err.message || 'Failed to send test email');
+      setError(err.message || t('common.failedToSendTestEmail'));
     } finally {
       setLoading(false);
     }
@@ -235,7 +235,7 @@ export default function GlobalSettingsPage() {
       await globalService.testSMSConfiguration(smsSettings);
       setSuccess('Test SMS sent successfully!');
     } catch (err: any) {
-      setError(err.message || 'Failed to send test SMS');
+      setError(err.message || t('common.failedToSendTestSMS'));
     } finally {
       setLoading(false);
     }

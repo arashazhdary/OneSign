@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { DEFAULT_TENANT_ID } from '@/lib/constants/testIds';
 
 export interface Tenant {
   id: string;
@@ -25,10 +26,10 @@ interface TenantState {
   clearTenant: () => void;
 }
 
-// Default tenant for development
+// Default tenant for development - uses TestTenantId from DatabaseSeeder
 const defaultTenant: Tenant = {
-  id: '00000000-0000-0000-0000-000000000000',
-  name: 'Default Tenant',
+  id: DEFAULT_TENANT_ID,
+  name: 'Test Organization',
   status: 'active',
   plan: 'enterprise',
 };
@@ -63,7 +64,7 @@ export const useTenantStore = create<TenantState>()(
 // Helper function to get tenant ID (for compatibility with existing code)
 export const getTenantId = (): string => {
   const state = useTenantStore.getState();
-  return state.currentTenant?.id || '00000000-0000-0000-0000-000000000000';
+  return state.currentTenant?.id || DEFAULT_TENANT_ID;
 };
 
 export default useTenantStore;

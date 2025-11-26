@@ -1097,6 +1097,347 @@ export const globalService = {
       return { items: [], total: 0 };
     }
   },
+
+  // ==================== MAINTENANCE WINDOWS ====================
+
+  /**
+   * GET /api/global/maintenance/windows - لیست پنجره‌های نگهداری
+   */
+  getMaintenanceWindows: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/global/maintenance/windows');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch maintenance windows:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/global/maintenance/windows - ایجاد پنجره نگهداری
+   */
+  createMaintenanceWindow: async (data: {
+    title: string;
+    description?: string;
+    type: 'scheduled' | 'emergency' | 'planned';
+    startTime: string;
+    endTime: string;
+    affectedServices: string[];
+    impactLevel: 'none' | 'low' | 'medium' | 'high';
+    notifyUsers: boolean;
+  }): Promise<any> => {
+    const response = await apiClient.post('/api/global/maintenance/windows', data);
+    return response.data;
+  },
+
+  /**
+   * PUT /api/global/maintenance/windows/{id} - به‌روزرسانی پنجره نگهداری
+   */
+  updateMaintenanceWindow: async (windowId: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/global/maintenance/windows/${windowId}`, data);
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/maintenance/windows/{id}/cancel - لغو پنجره نگهداری
+   */
+  cancelMaintenanceWindow: async (windowId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/maintenance/windows/${windowId}/cancel`);
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/maintenance/windows/{id}/notify - ارسال اعلان نگهداری
+   */
+  sendMaintenanceNotification: async (windowId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/maintenance/windows/${windowId}/notify`);
+    return response.data;
+  },
+
+  // ==================== RATE LIMITING ====================
+
+  /**
+   * GET /api/global/rate-limits - لیست محدودیت‌های نرخ
+   */
+  getRateLimits: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/global/rate-limits');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch rate limits:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/global/rate-limits - ایجاد محدودیت نرخ
+   */
+  createRateLimit: async (data: {
+    name: string;
+    type: 'global' | 'per_tenant' | 'per_user' | 'per_ip';
+    endpoint?: string;
+    limit: number;
+    window: number;
+    windowUnit: 'second' | 'minute' | 'hour' | 'day';
+    action: 'throttle' | 'block' | 'notify';
+    exemptions: string[];
+  }): Promise<any> => {
+    const response = await apiClient.post('/api/global/rate-limits', data);
+    return response.data;
+  },
+
+  /**
+   * PUT /api/global/rate-limits/{id} - به‌روزرسانی محدودیت نرخ
+   */
+  updateRateLimit: async (limitId: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/global/rate-limits/${limitId}`, data);
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/rate-limits/{id}/toggle - فعال/غیرفعال کردن محدودیت
+   */
+  toggleRateLimit: async (limitId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/rate-limits/${limitId}/toggle`);
+    return response.data;
+  },
+
+  /**
+   * DELETE /api/global/rate-limits/{id} - حذف محدودیت نرخ
+   */
+  deleteRateLimit: async (limitId: string): Promise<void> => {
+    await apiClient.delete(`/api/global/rate-limits/${limitId}`);
+  },
+
+  // ==================== PLATFORM MIGRATIONS ====================
+
+  /**
+   * GET /api/global/platform/migrations - لیست Migration‌های پلتفرم با pagination
+   */
+  getPlatformMigrations: async (page: number = 1, pageSize: number = 20): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/global/platform/migrations', {
+        params: { page, pageSize }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch platform migrations:', error);
+      return { migrations: [], total: 0 };
+    }
+  },
+
+  /**
+   * POST /api/global/platform/migrations/{id}/apply - اعمال Migration خاص
+   */
+  applyPlatformMigration: async (migrationId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/platform/migrations/${migrationId}/apply`);
+    return response.data;
+  },
+
+  // ==================== AUDIT STATISTICS ====================
+
+  /**
+   * GET /api/global/observability/audit/statistics - آمار audit
+   */
+  getAuditStatistics: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/global/observability/audit/statistics');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch audit statistics:', error);
+      return null;
+    }
+  },
+
+  // ==================== HEALTH ENDPOINTS ====================
+
+  /**
+   * GET /api/health - وضعیت سلامت کلی
+   */
+  getHealthStatus: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/health');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch health status:', error);
+      return null;
+    }
+  },
+
+  /**
+   * GET /api/health/live - بررسی liveness
+   */
+  getLivenessProbe: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/health/live');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch liveness probe:', error);
+      return null;
+    }
+  },
+
+  /**
+   * GET /api/health/ready - بررسی readiness
+   */
+  getReadinessProbe: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/health/ready');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch readiness probe:', error);
+      return null;
+    }
+  },
+
+  /**
+   * GET /api/health/regions - سلامت مناطق
+   */
+  getRegionsHealthStatus: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/health/regions');
+      return response.data?.regions || response.data || [];
+    } catch (error) {
+      console.error('Failed to fetch regions health:', error);
+      return [];
+    }
+  },
+
+  // ==================== GLOBAL WEBHOOKS ====================
+
+  /**
+   * GET /api/global/webhooks - لیست وب‌هوک‌های پلتفرم
+   */
+  getGlobalWebhooks: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/global/webhooks');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch global webhooks:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/global/webhooks - ایجاد وب‌هوک پلتفرم
+   */
+  createGlobalWebhook: async (data: {
+    name: string;
+    url: string;
+    events: string[];
+    secret?: string;
+    isActive: boolean;
+    retryStrategy: 'exponential' | 'linear' | 'none';
+    maxRetries: number;
+    timeout: number;
+    headers?: Record<string, string>;
+  }): Promise<any> => {
+    const response = await apiClient.post('/api/global/webhooks', data);
+    return response.data;
+  },
+
+  /**
+   * PUT /api/global/webhooks/{id} - به‌روزرسانی وب‌هوک
+   */
+  updateGlobalWebhook: async (webhookId: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/global/webhooks/${webhookId}`, data);
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/webhooks/{id}/toggle - فعال/غیرفعال کردن وب‌هوک
+   */
+  toggleGlobalWebhook: async (webhookId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/webhooks/${webhookId}/toggle`);
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/webhooks/{id}/test - تست وب‌هوک
+   */
+  testGlobalWebhook: async (webhookId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/webhooks/${webhookId}/test`);
+    return response.data;
+  },
+
+  /**
+   * DELETE /api/global/webhooks/{id} - حذف وب‌هوک
+   */
+  deleteGlobalWebhook: async (webhookId: string): Promise<void> => {
+    await apiClient.delete(`/api/global/webhooks/${webhookId}`);
+  },
+
+  /**
+   * GET /api/global/webhooks/{id}/logs - لاگ‌های وب‌هوک
+   */
+  getGlobalWebhookLogs: async (webhookId: string): Promise<any[]> => {
+    try {
+      const response = await apiClient.get(`/api/global/webhooks/${webhookId}/logs`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch webhook logs:', error);
+      return [];
+    }
+  },
+
+  /**
+   * GET /api/global/webhooks/logs - همه لاگ‌های وب‌هوک
+   */
+  getAllWebhookLogs: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/global/webhooks/logs');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch all webhook logs:', error);
+      return [];
+    }
+  },
+
+  // ==================== TENANT INTEGRATIONS & IMPORTS/EXPORTS ====================
+
+  /**
+   * GET /api/global/integrations - لیست یکپارچه‌سازی‌ها
+   */
+  getGlobalIntegrations: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/global/integrations');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch global integrations:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/global/integrations - ایجاد یکپارچه‌سازی
+   */
+  createGlobalIntegration: async (data: any): Promise<any> => {
+    const response = await apiClient.post('/api/global/integrations', data);
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/integrations/{id}/toggle - فعال/غیرفعال کردن
+   */
+  toggleGlobalIntegration: async (integrationId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/integrations/${integrationId}/toggle`);
+    return response.data;
+  },
+
+  /**
+   * DELETE /api/global/integrations/{id} - حذف یکپارچه‌سازی
+   */
+  deleteGlobalIntegration: async (integrationId: string): Promise<void> => {
+    await apiClient.delete(`/api/global/integrations/${integrationId}`);
+  },
+
+  /**
+   * POST /api/global/integrations/{id}/test - تست یکپارچه‌سازی
+   */
+  testGlobalIntegration: async (integrationId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/integrations/${integrationId}/test`);
+    return response.data;
+  },
 };
 
 export default globalService;

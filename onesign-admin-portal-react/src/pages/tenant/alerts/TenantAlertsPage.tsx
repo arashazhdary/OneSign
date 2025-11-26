@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
 import DataTable, { Column } from '@/components/common/DataTable';
 import StatusBadge from '@/components/common/StatusBadge';
@@ -43,6 +44,7 @@ interface AlertHistory {
 type Tab = 'rules' | 'history' | 'templates';
 
 export default function TenantAlertsPage() {
+  const { t } = useTranslation();
   const [tenantId, setTenantIdState] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -89,7 +91,7 @@ export default function TenantAlertsPage() {
     setLoading(true);
     try {
       // Fetch from real API
-      const data = await securityService.getAlertRules?.(tenantId);
+      const data = await securityService.getAlertRules(tenantId);
 
       // Mock data for fallback
       const mockRules: AlertRule[] = [
@@ -139,7 +141,7 @@ export default function TenantAlertsPage() {
       setAlertRules(data || mockRules);
     } catch (err: any) {
       console.error('Error fetching alert rules:', err);
-      setError(err?.message || 'Failed to fetch alert rules');
+      setError(err?.message || t('common.failedToFetchAlertRules'));
       // Fallback to mock data
       setAlertRules([
         {
@@ -201,7 +203,7 @@ export default function TenantAlertsPage() {
       setAlertHistory(historyData);
     } catch (err: any) {
       console.error('Error fetching alert history:', err);
-      setError(err?.message || 'Failed to fetch alert history');
+      setError(err?.message || t('common.failedToFetchAlertHistory'));
       // Fallback to mock data
       setAlertHistory([
         {
@@ -256,12 +258,33 @@ export default function TenantAlertsPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      // Replace with actual API call
+      const ruleData = {
+        name: form.name,
+        description: form.description,
+        condition: {
+          type: form.conditionType,
+          metric: form.metric,
+          operator: form.operator,
+          value: form.value,
+        },
+        channels: form.channels.map(ch => ({
+          type: ch.type,
+          config: ch.config ? JSON.parse(ch.config) : {},
+        })),
+        severity: form.severity,
+        isEnabled: form.isEnabled,
+      };
+
+      if (editingRule) {
+        await securityService.updateAlertRule(editingRule.id, ruleData);
+      } else {
+        await securityService.createAlertRule(ruleData);
+      }
       setSuccess(editingRule ? 'Alert rule updated successfully' : 'Alert rule created successfully');
       setShowRuleModal(false);
       fetchAlertRules();
     } catch (err: any) {
-      setError(err?.message || 'Failed to save alert rule');
+      setError(err?.message || t('common.failedToSaveAlertRule'));
     } finally {
       setLoading(false);
     }
@@ -271,11 +294,11 @@ export default function TenantAlertsPage() {
     if (!tenantId || !confirm('Are you sure you want to delete this alert rule?')) return;
     setLoading(true);
     try {
-      // Replace with actual API call
+      await securityService.deleteAlertRule(id);
       setSuccess('Alert rule deleted successfully');
       fetchAlertRules();
     } catch (err: any) {
-      setError(err?.message || 'Failed to delete alert rule');
+      setError(err?.message || t('common.failedToDeleteAlertRule'));
     } finally {
       setLoading(false);
     }
@@ -285,11 +308,11 @@ export default function TenantAlertsPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      // Replace with actual API call
+      await securityService.toggleAlertRule(id);
       setSuccess(`Alert rule ${isEnabled ? 'enabled' : 'disabled'} successfully`);
       fetchAlertRules();
     } catch (err: any) {
-      setError(err?.message || 'Failed to toggle alert rule');
+      setError(err?.message || t('common.failedToToggleAlertRule'));
     } finally {
       setLoading(false);
     }
@@ -299,11 +322,11 @@ export default function TenantAlertsPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      // Replace with actual API call
+      await securityService.muteAlertRule(id);
       setSuccess('Alert rule muted successfully');
       fetchAlertRules();
     } catch (err: any) {
-      setError(err?.message || 'Failed to mute alert rule');
+      setError(err?.message || t('common.failedToMuteAlertRule'));
     } finally {
       setLoading(false);
     }

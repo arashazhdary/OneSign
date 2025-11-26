@@ -3,9 +3,12 @@ import { motion } from 'framer-motion';
 import TenantSidebar from '@/components/common/TenantSidebar';
 import TopBar from '@/components/common/TopBar';
 import { useUIStore } from '@/stores/uiStore';
+import { useDirection } from '@/hooks/useDirection';
 
 export const TenantLayout: React.FC = () => {
   const { sidebarCollapsed } = useUIStore();
+  const { isRTL } = useDirection();
+  const sidebarWidth = sidebarCollapsed ? 80 : 280;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -14,11 +17,20 @@ export const TenantLayout: React.FC = () => {
 
       <motion.main
         initial={false}
-        animate={{
-          marginLeft: sidebarCollapsed ? '80px' : '280px',
-        }}
+        animate={isRTL 
+          ? { 
+              left: 0,
+              right: `${sidebarWidth}px`,
+              width: `calc(100% - ${sidebarWidth}px)`
+            }
+          : { 
+              left: `${sidebarWidth}px`,
+              right: 0,
+              width: `calc(100% - ${sidebarWidth}px)`
+            }
+        }
         transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="pt-16"
+        className="fixed pt-16 top-0 bottom-0 overflow-y-auto"
       >
         <div className="p-6 md:p-8">
           <motion.div

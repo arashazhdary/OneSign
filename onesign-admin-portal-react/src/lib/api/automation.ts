@@ -20,37 +20,8 @@ export interface AutomationWorkflowDto {
   createdBy?: string;
 }
 
-// Constants
-export const EVENT_TYPES = [
-  { value: 'user.created', label: 'User Created' },
-  { value: 'user.updated', label: 'User Updated' },
-  { value: 'user.deleted', label: 'User Deleted' },
-  { value: 'user.login', label: 'User Login' },
-  { value: 'user.logout', label: 'User Logout' },
-  { value: 'role.assigned', label: 'Role Assigned' },
-  { value: 'role.revoked', label: 'Role Revoked' },
-  { value: 'permission.granted', label: 'Permission Granted' },
-  { value: 'permission.revoked', label: 'Permission Revoked' },
-  { value: 'application.created', label: 'Application Created' },
-  { value: 'application.updated', label: 'Application Updated' },
-  { value: 'application.deleted', label: 'Application Deleted' },
-  { value: 'security.alert', label: 'Security Alert' },
-  { value: 'compliance.violation', label: 'Compliance Violation' },
-];
-
-export const ACTION_TYPES = [
-  { value: 'send_email', label: 'Send Email' },
-  { value: 'send_notification', label: 'Send Notification' },
-  { value: 'webhook', label: 'Call Webhook' },
-  { value: 'assign_role', label: 'Assign Role' },
-  { value: 'revoke_role', label: 'Revoke Role' },
-  { value: 'suspend_user', label: 'Suspend User' },
-  { value: 'activate_user', label: 'Activate User' },
-  { value: 'create_ticket', label: 'Create Ticket' },
-  { value: 'run_script', label: 'Run Script' },
-  { value: 'slack_message', label: 'Send Slack Message' },
-  { value: 'teams_message', label: 'Send Teams Message' },
-];
+// Constants - Removed duplicate EVENT_TYPES and ACTION_TYPES declarations
+// See below for the final declarations
 
 // Global template functions
 export const getGlobalTemplates = async (): Promise<AutomationWorkflowDto[]> => {

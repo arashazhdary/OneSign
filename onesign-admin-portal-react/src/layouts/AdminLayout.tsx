@@ -3,9 +3,12 @@ import { motion } from 'framer-motion';
 import AdminSidebar from '@/components/common/AdminSidebar';
 import TopBar from '@/components/common/TopBar';
 import { useUIStore } from '@/stores/uiStore';
+import { useDirection } from '@/hooks/useDirection';
 
 export const AdminLayout: React.FC = () => {
   const { sidebarCollapsed } = useUIStore();
+  const { isRTL } = useDirection();
+  const sidebarWidth = sidebarCollapsed ? '80px' : '280px';
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -14,9 +17,10 @@ export const AdminLayout: React.FC = () => {
 
       <motion.main
         initial={false}
-        animate={{
-          marginLeft: sidebarCollapsed ? '80px' : '280px',
-        }}
+        animate={isRTL 
+          ? { marginRight: sidebarWidth }
+          : { marginLeft: sidebarWidth }
+        }
         transition={{ duration: 0.3, ease: 'easeInOut' }}
         className="pt-16"
       >

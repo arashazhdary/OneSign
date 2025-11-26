@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import {
   LayoutDashboard,
   Users,
@@ -18,6 +19,7 @@ import {
 import { cn } from '@/utils/cn';
 import { useUIStore } from '@/stores/uiStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useDirection } from '@/hooks/useDirection';
 
 interface MenuItem {
   id: string;
@@ -28,31 +30,33 @@ interface MenuItem {
 }
 
 const AdminSidebar: React.FC = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const { user } = useAuthStore();
+  const { isRTL } = useDirection();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedGroups, setExpandedGroups] = useState<string[]>(['admin', 'portals']);
 
   const menuGroups: { id: string; label: string; items: MenuItem[] }[] = [
     {
       id: 'admin',
-      label: 'Admin',
+      label: t('common.admin'),
       items: [
-        { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
-        { id: 'users', label: 'Users', icon: Users, href: '/admin/users' },
-        { id: 'tenants', label: 'Tenants', icon: Building2, href: '/admin/tenants' },
-        { id: 'roles', label: 'Roles', icon: Shield, href: '/admin/roles' },
-        { id: 'api-keys', label: 'API Keys', icon: Key, href: '/admin/api-keys' },
-        { id: 'settings', label: 'Settings', icon: Settings, href: '/admin/settings' },
+        { id: 'dashboard', label: t('nav.dashboard'), icon: LayoutDashboard, href: '/admin/dashboard' },
+        { id: 'users', label: t('nav.users'), icon: Users, href: '/admin/users' },
+        { id: 'tenants', label: t('nav.tenants'), icon: Building2, href: '/admin/tenants' },
+        { id: 'roles', label: t('nav.roles'), icon: Shield, href: '/admin/roles' },
+        { id: 'api-keys', label: t('sidebar.apiKeys'), icon: Key, href: '/admin/api-keys' },
+        { id: 'settings', label: t('nav.settings'), icon: Settings, href: '/admin/settings' },
       ],
     },
     {
       id: 'portals',
-      label: 'Switch Portal',
+      label: t('sidebar.switchPortal'),
       items: [
-        { id: 'tenant-portal', label: 'Tenant Portal', icon: Building2, href: '/tenant/dashboard' },
-        { id: 'global-portal', label: 'Global Admin', icon: Globe, href: '/global/platform' },
+        { id: 'tenant-portal', label: t('sidebar.tenantPortal'), icon: Building2, href: '/tenant/dashboard' },
+        { id: 'global-portal', label: t('sidebar.globalAdmin'), icon: Globe, href: '/global/platform' },
       ],
     },
   ];
@@ -80,7 +84,12 @@ const AdminSidebar: React.FC = () => {
       initial={false}
       animate={{ width: sidebarCollapsed ? '80px' : '280px' }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="fixed left-0 top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-40 flex flex-col"
+      className={cn(
+        "fixed top-0 h-screen bg-white dark:bg-slate-900 z-40 flex flex-col",
+        isRTL 
+          ? "right-0 border-l border-slate-200 dark:border-slate-800"
+          : "left-0 border-r border-slate-200 dark:border-slate-800"
+      )}
     >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
@@ -97,7 +106,7 @@ const AdminSidebar: React.FC = () => {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gradient-primary">OneSign</h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Admin Portal</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{t('common.adminPortal')}</p>
               </div>
             </motion.div>
           )}
@@ -109,11 +118,10 @@ const AdminSidebar: React.FC = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          {sidebarCollapsed ? (
-            <ChevronRight className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-          ) : (
-            <ChevronLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-          )}
+          {sidebarCollapsed 
+            ? (isRTL ? <ChevronLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" /> : <ChevronRight className="w-5 h-5 text-slate-600 dark:text-slate-400" />)
+            : (isRTL ? <ChevronRight className="w-5 h-5 text-slate-600 dark:text-slate-400" /> : <ChevronLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />)
+          }
         </motion.button>
       </div>
 
@@ -126,16 +134,22 @@ const AdminSidebar: React.FC = () => {
             exit={{ opacity: 0, height: 0 }}
             className="p-4"
           >
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Search menu..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all"
-              />
-            </div>
+          <div className="relative">
+            <Search className={cn(
+              "absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400",
+              isRTL ? "right-3" : "left-3"
+            )} />
+            <input
+              type="text"
+              placeholder={t('common.searchMenu')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={cn(
+                "w-full py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all",
+                isRTL ? "pr-10 pl-4" : "pl-10 pr-4"
+              )}
+            />
+          </div>
           </motion.div>
         )}
       </AnimatePresence>

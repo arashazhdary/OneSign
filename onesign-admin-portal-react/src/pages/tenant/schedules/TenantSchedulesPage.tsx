@@ -123,7 +123,7 @@ export default function TenantSchedulesPage() {
       }
     } catch (err: any) {
       console.error('Error fetching schedules:', err);
-      setError(err?.message || 'Failed to load schedules');
+      setError(err?.message || t('common.failedToLoadSchedules'));
       // Fallback to mock data
       setSchedules(mockSchedulesFallback);
     } finally {

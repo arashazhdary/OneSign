@@ -27,8 +27,8 @@ const TopBar: React.FC = () => {
   };
 
   const languages = [
-    { code: 'en', name: 'English', flag: '🇺🇸' },
-    { code: 'fa', name: 'فارسی', flag: '🇮🇷' },
+    { code: 'en', name: t('common.english'), flag: '🇺🇸' },
+    { code: 'fa', name: t('common.persian'), flag: '🇮🇷' },
   ];
 
   const currentLanguage = languages.find((lang) => lang.code === i18n.language) || languages[0];
@@ -45,7 +45,7 @@ const TopBar: React.FC = () => {
       <div className="flex items-center gap-4">
         <div>
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
-            {t('common.welcomeBack')}, {user?.name?.split(' ')[0] || 'Admin'}!
+            {t('common.welcomeBack')}, {user?.name?.split(' ')[0] || t('common.admin')}!
           </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400">
             {t('common.happeningToday')}
@@ -165,10 +165,10 @@ const TopBar: React.FC = () => {
             </div>
             <div className="text-left hidden md:block">
               <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                {user?.name || 'User'}
+                {user?.name || t('common.user')}
               </p>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                {user?.role || 'Admin'}
+                {user?.role || t('common.admin')}
               </p>
             </div>
           </motion.button>

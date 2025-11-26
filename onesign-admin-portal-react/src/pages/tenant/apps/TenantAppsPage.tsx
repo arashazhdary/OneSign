@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocale } from '@/hooks/useLocale';
 import { getTenantId } from '@/lib/tenant-context';
 import { getCurrentUserScope, CurrentUserScopeDto } from '@/lib/api/users';
 import { applicationsService } from '@/lib/api/services';
@@ -385,7 +386,7 @@ export default function TenantAppsPage() {
           }}
           className="w-full max-w-xs px-3 py-2 border rounded"
         >
-          {(!userScope || userScope.isGlobalAdmin) && <option value="">{t('common.all') || 'All'}</option>}
+          {(!userScope || userScope.isGlobalAdmin) && <option value="">{t('common.all')}</option>}
           {getFilteredOrgTree().map(node => (
             <option key={node.id} value={node.id}>{node.name}</option>
           ))}

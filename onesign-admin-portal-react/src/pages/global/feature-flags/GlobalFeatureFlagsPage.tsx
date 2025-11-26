@@ -88,7 +88,7 @@ export default function GlobalFeatureFlagsPage() {
       setHistory(data.history || []);
       setIsHistoryModalOpen(true);
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch history');
+      setError(err.message || t('common.failedToFetchHistory'));
     }
   };
 

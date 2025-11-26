@@ -209,7 +209,7 @@ export default function TenantSessionsPage() {
       setSessions(data || mockSessionsFallback);
     } catch (error: any) {
       console.error('Error fetching sessions:', error);
-      setError(error?.message || 'Failed to load sessions');
+      setError(error?.message || t('common.failedToLoadSessions'));
       // Fallback to mock data
       setSessions(mockSessionsFallback);
     } finally {
@@ -222,7 +222,7 @@ export default function TenantSessionsPage() {
 
     try {
       // Fetch from real API
-      const data = await usersService.getSessionHistory?.(tenantId);
+      const data = await usersService.getSessionHistory(tenantId);
       setHistory(data || mockHistoryFallback);
     } catch (error: any) {
       console.error('Error fetching session history:', error);
@@ -243,7 +243,7 @@ export default function TenantSessionsPage() {
       setSuccess('Session revoked successfully. User has been logged out.');
       fetchSessions();
     } catch (error: any) {
-      setError(error?.message || 'Failed to revoke session');
+      setError(error?.message || t('common.failedToRevokeSession'));
       console.error('Error revoking session:', error);
     }
   };
@@ -255,11 +255,11 @@ export default function TenantSessionsPage() {
     setSuccess('');
 
     try {
-      // API call would go here
+      await usersService.revokeAllUserSessions(userId);
       setSuccess('All user sessions revoked successfully');
       fetchSessions();
     } catch (error: any) {
-      setError(error?.message || 'Failed to revoke sessions');
+      setError(error?.message || t('common.failedToRevokeSessions'));
     }
   };
 
@@ -270,11 +270,11 @@ export default function TenantSessionsPage() {
     setSuccess('');
 
     try {
-      // API call would go here
+      await usersService.revokeSuspiciousSessions();
       setSuccess('All suspicious sessions revoked successfully');
       fetchSessions();
     } catch (error: any) {
-      setError(error?.message || 'Failed to revoke suspicious sessions');
+      setError(error?.message || t('common.failedToRevokeSuspiciousSessions'));
     }
   };
 

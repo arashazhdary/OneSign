@@ -34,7 +34,7 @@ export default function TenantDomainsPage() {
 
   const fetchDomains = async () => {
     try {
-      const data = await tenantService.getCustomDomains?.();
+      const data = await tenantService.getCustomDomains();
       const mockData: CustomDomain[] = [
         {
           id: '1',
@@ -124,7 +124,7 @@ export default function TenantDomainsPage() {
 
   const handleAdd = async () => {
     try {
-      await tenantService.addCustomDomain?.('tenant-id', { domain: newDomain, verificationMethod });
+      await tenantService.addCustomDomain('tenant-id', { domain: newDomain, verificationMethod });
       setShowAdd(false);
       setNewDomain('');
       fetchDomains();
@@ -135,7 +135,7 @@ export default function TenantDomainsPage() {
 
   const handleVerify = async (domainId: string) => {
     try {
-      await tenantService.verifyCustomDomain?.('tenant-id', domainId);
+      await tenantService.verifyCustomDomain('tenant-id', domainId);
       fetchDomains();
     } catch (error) {
       console.error('Failed to verify custom domain:', error);
@@ -145,7 +145,7 @@ export default function TenantDomainsPage() {
   const handleDelete = async (domainId: string) => {
     if (!confirm('Remove this custom domain?')) return;
     try {
-      await tenantService.deleteCustomDomain?.('tenant-id', domainId);
+      await tenantService.deleteCustomDomain('tenant-id', domainId);
       fetchDomains();
     } catch (error) {
       console.error('Failed to delete custom domain:', error);
@@ -154,7 +154,7 @@ export default function TenantDomainsPage() {
 
   const handleSetPrimary = async (domainId: string) => {
     try {
-      await tenantService.setPrimaryDomain?.('tenant-id', domainId);
+      await tenantService.setPrimaryDomain('tenant-id', domainId);
       fetchDomains();
     } catch (error) {
       console.error('Failed to set primary domain:', error);
@@ -163,7 +163,7 @@ export default function TenantDomainsPage() {
 
   const handleRenewSSL = async (domainId: string) => {
     try {
-      await tenantService.renewDomainSSL?.('tenant-id', domainId);
+      await tenantService.renewDomainSSL('tenant-id', domainId);
       fetchDomains();
     } catch (error) {
       console.error('Failed to renew SSL certificate:', error);
