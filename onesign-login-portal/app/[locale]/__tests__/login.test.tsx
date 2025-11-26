@@ -155,7 +155,7 @@ describe('LoginPage', () => {
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
-          'http://localhost:9091/api/auth/login?tenantId=test-tenant',
+          'http://localhost:7000/api/auth/login?tenantId=test-tenant',
           expect.objectContaining({
             method: 'POST',
             headers: {
@@ -543,7 +543,7 @@ describe('LoginPage', () => {
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
-          'http://localhost:9091/api/auth/google-login?tenantId=test-tenant',
+          'http://localhost:7000/api/auth/google-login?tenantId=test-tenant',
           expect.objectContaining({
             method: 'POST',
             body: JSON.stringify({

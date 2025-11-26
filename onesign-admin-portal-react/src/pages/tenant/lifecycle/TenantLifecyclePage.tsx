@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocale } from '@/hooks/useLocale';
 import { getTenantId } from '@/lib/tenant-context';
+import { DEFAULT_TENANT_ID } from '@/lib/constants/testIds';
 import { lifecycleService } from '@/lib/api/services';
 import { Helmet } from 'react-helmet-async';
 
@@ -84,7 +86,7 @@ export default function TenantLifecyclePage() {
 
   useEffect(() => {
     const contextTenantId = getTenantId();
-    setTenantIdState(contextTenantId || '00000000-0000-0000-0000-000000000000');
+    setTenantIdState(contextTenantId || DEFAULT_TENANT_ID);
   }, []);
 
   useEffect(() => {

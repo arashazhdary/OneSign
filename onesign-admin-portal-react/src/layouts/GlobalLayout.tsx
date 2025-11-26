@@ -3,9 +3,12 @@ import { motion } from 'framer-motion';
 import GlobalSidebar from '@/components/common/GlobalSidebar';
 import TopBar from '@/components/common/TopBar';
 import { useUIStore } from '@/stores/uiStore';
+import { useDirection } from '@/hooks/useDirection';
 
 export const GlobalLayout: React.FC = () => {
   const { sidebarCollapsed } = useUIStore();
+  const { isRTL } = useDirection();
+  const sidebarWidth = sidebarCollapsed ? 80 : 280;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
@@ -14,9 +17,18 @@ export const GlobalLayout: React.FC = () => {
 
       <motion.main
         initial={false}
-        animate={{
-          marginLeft: sidebarCollapsed ? '80px' : '280px',
-        }}
+        animate={isRTL 
+          ? { 
+              marginRight: `${sidebarWidth}px`, 
+              marginLeft: 0,
+              width: `calc(100% - ${sidebarWidth}px)`
+            }
+          : { 
+              marginLeft: `${sidebarWidth}px`, 
+              marginRight: 0,
+              width: `calc(100% - ${sidebarWidth}px)`
+            }
+        }
         transition={{ duration: 0.3, ease: 'easeInOut' }}
         className="pt-16"
       >

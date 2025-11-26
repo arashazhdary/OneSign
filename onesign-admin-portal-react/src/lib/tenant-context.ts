@@ -2,14 +2,15 @@
 // This provides the getTenantId function for components that need the current tenant ID
 
 import { useTenantStore } from '@/stores/tenantStore';
+import { DEFAULT_TENANT_ID } from '@/lib/constants/testIds';
 
 /**
  * Get the current tenant ID from the store
- * Returns a default UUID if no tenant is selected
+ * Returns a default test tenant ID from DatabaseSeeder if no tenant is selected
  */
 export const getTenantId = (): string => {
   const state = useTenantStore.getState();
-  return state.currentTenant?.id || '00000000-0000-0000-0000-000000000000';
+  return state.currentTenant?.id || DEFAULT_TENANT_ID;
 };
 
 /**
@@ -25,7 +26,7 @@ export const useCurrentTenant = () => {
  */
 export const useTenantId = (): string => {
   const { currentTenant } = useTenantStore();
-  return currentTenant?.id || '00000000-0000-0000-0000-000000000000';
+  return currentTenant?.id || DEFAULT_TENANT_ID;
 };
 
 export default { getTenantId, useCurrentTenant, useTenantId };

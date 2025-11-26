@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocale } from '@/hooks/useLocale';
 import { globalService } from '@/lib/api/services/global.service';
 import {
   getGlobalTemplates,

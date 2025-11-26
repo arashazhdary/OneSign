@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
+import { DEFAULT_TENANT_ID } from '@/lib/constants/testIds';
 import { usersService } from '@/lib/api/services/users.service';
 import { applicationsService } from '@/lib/api/services/applications.service';
 import { securityService } from '@/lib/api/services/security.service';
@@ -21,7 +22,7 @@ export default function TenantDashboardPage() {
     if (contextTenantId) {
       setTenantIdState(contextTenantId);
     } else {
-      setTenantIdState('00000000-0000-0000-0000-000000000000');
+      setTenantIdState(DEFAULT_TENANT_ID);
     }
   }, []);
 

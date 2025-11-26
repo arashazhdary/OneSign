@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocale } from '@/hooks/useLocale';
 import { getTenantId, setTenantId } from '@/lib/tenant-context';
 import { usersService } from '@/lib/api/services/users.service';
 import { tenantService } from '@/lib/api/services/tenant.service';

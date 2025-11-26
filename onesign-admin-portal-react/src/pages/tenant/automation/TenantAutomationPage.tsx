@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
+import { DEFAULT_TENANT_ID } from '@/lib/constants/testIds';
 import * as AutomationAPI from '@/lib/api/automation';
 import {
   AutomationWorkflowDto,
@@ -76,7 +77,7 @@ export default function TenantAutomationPage() {
 
   useEffect(() => {
     const contextTenantId = getTenantId();
-    setTenantIdState(contextTenantId || '00000000-0000-0000-0000-000000000000');
+    setTenantIdState(contextTenantId || DEFAULT_TENANT_ID);
   }, []);
 
   useEffect(() => {

@@ -93,7 +93,7 @@ export default function LoginPage() {
                 return;
               }
 
-              const loginResponse = await fetch(`http://localhost:9091/api/auth/google-login?tenantId=${tenantId}`, {
+              const loginResponse = await fetch(`http://localhost:7000/api/auth/google-login?tenantId=${tenantId}`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -156,7 +156,7 @@ export default function LoginPage() {
         return;
       }
       
-      const response = await fetch(`http://localhost:9091/api/auth/login?tenantId=${tenantId}`, {
+      const response = await fetch(`http://localhost:7000/api/auth/login?tenantId=${tenantId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

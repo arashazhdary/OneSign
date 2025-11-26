@@ -225,7 +225,7 @@ describe('MfaChallengePage', () => {
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
-          'http://localhost:9091/api/tenant/mfa/verify',
+          'http://localhost:7000/api/tenant/mfa/verify',
           expect.objectContaining({
             method: 'POST',
             headers: {
@@ -255,7 +255,7 @@ describe('MfaChallengePage', () => {
 
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
-          'http://localhost:9091/api/tenant/mfa/verify',
+          'http://localhost:7000/api/tenant/mfa/verify',
           expect.objectContaining({
             body: expect.stringContaining('"rememberDevice":true'),
           })

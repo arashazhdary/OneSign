@@ -9,7 +9,7 @@
 ### برای سرویس‌ها (Services)
 ```env
 # آدرس پایه برای تمام سرویس‌ها (users, applications, etc.)
-API_SERVICES_BASE_URL=http://localhost:9091
+API_SERVICES_BASE_URL=http://localhost:7000
 
 # یا برای استفاده در مرورگر (public)
 NEXT_PUBLIC_API_SERVICES_BASE_URL=/api-proxy
@@ -18,7 +18,7 @@ NEXT_PUBLIC_API_SERVICES_BASE_URL=/api-proxy
 ### برای احراز هویت (Authentication)
 ```env
 # آدرس پایه برای endpoint های احراز هویت
-API_AUTH_BASE_URL=http://localhost:9091
+API_AUTH_BASE_URL=http://localhost:7000
 
 # یا برای استفاده در مرورگر (public)
 NEXT_PUBLIC_API_AUTH_BASE_URL=/api-proxy
@@ -27,7 +27,7 @@ NEXT_PUBLIC_API_AUTH_BASE_URL=/api-proxy
 ### تنظیمات عمومی (Fallback)
 ```env
 # اگر API_SERVICES_BASE_URL یا API_AUTH_BASE_URL تنظیم نشده باشد، از این استفاده می‌شود
-API_BASE_URL=http://localhost:9091
+API_BASE_URL=http://localhost:7000
 NEXT_PUBLIC_API_BASE_URL=/api-proxy
 ```
 
@@ -97,8 +97,8 @@ const authUrl = getAuthApiUrl('/api/auth/login');
 
 ```env
 # Development
-API_SERVICES_BASE_URL=http://localhost:9091
-API_AUTH_BASE_URL=http://localhost:9091
+API_SERVICES_BASE_URL=http://localhost:7000
+API_AUTH_BASE_URL=http://localhost:7000
 
 # یا برای استفاده از proxy در مرورگر
 NEXT_PUBLIC_API_SERVICES_BASE_URL=/api-proxy

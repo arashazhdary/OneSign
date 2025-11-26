@@ -5,12 +5,14 @@ import { useAuthStore } from '@/stores/authStore';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useDirection } from '@/hooks/useDirection';
 import { cn } from '@/utils/cn';
 
 const TopBar: React.FC = () => {
   const { darkMode, toggleDarkMode, sidebarCollapsed } = useUIStore();
   const { user, logout } = useAuthStore();
   const { t, i18n } = useTranslation();
+  const { isRTL } = useDirection();
   const navigate = useNavigate();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -32,13 +34,15 @@ const TopBar: React.FC = () => {
   ];
 
   const currentLanguage = languages.find((lang) => lang.code === i18n.language) || languages[0];
+  const sidebarPadding = sidebarCollapsed ? '96px' : '296px';
 
   return (
     <motion.header
       initial={false}
-      animate={{
-        paddingLeft: sidebarCollapsed ? '96px' : '296px',
-      }}
+      animate={isRTL
+        ? { paddingRight: sidebarPadding, paddingLeft: 0 }
+        : { paddingLeft: sidebarPadding, paddingRight: 0 }
+      }
       transition={{ duration: 0.3, ease: 'easeInOut' }}
       className="fixed top-0 right-0 left-0 h-16 glass z-30 flex items-center justify-between px-6"
     >
