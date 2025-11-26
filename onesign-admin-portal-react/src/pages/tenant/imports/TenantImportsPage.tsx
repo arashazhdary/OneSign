@@ -40,6 +40,7 @@ interface ImportTemplate {
   dataType: string;
   fileType: 'csv' | 'json' | 'xlsx';
   fieldMappings: FieldMapping[];
+  downloadUrl?: string;
   createdAt: string;
 }
 
@@ -264,8 +265,29 @@ export default function TenantImportsPage() {
     const template = templates.find(t => t.id === templateId);
     if (!template) return;
 
-    setSuccess(`Downloading ${template.name}...`);
-    // Download logic would go here
+    try {
+      setSuccess(`Downloading ${template.name}...`);
+      // If template has downloadUrl, open it
+      if (template.downloadUrl) {
+        window.open(template.downloadUrl, '_blank');
+      } else {
+        // Generate a sample CSV template based on fieldMappings
+        const headers = template.fieldMappings.map(m => m.targetField).join(',');
+        const sampleRow = template.fieldMappings.map(m => `[${m.dataType}]`).join(',');
+        const csvContent = `${headers}\n${sampleRow}`;
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${template.name.toLowerCase().replace(/\s+/g, '_')}_template.${template.fileType}`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }
+    } catch (error: any) {
+      setError(error?.message || 'Failed to download template');
+    }
   };
 
   const openPreviewModal = () => {

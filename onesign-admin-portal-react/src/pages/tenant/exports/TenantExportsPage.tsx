@@ -288,9 +288,13 @@ export default function TenantExportsPage() {
   const handleDownload = async (exportJob: ExportJob) => {
     if (!exportJob.downloadUrl) return;
 
-    setSuccess(`Downloading ${exportJob.name}...`);
-    // Download logic would go here
-    // window.open(exportJob.downloadUrl, '_blank');
+    try {
+      setSuccess(`Downloading ${exportJob.name}...`);
+      // Open in new tab for direct download
+      window.open(exportJob.downloadUrl, '_blank');
+    } catch (error: any) {
+      setError(error?.message || 'Failed to download export');
+    }
   };
 
   const handleDeleteExport = async (exportId: string) => {
