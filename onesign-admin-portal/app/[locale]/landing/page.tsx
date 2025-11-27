@@ -152,14 +152,52 @@ export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [email, setEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
+      setShowBackToTop(window.scrollY > 400);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Scroll animation observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-fadeInUp');
+            entry.target.classList.remove('opacity-0', 'translate-y-8');
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    const animatedElements = document.querySelectorAll('.scroll-animate');
+    animatedElements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNewsletterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email) {
+      setSubscribed(true);
+      setEmail('');
+      setTimeout(() => setSubscribed(false), 3000);
+    }
+  };
 
   const toggleLocale = () => {
     const newLocale = locale === 'en' ? 'fa' : 'en';
@@ -329,12 +367,27 @@ export default function LandingPage() {
         {mobileMenuOpen && (
           <div className="lg:hidden bg-white border-t border-gray-100 shadow-lg">
             <div className="px-4 py-6 space-y-4">
-              <Link href="#features" className="block text-gray-600 hover:text-blue-600 font-medium py-2">
+              <a
+                href="#features"
+                onClick={(e) => handleSmoothScroll(e, 'features')}
+                className="block text-gray-600 hover:text-blue-600 font-medium py-2 cursor-pointer"
+              >
                 {t('nav.features')}
-              </Link>
-              <Link href="#pricing" className="block text-gray-600 hover:text-blue-600 font-medium py-2">
+              </a>
+              <a
+                href="#how-it-works"
+                onClick={(e) => handleSmoothScroll(e, 'how-it-works')}
+                className="block text-gray-600 hover:text-blue-600 font-medium py-2 cursor-pointer"
+              >
+                {t('nav.howItWorks')}
+              </a>
+              <a
+                href="#pricing"
+                onClick={(e) => handleSmoothScroll(e, 'pricing')}
+                className="block text-gray-600 hover:text-blue-600 font-medium py-2 cursor-pointer"
+              >
                 {t('nav.pricing')}
-              </Link>
+              </a>
               <Link href="#" className="block text-gray-600 hover:text-blue-600 font-medium py-2">
                 {t('nav.docs')}
               </Link>
@@ -402,7 +455,10 @@ export default function LandingPage() {
                 {t('hero.cta')}
                 <Icons.ArrowRight />
               </Link>
-              <button className="group w-full sm:w-auto px-8 py-4 bg-white text-gray-700 font-semibold rounded-xl border-2 border-gray-200 hover:border-blue-300 transition-all flex items-center justify-center gap-2 hover:shadow-lg">
+              <button
+                onClick={() => setShowVideoModal(true)}
+                className="group w-full sm:w-auto px-8 py-4 bg-white text-gray-700 font-semibold rounded-xl border-2 border-gray-200 hover:border-blue-300 transition-all flex items-center justify-center gap-2 hover:shadow-lg"
+              >
                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
                   <Icons.Play />
                 </div>
@@ -526,7 +582,7 @@ export default function LandingPage() {
       <section id="features" className="py-16 lg:py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Header */}
-          <div className="text-center max-w-3xl mx-auto mb-12 lg:mb-16">
+          <div className="text-center max-w-3xl mx-auto mb-12 lg:mb-16 scroll-animate opacity-0 translate-y-8 transition-all duration-700">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
               {t('features.title')}
             </h2>
@@ -563,7 +619,7 @@ export default function LandingPage() {
       {/* How It Works Section */}
       <section id="how-it-works" className="py-16 lg:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-12 lg:mb-16">
+          <div className="text-center max-w-3xl mx-auto mb-12 lg:mb-16 scroll-animate opacity-0 translate-y-8 transition-all duration-700">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
               {t('howItWorks.title')}
             </h2>
@@ -657,7 +713,7 @@ export default function LandingPage() {
       {/* Testimonials Section */}
       <section className="py-16 lg:py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-12">
+          <div className="text-center max-w-3xl mx-auto mb-12 scroll-animate opacity-0 translate-y-8 transition-all duration-700">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
               {t('testimonials.title')}
             </h2>
@@ -1005,6 +1061,35 @@ export default function LandingPage() {
               <p className="text-gray-400 text-sm mb-6">
                 {t('footer.description')}
               </p>
+
+              {/* Newsletter Form */}
+              <div className="mb-6">
+                <p className="text-white text-sm font-medium mb-3">
+                  {t('footer.newsletter')}
+                </p>
+                <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={t('footer.emailPlaceholder')}
+                    className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    {t('footer.subscribe')}
+                  </button>
+                </form>
+                {subscribed && (
+                  <p className="mt-2 text-sm text-green-400">
+                    {t('footer.subscribed')}
+                  </p>
+                )}
+              </div>
+
               <button
                 onClick={toggleLocale}
                 className="px-4 py-2 text-sm border border-gray-700 rounded-lg hover:border-gray-500 transition-colors"
@@ -1087,6 +1172,96 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* Back to Top Button */}
+      {showBackToTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 z-50 w-12 h-12 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center"
+          aria-label="Back to top"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+          </svg>
+        </button>
+      )}
+
+      {/* Video Demo Modal */}
+      {showVideoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="relative w-full max-w-4xl bg-gray-900 rounded-2xl overflow-hidden shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-700">
+              <h3 className="text-lg font-semibold text-white">
+                {t('videoModal.title')}
+              </h3>
+              <button
+                onClick={() => setShowVideoModal(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-700 transition-colors text-gray-400 hover:text-white"
+              >
+                <Icons.X />
+              </button>
+            </div>
+
+            {/* Video Container */}
+            <div className="aspect-video bg-black flex items-center justify-center">
+              <div className="text-center p-8">
+                <div className="w-20 h-20 rounded-full bg-blue-600/20 flex items-center justify-center mx-auto mb-6">
+                  <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center">
+                    <Icons.Play />
+                  </div>
+                </div>
+                <h4 className="text-xl font-semibold text-white mb-2">
+                  {t('videoModal.placeholder')}
+                </h4>
+                <p className="text-gray-400">
+                  {t('videoModal.description')}
+                </p>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-gray-700 flex justify-end gap-3">
+              <button
+                onClick={() => setShowVideoModal(false)}
+                className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+              >
+                {t('videoModal.close')}
+              </button>
+              <Link
+                href={`/${locale}/login`}
+                className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                {t('videoModal.getStarted')}
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Animations Style */}
+      <style jsx global>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(2rem);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fadeInUp {
+          animation: fadeInUp 0.6s ease-out forwards;
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.5s ease-out forwards;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }

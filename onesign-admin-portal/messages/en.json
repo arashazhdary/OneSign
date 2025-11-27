@@ -255,7 +255,18 @@
       "terms": "Terms of Service",
       "security": "Security",
       "compliance": "Compliance",
-      "copyright": "All rights reserved."
+      "copyright": "All rights reserved.",
+      "newsletter": "Subscribe to our newsletter",
+      "emailPlaceholder": "Enter your email",
+      "subscribe": "Subscribe",
+      "subscribed": "Thanks for subscribing!"
+    },
+    "videoModal": {
+      "title": "OneSign Platform Demo",
+      "placeholder": "Demo Video Coming Soon",
+      "description": "Our product demo video is being prepared. In the meantime, start your free trial to explore all features.",
+      "close": "Close",
+      "getStarted": "Start Free Trial"
     }
   },
   "common": {
