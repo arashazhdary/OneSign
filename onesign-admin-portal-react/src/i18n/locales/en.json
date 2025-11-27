@@ -6707,5 +6707,31 @@
     "accept": "Accept:",
     "contentType": "Content-Type:",
     "authorization": "Authorization:"
+  },
+  "versionLabels": {
+    "version": "Version",
+    "versionHistory": "Version History",
+    "versionNumber": "Version {{version}}",
+    "currentVersion": "Current Version",
+    "latestVersion": "Latest Version",
+    "previousVersion": "Previous Version"
+  },
+  "advancedBasic": {
+    "advanced": "Advanced",
+    "advancedInsights": "Advanced Insights",
+    "basic": "Basic",
+    "basicSyntax": "Basic syntax:"
+  },
+  "dynamicText": {
+    "resetsInDays": "Resets in {{days}} days",
+    "expiresInDays": "Expires in {{days}} days",
+    "itemsSelected": "{{count}} items selected",
+    "ofTotal": "of {{total}} total",
+    "showingXOfY": "Showing {{x}} of {{y}}"
+  },
+  "queryHelp": {
+    "combineConditions": "Combine conditions:",
+    "useAndOr": "Use AND or OR",
+    "fieldOperatorValue": "field operator \"value\""
   }
 }

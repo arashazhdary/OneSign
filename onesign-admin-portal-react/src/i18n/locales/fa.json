@@ -6706,5 +6706,31 @@
     "accept": "پذیرش:",
     "contentType": "نوع محتوا:",
     "authorization": "احراز هویت:"
+  },
+  "versionLabels": {
+    "version": "نسخه",
+    "versionHistory": "تاریخچه نسخه‌ها",
+    "versionNumber": "نسخه {{version}}",
+    "currentVersion": "نسخه فعلی",
+    "latestVersion": "آخرین نسخه",
+    "previousVersion": "نسخه قبلی"
+  },
+  "advancedBasic": {
+    "advanced": "پیشرفته",
+    "advancedInsights": "بینش‌های پیشرفته",
+    "basic": "پایه",
+    "basicSyntax": "سینتکس پایه:"
+  },
+  "dynamicText": {
+    "resetsInDays": "بازنشانی در {{days}} روز",
+    "expiresInDays": "انقضا در {{days}} روز",
+    "itemsSelected": "{{count}} مورد انتخاب شده",
+    "ofTotal": "از {{total}} کل",
+    "showingXOfY": "نمایش {{x}} از {{y}}"
+  },
+  "queryHelp": {
+    "combineConditions": "ترکیب شرایط:",
+    "useAndOr": "از AND یا OR استفاده کنید",
+    "fieldOperatorValue": "فیلد عملگر \"مقدار\""
   }
 }
