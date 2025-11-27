@@ -156,6 +156,9 @@ export default function LandingPage() {
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [statsVisible, setStatsVisible] = useState(false);
+  const [animatedStats, setAnimatedStats] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     const handleScroll = () => {
@@ -185,6 +188,85 @@ export default function LandingPage() {
 
     return () => observer.disconnect();
   }, []);
+
+  // Keyboard support for modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showVideoModal) {
+        setShowVideoModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showVideoModal]);
+
+  // Auto-rotate testimonials
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveTestimonial((prev) => (prev + 1) % 3);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Animated stats counter
+  useEffect(() => {
+    if (!statsVisible) return;
+
+    const targetValues: { [key: string]: { value: number; suffix: string; prefix: string } } = {
+      users: { value: 500, suffix: 'K+', prefix: '' },
+      apps: { value: 1000, suffix: '+', prefix: '' },
+      authentications: { value: 10, suffix: 'M+', prefix: '' },
+      uptime: { value: 99.99, suffix: '%', prefix: '' },
+    };
+
+    const duration = 2000;
+    const steps = 60;
+    const stepTime = duration / steps;
+
+    let currentStep = 0;
+    const interval = setInterval(() => {
+      currentStep++;
+      const progress = currentStep / steps;
+      const easeOutQuad = 1 - (1 - progress) * (1 - progress);
+
+      const newStats: { [key: string]: string } = {};
+      Object.entries(targetValues).forEach(([key, { value, suffix, prefix }]) => {
+        const currentValue = value * easeOutQuad;
+        if (key === 'uptime') {
+          newStats[key] = `${prefix}${currentValue.toFixed(2)}${suffix}`;
+        } else if (key === 'apps') {
+          newStats[key] = `${prefix}${Math.floor(currentValue).toLocaleString()}${suffix}`;
+        } else {
+          newStats[key] = `${prefix}${Math.floor(currentValue)}${suffix}`;
+        }
+      });
+      setAnimatedStats(newStats);
+
+      if (currentStep >= steps) {
+        clearInterval(interval);
+      }
+    }, stepTime);
+
+    return () => clearInterval(interval);
+  }, [statsVisible]);
+
+  // Stats visibility observer
+  useEffect(() => {
+    const statsSection = document.getElementById('stats-section');
+    if (!statsSection) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !statsVisible) {
+          setStatsVisible(true);
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(statsSection);
+    return () => observer.disconnect();
+  }, [statsVisible]);
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -467,11 +549,11 @@ export default function LandingPage() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 pt-8 border-t border-gray-200">
+            <div id="stats-section" className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 pt-8 border-t border-gray-200">
               {stats.map((stat) => (
                 <div key={stat.key} className="text-center">
-                  <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-1">
-                    {stat.value}
+                  <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-1 tabular-nums">
+                    {animatedStats[stat.key] || stat.value}
                   </div>
                   <div className="text-sm text-gray-500">
                     {t(`stats.${stat.key}`)}
@@ -657,7 +739,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left Content */}
-            <div>
+            <div className="scroll-animate opacity-0 translate-y-8 transition-all duration-700">
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
                 {t('why.title')}
               </h2>
@@ -723,10 +805,20 @@ export default function LandingPage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial) => (
-              <div key={testimonial.key} className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
+            {testimonials.map((testimonial, index) => (
+              <div
+                key={testimonial.key}
+                className={`bg-white rounded-2xl p-8 shadow-lg border-2 transition-all duration-500 cursor-pointer ${
+                  activeTestimonial === index
+                    ? 'border-blue-500 scale-105 shadow-xl shadow-blue-500/10'
+                    : 'border-gray-100 hover:border-blue-200 hover:shadow-xl'
+                }`}
+                onClick={() => setActiveTestimonial(index)}
+              >
                 {/* Quote Icon */}
-                <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-6">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-6 transition-colors ${
+                  activeTestimonial === index ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-600'
+                }`}>
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
                   </svg>
@@ -752,13 +844,29 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+
+          {/* Carousel Indicators */}
+          <div className="flex items-center justify-center gap-2 mt-8">
+            {testimonials.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setActiveTestimonial(index)}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  activeTestimonial === index
+                    ? 'w-8 bg-blue-600'
+                    : 'bg-gray-300 hover:bg-gray-400'
+                }`}
+                aria-label={`Go to testimonial ${index + 1}`}
+              />
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Integrations Section */}
       <section className="py-16 lg:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-12">
+          <div className="text-center max-w-3xl mx-auto mb-12 scroll-animate opacity-0 translate-y-8 transition-all duration-700">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
               {t('integrations.title')}
             </h2>
@@ -800,7 +908,7 @@ export default function LandingPage() {
       {/* FAQ Section */}
       <section className="py-16 lg:py-24 bg-gray-50">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <div className="text-center mb-12 scroll-animate opacity-0 translate-y-8 transition-all duration-700">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
               {t('faq.title')}
             </h2>
@@ -856,7 +964,7 @@ export default function LandingPage() {
       <section id="pricing" className="py-16 lg:py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Header */}
-          <div className="text-center max-w-3xl mx-auto mb-12">
+          <div className="text-center max-w-3xl mx-auto mb-12 scroll-animate opacity-0 translate-y-8 transition-all duration-700">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
               {t('pricing.title')}
             </h2>
