@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { User, Tenant } from '@/types';
+import apiClient from '@/services/apiClient';
+import { setAuthToken } from '@/services/apiClient';
 
 interface GoogleLoginParams {
   code: string;
@@ -49,27 +51,43 @@ export const useAuthStore = create<AuthState>()(
       googleLogin: async ({ code, redirectUri }) => {
         set({ isLoading: true });
         try {
-          // TODO: Implement actual Google OAuth callback
-          const response = await fetch('/api/auth/google/callback', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ code, redirectUri }),
+          // Exchange authorization code for tokens and user data
+          const data = await apiClient.post<{
+            accessToken: string;
+            refreshToken?: string;
+            user: User;
+            tenant?: Tenant;
+            tenants?: Tenant[];
+          }>('/api/auth/google/callback', {
+            code,
+            redirectUri,
           });
 
-          if (!response.ok) {
-            throw new Error('Google login failed');
+          // Store the access token
+          if (data.accessToken) {
+            setAuthToken(data.accessToken);
           }
 
-          const data = await response.json();
+          // Store refresh token if provided
+          if (data.refreshToken) {
+            localStorage.setItem('refreshToken', data.refreshToken);
+          }
+
+          // Get the first tenant if tenants array is provided but no single tenant
+          const selectedTenant = data.tenant || (data.tenants && data.tenants.length > 0 ? data.tenants[0] : null);
+
+          // Update auth state
           set({
             user: data.user,
-            tenant: data.tenant,
+            tenant: selectedTenant,
+            tenants: data.tenants || (selectedTenant ? [selectedTenant] : []),
             isAuthenticated: true,
             isLoading: false,
           });
-        } catch (error) {
+        } catch (error: any) {
           set({ isLoading: false });
-          throw error;
+          const errorMessage = error?.response?.data?.message || error?.message || 'Google login failed';
+          throw new Error(errorMessage);
         }
       },
     }),

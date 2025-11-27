@@ -1,7 +1,13 @@
+using System.Text.Json;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Onesign.Modules.Billing.Application.DTOs;
 using Onesign.Modules.Billing.Application.Queries;
+using Onesign.Modules.Billing.Domain.Enums;
+using Onesign.Modules.Billing.Domain.Repositories;
+using Onesign.Modules.Observability.Domain.Enums;
+using Onesign.Modules.Observability.Domain.Services;
+using BillingUpgradeRequest = Onesign.Modules.Billing.Domain.Entities.UpgradeRequest;
 
 namespace Onesign.Api.Controllers.Tenant;
 
@@ -9,10 +15,17 @@ namespace Onesign.Api.Controllers.Tenant;
 public class BillingController : TenantControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly IUpgradeRequestRepository _upgradeRequestRepository;
+    private readonly IAuditWriter _auditWriter;
 
-    public BillingController(IMediator mediator)
+    public BillingController(
+        IMediator mediator,
+        IUpgradeRequestRepository upgradeRequestRepository,
+        IAuditWriter auditWriter)
     {
         _mediator = mediator;
+        _upgradeRequestRepository = upgradeRequestRepository;
+        _auditWriter = auditWriter;
     }
 
     [HttpGet("summary")]
@@ -54,14 +67,60 @@ public class BillingController : TenantControllerBase
     [HttpPost("upgrade-requests")]
     public async Task<ActionResult> RequestUpgrade([FromQuery] Guid tenantId, [FromBody] UpgradeRequest request)
     {
-        // For Phase 5, this is a simple placeholder that would log the request
-        // In a future phase, this would integrate with a ticketing system or send notifications
+        var currentTenantId = GetCurrentTenantId();
+        if (currentTenantId == Guid.Empty)
+        {
+            currentTenantId = tenantId;
+        }
 
-        // TODO: Store upgrade request in database
-        // TODO: Send notification to SaaS admins
-        // TODO: Create audit log entry
+        var userId = GetCurrentUserId();
+        var userDisplayName = User.Identity?.Name ?? "Unknown User";
 
-        return Ok(new { message = "Upgrade request submitted successfully" });
+        // Store upgrade request in database
+        var upgradeRequest = new BillingUpgradeRequest
+        {
+            Id = Guid.NewGuid(),
+            TenantId = currentTenantId,
+            TargetPlanId = request.TargetPlanId,
+            Comments = request.Comments,
+            Status = UpgradeRequestStatus.Pending,
+            RequestedBy = userId.ToString(),
+            RequestedAt = DateTime.UtcNow
+        };
+
+        await _upgradeRequestRepository.AddAsync(upgradeRequest);
+
+        // Create audit log entry
+        var auditData = JsonSerializer.Serialize(new
+        {
+            UpgradeRequestId = upgradeRequest.Id,
+            TargetPlanId = request.TargetPlanId,
+            Comments = request.Comments
+        });
+
+        await _auditWriter.WriteAsync(
+            tenantId: currentTenantId,
+            category: AuditCategory.Billing,
+            severity: AuditSeverity.Info,
+            action: "UpgradeRequested",
+            actorId: userId.ToString(),
+            actorDisplayName: userDisplayName,
+            actorType: "User",
+            targetType: "UpgradeRequest",
+            targetId: upgradeRequest.Id.ToString(),
+            ipAddress: HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            userAgent: Request.Headers.UserAgent.ToString(),
+            dataJson: auditData);
+
+        // Note: SaaS admin notification is handled by the NotificationDeliveryWorker
+        // which monitors for new upgrade requests and sends notifications accordingly
+
+        return Ok(new
+        {
+            message = "Upgrade request submitted successfully",
+            requestId = upgradeRequest.Id,
+            status = upgradeRequest.Status.ToString()
+        });
     }
 }
 

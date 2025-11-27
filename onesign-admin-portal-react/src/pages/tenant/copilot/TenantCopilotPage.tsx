@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
 import { copilotService } from '@/lib/api/services/copilot.service';
+import { useAuth } from '@/app/contexts/AuthContext';
 import { Helmet } from 'react-helmet-async';
 
 interface Message {
@@ -53,6 +54,7 @@ type SidebarTab = 'suggestions' | 'insights' | 'analysis';
 
 export default function TenantCopilotPage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [tenantId, setTenantIdState] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -101,8 +103,7 @@ export default function TenantCopilotPage() {
   const fetchConversations = async () => {
     setLoading(true);
     try {
-      // TODO: Get userId from auth context
-      const userId = 'current-user-id'; // This should come from auth context
+      const userId = user?.id || '00000000-0000-0000-0000-000000000001';
       const data = await copilotService.getConversations(tenantId, userId);
       setConversations(data.map(conv => ({
         id: conv.id,
@@ -163,8 +164,7 @@ export default function TenantCopilotPage() {
     setInputMessage('');
 
     try {
-      // TODO: Get userId from auth context
-      const userId = 'current-user-id'; // This should come from auth context
+      const userId = user?.id || '00000000-0000-0000-0000-000000000001';
       const data = await copilotService.sendQuery({
         tenantId,
         userId,

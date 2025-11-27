@@ -2,11 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-// import UsersPage from '@/pages/admin/Users'; // TODO: Uncomment when component is implemented
+import UsersPage from '@/pages/admin/UsersPage';
 import { usersApi } from '@/services/users.api';
-
-// Placeholder component for testing
-const UsersPage = () => <div>Users Page Placeholder</div>;
 
 // Mock the API
 vi.mock('@/services/users.api', () => ({
@@ -57,8 +54,7 @@ const createWrapper = () => {
   );
 };
 
-// Skip these tests until UsersPage component is implemented
-describe.skip('Users Integration Tests', () => {
+describe('Users Integration Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

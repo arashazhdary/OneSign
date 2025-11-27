@@ -2,10 +2,13 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore;
 using Onesign.Modules.Automation.Domain.Entities;
 using Onesign.Modules.Automation.Domain.Enums;
 using Onesign.Modules.Automation.Domain.Services;
+using Onesign.Modules.Authorization.Domain.Entities;
+using Onesign.Modules.Authorization.Domain.Enums;
+using Onesign.Modules.Authorization.Domain.Repositories;
+using Onesign.Modules.Authorization.Infrastructure.EfCore.Entities;
 using Onesign.Modules.Identity.Infrastructure.EfCore.Entities;
 using Onesign.Modules.NotificationCenter.Domain.Entities;
 using Onesign.Modules.NotificationCenter.Domain.Enums;
@@ -20,17 +23,23 @@ public class ActionExecutorService : IActionExecutor
     private readonly INotificationOutboxRepository _notificationOutboxRepository;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<ActionExecutorService> _logger;
+    private readonly IPolicyDefinitionRepository _policyDefinitionRepository;
+    private readonly IPolicyAssignmentRepository _policyAssignmentRepository;
 
     public ActionExecutorService(
         DbContext dbContext,
         INotificationOutboxRepository notificationOutboxRepository,
         IHttpClientFactory httpClientFactory,
-        ILogger<ActionExecutorService> logger)
+        ILogger<ActionExecutorService> logger,
+        IPolicyDefinitionRepository policyDefinitionRepository,
+        IPolicyAssignmentRepository policyAssignmentRepository)
     {
         _dbContext = dbContext;
         _notificationOutboxRepository = notificationOutboxRepository;
         _httpClientFactory = httpClientFactory;
         _logger = logger;
+        _policyDefinitionRepository = policyDefinitionRepository;
+        _policyAssignmentRepository = policyAssignmentRepository;
     }
 
     public async Task<Result> ExecuteAsync(AutomationAction action, Guid tenantId, Dictionary<string, object?> payload, CancellationToken cancellationToken = default)
@@ -135,13 +144,77 @@ public class ActionExecutorService : IActionExecutor
         if (!appId.HasValue)
             return Result.Failure("MissingAppId", "App ID is required for DisableAppAccess action");
 
-        // Note: PolicyAssignmentEntity doesn't have SubjectId/ResourceId directly
-        // This would need to be implemented through PolicyTarget relationships
-        // For now, we'll log the action but skip the actual assignment modification
-        // TODO: Implement proper policy assignment disabling through PolicyTarget
-        _logger.LogWarning("DisableAppAccess action requires PolicyTarget implementation for user {UserId} and app {AppId}", userId, appId);
+        // Find or create PolicyTarget for the application
+        var targetKey = appId.Value.ToString();
+        var policyTarget = await _dbContext.Set<PolicyTargetEntity>()
+            .FirstOrDefaultAsync(pt => pt.TenantId == tenantId
+                && pt.TargetType == PolicyTargetType.Application
+                && pt.TargetKey == targetKey, cancellationToken);
 
-        _logger.LogInformation("Disabled app {AppId} access for user {UserId} in tenant {TenantId}", appId, userId, tenantId);
+        if (policyTarget == null)
+        {
+            policyTarget = new PolicyTargetEntity
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenantId,
+                TargetType = PolicyTargetType.Application,
+                TargetKey = targetKey,
+                TargetName = $"App-{appId}",
+                CreatedAt = DateTime.UtcNow
+            };
+            _dbContext.Set<PolicyTargetEntity>().Add(policyTarget);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        // Create a DENY policy for this specific user
+        var policyDefinition = new PolicyDefinition
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            Name = $"Automation: Deny {userId} access to {appId}",
+            Description = $"Automatically created by automation workflow to deny user {userId} access to app {appId}",
+            Effect = PolicyEffect.Deny,
+            Priority = 100, // High priority to ensure denial takes precedence
+            Enabled = true,
+            CreatedAt = DateTime.UtcNow,
+            ConditionGroups = new List<PolicyConditionGroup>
+            {
+                new PolicyConditionGroup
+                {
+                    Id = Guid.NewGuid(),
+                    LogicalOperator = ConditionLogicalOperator.And,
+                    Conditions = new List<PolicyCondition>
+                    {
+                        new PolicyCondition
+                        {
+                            Id = Guid.NewGuid(),
+                            SourceType = AttributeSourceType.UserClaim,
+                            SourceKey = "UserId",
+                            Operator = ConditionOperator.Equals,
+                            Value = userId.Value.ToString()
+                        }
+                    }
+                }
+            }
+        };
+
+        await _policyDefinitionRepository.AddAsync(policyDefinition, cancellationToken);
+
+        // Create PolicyAssignment linking the DENY policy to the application target
+        var policyAssignment = new PolicyAssignment
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            PolicyDefinitionId = policyDefinition.Id,
+            PolicyTargetId = policyTarget.Id,
+            Order = 0, // First in evaluation order
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _policyAssignmentRepository.AddAsync(policyAssignment, cancellationToken);
+
+        _logger.LogInformation("Disabled app {AppId} access for user {UserId} in tenant {TenantId} via policy {PolicyId}",
+            appId, userId, tenantId, policyDefinition.Id);
 
         return Result.Success();
     }
