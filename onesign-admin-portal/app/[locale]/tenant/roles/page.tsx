@@ -108,7 +108,7 @@ export default function RoleManagementPage() {
   const fetchRoles = async () => {
     if (!tenantId) return;
     try {
-      const data = await platformService.getRoles(tenantId);
+      const data = await (platformService as any).getRoles(tenantId);
       setRoles(data.items || data || []);
     } catch (error) {
       console.error('Error fetching roles:', error);
@@ -133,9 +133,9 @@ export default function RoleManagementPage() {
 
     try {
       if (editingRole) {
-        await platformService.updateRole(editingRole.id, payload, tenantId);
+        await (platformService as any).updateRole(editingRole.id, payload, tenantId);
       } else {
-        await platformService.createRole({ ...payload, tenantId });
+        await (platformService as any).createRole({ ...payload, tenantId });
       }
       setSuccess(editingRole ? 'Role updated successfully' : 'Role created successfully');
       setShowCreateModal(false);
@@ -163,7 +163,7 @@ export default function RoleManagementPage() {
     setSuccess('');
 
     try {
-      await platformService.deleteRole(roleId, tenantId);
+      await (platformService as any).deleteRole(roleId, tenantId);
       setSuccess('Role deleted successfully');
       fetchRoles();
     } catch (error: any) {

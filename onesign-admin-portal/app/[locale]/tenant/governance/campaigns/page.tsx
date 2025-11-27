@@ -106,19 +106,19 @@ export default function GovernanceCampaignsPage() {
     setEndDate('');
   };
 
-  const getStatusColor = (status: string): 'green' | 'blue' | 'yellow' | 'red' | 'gray' => {
+  const getStatusVariant = (status: string): 'success' | 'info' | 'warning' | 'error' | 'default' => {
     switch (status) {
       case 'Completed':
-        return 'green';
+        return 'success';
       case 'Active':
       case 'InProgress':
-        return 'blue';
+        return 'info';
       case 'Draft':
-        return 'yellow';
+        return 'warning';
       case 'Cancelled':
-        return 'red';
+        return 'error';
       default:
-        return 'gray';
+        return 'default';
     }
   };
 
@@ -137,7 +137,7 @@ export default function GovernanceCampaignsPage() {
       key: 'status',
       label: t('tenant.governance.status'),
       render: (campaign) => (
-        <StatusBadge status={campaign.status} color={getStatusColor(campaign.status)} />
+        <StatusBadge status={campaign.status} variant={getStatusVariant(campaign.status)} />
       )
     },
     {

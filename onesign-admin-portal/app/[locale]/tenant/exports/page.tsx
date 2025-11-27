@@ -218,7 +218,7 @@ export default function ExportsPage() {
 
     try {
       // Fetch from real API
-      const data = await platformService.getExportJobs?.(tenantId);
+      const data = await (platformService as any).getExportJobs?.(tenantId);
       setExports(data || mockExportsFallback);
     } catch (error: any) {
       console.error('Error fetching exports:', error);
@@ -235,7 +235,7 @@ export default function ExportsPage() {
 
     try {
       // Fetch from real API
-      const data = await platformService.getExportTemplates?.(tenantId);
+      const data = await (platformService as any).getExportTemplates?.(tenantId);
       setTemplates(data || mockTemplatesFallback);
     } catch (error: any) {
       console.error('Error fetching templates:', error);
@@ -249,7 +249,7 @@ export default function ExportsPage() {
 
     try {
       // Fetch from real API
-      const data = await platformService.getScheduledExports?.(tenantId);
+      const data = await (platformService as any).getScheduledExports?.(tenantId);
       setScheduledExports(data || mockScheduledExportsFallback);
     } catch (error: any) {
       console.error('Error fetching scheduled exports:', error);

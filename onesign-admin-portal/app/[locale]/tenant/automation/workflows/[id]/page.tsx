@@ -127,9 +127,9 @@ export default function WorkflowDetailPage() {
     setError('');
     try {
       const data = await getWorkflow(workflowId, tenantId);
-      setWorkflow(data);
+      setWorkflow(data as unknown as Workflow);
       setEditName(data.name);
-      setEditDescription(data.description);
+      setEditDescription(data.description || '');
     } catch (err) {
       setError(t('common.error'));
     } finally {

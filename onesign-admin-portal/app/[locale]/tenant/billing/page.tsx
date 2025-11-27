@@ -96,7 +96,7 @@ export default function BillingPage() {
 
     try {
       const data = await billingService.getCurrentSubscription(tenantId);
-      setSubscription(data);
+      setSubscription(data as any);
     } catch (error) {
       console.error('Error fetching subscription:', error);
     }

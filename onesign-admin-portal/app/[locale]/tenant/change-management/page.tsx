@@ -173,6 +173,14 @@ export default function TenantChangeManagementPage() {
   const [approvalComment, setApprovalComment] = useState('');
   const [rejectReason, setRejectReason] = useState('');
   const [cloneName, setCloneName] = useState('');
+  const [newRule, setNewRule] = useState({
+    name: '',
+    targetModule: 'Users',
+    requiredApprovers: 1,
+    approverRoles: ['Admin'],
+    isActive: true,
+  });
+  const [showRuleModal, setShowRuleModal] = useState(false);
 
   const targetModules = ['Users', 'Groups', 'Applications', 'Policies', 'Settings', 'Security'];
 

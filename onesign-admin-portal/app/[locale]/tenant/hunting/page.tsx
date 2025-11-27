@@ -7,8 +7,6 @@ import * as HuntingAPI from '@/lib/api/hunting';
 
 // Types
 type SavedQuery = HuntingAPI.SavedQueryDto;
-type ScheduledHunt = HuntingAPI.ScheduledHuntDto;
-type HuntRun = HuntingAPI.HuntRunDto;
 
 interface ScheduledHunt {
   id: string;

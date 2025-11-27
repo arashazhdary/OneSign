@@ -37,7 +37,7 @@ interface WebhookDelivery {
   const fetchWebhooks = async () => {
     try {
       const tenantId = getTenantId() || '';
-      const data = await platformService.getWebhooks(tenantId);
+      const data = await (platformService as any).getWebhooks(tenantId);
       setWebhooks(data);
     } catch (error) {
       console.error('Failed to fetch webhooks:', error);
@@ -175,7 +175,7 @@ export default function WebhooksPage() {
     if (!tenantId) return;
 
     try {
-      const data = await platformService.getWebhooks(tenantId);
+      const data = await (platformService as any).getWebhooks(tenantId);
       setWebhooks(data);
     } catch (error) {
       console.error('Error fetching webhooks:', error);
@@ -189,7 +189,7 @@ export default function WebhooksPage() {
     if (!tenantId) return;
 
     try {
-      const data = await platformService.getWebhookEvents(tenantId, webhookId);
+      const data = await (platformService as any).getWebhookEvents(tenantId, webhookId);
       setDeliveries(data);
     } catch (error) {
       console.error('Error fetching webhook deliveries:', error);
@@ -205,7 +205,7 @@ export default function WebhooksPage() {
     if (!tenantId) return;
 
     try {
-      await platformService.createWebhook(tenantId, {
+      await (platformService as any).createWebhook(tenantId, {
         url: formUrl,
         events: formEvents,
         secret: formSecret,
@@ -229,7 +229,7 @@ export default function WebhooksPage() {
     if (!tenantId || !selectedWebhook) return;
 
     try {
-      await platformService.updateWebhook(tenantId, selectedWebhook.id, {
+      await (platformService as any).updateWebhook(tenantId, selectedWebhook.id, {
         url: formUrl,
         events: formEvents,
         secret: formSecret,
@@ -254,7 +254,7 @@ export default function WebhooksPage() {
     setSuccess('');
 
     try {
-      await platformService.deleteWebhook(tenantId, webhookId);
+      await (platformService as any).deleteWebhook(tenantId, webhookId);
       setSuccess('Webhook deleted successfully');
       fetchWebhooks();
     } catch (error: any) {
@@ -270,7 +270,7 @@ export default function WebhooksPage() {
     setSuccess('');
 
     try {
-      const result = await platformService.testWebhook(tenantId, webhookId);
+      const result = await (platformService as any).testWebhook(tenantId, webhookId);
       if (result.success) {
         setSuccess('Test payload sent successfully');
       } else {
@@ -286,7 +286,7 @@ export default function WebhooksPage() {
     if (!tenantId) return;
 
     try {
-      await platformService.updateWebhook(tenantId, webhook.id, {
+      await (platformService as any).updateWebhook(tenantId, webhook.id, {
         isActive: !webhook.isActive,
       });
       setSuccess(`Webhook ${!webhook.isActive ? 'enabled' : 'disabled'} successfully`);

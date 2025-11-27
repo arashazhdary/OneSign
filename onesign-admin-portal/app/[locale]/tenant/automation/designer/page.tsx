@@ -192,6 +192,7 @@ export default function WorkflowDesignerPage() {
       setError('Please save workflow before deploying');
       return;
     }
+    if (!tenantId) return;
 
     if (!confirm('Deploy this workflow? It will become active.')) return;
 

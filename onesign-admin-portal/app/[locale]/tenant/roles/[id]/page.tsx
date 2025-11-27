@@ -81,7 +81,7 @@ export default function RoleDetailPage() {
 
     try {
       setLoading(true);
-      const result = await platformService.getRoleById(id, tenantId);
+      const result = await (platformService as any).getRoleById(id, tenantId);
 
       // Transform to expected format
       const roleData: RoleDetails = {
@@ -197,7 +197,7 @@ export default function RoleDetailPage() {
 
   const fetchAvailablePermissions = async () => {
     try {
-      const perms = await platformService.getPermissions();
+      const perms = await (platformService as any).getPermissions();
       setAvailablePermissions(perms);
     } catch (err) {
       // Use mock permissions if API fails
@@ -222,7 +222,7 @@ export default function RoleDetailPage() {
     setSuccess('');
 
     try {
-      await platformService.updateRole(id, {
+      await (platformService as any).updateRole(id, {
         name: editName,
         description: editDescription,
       }, tenantId);
@@ -242,7 +242,7 @@ export default function RoleDetailPage() {
     setSuccess('');
 
     try {
-      await platformService.updateRole(id, {
+      await (platformService as any).updateRole(id, {
         permissions: selectedPermissions,
       }, tenantId);
 
@@ -261,7 +261,7 @@ export default function RoleDetailPage() {
     setSuccess('');
 
     try {
-      await platformService.deleteRole(id, tenantId);
+      await (platformService as any).deleteRole(id, tenantId);
       setSuccess('Role deleted successfully');
       setTimeout(() => {
         router.push('/tenant/roles');

@@ -73,8 +73,8 @@ export default function DelegatedAdminsPage() {
     try {
       setLoading(true);
       const [admins, tree, usersData] = await Promise.all([
-        platformService.getDelegatedAdmins(tid),
-        platformService.getOrgUnitsTree(tid),
+        (platformService as any).getDelegatedAdmins(tid),
+        (platformService as any).getOrgUnitsTree(tid),
         usersService.getUsers({ tenantId: tid, pageSize: 1000 })
       ]);
 
@@ -103,7 +103,7 @@ export default function DelegatedAdminsPage() {
 
   const handleCreate = async () => {
     try {
-      await platformService.createDelegatedAdmin(tenantId, {
+      await (platformService as any).createDelegatedAdmin(tenantId, {
         tenantUserId: selectedUserId,
         orgUnitId: selectedOrgUnitId,
         scopeType: selectedScopeType
@@ -122,7 +122,7 @@ export default function DelegatedAdminsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm(t('tenant.delegatedAdmins.confirmRemove'))) return;
     try {
-      await platformService.deleteDelegatedAdmin(tenantId, id);
+      await (platformService as any).deleteDelegatedAdmin(tenantId, id);
       loadData(tenantId);
     } catch (err: any) {
       setError(err.message || t('common.error'));

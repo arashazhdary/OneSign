@@ -143,7 +143,7 @@ export default function BackupsPage() {
     setLoading(true);
     try {
       // Fetch from real API
-      const data = await platformService.getTenantBackups(tenantId);
+      const data = await (platformService as any).getTenantBackups(tenantId);
       setBackups(data || mockBackupsFallback);
     } catch (err: any) {
       setError(err?.message || 'Failed to fetch backups');
@@ -160,7 +160,7 @@ export default function BackupsPage() {
 
     try {
       // Fetch from real API
-      const data = await platformService.getBackupSchedule?.(tenantId);
+      const data = await (platformService as any).getBackupSchedule?.(tenantId);
       const scheduleData = data || mockScheduleFallback;
 
       setSchedule(scheduleData);

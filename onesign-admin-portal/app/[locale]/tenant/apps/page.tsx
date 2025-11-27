@@ -185,7 +185,7 @@ export default function TenantAppsPage() {
   };
 
   const handleSaveOrgUnits = async () => {
-    if (!selectedAppForOrgUnits) return;
+    if (!selectedAppForOrgUnits || !tenantId) return;
     setError('');
     setSuccess('');
 
@@ -214,7 +214,7 @@ export default function TenantAppsPage() {
         applicationType: newAppType === 'Web' ? 1 : newAppType === 'Mobile' ? 2 : 3,
         grantType: 2, // AuthorizationCodeWithPkce
         redirectUris: newRedirectUris.filter(uri => uri.trim() !== '')
-      });
+      } as any);
       setShowCreateModal(false);
       setNewAppName('');
       setNewAppType('Web');
@@ -254,7 +254,7 @@ export default function TenantAppsPage() {
         name: editAppName,
         applicationType: editAppType === 'Web' ? 1 : editAppType === 'Mobile' ? 2 : 3,
         grantType: 2 // AuthorizationCodeWithPkce
-      });
+      } as any);
       setShowEditModal(false);
       setEditingApp(null);
       setEditAppName('');
@@ -306,14 +306,14 @@ export default function TenantAppsPage() {
     }
   };
 
-  const handleRemoveRedirectUri = async (redirectUriId: string) => {
+  const handleRemoveRedirectUri = async (appId: string, redirectUriId: string) => {
     if (!confirm(t('tenant.applications.confirmRemoveRedirectUri'))) return;
     setError('');
     setSuccess('');
     if (!tenantId) return;
 
     try {
-      await applicationsService.removeRedirectUri(tenantId, redirectUriId);
+      await applicationsService.removeRedirectUri(tenantId, appId, redirectUriId);
       setSuccess(t('tenant.applications.redirectUriRemoved'));
       await fetchApplications();
     } catch (error: any) {
@@ -345,14 +345,14 @@ export default function TenantAppsPage() {
     }
   };
 
-  const handleRemoveSecret = async (secretId: string) => {
+  const handleRemoveSecret = async (appId: string, secretId: string) => {
     if (!confirm('Are you sure you want to delete this client secret? Applications using this secret will stop working.')) return;
     setError('');
     setSuccess('');
     if (!tenantId) return;
 
     try {
-      await applicationsService.removeClientSecret(tenantId, secretId);
+      await applicationsService.removeClientSecret(tenantId, appId, secretId);
       setSuccess('Client secret deleted successfully');
       await fetchApplications();
     } catch (error: any) {
@@ -562,7 +562,7 @@ export default function TenantAppsPage() {
                     <li key={uri.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
                       <span className="text-sm">{uri.uri}</span>
                       <button
-                        onClick={() => handleRemoveRedirectUri(uri.id)}
+                        onClick={() => handleRemoveRedirectUri(selectedAppForRedirectUris.id, uri.id)}
                         className="text-red-600 hover:text-red-900 text-sm"
                       >
                         {t('common.delete')}
@@ -639,7 +639,7 @@ export default function TenantAppsPage() {
                         </span>
                       </div>
                       <button
-                        onClick={() => handleRemoveSecret(secret.id)}
+                        onClick={() => handleRemoveSecret(selectedAppForSecrets.id, secret.id)}
                         className="text-red-600 hover:text-red-900 text-sm"
                       >
                         {t('common.delete')}

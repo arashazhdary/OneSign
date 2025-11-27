@@ -102,7 +102,7 @@ export default function TenantUsersPage() {
   const fetchOrgTree = async () => {
     if (!tenantId) return;
     try {
-      const data = await platformService.getOrgUnitsTree(tenantId);
+      const data = await (platformService as any).getOrgUnitsTree(tenantId);
       setOrgTree(data);
     } catch (error) {
       console.error('Error fetching org tree:', error);

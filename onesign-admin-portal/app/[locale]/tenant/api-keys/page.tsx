@@ -44,7 +44,7 @@ export default function APIKeysPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await platformService.getApiKeys(tenantId);
+      const data = await (platformService as any).getApiKeys(tenantId);
       setApiKeys((data || []) as unknown as APIKey[]);
     } catch (err: any) {
       console.error('Error fetching API keys:', err);
@@ -59,7 +59,7 @@ export default function APIKeysPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await platformService.createApiKey(
+      const data = await (platformService as any).createApiKey(
         tenantId,
         form.name,
         [],
@@ -80,7 +80,7 @@ export default function APIKeysPage() {
     if (!tenantId || !confirm('Are you sure you want to revoke this API key?')) return;
     setLoading(true);
     try {
-      await platformService.revokeApiKey(tenantId, id);
+      await (platformService as any).revokeApiKey(tenantId, id);
       setSuccess('API key revoked successfully');
       fetchAPIKeys();
     } catch (err: any) {

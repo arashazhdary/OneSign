@@ -177,7 +177,7 @@ export default function ImportsPage() {
 
     try {
       // Fetch from real API
-      const data = await platformService.getImportJobs?.(tenantId);
+      const data = await (platformService as any).getImportJobs?.(tenantId);
       setImports(data || mockImportsFallback);
     } catch (error: any) {
       console.error('Error fetching imports:', error);
@@ -194,7 +194,7 @@ export default function ImportsPage() {
 
     try {
       // Fetch from real API
-      const data = await platformService.getImportTemplates?.(tenantId);
+      const data = await (platformService as any).getImportTemplates?.(tenantId);
       setTemplates(data || mockTemplatesFallback);
     } catch (error: any) {
       console.error('Error fetching templates:', error);

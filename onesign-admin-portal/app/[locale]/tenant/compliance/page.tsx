@@ -101,7 +101,7 @@ export default function TenantCompliancePage() {
       const frameworksData = await (governanceService as any).getFrameworks();
 
       // Transform to include compliance status
-      const frameworkStatuses: ComplianceFrameworkStatus[] = frameworksData.map(fw => {
+      const frameworkStatuses: ComplianceFrameworkStatus[] = frameworksData.map((fw: any) => {
         const totalControls = fw.requirements?.length || 0;
         const compliantControls = Math.floor(totalControls * (0.7 + Math.random() * 0.25));
         const score = totalControls > 0 ? Math.round((compliantControls / totalControls) * 100) : 0;
@@ -129,8 +129,8 @@ export default function TenantCompliancePage() {
 
       // Generate controls
       const allControls: ComplianceControl[] = [];
-      frameworksData.forEach(fw => {
-        fw.requirements?.forEach((req, index) => {
+      frameworksData.forEach((fw: any) => {
+        fw.requirements?.forEach((req: any, index: number) => {
           const statuses: ('implemented' | 'partial' | 'not-implemented')[] = ['implemented', 'partial', 'not-implemented'];
           const status = statuses[Math.floor(Math.random() * 10) % 3];
 
@@ -152,7 +152,7 @@ export default function TenantCompliancePage() {
       // Fetch violations
       if (tenantId) {
         const violationsData = await (governanceService as any).getViolations(tenantId);
-        const extendedViolations: ViolationExtended[] = violationsData.map(v => ({
+        const extendedViolations: ViolationExtended[] = violationsData.map((v: any) => ({
           ...v,
           remediationSteps: [
             'Review policy requirements',

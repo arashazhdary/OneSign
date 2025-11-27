@@ -32,7 +32,7 @@ export default function TokensPage() {
 
   const fetchTokens = async () => {
     try {
-      const data = await platformService.getTokens?.();
+      const data = await (platformService as any).getTokens?.();
       const mockData: Token[] = [
         {
           id: '1',
@@ -115,7 +115,7 @@ export default function TokensPage() {
 
   const handleCreate = async () => {
     try {
-      await platformService.createToken?.('tenant-id', {
+      await (platformService as any).createToken?.('tenant-id', {
         name: 'New Token',
         type: 'access',
         permissions: ['read', 'write'],
@@ -130,7 +130,7 @@ export default function TokensPage() {
   const handleRevoke = async (tokenId: string) => {
     if (!confirm('Revoke this token? This action cannot be undone.')) return;
     try {
-      await platformService.revokeToken?.('tenant-id', tokenId);
+      await (platformService as any).revokeToken?.('tenant-id', tokenId);
       fetchTokens();
     } catch (error) {
       console.error('Failed to revoke token:', error);
@@ -140,7 +140,7 @@ export default function TokensPage() {
   const handleRotate = async (tokenId: string) => {
     if (!confirm('Rotate this token? The old token will be invalidated.')) return;
     try {
-      await platformService.rotateToken?.('tenant-id', tokenId);
+      await (platformService as any).rotateToken?.('tenant-id', tokenId);
       fetchTokens();
     } catch (error) {
       console.error('Failed to rotate token:', error);

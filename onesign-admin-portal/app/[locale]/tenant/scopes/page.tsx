@@ -83,7 +83,7 @@ export default function ScopeManagementPage() {
   const fetchScopes = async () => {
     if (!tenantId) return;
     try {
-      const data = await platformService.getScopes(tenantId);
+      const data = await (platformService as any).getScopes(tenantId);
       setScopes(data.items || data || []);
     } catch (error) {
       console.error('Error fetching scopes:', error);
@@ -95,7 +95,7 @@ export default function ScopeManagementPage() {
   const fetchScopeGroups = async () => {
     if (!tenantId) return;
     try {
-      const data = await platformService.getScopeGroups(tenantId);
+      const data = await (platformService as any).getScopeGroups(tenantId);
       setScopeGroups(data.items || data || []);
     } catch (error) {
       console.error('Error fetching scope groups:', error);
@@ -131,9 +131,9 @@ export default function ScopeManagementPage() {
 
     try {
       if (editingScope) {
-        await platformService.updateScope(tenantId, editingScope.id, payload);
+        await (platformService as any).updateScope(tenantId, editingScope.id, payload);
       } else {
-        await platformService.createScope(tenantId, payload);
+        await (platformService as any).createScope(tenantId, payload);
       }
       setSuccess(editingScope ? 'Scope updated successfully' : 'Scope created successfully');
       setShowCreateModal(false);
@@ -164,7 +164,7 @@ export default function ScopeManagementPage() {
     setSuccess('');
 
     try {
-      await platformService.deleteScope(tenantId, scopeId);
+      await (platformService as any).deleteScope(tenantId, scopeId);
       setSuccess('Scope deleted successfully');
       fetchScopes();
     } catch (error: any) {
@@ -175,7 +175,7 @@ export default function ScopeManagementPage() {
 
   const handleToggleScopeStatus = async (scope: Scope) => {
     try {
-      await platformService.updateScopeStatus(tenantId, scope.id, !scope.isEnabled);
+      await (platformService as any).updateScopeStatus(tenantId, scope.id, !scope.isEnabled);
       setSuccess(`Scope ${scope.isEnabled ? 'disabled' : 'enabled'} successfully`);
       fetchScopes();
     } catch (error: any) {

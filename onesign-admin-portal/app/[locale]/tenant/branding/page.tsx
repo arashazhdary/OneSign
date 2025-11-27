@@ -98,7 +98,7 @@ export default function BrandingCustomizationPage() {
   const fetchBranding = async () => {
     if (!tenantId) return;
     try {
-      const data = await platformService.getBranding(tenantId);
+      const data = await (platformService as any).getBranding(tenantId);
       setBranding({ ...branding, ...data });
     } catch (error: any) {
       console.error('Error fetching branding:', error);
@@ -116,7 +116,7 @@ export default function BrandingCustomizationPage() {
     setSaving(true);
 
     try {
-      const data = await platformService.updateBranding(tenantId, branding);
+      const data = await (platformService as any).updateBranding(tenantId, branding);
       setBranding({ ...branding, ...data });
       setSuccess('Branding saved successfully');
     } catch (error: any) {

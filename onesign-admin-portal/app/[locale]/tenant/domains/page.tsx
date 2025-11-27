@@ -35,7 +35,7 @@ export default function CustomDomainsPage() {
 
   const fetchDomains = async () => {
     try {
-      const data = await platformService.getCustomDomains?.();
+      const data = await (platformService as any).getCustomDomains?.();
       const mockData: CustomDomain[] = [
         {
           id: '1',
@@ -125,7 +125,7 @@ export default function CustomDomainsPage() {
 
   const handleAdd = async () => {
     try {
-      await platformService.addCustomDomain?.('tenant-id', { domain: newDomain, verificationMethod });
+      await (platformService as any).addCustomDomain?.('tenant-id', { domain: newDomain, verificationMethod });
       setShowAdd(false);
       setNewDomain('');
       fetchDomains();
@@ -136,7 +136,7 @@ export default function CustomDomainsPage() {
 
   const handleVerify = async (domainId: string) => {
     try {
-      await platformService.verifyCustomDomain?.('tenant-id', domainId);
+      await (platformService as any).verifyCustomDomain?.('tenant-id', domainId);
       fetchDomains();
     } catch (error) {
       console.error('Failed to verify custom domain:', error);
@@ -146,7 +146,7 @@ export default function CustomDomainsPage() {
   const handleDelete = async (domainId: string) => {
     if (!confirm('Remove this custom domain?')) return;
     try {
-      await platformService.deleteCustomDomain?.('tenant-id', domainId);
+      await (platformService as any).deleteCustomDomain?.('tenant-id', domainId);
       fetchDomains();
     } catch (error) {
       console.error('Failed to delete custom domain:', error);
@@ -155,7 +155,7 @@ export default function CustomDomainsPage() {
 
   const handleSetPrimary = async (domainId: string) => {
     try {
-      await platformService.setPrimaryDomain?.('tenant-id', domainId);
+      await (platformService as any).setPrimaryDomain?.('tenant-id', domainId);
       fetchDomains();
     } catch (error) {
       console.error('Failed to set primary domain:', error);
@@ -164,7 +164,7 @@ export default function CustomDomainsPage() {
 
   const handleRenewSSL = async (domainId: string) => {
     try {
-      await platformService.renewDomainSSL?.('tenant-id', domainId);
+      await (platformService as any).renewDomainSSL?.('tenant-id', domainId);
       fetchDomains();
     } catch (error) {
       console.error('Failed to renew SSL certificate:', error);
