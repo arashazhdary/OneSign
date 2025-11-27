@@ -217,7 +217,7 @@ export default function GlobalInsightsPage() {
   const fetchRiskyTenants = async () => {
     try {
       const data = await insightsApi.getRiskyTenants();
-      setRiskyTenants(data.tenants || data.items || []);
+      setRiskyTenants((data as any).tenants || (data as any).items || []);
     } catch (err) {
       console.error('Error fetching risky tenants:', err);
     }
@@ -248,7 +248,7 @@ export default function GlobalInsightsPage() {
   const fetchReportSubscriptions = async () => {
     try {
       const data = await insightsApi.getGlobalReportSubscriptions();
-      setReportSubscriptions(data.subscriptions || data.items || []);
+      setReportSubscriptions((data as any).subscriptions || (data as any).items || []);
     } catch (err) {
       console.error('Error fetching report subscriptions:', err);
     }

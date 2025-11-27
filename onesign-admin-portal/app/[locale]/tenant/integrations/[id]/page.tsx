@@ -67,7 +67,7 @@ export default function IntegrationDetailPage() {
 
     try {
       setLoading(true);
-      const result = await platformService.getIntegrationById(id, tenantId);
+      const result = await (platformService as any).getIntegrationById(id, tenantId);
 
       const integrationData: IntegrationDetails = {
         id: result.id,
@@ -170,7 +170,7 @@ export default function IntegrationDetailPage() {
     if (!tenantId) return;
 
     try {
-      const logs = await platformService.getIntegrationSyncLogs(id, tenantId);
+      const logs = await (platformService as any).getIntegrationSyncLogs(id, tenantId);
       setSyncLogs(logs || []);
     } catch (err) {
       console.error('Error fetching sync logs:', err);
@@ -197,7 +197,7 @@ export default function IntegrationDetailPage() {
     setSuccess('');
 
     try {
-      const result = await platformService.testIntegration(id, tenantId);
+      const result = await (platformService as any).testIntegration(id, tenantId);
       if (result.success) {
         setSuccess('Connection test successful');
       } else {
@@ -218,7 +218,7 @@ export default function IntegrationDetailPage() {
     setSuccess('');
 
     try {
-      await platformService.syncIntegration(id, tenantId);
+      await (platformService as any).syncIntegration(id, tenantId);
       setSuccess('Sync started successfully');
       // Refresh sync logs after a delay
       setTimeout(() => {
@@ -240,7 +240,7 @@ export default function IntegrationDetailPage() {
     const newStatus = integration.status === 'active' ? 'inactive' : 'active';
 
     try {
-      await platformService.updateIntegration(id, { status: newStatus }, tenantId);
+      await (platformService as any).updateIntegration(id, { status: newStatus }, tenantId);
       setSuccess(`Integration ${newStatus === 'active' ? 'enabled' : 'disabled'} successfully`);
       fetchData();
     } catch (err: any) {
@@ -266,7 +266,7 @@ export default function IntegrationDetailPage() {
     }
 
     try {
-      await platformService.updateIntegration(
+      await (platformService as any).updateIntegration(
         id,
         {
           name: editName,
@@ -290,7 +290,7 @@ export default function IntegrationDetailPage() {
     setSuccess('');
 
     try {
-      await platformService.deleteIntegration(id, tenantId);
+      await (platformService as any).deleteIntegration(id, tenantId);
       setSuccess('Integration deleted successfully');
       setTimeout(() => {
         router.push('/tenant/integrations');

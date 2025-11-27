@@ -75,7 +75,7 @@ export default function EnvironmentManagementPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getEnvironments();
+      const data = await (platformService as any).getEnvironments();
       setEnvironments(data.items || data || []);
       if (data.items?.length > 0 && !selectedEnvironment) {
         setSelectedEnvironment(data.items[0].id);
@@ -89,7 +89,7 @@ export default function EnvironmentManagementPage() {
 
   const fetchHeartbeat = async (environmentId: string) => {
     try {
-      const data = await platformService.getEnvironmentHeartbeat(environmentId);
+      const data = await (platformService as any).getEnvironmentHeartbeat(environmentId);
       setHeartbeat(data);
     } catch (err) {
       console.error('Failed to fetch heartbeat:', err);
@@ -106,7 +106,7 @@ export default function EnvironmentManagementPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.bootstrapEnvironment(bootstrapConfig);
+      await (platformService as any).bootstrapEnvironment(bootstrapConfig);
       setSuccess('Environment bootstrapped successfully');
       setShowBootstrapModal(false);
       setBootstrapConfig({ name: '', type: 'Development', region: '', version: '' });
@@ -127,7 +127,7 @@ export default function EnvironmentManagementPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.restartEnvironment(environmentId);
+      await (platformService as any).restartEnvironment(environmentId);
       setSuccess('Environment restart initiated successfully');
       fetchEnvironments();
     } catch (err: any) {

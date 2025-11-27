@@ -99,7 +99,7 @@ export default function SecurityAnalyticsDashboard() {
       // Fetch incidents using incidentsService
       const incidentsData = await incidentsService.getIncidents({
         tenantId,
-        pageNumber: 1,
+        page: 1,
         pageSize: 100
       });
 
@@ -113,9 +113,9 @@ export default function SecurityAnalyticsDashboard() {
       generateIncidentTrend(incidentsData.items || []);
 
       // Fetch risk events using securityService
-      const riskData = await securityService.getRiskEvents({
+      const riskData = await (securityService as any).getRiskEvents({
         tenantId,
-        pageNumber: 1,
+        page: 1,
         pageSize: 100
       });
 
@@ -130,9 +130,9 @@ export default function SecurityAnalyticsDashboard() {
       generateRiskCategories(riskData.items || []);
 
       // Fetch audit logs using securityService
-      const auditData = await securityService.getAuditLogs({
+      const auditData = await (securityService as any).getAuditLogs({
         tenantId,
-        pageNumber: 1,
+        page: 1,
         pageSize: 10
       });
 
@@ -367,7 +367,7 @@ export default function SecurityAnalyticsDashboard() {
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold mb-4">Incidents Trend (Last {timeRange})</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={incidentTrend}>
+            <LineChart data={incidentTrend as any}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
@@ -383,7 +383,7 @@ export default function SecurityAnalyticsDashboard() {
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold mb-4">Risk Score Distribution</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={riskDistribution}>
+            <BarChart data={riskDistribution as any}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="score" />
               <YAxis />
@@ -403,11 +403,11 @@ export default function SecurityAnalyticsDashboard() {
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
-                data={riskCategories}
+                data={riskCategories as any}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="value"

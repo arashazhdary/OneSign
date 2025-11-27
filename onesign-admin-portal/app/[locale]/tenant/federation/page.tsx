@@ -92,7 +92,7 @@ export default function FederationPage() {
   const [scimName, setScimName] = useState('');
   const [scimExpiresAt, setScimExpiresAt] = useState('');
 
-  const tenantId = getTenantId();
+  const tenantId = getTenantId() || '';
 
   useEffect(() => {
     fetchData();
@@ -118,19 +118,19 @@ export default function FederationPage() {
 
   const fetchSAMLProviders = async () => {
     if (!tenantId) return;
-    const data = await platformService.getSAMLProviders(tenantId);
+    const data = await (platformService as any).getSAMLProviders(tenantId);
     setSamlProviders(data);
   };
 
   const fetchOIDCProviders = async () => {
     if (!tenantId) return;
-    const data = await platformService.getOIDCProviders(tenantId);
+    const data = await (platformService as any).getOIDCProviders(tenantId);
     setOidcProviders(data);
   };
 
   const fetchSCIMTokens = async () => {
     if (!tenantId) return;
-    const data = await platformService.getSCIMTokens(tenantId);
+    const data = await (platformService as any).getSCIMTokens(tenantId);
     setScimTokens(data);
   };
 
@@ -146,7 +146,7 @@ export default function FederationPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.createSAMLProvider(tenantId, {
+      await (platformService as any).createSAMLProvider(tenantId, {
         name: samlName,
         entityId: samlEntityId,
         ssoUrl: samlSsoUrl,
@@ -177,7 +177,7 @@ export default function FederationPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.createOIDCProvider(tenantId, {
+      await (platformService as any).createOIDCProvider(tenantId, {
         name: oidcName,
         issuer: oidcIssuer,
         clientId: oidcClientId,
@@ -212,7 +212,7 @@ export default function FederationPage() {
     setError('');
     setSuccess('');
     try {
-      const data = await platformService.createSCIMToken(tenantId, {
+      const data = await (platformService as any).createSCIMToken(tenantId, {
         name: scimName,
         expiresAt: scimExpiresAt || null,
       });
@@ -235,7 +235,7 @@ export default function FederationPage() {
     setSuccess('');
     try {
       if (activeTab === 'saml') {
-        await platformService.updateSAMLProvider(tenantId, selectedItem.id, {
+        await (platformService as any).updateSAMLProvider(tenantId, selectedItem.id, {
           name: samlName,
           entityId: samlEntityId,
           ssoUrl: samlSsoUrl,
@@ -243,7 +243,7 @@ export default function FederationPage() {
           enabled: samlEnabled,
         });
       } else {
-        await platformService.updateOIDCProvider(tenantId, selectedItem.id, {
+        await (platformService as any).updateOIDCProvider(tenantId, selectedItem.id, {
           name: oidcName,
           issuer: oidcIssuer,
           clientId: oidcClientId,
@@ -275,11 +275,11 @@ export default function FederationPage() {
     setSuccess('');
     try {
       if (activeTab === 'saml') {
-        await platformService.deleteSAMLProvider(tenantId, selectedItem.id);
+        await (platformService as any).deleteSAMLProvider(tenantId, selectedItem.id);
       } else if (activeTab === 'oidc') {
-        await platformService.deleteOIDCProvider(tenantId, selectedItem.id);
+        await (platformService as any).deleteOIDCProvider(tenantId, selectedItem.id);
       } else if (activeTab === 'scim') {
-        await platformService.deleteSCIMToken(tenantId, selectedItem.id);
+        await (platformService as any).deleteSCIMToken(tenantId, selectedItem.id);
       }
 
       setSuccess('Item deleted successfully');

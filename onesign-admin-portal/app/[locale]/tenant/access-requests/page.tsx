@@ -41,7 +41,7 @@ export default function AccessRequestsPage() {
   const [pageNumber, setPageNumber] = useState(1);
   const pageSize = 20;
 
-  const tenantId = getTenantId();
+  const tenantId = getTenantId() || '';
   const userId = user?.id || '44444444-4444-4444-4444-444444444444';
 
   useEffect(() => {
@@ -187,7 +187,7 @@ export default function AccessRequestsPage() {
     {
       key: 'reviewedAt',
       label: 'Reviewed At',
-      render: (item) => formatDate(item.reviewedAt),
+      render: (item) => formatDate(item.reviewedAt ?? null),
     },
   ];
 

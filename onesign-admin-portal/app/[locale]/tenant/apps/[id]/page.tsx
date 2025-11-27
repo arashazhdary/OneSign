@@ -91,7 +91,7 @@ export default function ApplicationDetailPage() {
   const [newURI, setNewURI] = useState({ uri: '', type: 'web' as 'web' | 'mobile' | 'desktop' });
   const [newSecretName, setNewSecretName] = useState('');
 
-  const tenantId = getTenantId();
+  const tenantId = getTenantId() || '';
 
   useEffect(() => {
     fetchApplication();

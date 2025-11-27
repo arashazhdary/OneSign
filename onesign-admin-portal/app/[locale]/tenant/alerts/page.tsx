@@ -90,7 +90,7 @@ export default function AlertsPage() {
     setLoading(true);
     try {
       // Fetch from real API
-      const data = await securityService.getAlertRules?.(tenantId);
+      const data = await (securityService as any).getAlertRules?.(tenantId);
 
       // Mock data for fallback
       const mockRules: AlertRule[] = [
@@ -167,7 +167,7 @@ export default function AlertsPage() {
     setLoading(true);
     try {
       // Fetch from real API
-      const data = await securityService.getAlerts(tenantId);
+      const data = await (securityService as any).getAlerts(tenantId);
 
       // Transform to alert history format
       const historyData: AlertHistory[] = data?.map((alert: any) => ({
@@ -635,12 +635,12 @@ export default function AlertsPage() {
             <label className="ml-2 text-sm text-gray-700">Enable this alert rule</label>
           </div>
           <div className="flex gap-4">
-            <ActionButton type="submit" fullWidth>
+            <button type="submit" className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
               {editingRule ? 'Update' : 'Create'} Alert Rule
-            </ActionButton>
-            <ActionButton type="button" variant="secondary" fullWidth onClick={() => setShowRuleModal(false)}>
+            </button>
+            <button type="button" onClick={() => setShowRuleModal(false)} className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
               Cancel
-            </ActionButton>
+            </button>
           </div>
         </form>
       </Modal>

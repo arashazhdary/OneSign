@@ -95,7 +95,7 @@ export default function IncidentsPage() {
   const [showAddNote, setShowAddNote] = useState(false);
   const [newNoteContent, setNewNoteContent] = useState('');
 
-  const tenantId = getTenantId();
+  const tenantId = getTenantId() || '';
 
   useEffect(() => {
     if (activeTab === 'active') {

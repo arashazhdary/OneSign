@@ -61,7 +61,7 @@ export default function NotificationTemplateEditorPage() {
   // Versions
   const [versions, setVersions] = useState<TemplateVersion[]>([]);
 
-  const tenantId = getTenantId();
+  const tenantId = getTenantId() || '';
 
   useEffect(() => {
     fetchTemplate();

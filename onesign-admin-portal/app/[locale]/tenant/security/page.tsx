@@ -63,7 +63,7 @@ export default function SecurityCenterPage() {
   const [totpQrCode, setTotpQrCode] = useState('');
   const [totpCode, setTotpCode] = useState('');
 
-  const tenantId = getTenantId();
+  const tenantId = getTenantId() || '';
 
   useEffect(() => {
     fetchSecurityData();
@@ -73,7 +73,7 @@ export default function SecurityCenterPage() {
     setLoading(true);
     try {
       // Fetch security policy
-      const policyData = await securityService.getPolicies(tenantId);
+      const policyData = await (securityService as any).getPolicies(tenantId);
       if (policyData && policyData.length > 0) {
         const policy = policyData[0];
         setPolicy(policy);
@@ -85,7 +85,7 @@ export default function SecurityCenterPage() {
       }
 
       // Fetch org unit rules
-      const rulesData = await securityService.getOrgUnitMFARules(tenantId);
+      const rulesData = await (securityService as any).getOrgUnitMFARules(tenantId);
       setOrgUnitRules(rulesData || []);
 
       // Fetch MFA methods (would need userId - skip for now)
@@ -101,7 +101,7 @@ export default function SecurityCenterPage() {
     setError('');
     setSuccess('');
     try {
-      await securityService.updateSecurityPolicy(tenantId, {
+      await (securityService as any).updateSecurityPolicy(tenantId, {
         mfaRequirement,
         allowTrustedDevices,
         trustedDeviceExpireDays,
@@ -122,7 +122,7 @@ export default function SecurityCenterPage() {
       const userId = 'current-user-id'; // Should be from auth context
       const userEmail = 'user@example.com'; // Should be from auth context
 
-      const data = await securityService.beginTotpEnrollment(userId, userEmail);
+      const data = await (securityService as any).beginTotpEnrollment(userId, userEmail);
       setTotpSecret(data.secret);
       setTotpQrCode(data.qrCodeUri);
       setShowTotpEnrollment(true);
@@ -137,7 +137,7 @@ export default function SecurityCenterPage() {
     try {
       const userId = 'current-user-id'; // Should be from auth context
 
-      await securityService.confirmTotpEnrollment(userId, tenantId, totpSecret, totpCode);
+      await (securityService as any).confirmTotpEnrollment(userId, tenantId, totpSecret, totpCode);
 
       setSuccess(t('security.totpEnrolled'));
       setShowTotpEnrollment(false);
@@ -153,7 +153,7 @@ export default function SecurityCenterPage() {
     setError('');
     setSuccess('');
     try {
-      await securityService.updateOrgUnitMFARules(tenantId, orgUnitRules);
+      await (securityService as any).updateOrgUnitMFARules(tenantId, orgUnitRules);
 
       setSuccess(t('security.orgUnitRulesUpdated') || 'Org unit rules updated successfully');
       setShowOrgUnitRulesModal(false);

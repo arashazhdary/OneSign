@@ -65,7 +65,7 @@ export default function GlobalObservabilityPage() {
         pageNumber: page,
         pageSize,
       });
-      setAuditEvents(data.events || []);
+      setAuditEvents((data.events || []) as unknown as AuditEvent[]);
       setTotalEvents(data.totalCount || 0);
     } catch (err) {
       setError(t('common.error'));
@@ -80,7 +80,7 @@ export default function GlobalObservabilityPage() {
     setError('');
     try {
       const data = await observabilityApi.getGlobalAuditEvent(selectedEventId);
-      setEventDetail(data);
+      setEventDetail(data as unknown as AuditEvent);
     } catch (err) {
       setError(t('common.error'));
     } finally {

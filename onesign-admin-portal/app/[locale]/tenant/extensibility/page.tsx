@@ -107,7 +107,7 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await platformService.getWebhooks(tenantId);
+      const data = await (platformService as any).getWebhooks(tenantId);
       setWebhooks(data || []);
     } catch (err) {
       console.error('Error fetching webhooks:', err);
@@ -120,7 +120,7 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await platformService.getLoginHooks(tenantId);
+      const data = await (platformService as any).getLoginHooks(tenantId);
       setLoginHooks(data || []);
     } catch (err) {
       console.error('Error fetching login hooks:', err);
@@ -133,7 +133,7 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await platformService.getTokenRules(tenantId);
+      const data = await (platformService as any).getTokenRules(tenantId);
       setTokenRules(data || []);
     } catch (err) {
       console.error('Error fetching token rules:', err);
@@ -146,7 +146,7 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await platformService.getEventTypes(tenantId);
+      const data = await (platformService as any).getEventTypes(tenantId);
       setEventTypes(data || []);
     } catch (err) {
       console.error('Error fetching event types:', err);
@@ -160,7 +160,7 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await platformService.createWebhook(tenantId, webhookForm);
+      await (platformService as any).createWebhook(tenantId, webhookForm);
       setSuccess('Webhook created successfully');
       setShowWebhookModal(false);
       fetchWebhooks();
@@ -176,7 +176,7 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await platformService.updateWebhook(tenantId, id, data);
+      await (platformService as any).updateWebhook(tenantId, id, data);
       setSuccess('Webhook updated successfully');
       setEditingWebhook(null);
       setShowWebhookModal(false);
@@ -192,7 +192,7 @@ export default function ExtensibilityPage() {
     if (!tenantId || !confirm('Are you sure you want to delete this webhook?')) return;
     setLoading(true);
     try {
-      await platformService.deleteWebhook(tenantId, id);
+      await (platformService as any).deleteWebhook(tenantId, id);
       setSuccess('Webhook deleted successfully');
       fetchWebhooks();
     } catch (err) {
@@ -206,7 +206,7 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await platformService.testWebhook(tenantId, id);
+      await (platformService as any).testWebhook(tenantId, id);
       setSuccess('Test event sent successfully');
     } catch (err) {
       setError('Failed to send test event');
@@ -220,7 +220,7 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await platformService.createLoginHook(tenantId, loginHookForm);
+      await (platformService as any).createLoginHook(tenantId, loginHookForm);
       setSuccess('Login hook created successfully');
       setShowLoginHookModal(false);
       fetchLoginHooks();
@@ -235,7 +235,7 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await platformService.updateLoginHook(tenantId, id, data);
+      await (platformService as any).updateLoginHook(tenantId, id, data);
       setSuccess('Login hook updated successfully');
       setEditingLoginHook(null);
       setShowLoginHookModal(false);
@@ -251,7 +251,7 @@ export default function ExtensibilityPage() {
     if (!tenantId || !confirm('Are you sure you want to delete this login hook?')) return;
     setLoading(true);
     try {
-      await platformService.deleteLoginHook(tenantId, id);
+      await (platformService as any).deleteLoginHook(tenantId, id);
       setSuccess('Login hook deleted successfully');
       fetchLoginHooks();
     } catch (err) {
@@ -266,7 +266,7 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await platformService.createTokenRule(tenantId, tokenRuleForm);
+      await (platformService as any).createTokenRule(tenantId, tokenRuleForm);
       setSuccess('Token rule created successfully');
       setShowTokenRuleModal(false);
       fetchTokenRules();
@@ -281,7 +281,7 @@ export default function ExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await platformService.updateTokenRule(tenantId, id, data);
+      await (platformService as any).updateTokenRule(tenantId, id, data);
       setSuccess('Token rule updated successfully');
       setEditingTokenRule(null);
       setShowTokenRuleModal(false);
@@ -297,7 +297,7 @@ export default function ExtensibilityPage() {
     if (!tenantId || !confirm('Are you sure you want to delete this token rule?')) return;
     setLoading(true);
     try {
-      await platformService.deleteTokenRule(tenantId, id);
+      await (platformService as any).deleteTokenRule(tenantId, id);
       setSuccess('Token rule deleted successfully');
       fetchTokenRules();
     } catch (err) {
@@ -515,10 +515,10 @@ export default function ExtensibilityPage() {
             />
           </div>
           <div className="flex gap-4">
-            <ActionButton type="submit" fullWidth>Create</ActionButton>
-            <ActionButton type="button" variant="secondary" fullWidth onClick={() => setShowWebhookModal(false)}>
+            <button type="submit" className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Create</button>
+            <button type="button" onClick={() => setShowWebhookModal(false)} className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
               Cancel
-            </ActionButton>
+            </button>
           </div>
         </form>
       </Modal>

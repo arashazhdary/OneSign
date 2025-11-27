@@ -106,7 +106,7 @@ export default function UserAnalyticsDashboard() {
       // Fetch users using usersService
       const usersData = await usersService.getUsers({
         tenantId,
-        pageNumber: 1,
+        page: 1,
         pageSize: 1000
       });
 
@@ -331,7 +331,7 @@ export default function UserAnalyticsDashboard() {
       <div className="bg-white p-6 rounded-lg shadow">
         <h3 className="text-lg font-semibold mb-4">User Growth (Last 6 Months)</h3>
         <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={growthData}>
+          <AreaChart data={growthData as any}>
             <defs>
               <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
@@ -361,11 +361,11 @@ export default function UserAnalyticsDashboard() {
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
-                data={authMethods}
+                data={authMethods as any}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
                 outerRadius={100}
                 fill="#8884d8"
                 dataKey="value"
@@ -383,7 +383,7 @@ export default function UserAnalyticsDashboard() {
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-lg font-semibold mb-4">User Lifecycle Stages</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={lifecycleStages} layout="vertical">
+            <BarChart data={lifecycleStages as any} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis type="number" />
               <YAxis dataKey="stage" type="category" width={120} />

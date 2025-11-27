@@ -32,6 +32,7 @@ interface GlobalChangeAudit {
 }
 
 interface TenantChangeMetrics {
+  id: string;
   tenantId: string;
   tenantName: string;
   totalChanges: number;
@@ -163,6 +164,7 @@ export default function GlobalChangesAuditPage() {
       // Mock tenant metrics
       setTenantMetrics([
         {
+          id: 'tenant-001',
           tenantId: 'tenant-001',
           tenantName: 'Acme Corp',
           totalChanges: 45,
@@ -173,6 +175,7 @@ export default function GlobalChangesAuditPage() {
           averageDuration: '3m 22s',
         },
         {
+          id: 'tenant-002',
           tenantId: 'tenant-002',
           tenantName: 'TechStart Inc',
           totalChanges: 67,
@@ -183,6 +186,7 @@ export default function GlobalChangesAuditPage() {
           averageDuration: '4m 15s',
         },
         {
+          id: 'tenant-003',
           tenantId: 'tenant-003',
           tenantName: 'Global Enterprises',
           totalChanges: 89,
@@ -594,7 +598,7 @@ export default function GlobalChangesAuditPage() {
         isOpen={showDetailsModal}
         onClose={() => setShowDetailsModal(false)}
         title="Change Audit Details"
-        size="large"
+        size="lg"
       >
         {selectedAudit && (
           <div className="space-y-6">
@@ -682,9 +686,11 @@ export default function GlobalChangesAuditPage() {
             )}
 
             <div className="flex gap-3 pt-4 border-t">
-              <ActionButton onClick={() => setShowDetailsModal(false)} className="flex-1">
-                Close
-              </ActionButton>
+              <div className="flex-1">
+                <ActionButton onClick={() => setShowDetailsModal(false)}>
+                  Close
+                </ActionButton>
+              </div>
             </div>
           </div>
         )}

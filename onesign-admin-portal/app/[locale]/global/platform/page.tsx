@@ -89,24 +89,24 @@ export default function GlobalPlatformPage() {
     setError('');
     try {
       if (activeTab === 'version') {
-        const data = await platformService.getPlatformVersion();
+        const data = await (platformService as any).getPlatformVersion();
         setPlatformVersion(data);
       } else if (activeTab === 'migrations') {
-        const data = await platformService.getPlatformMigrations(migrationPage, pageSize);
+        const data = await (platformService as any).getPlatformMigrations(migrationPage, pageSize);
         setMigrations(data.items || []);
         setTotalMigrations(data.totalCount || 0);
       } else if (activeTab === 'tests') {
-        const data = await platformService.getPlatformTests(testPage, pageSize);
+        const data = await (platformService as any).getPlatformTests(testPage, pageSize);
         setTestResults(data.items || []);
         setTotalTests(data.totalCount || 0);
       } else if (activeTab === 'health') {
-        const data = await platformService.getPlatformHealth();
+        const data = await (platformService as any).getPlatformHealth();
         setSystemHealth(data.services || []);
       } else if (activeTab === 'diagnostics') {
-        const data = await platformService.getPlatformDiagnostics();
+        const data = await (platformService as any).getPlatformDiagnostics();
         setDiagnostics(data.diagnostics || []);
       } else if (activeTab === 'docs') {
-        const data = await platformService.getPlatformOpenApiDocs();
+        const data = await (platformService as any).getPlatformOpenApiDocs();
         setOpenApiSpec(data);
       }
     } catch (err) {
@@ -120,7 +120,7 @@ export default function GlobalPlatformPage() {
   const runTests = async () => {
     setError('');
     try {
-      await platformService.runPlatformTests();
+      await (platformService as any).runPlatformTests();
       fetchData();
     } catch (err: any) {
       setError(err.response?.data?.errorMessage || t('common.error'));
@@ -131,7 +131,7 @@ export default function GlobalPlatformPage() {
     setError('');
     setApplyingMigration(true);
     try {
-      await platformService.applyPlatformMigration(migrationId);
+      await (platformService as any).applyPlatformMigration(migrationId);
       fetchData();
     } catch (err: any) {
       setError(err.response?.data?.errorMessage || t('common.error'));
@@ -143,7 +143,7 @@ export default function GlobalPlatformPage() {
   const getTestResult = async (testId: string) => {
     setError('');
     try {
-      const data = await platformService.getPlatformTestById(testId);
+      const data = await (platformService as any).getPlatformTestById(testId);
       setSingleTestResult(data);
     } catch (err: any) {
       setError(err.response?.data?.errorMessage || t('common.error'));
@@ -153,7 +153,7 @@ export default function GlobalPlatformPage() {
   const getTestResults = async () => {
     setError('');
     try {
-      const data = await platformService.getPlatformTestResults();
+      const data = await (platformService as any).getPlatformTestResults();
       setTestResults(data.items || []);
       setTotalTests(data.totalCount || 0);
     } catch (err: any) {
@@ -165,7 +165,7 @@ export default function GlobalPlatformPage() {
     setError('');
     setGeneratingDocs(true);
     try {
-      await platformService.generatePlatformDocs();
+      await (platformService as any).generatePlatformDocs();
       fetchData();
     } catch (err: any) {
       setError(err.response?.data?.errorMessage || t('common.error'));

@@ -63,7 +63,7 @@ export default function RiskEventDetailsPage() {
   const [riskEvent, setRiskEvent] = useState<RiskEvent | null>(null);
   const [timeline, setTimeline] = useState<TimelineEvent[]>([]);
 
-  const tenantId = getTenantId();
+  const tenantId = getTenantId() || '';
 
   useEffect(() => {
     fetchRiskEvent();
@@ -79,7 +79,7 @@ export default function RiskEventDetailsPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await securityService.getRiskEventById(tenantId, eventId);
+      const data = await (securityService as any).getRiskEventById(tenantId, eventId);
       setRiskEvent(data);
     } catch (err) {
       setError(t('common.error'));
@@ -90,7 +90,7 @@ export default function RiskEventDetailsPage() {
 
   const fetchTimeline = async () => {
     try {
-      const data = await securityService.getRiskEventTimeline(tenantId, eventId);
+      const data = await (securityService as any).getRiskEventTimeline(tenantId, eventId);
       setTimeline(data);
     } catch (err) {
       console.error('Failed to fetch timeline:', err);
@@ -102,7 +102,7 @@ export default function RiskEventDetailsPage() {
     setError('');
     setSuccess('');
     try {
-      await securityService.resolveRiskEvent(tenantId, eventId);
+      await (securityService as any).resolveRiskEvent(tenantId, eventId);
 
       setSuccess('Risk event resolved successfully');
       fetchRiskEvent();

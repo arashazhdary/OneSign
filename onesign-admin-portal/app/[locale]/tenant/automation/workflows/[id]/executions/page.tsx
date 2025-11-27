@@ -83,7 +83,7 @@ export default function WorkflowExecutionsPage() {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showLogsModal, setShowLogsModal] = useState(false);
 
-  const tenantId = getTenantId();
+  const tenantId = getTenantId() || '';
 
   useEffect(() => {
     fetchExecutions();

@@ -106,7 +106,7 @@ export default function PolicyDetailPage() {
   const [applyEntityType, setApplyEntityType] = useState('user');
   const [applyEntityId, setApplyEntityId] = useState('');
 
-  const tenantId = getTenantId();
+  const tenantId = getTenantId() || '';
 
   useEffect(() => {
     fetchPolicy();
@@ -126,7 +126,7 @@ export default function PolicyDetailPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await securityService.getPolicyById(tenantId, policyId);
+      const data = await (securityService as any).getPolicyById(tenantId, policyId);
       setPolicy(data);
     } catch (err) {
       setError(t('common.error'));
@@ -137,7 +137,7 @@ export default function PolicyDetailPage() {
 
   const fetchAppliedEntities = async () => {
     try {
-      const data = await securityService.getPolicyAppliedEntities(tenantId, policyId);
+      const data = await (securityService as any).getPolicyAppliedEntities(tenantId, policyId);
       setAppliedEntities(data);
     } catch (err) {
       console.error('Failed to fetch applied entities:', err);
@@ -146,7 +146,7 @@ export default function PolicyDetailPage() {
 
   const fetchAuditLog = async () => {
     try {
-      const data = await securityService.getPolicyAuditLog(tenantId, policyId, 50);
+      const data = await (securityService as any).getPolicyAuditLog(tenantId, policyId, 50);
       setAuditLog(data);
     } catch (err) {
       console.error('Failed to fetch audit log:', err);
@@ -155,7 +155,7 @@ export default function PolicyDetailPage() {
 
   const fetchImpactAnalysis = async () => {
     try {
-      const data = await securityService.getPolicyImpactAnalysis(tenantId, policyId);
+      const data = await (securityService as any).getPolicyImpactAnalysis(tenantId, policyId);
       setImpactAnalysis(data);
     } catch (err) {
       console.error('Failed to fetch impact analysis:', err);
@@ -171,9 +171,9 @@ export default function PolicyDetailPage() {
     try {
       const action = policy.isActive ? 'deactivate' : 'activate';
       if (policy.isActive) {
-        await securityService.deactivatePolicy(tenantId, policyId);
+        await (securityService as any).deactivatePolicy(tenantId, policyId);
       } else {
-        await securityService.activatePolicy(tenantId, policyId);
+        await (securityService as any).activatePolicy(tenantId, policyId);
       }
 
       setSuccess(`Policy ${action}d successfully`);
@@ -196,7 +196,7 @@ export default function PolicyDetailPage() {
     setSuccess('');
     setTestResult(null);
     try {
-      const result = await securityService.testPolicy(tenantId, policyId, testUserId);
+      const result = await (securityService as any).testPolicy(tenantId, policyId, testUserId);
       setTestResult(result);
       setSuccess('Policy test completed');
     } catch (err) {
@@ -216,7 +216,7 @@ export default function PolicyDetailPage() {
     setError('');
     setSuccess('');
     try {
-      await securityService.applyPolicyToEntity(tenantId, policyId, applyEntityType, applyEntityId);
+      await (securityService as any).applyPolicyToEntity(tenantId, policyId, applyEntityType, applyEntityId);
 
       setSuccess('Policy applied successfully');
       setShowApplyModal(false);

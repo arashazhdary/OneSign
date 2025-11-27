@@ -98,7 +98,7 @@ export default function AccessRequestDetailPage() {
   const [approvalComment, setApprovalComment] = useState('');
   const [newComment, setNewComment] = useState('');
 
-  const tenantId = getTenantId();
+  const tenantId = getTenantId() || '' || '';
 
   useEffect(() => {
     fetchRequest();
@@ -116,7 +116,7 @@ export default function AccessRequestDetailPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await accessService.getAccessRequestById(tenantId, requestId);
+      const data = await (accessService as any).getAccessRequestById(tenantId, requestId);
       setRequest(data);
     } catch (err) {
       setError(t('common.error'));
@@ -127,7 +127,7 @@ export default function AccessRequestDetailPage() {
 
   const fetchTimeline = async () => {
     try {
-      const data = await accessService.getAccessRequestTimeline(tenantId, requestId);
+      const data = await (accessService as any).getAccessRequestTimeline(tenantId, requestId);
       setTimeline(data);
     } catch (err) {
       console.error('Failed to fetch timeline:', err);
@@ -136,7 +136,7 @@ export default function AccessRequestDetailPage() {
 
   const fetchAuditTrail = async () => {
     try {
-      const data = await accessService.getAccessRequestAuditTrail(tenantId, requestId);
+      const data = await (accessService as any).getAccessRequestAuditTrail(tenantId, requestId);
       setAuditTrail(data);
     } catch (err) {
       console.error('Failed to fetch audit trail:', err);
@@ -154,9 +154,9 @@ export default function AccessRequestDetailPage() {
     setSuccess('');
     try {
       if (approvalDecision === 'approved') {
-        await accessService.approveAccessRequest(tenantId, requestId, approvalComment);
+        await (accessService as any).approveAccessRequest(tenantId, requestId, approvalComment);
       } else {
-        await accessService.rejectAccessRequest(tenantId, requestId, approvalComment);
+        await (accessService as any).rejectAccessRequest(tenantId, requestId, approvalComment);
       }
       setSuccess(`Request ${approvalDecision} successfully`);
       setShowApprovalModal(false);
@@ -181,7 +181,7 @@ export default function AccessRequestDetailPage() {
     setError('');
     setSuccess('');
     try {
-      await accessService.addAccessRequestComment(tenantId, requestId, newComment);
+      await (accessService as any).addAccessRequestComment(tenantId, requestId, newComment);
       setSuccess('Comment added successfully');
       setShowCommentModal(false);
       setNewComment('');
@@ -200,7 +200,7 @@ export default function AccessRequestDetailPage() {
     setError('');
     setSuccess('');
     try {
-      await accessService.withdrawAccessRequest(tenantId, requestId);
+      await (accessService as any).withdrawAccessRequest(tenantId, requestId);
       setSuccess('Request withdrawn successfully');
       fetchRequest();
     } catch (err) {

@@ -1,4 +1,171 @@
 {
+  "landing": {
+    "nav": {
+      "features": "Features",
+      "solutions": "Solutions",
+      "pricing": "Pricing",
+      "docs": "Documentation",
+      "login": "Login",
+      "getStarted": "Get Started"
+    },
+    "hero": {
+      "badge": "Enterprise Identity Management",
+      "title": "Secure Identity & Access Management",
+      "titleHighlight": "for the Modern Enterprise",
+      "subtitle": "OneSign is a comprehensive enterprise IAM platform that protects your organization with advanced authentication, access control, and security governance.",
+      "cta": "Start Free Trial",
+      "secondaryCta": "Watch Demo",
+      "trustedBy": "Trusted by leading organizations"
+    },
+    "features": {
+      "title": "Powerful Features",
+      "subtitle": "Everything you need to manage identities and secure access across your organization",
+      "identity": {
+        "title": "Identity Management",
+        "description": "Complete user lifecycle management from onboarding to offboarding with automated provisioning and deprovisioning."
+      },
+      "sso": {
+        "title": "Single Sign-On (SSO)",
+        "description": "Enable seamless access to all applications with one set of credentials using SAML, OIDC, and OAuth 2.0."
+      },
+      "mfa": {
+        "title": "Multi-Factor Authentication",
+        "description": "Protect accounts with TOTP, SMS, email, push notifications, biometrics, and FIDO2 security keys."
+      },
+      "rbac": {
+        "title": "Access Control",
+        "description": "Implement role-based (RBAC) and attribute-based (ABAC) access control with conditional policies."
+      },
+      "pam": {
+        "title": "Privileged Access",
+        "description": "Just-in-Time access, break-glass accounts, and session recording for sensitive resources."
+      },
+      "governance": {
+        "title": "Identity Governance",
+        "description": "Access reviews, certification campaigns, segregation of duties, and compliance reporting."
+      },
+      "adaptive": {
+        "title": "Adaptive Security",
+        "description": "Risk-based authentication with behavior analysis, anomaly detection, and automated threat response."
+      },
+      "audit": {
+        "title": "Audit & Compliance",
+        "description": "Comprehensive audit logging, real-time monitoring, and compliance reports for GDPR, SOC2, and more."
+      },
+      "federation": {
+        "title": "Enterprise Federation",
+        "description": "Connect with external identity providers using SAML, OIDC, and SCIM for seamless integration."
+      },
+      "automation": {
+        "title": "Workflow Automation",
+        "description": "Automate access requests, approvals, and lifecycle events with visual workflow designer."
+      },
+      "api": {
+        "title": "API & SDK",
+        "description": "RESTful APIs and SDKs for React, .NET, and more. Build custom integrations with ease."
+      },
+      "copilot": {
+        "title": "AI Copilot",
+        "description": "AI-powered assistant for security recommendations, incident analysis, and threat hunting."
+      }
+    },
+    "stats": {
+      "users": "Active Users",
+      "apps": "Connected Apps",
+      "authentications": "Daily Authentications",
+      "uptime": "Uptime SLA"
+    },
+    "why": {
+      "title": "Why Choose OneSign?",
+      "subtitle": "Built for enterprises that demand the highest standards of security and compliance",
+      "multiTenant": {
+        "title": "Multi-Tenant Architecture",
+        "description": "Securely manage multiple organizations with complete data isolation and tenant-specific configurations."
+      },
+      "multiRegion": {
+        "title": "Multi-Region Deployment",
+        "description": "Deploy across multiple geographic regions for data residency compliance and disaster recovery."
+      },
+      "zeroTrust": {
+        "title": "Zero Trust Security",
+        "description": "Never trust, always verify. Continuous authentication and authorization for every access request."
+      },
+      "cloudNative": {
+        "title": "Cloud-Native Design",
+        "description": "Built for the cloud with Kubernetes, microservices, and elastic scaling capabilities."
+      },
+      "compliance": {
+        "title": "Compliance Ready",
+        "description": "Meet regulatory requirements with built-in support for GDPR, SOC2, HIPAA, and ISO 27001."
+      },
+      "integration": {
+        "title": "Seamless Integration",
+        "description": "Connect with 100+ enterprise applications, directories, and security tools out of the box."
+      }
+    },
+    "pricing": {
+      "title": "Simple, Transparent Pricing",
+      "subtitle": "Choose the plan that fits your organization",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "save": "Save 20%",
+      "perUser": "per user/month",
+      "free": {
+        "name": "Free",
+        "description": "Perfect for small teams getting started",
+        "price": "0",
+        "features": ["Up to 50 users", "5 applications", "Basic SSO", "Email support", "Community access"]
+      },
+      "pro": {
+        "name": "Professional",
+        "description": "For growing organizations",
+        "price": "8",
+        "features": ["Up to 500 users", "Unlimited applications", "Advanced MFA", "SAML & OIDC", "Priority support", "Custom branding"]
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "description": "For large-scale deployments",
+        "price": "Custom",
+        "features": ["Unlimited users", "Privileged access management", "Advanced governance", "Multi-region", "24/7 dedicated support", "SLA guarantee"]
+      },
+      "cta": "Get Started",
+      "contact": "Contact Sales"
+    },
+    "testimonials": {
+      "title": "Trusted by Security Leaders",
+      "subtitle": "See what our customers say about OneSign"
+    },
+    "cta": {
+      "title": "Ready to Secure Your Organization?",
+      "subtitle": "Start your free trial today. No credit card required.",
+      "button": "Start Free Trial",
+      "demo": "Schedule a Demo"
+    },
+    "footer": {
+      "description": "Enterprise-grade identity and access management for the modern organization.",
+      "product": "Product",
+      "features": "Features",
+      "pricing": "Pricing",
+      "integrations": "Integrations",
+      "changelog": "Changelog",
+      "company": "Company",
+      "about": "About Us",
+      "blog": "Blog",
+      "careers": "Careers",
+      "contact": "Contact",
+      "resources": "Resources",
+      "documentation": "Documentation",
+      "apiReference": "API Reference",
+      "guides": "Guides",
+      "community": "Community",
+      "legal": "Legal",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "security": "Security",
+      "compliance": "Compliance",
+      "copyright": "All rights reserved."
+    }
+  },
   "common": {
     "dashboard": "Dashboard",
     "users": "Users",

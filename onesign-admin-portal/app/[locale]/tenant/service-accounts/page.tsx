@@ -43,7 +43,7 @@ export default function ServiceAccountsPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await platformService.getServiceAccounts(tenantId);
+      const data = await (platformService as any).getServiceAccounts(tenantId);
       setServiceAccounts(data || []);
     } catch (err) {
       console.error('Error fetching service accounts:', err);
@@ -57,7 +57,7 @@ export default function ServiceAccountsPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await platformService.createServiceAccount(tenantId, form);
+      await (platformService as any).createServiceAccount(tenantId, form);
       setSuccess('Service account created successfully');
       setShowModal(false);
       fetchServiceAccounts();

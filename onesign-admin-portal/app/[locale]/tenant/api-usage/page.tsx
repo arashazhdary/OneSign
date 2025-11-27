@@ -174,7 +174,7 @@ export default function ApiUsagePage() {
 
     try {
       // Fetch from real API
-      const usageData = await billingService.getUsageMetrics(tenantId);
+      const usageData = await billingService.getUsageMetrics(tenantId) as any;
 
       // Map API response to component state
       if (usageData) {

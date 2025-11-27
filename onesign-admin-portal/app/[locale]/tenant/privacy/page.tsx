@@ -58,7 +58,7 @@ export default function PrivacyPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await governanceService.getRetentionPolicies(tenantId);
+      const data = await (governanceService as any).getRetentionPolicies(tenantId);
       setRetentionPolicies(data || []);
     } catch (err) {
       console.error('Error fetching retention policies:', err);
@@ -71,7 +71,7 @@ export default function PrivacyPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await governanceService.getDataSubjectRequests(tenantId);
+      const data = await (governanceService as any).getDataSubjectRequests(tenantId);
       setDataRequests(data || []);
     } catch (err) {
       console.error('Error fetching data requests:', err);
@@ -84,7 +84,7 @@ export default function PrivacyPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await governanceService.updateRetentionPolicy(tenantId, category, data);
+      await (governanceService as any).updateRetentionPolicy(tenantId, category, data);
       setSuccess('Retention policy updated successfully');
       fetchRetentionPolicies();
     } catch (err) {
@@ -99,7 +99,7 @@ export default function PrivacyPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await governanceService.createDataSubjectRequest(tenantId, requestForm);
+      await (governanceService as any).createDataSubjectRequest(tenantId, requestForm);
       setSuccess('Data request created successfully');
       setShowRequestModal(false);
       fetchDataRequests();
@@ -115,7 +115,7 @@ export default function PrivacyPage() {
     if (!tenantId || !confirm('Are you sure you want to execute this request?')) return;
     setLoading(true);
     try {
-      await governanceService.executeDataSubjectRequest(tenantId, id);
+      await (governanceService as any).executeDataSubjectRequest(tenantId, id);
       setSuccess('Data request executed successfully');
       fetchDataRequests();
     } catch (err) {

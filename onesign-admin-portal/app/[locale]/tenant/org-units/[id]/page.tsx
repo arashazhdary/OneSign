@@ -114,7 +114,7 @@ export default function OrgUnitDetailPage() {
     description: '',
   });
 
-  const tenantId = getTenantId();
+  const tenantId = getTenantId() || '';
 
   useEffect(() => {
     fetchOrgUnit();
@@ -138,7 +138,7 @@ export default function OrgUnitDetailPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await platformService.getOrgUnit(tenantId, orgUnitId);
+      const data = await (platformService as any).getOrgUnit(tenantId, orgUnitId);
       setOrgUnit(data);
       setEditForm({
         name: data.name || '',
@@ -153,7 +153,7 @@ export default function OrgUnitDetailPage() {
 
   const fetchUsers = async () => {
     try {
-      const data = await platformService.getOrgUnitUsers(tenantId, orgUnitId);
+      const data = await (platformService as any).getOrgUnitUsers(tenantId, orgUnitId);
       setUsers(data);
     } catch (err) {
       console.error('Failed to fetch users:', err);
@@ -162,7 +162,7 @@ export default function OrgUnitDetailPage() {
 
   const fetchApplications = async () => {
     try {
-      const data = await platformService.getOrgUnitApplications(tenantId, orgUnitId);
+      const data = await (platformService as any).getOrgUnitApplications(tenantId, orgUnitId);
       setApplications(data);
     } catch (err) {
       console.error('Failed to fetch applications:', err);
@@ -171,7 +171,7 @@ export default function OrgUnitDetailPage() {
 
   const fetchPolicies = async () => {
     try {
-      const data = await platformService.getOrgUnitPolicies(tenantId, orgUnitId);
+      const data = await (platformService as any).getOrgUnitPolicies(tenantId, orgUnitId);
       setPolicies(data);
     } catch (err) {
       console.error('Failed to fetch policies:', err);
@@ -180,7 +180,7 @@ export default function OrgUnitDetailPage() {
 
   const fetchHierarchy = async () => {
     try {
-      const data = await platformService.getOrgUnitHierarchy(tenantId, orgUnitId);
+      const data = await (platformService as any).getOrgUnitHierarchy(tenantId, orgUnitId);
       setHierarchy(data);
     } catch (err) {
       console.error('Failed to fetch hierarchy:', err);
@@ -189,7 +189,7 @@ export default function OrgUnitDetailPage() {
 
   const fetchStatistics = async () => {
     try {
-      const data = await platformService.getOrgUnitStatistics(tenantId, orgUnitId);
+      const data = await (platformService as any).getOrgUnitStatistics(tenantId, orgUnitId);
       setStatistics(data);
     } catch (err) {
       console.error('Failed to fetch statistics:', err);
@@ -201,7 +201,7 @@ export default function OrgUnitDetailPage() {
     setError('');
     setSuccess('');
     try {
-      await platformService.updateOrgUnit(tenantId, orgUnitId, editForm);
+      await (platformService as any).updateOrgUnit(tenantId, orgUnitId, editForm);
 
       setSuccess('Org unit updated successfully');
       setShowEditModal(false);
@@ -216,7 +216,7 @@ export default function OrgUnitDetailPage() {
   const handleRemoveUser = async (userId: string) => {
     if (!confirm('Are you sure you want to remove this user from the org unit?')) return;
     try {
-      await platformService.removeOrgUnitUser(tenantId, orgUnitId, userId);
+      await (platformService as any).removeOrgUnitUser(tenantId, orgUnitId, userId);
 
       setSuccess('User removed successfully');
       fetchUsers();
@@ -228,7 +228,7 @@ export default function OrgUnitDetailPage() {
   const handleRemoveApplication = async (applicationId: string) => {
     if (!confirm('Are you sure you want to remove this application from the org unit?')) return;
     try {
-      await platformService.removeOrgUnitApplication(tenantId, orgUnitId, applicationId);
+      await (platformService as any).removeOrgUnitApplication(tenantId, orgUnitId, applicationId);
 
       setSuccess('Application removed successfully');
       fetchApplications();

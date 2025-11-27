@@ -28,7 +28,7 @@ export default function IPWhitelistPage() {
   const fetchWhitelist = async () => {
     setLoading(true);
     try {
-      const data = await securityService.getIPWhitelist?.();
+      const data = await (securityService as any).getIPWhitelist?.();
       const mockData: IPWhitelist[] = [
         {
           id: '1',
@@ -62,7 +62,7 @@ export default function IPWhitelistPage() {
 
   const handleAdd = async () => {
     try {
-      await securityService.addIPWhitelist?.('tenant-id', { ipAddress: newIP, description });
+      await (securityService as any).addIPWhitelist?.('tenant-id', { ipAddress: newIP, description });
       setShowAdd(false);
       setNewIP('');
       setDescription('');
@@ -75,7 +75,7 @@ export default function IPWhitelistPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Remove this IP from whitelist?')) return;
     try {
-      await securityService.removeIPWhitelist?.('tenant-id', id);
+      await (securityService as any).removeIPWhitelist?.('tenant-id', id);
       fetchWhitelist();
     } catch (error) {
       console.error('Failed to remove IP from whitelist:', error);

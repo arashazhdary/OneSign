@@ -44,8 +44,8 @@ export default function APIKeysPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await platformService.getApiKeys(tenantId);
-      setApiKeys(data || []);
+      const data = await (platformService as any).getApiKeys(tenantId);
+      setApiKeys((data || []) as unknown as APIKey[]);
     } catch (err: any) {
       console.error('Error fetching API keys:', err);
       setError(err?.message || 'Failed to fetch API keys');
@@ -59,7 +59,7 @@ export default function APIKeysPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await platformService.createApiKey(
+      const data = await (platformService as any).createApiKey(
         tenantId,
         form.name,
         [],
@@ -80,7 +80,7 @@ export default function APIKeysPage() {
     if (!tenantId || !confirm('Are you sure you want to revoke this API key?')) return;
     setLoading(true);
     try {
-      await platformService.revokeApiKey(tenantId, id);
+      await (platformService as any).revokeApiKey(tenantId, id);
       setSuccess('API key revoked successfully');
       fetchAPIKeys();
     } catch (err: any) {
@@ -155,10 +155,10 @@ export default function APIKeysPage() {
             />
           </div>
           <div className="flex gap-4">
-            <ActionButton type="submit" fullWidth>Create</ActionButton>
-            <ActionButton type="button" variant="secondary" fullWidth onClick={() => setShowModal(false)}>
+            <button type="submit" className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Create</button>
+            <button type="button" onClick={() => setShowModal(false)} className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
               Cancel
-            </ActionButton>
+            </button>
           </div>
         </form>
       </Modal>

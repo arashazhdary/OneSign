@@ -38,7 +38,7 @@ export default function DataRetentionPage() {
 
   const fetchData = async () => {
     try {
-      const data = await platformService.getRetentionPolicies?.();
+      const data = await (platformService as any).getRetentionPolicies?.();
       const mockPolicies: RetentionPolicy[] = [
         {
           id: '1',
@@ -179,7 +179,7 @@ export default function DataRetentionPage() {
 
   const handleCreate = async () => {
     try {
-      await platformService.createRetentionPolicy?.('tenant-id', {
+      await (platformService as any).createRetentionPolicy?.('tenant-id', {
         name: 'New Retention Policy',
         dataType: 'logs',
         retentionDays: 30,
@@ -195,7 +195,7 @@ export default function DataRetentionPage() {
 
   const handleToggle = async (policyId: string) => {
     try {
-      await platformService.toggleRetentionPolicy?.('tenant-id', policyId);
+      await (platformService as any).toggleRetentionPolicy?.('tenant-id', policyId);
       fetchData();
     } catch (error) {
       console.error('Failed to toggle retention policy:', error);
@@ -205,7 +205,7 @@ export default function DataRetentionPage() {
   const handleRunNow = async (policyId: string) => {
     if (!confirm('Run this retention policy now? This will delete data according to the policy.')) return;
     try {
-      await platformService.runRetentionPolicy?.('tenant-id', policyId);
+      await (platformService as any).runRetentionPolicy?.('tenant-id', policyId);
       fetchData();
     } catch (error) {
       console.error('Failed to run retention policy:', error);
@@ -215,7 +215,7 @@ export default function DataRetentionPage() {
   const handleDelete = async (policyId: string) => {
     if (!confirm('Delete this retention policy?')) return;
     try {
-      await platformService.deleteRetentionPolicy?.('tenant-id', policyId);
+      await (platformService as any).deleteRetentionPolicy?.('tenant-id', policyId);
       fetchData();
     } catch (error) {
       console.error('Failed to delete retention policy:', error);

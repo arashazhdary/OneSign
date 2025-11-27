@@ -61,7 +61,7 @@ export default function OrgUnitsPage() {
   const fetchTree = async (tid: string) => {
     try {
       setLoading(true);
-      const data = await platformService.getOrgUnitsTree(tid);
+      const data = await (platformService as any).getOrgUnitsTree(tid);
       setTree(data);
       // Expand root nodes by default
       const rootIds = data.map((node: OrgUnitTreeNode) => node.id);
@@ -85,7 +85,7 @@ export default function OrgUnitsPage() {
 
   const handleCreate = async () => {
     try {
-      await platformService.createOrgUnit({
+      await (platformService as any).createOrgUnit({
         tenantId,
         parentId: newParentId || null,
         name: newOrgUnitName
@@ -102,7 +102,7 @@ export default function OrgUnitsPage() {
   const handleUpdate = async () => {
     if (!selectedNode) return;
     try {
-      await platformService.updateOrgUnit(tenantId, selectedNode.id, {
+      await (platformService as any).updateOrgUnit(tenantId, selectedNode.id, {
         name: newOrgUnitName
       });
       setShowEditModal(false);
@@ -117,7 +117,7 @@ export default function OrgUnitsPage() {
   const handleMove = async () => {
     if (!selectedNode) return;
     try {
-      await platformService.moveOrgUnit(tenantId, selectedNode.id, newParentId || null);
+      await (platformService as any).moveOrgUnit(tenantId, selectedNode.id, newParentId || null);
       setShowMoveModal(false);
       setSelectedNode(null);
       setNewParentId(null);
@@ -130,7 +130,7 @@ export default function OrgUnitsPage() {
   const handleDelete = async (node: OrgUnitTreeNode) => {
     if (!confirm(t('tenant.orgUnits.confirmDelete'))) return;
     try {
-      await platformService.deleteOrgUnit(tenantId, node.id);
+      await (platformService as any).deleteOrgUnit(tenantId, node.id);
       fetchTree(tenantId);
     } catch (err: any) {
       alert(err?.message || t('tenant.orgUnits.cannotDelete'));

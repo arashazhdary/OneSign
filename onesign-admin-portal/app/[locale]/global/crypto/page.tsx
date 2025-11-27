@@ -72,7 +72,7 @@ export default function CryptographyManagementPage() {
     setError('');
     try {
       const data = await platformService.getCryptoKeysets();
-      setKeySets(data.items || data || []);
+      setKeySets((data as any)?.items || data || []);
     } catch (err) {
       setError(t('common.error'));
     } finally {

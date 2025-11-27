@@ -77,7 +77,7 @@ export default function DelegatedAdminDetailPage() {
     try {
       setLoading(true);
       // Since there's no getDelegatedAdminById in the service, we'll fetch the list and find by ID
-      const admins = await platformService.getDelegatedAdmins(tenantId);
+      const admins = await (platformService as any).getDelegatedAdmins(tenantId);
       const adminData = admins.find((a: any) => a.id === id);
 
       if (!adminData) {
@@ -243,7 +243,7 @@ export default function DelegatedAdminDetailPage() {
     if (!tenantId) return;
 
     try {
-      const orgUnits = await platformService.getOrgUnits(tenantId);
+      const orgUnits = await (platformService as any).getOrgUnits(tenantId);
       setAvailableOrgUnits(orgUnits);
     } catch (err) {
       // Use mock data on error
@@ -317,7 +317,7 @@ export default function DelegatedAdminDetailPage() {
     setSuccess('');
 
     try {
-      await platformService.deleteDelegatedAdmin(tenantId, id);
+      await (platformService as any).deleteDelegatedAdmin(tenantId, id);
       setSuccess('Delegated admin deleted successfully');
       setTimeout(() => {
         router.push('/tenant/delegated-admins');

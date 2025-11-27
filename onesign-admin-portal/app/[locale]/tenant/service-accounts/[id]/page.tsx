@@ -97,7 +97,7 @@ export default function ServiceAccountDetailPage() {
   const [secretName, setSecretName] = useState('');
   const [secretExpiry, setSecretExpiry] = useState('90');
 
-  const tenantId = getTenantId();
+  const tenantId = getTenantId() || '';
 
   useEffect(() => {
     fetchServiceAccount();
