@@ -164,12 +164,20 @@ export default function LandingPage() {
   const [parallaxOffset, setParallaxOffset] = useState(0);
   const [typedText, setTypedText] = useState('');
   const [isTypingComplete, setIsTypingComplete] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
       setShowBackToTop(window.scrollY > 400);
       setParallaxOffset(window.scrollY * 0.3);
+
+      // Calculate scroll progress
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight - windowHeight;
+      const scrolled = window.scrollY;
+      const progress = (scrolled / documentHeight) * 100;
+      setScrollProgress(Math.min(progress, 100));
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -414,8 +422,16 @@ export default function LandingPage() {
 
   return (
     <div className={`min-h-screen bg-white ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
+      {/* Scroll Progress Indicator */}
+      <div className="fixed top-0 left-0 right-0 z-[60] h-1 bg-gray-200/50">
+        <div
+          className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 transition-all duration-150"
+          style={{ width: `${scrollProgress}%` }}
+        />
+      </div>
+
       {/* Navigation */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      <nav className={`fixed top-1 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled ? 'bg-white/95 backdrop-blur-lg shadow-lg' : 'bg-transparent'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -610,6 +626,14 @@ export default function LandingPage() {
                 </div>
               ))}
             </div>
+
+            {/* Scroll to Explore Indicator */}
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce-slow">
+              <span className="text-sm text-gray-500">{t('hero.scrollToExplore')}</span>
+              <div className="w-6 h-10 rounded-full border-2 border-gray-300 flex justify-center pt-2">
+                <div className="w-1 h-3 bg-gray-400 rounded-full animate-scroll-down" />
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -762,16 +786,16 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {howItWorksSteps.map((step, index) => (
-              <div key={step.key} className="relative">
+              <div key={step.key} className="relative scroll-animate opacity-0 translate-y-8" style={{ transitionDelay: `${index * 150}ms` }}>
                 {/* Connector Line */}
                 {index < howItWorksSteps.length - 1 && (
-                  <div className="hidden lg:block absolute top-8 left-1/2 w-full h-0.5 bg-gradient-to-r from-blue-300 to-indigo-300" />
+                  <div className="hidden lg:block absolute top-8 left-1/2 w-full h-0.5 bg-gradient-to-r from-blue-300 to-indigo-300 animate-pulse" />
                 )}
-                <div className="relative bg-white rounded-2xl p-6 border border-gray-100 hover:border-blue-200 hover:shadow-xl transition-all text-center">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-2xl font-bold flex items-center justify-center mx-auto mb-4">
+                <div className="relative bg-white rounded-2xl p-6 border border-gray-100 hover:border-blue-200 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 text-center group">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-2xl font-bold flex items-center justify-center mx-auto mb-4 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
                     {step.number}
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
                     {t(`howItWorks.${step.key}.title`)}
                   </h3>
                   <p className="text-gray-600 text-sm">
@@ -1053,7 +1077,7 @@ export default function LandingPage() {
           {/* Pricing Cards */}
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {/* Free Plan */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-xl transition-shadow">
+            <div className="bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-xl hover:border-blue-200 hover:-translate-y-2 transition-all duration-300 scroll-animate opacity-0 translate-y-8">
               <div className="text-center mb-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
                   {t('pricing.free.name')}
@@ -1085,7 +1109,7 @@ export default function LandingPage() {
             </div>
 
             {/* Pro Plan - Featured */}
-            <div className="bg-gradient-to-b from-blue-600 to-indigo-700 rounded-2xl p-8 text-white relative shadow-xl shadow-blue-500/25 scale-105">
+            <div className="bg-gradient-to-b from-blue-600 to-indigo-700 rounded-2xl p-8 text-white relative shadow-xl shadow-blue-500/25 scale-105 hover:scale-110 hover:shadow-2xl hover:shadow-blue-500/40 transition-all duration-300 scroll-animate opacity-0 translate-y-8" style={{ transitionDelay: '100ms' }}>
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-orange-500 text-white text-sm font-semibold rounded-full">
                 Popular
               </div>
@@ -1122,7 +1146,7 @@ export default function LandingPage() {
             </div>
 
             {/* Enterprise Plan */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-xl transition-shadow">
+            <div className="bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-xl hover:border-indigo-200 hover:-translate-y-2 transition-all duration-300 scroll-animate opacity-0 translate-y-8" style={{ transitionDelay: '200ms' }}>
               <div className="text-center mb-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
                   {t('pricing.enterprise.name')}
@@ -1576,6 +1600,21 @@ export default function LandingPage() {
         .animate-gradient {
           background-size: 200% auto;
           animation: gradient 2s linear infinite alternate;
+        }
+        @keyframes bounce-slow {
+          0%, 100% { transform: translateX(-50%) translateY(0); }
+          50% { transform: translateX(-50%) translateY(-10px); }
+        }
+        .animate-bounce-slow {
+          animation: bounce-slow 2s ease-in-out infinite;
+        }
+        @keyframes scroll-down {
+          0% { transform: translateY(0); opacity: 1; }
+          50% { transform: translateY(6px); opacity: 0.5; }
+          100% { transform: translateY(0); opacity: 1; }
+        }
+        .animate-scroll-down {
+          animation: scroll-down 1.5s ease-in-out infinite;
         }
       `}</style>
     </div>
