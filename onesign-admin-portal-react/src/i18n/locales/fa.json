@@ -5787,5 +5787,133 @@
     "loginTime": "زمان ورود",
     "lastActivity": "آخرین فعالیت",
     "ipAddress": "آدرس IP"
+  },
+  "observabilityOptions": {
+    "authentication": "احراز هویت",
+    "authorization": "مجوزدهی",
+    "userManagement": "مدیریت کاربر",
+    "applicationManagement": "مدیریت برنامه",
+    "securityPolicy": "سیاست امنیتی",
+    "configuration": "پیکربندی",
+    "user": "کاربر",
+    "application": "برنامه",
+    "role": "نقش",
+    "policy": "سیاست",
+    "orgUnit": "واحد سازمانی"
+  },
+  "changeStatusOptions": {
+    "all": "همه",
+    "draft": "پیش‌نویس",
+    "inReview": "در حال بررسی",
+    "approved": "تأیید شده",
+    "scheduled": "زمان‌بندی شده",
+    "applied": "اعمال شده",
+    "rejected": "رد شده"
+  },
+  "timezoneOptions": {
+    "easternTime": "زمان شرقی",
+    "centralTime": "زمان مرکزی",
+    "pacificTime": "زمان اقیانوس آرام",
+    "utc": "UTC",
+    "gmt": "GMT"
+  },
+  "complianceStatusOptions": {
+    "allFrameworks": "همه چارچوب‌ها",
+    "allStatuses": "همه وضعیت‌ها",
+    "implemented": "پیاده‌سازی شده",
+    "partiallyImplemented": "پیاده‌سازی جزئی",
+    "notImplemented": "پیاده‌سازی نشده",
+    "open": "باز",
+    "investigating": "در حال بررسی",
+    "resolved": "حل شده",
+    "falsePositive": "مثبت کاذب"
+  },
+  "tenantStatusOptions": {
+    "active": "فعال",
+    "suspended": "معلق",
+    "inactive": "غیرفعال"
+  },
+  "reportTypeOptions": {
+    "securitySummary": "خلاصه امنیتی",
+    "userActivity": "فعالیت کاربر",
+    "riskEvents": "رویدادهای پرخطر",
+    "loginAnalytics": "تحلیل ورود"
+  },
+  "frequencyOptions": {
+    "daily": "روزانه",
+    "weekly": "هفتگی",
+    "monthly": "ماهانه",
+    "quarterly": "فصلی",
+    "yearly": "سالانه"
+  },
+  "licenseTypeOptions": {
+    "enterprise": "سازمانی",
+    "professional": "حرفه‌ای",
+    "starter": "شروع",
+    "trial": "آزمایشی"
+  },
+  "accessReviewTypes": {
+    "userAccess": "دسترسی کاربر",
+    "roleAssignment": "تخصیص نقش",
+    "privilegedAccess": "دسترسی ممتاز",
+    "applicationAccess": "دسترسی برنامه"
+  },
+  "privacyOptions": {
+    "portability": "قابلیت حمل",
+    "erasure": "حذف",
+    "access": "دسترسی",
+    "rectification": "اصلاح"
+  },
+  "metricsLabels": {
+    "averageUptime": "میانگین زمان فعالیت",
+    "avgResponseTime": "میانگین زمان پاسخ",
+    "dataPoints": "نقاط داده",
+    "errorMessage": "پیام خطا:",
+    "zeroTrust": "اعتماد صفر",
+    "currentUsage": "استفاده فعلی",
+    "quotaLimit": "محدودیت سهمیه",
+    "remaining": "باقیمانده",
+    "usagePercentage": "درصد استفاده"
+  },
+  "bestPractices": {
+    "validateTokenExpiry": "اعتبارسنجی انقضای توکن:",
+    "validateTokenExpiryDesc": "همیشه قبل از ارسال درخواست‌ها بررسی کنید که توکن دسترسی هنوز معتبر است",
+    "cacheUserInfo": "کش اطلاعات کاربر:",
+    "cacheUserInfoDesc": "پاسخ را به درستی کش کنید تا تماس‌های API غیرضروری کاهش یابد",
+    "handleErrorsGracefully": "مدیریت خطاها به شکل مناسب:",
+    "handleErrorsGracefullyDesc": "مدیریت خطای مناسب برای توکن‌های منقضی یا نامعتبر پیاده‌سازی کنید",
+    "useHttpsOnly": "فقط از HTTPS استفاده کنید:",
+    "useHttpsOnlyDesc": "همیشه در محیط تولید از HTTPS برای حفاظت از توکن‌ها در حین انتقال استفاده کنید",
+    "requestMinimalScopes": "درخواست حداقل دامنه‌ها:",
+    "requestMinimalScopesDesc": "فقط دامنه‌هایی که نیاز دارید را درخواست کنید تا افشای داده کمینه شود",
+    "tokenValidation": "اعتبارسنجی توکن:",
+    "tokenValidationDesc": "از JWKS برای اعتبارسنجی امضای JWT در درخواست‌های API استفاده کنید",
+    "profileInformation": "اطلاعات پروفایل:",
+    "profileInformationDesc": "از نقطه پایانی UserInfo برای دریافت ادعاهای اضافی کاربر استفاده کنید",
+    "multiTenantSetup": "راه‌اندازی چند مستأجری:",
+    "multiTenantSetupDesc": "هر مستأجر صادرکننده خاص خود را در ادعاها دارد"
+  },
+  "warningMessages": {
+    "importantCopyKey": "مهم: این کلید را الان کپی کنید. دیگر قادر به مشاهده آن نخواهید بود!",
+    "error": "خطا:",
+    "importantTokenDisplayedOnce": "مهم: توکن فقط یک بار پس از ایجاد نمایش داده می‌شود.",
+    "userAgent": "عامل کاربر:",
+    "noteConfigureDns": "توجه: پس از افزودن دامنه، باید رکوردهای DNS را پیکربندی کنید",
+    "warningRestoreBackup": "هشدار: بازیابی این پشتیبان همه داده‌های فعلی را جایگزین می‌کند. این عمل قابل بازگشت نیست.",
+    "importantTokenOnlyOnce": "مهم: توکن فقط یک بار پس از ایجاد نمایش داده می‌شود. لطفاً کپی و ذخیره کنید",
+    "basicSyntax": "نحو پایه:",
+    "combineConditions": "ترکیب شرایط:",
+    "examples": "مثال‌ها:"
+  },
+  "emailProviderOptions": {
+    "sendGrid": "SendGrid",
+    "mailgun": "Mailgun",
+    "amazonSes": "Amazon SES",
+    "smtp": "SMTP"
+  },
+  "smsProviderOptions": {
+    "twilio": "Twilio",
+    "vonage": "Vonage",
+    "messagebird": "MessageBird"
   }
 }

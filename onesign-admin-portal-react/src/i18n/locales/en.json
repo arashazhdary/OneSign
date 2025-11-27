@@ -5788,5 +5788,133 @@
     "loginTime": "Login Time",
     "lastActivity": "Last Activity",
     "ipAddress": "IP Address"
+  },
+  "observabilityOptions": {
+    "authentication": "Authentication",
+    "authorization": "Authorization",
+    "userManagement": "User Management",
+    "applicationManagement": "Application Management",
+    "securityPolicy": "Security Policy",
+    "configuration": "Configuration",
+    "user": "User",
+    "application": "Application",
+    "role": "Role",
+    "policy": "Policy",
+    "orgUnit": "Org Unit"
+  },
+  "changeStatusOptions": {
+    "all": "All",
+    "draft": "Draft",
+    "inReview": "In Review",
+    "approved": "Approved",
+    "scheduled": "Scheduled",
+    "applied": "Applied",
+    "rejected": "Rejected"
+  },
+  "timezoneOptions": {
+    "easternTime": "Eastern Time",
+    "centralTime": "Central Time",
+    "pacificTime": "Pacific Time",
+    "utc": "UTC",
+    "gmt": "GMT"
+  },
+  "complianceStatusOptions": {
+    "allFrameworks": "All Frameworks",
+    "allStatuses": "All Statuses",
+    "implemented": "Implemented",
+    "partiallyImplemented": "Partially Implemented",
+    "notImplemented": "Not Implemented",
+    "open": "Open",
+    "investigating": "Investigating",
+    "resolved": "Resolved",
+    "falsePositive": "False Positive"
+  },
+  "tenantStatusOptions": {
+    "active": "Active",
+    "suspended": "Suspended",
+    "inactive": "Inactive"
+  },
+  "reportTypeOptions": {
+    "securitySummary": "Security Summary",
+    "userActivity": "User Activity",
+    "riskEvents": "Risk Events",
+    "loginAnalytics": "Login Analytics"
+  },
+  "frequencyOptions": {
+    "daily": "Daily",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "quarterly": "Quarterly",
+    "yearly": "Yearly"
+  },
+  "licenseTypeOptions": {
+    "enterprise": "Enterprise",
+    "professional": "Professional",
+    "starter": "Starter",
+    "trial": "Trial"
+  },
+  "accessReviewTypes": {
+    "userAccess": "User Access",
+    "roleAssignment": "Role Assignment",
+    "privilegedAccess": "Privileged Access",
+    "applicationAccess": "Application Access"
+  },
+  "privacyOptions": {
+    "portability": "Portability",
+    "erasure": "Erasure",
+    "access": "Access",
+    "rectification": "Rectification"
+  },
+  "metricsLabels": {
+    "averageUptime": "Average Uptime",
+    "avgResponseTime": "Avg Response Time",
+    "dataPoints": "Data Points",
+    "errorMessage": "Error Message:",
+    "zeroTrust": "Zero Trust",
+    "currentUsage": "Current Usage",
+    "quotaLimit": "Quota Limit",
+    "remaining": "Remaining",
+    "usagePercentage": "Usage Percentage"
+  },
+  "bestPractices": {
+    "validateTokenExpiry": "Validate Token Expiry:",
+    "validateTokenExpiryDesc": "Always check if the access token is still valid before making requests",
+    "cacheUserInfo": "Cache User Info:",
+    "cacheUserInfoDesc": "Cache the response appropriately to reduce unnecessary API calls",
+    "handleErrorsGracefully": "Handle Errors Gracefully:",
+    "handleErrorsGracefullyDesc": "Implement proper error handling for expired or invalid tokens",
+    "useHttpsOnly": "Use HTTPS Only:",
+    "useHttpsOnlyDesc": "Always use HTTPS in production to protect tokens in transit",
+    "requestMinimalScopes": "Request Minimal Scopes:",
+    "requestMinimalScopesDesc": "Only request the scopes you need to minimize data exposure",
+    "tokenValidation": "Token Validation:",
+    "tokenValidationDesc": "Use JWKS to validate JWT signatures in API requests",
+    "profileInformation": "Profile Information:",
+    "profileInformationDesc": "Use UserInfo endpoint to fetch additional user claims",
+    "multiTenantSetup": "Multi-tenant Setup:",
+    "multiTenantSetupDesc": "Each tenant has its own issuer in the claims"
+  },
+  "warningMessages": {
+    "importantCopyKey": "Important: Copy this key now. You won't be able to see it again!",
+    "error": "Error:",
+    "importantTokenDisplayedOnce": "Important: The token will be displayed only once after creation.",
+    "userAgent": "User Agent:",
+    "noteConfigureDns": "Note: After adding the domain, you'll need to configure DNS records",
+    "warningRestoreBackup": "Warning: Restoring this backup will replace all current data. This action cannot be undone.",
+    "importantTokenOnlyOnce": "Important: The token will only be displayed once after creation. Please copy and store",
+    "basicSyntax": "Basic syntax:",
+    "combineConditions": "Combine conditions:",
+    "examples": "Examples:"
+  },
+  "emailProviderOptions": {
+    "sendGrid": "SendGrid",
+    "mailgun": "Mailgun",
+    "amazonSes": "Amazon SES",
+    "smtp": "SMTP"
+  },
+  "smsProviderOptions": {
+    "twilio": "Twilio",
+    "vonage": "Vonage",
+    "messagebird": "MessageBird"
   }
 }
