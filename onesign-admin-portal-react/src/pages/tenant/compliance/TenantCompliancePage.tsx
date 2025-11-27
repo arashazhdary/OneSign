@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
 import { governanceService } from '@/lib/api/services/governance.service';
-import type { ComplianceFramework, PolicyViolation, ComplianceReport } from '@/lib/api/types/governance';
+import type { ComplianceReport } from '@/lib/api/types/governance';
 import { Helmet } from 'react-helmet-async';
 
 interface ComplianceFrameworkStatus {
@@ -30,7 +30,13 @@ interface ComplianceControl {
   assignedTo: string;
 }
 
-interface ViolationExtended extends PolicyViolation {
+interface ViolationExtended {
+  id: string;
+  policyName: string;
+  violationType: string;
+  severity: string;
+  status: string;
+  detectedAt: string;
   resolution?: string;
   remediationSteps: string[];
   dueDate?: string;
@@ -150,8 +156,8 @@ export default function TenantCompliancePage() {
 
       // Fetch violations
       if (tenantId) {
-        const violationsData = await governanceService.getViolations(tenantId);
-        const extendedViolations: ViolationExtended[] = violationsData.map(v => ({
+        const violationsData = await governanceService.getViolations();
+        const extendedViolations: ViolationExtended[] = (violationsData || []).map(v => ({
           ...v,
           remediationSteps: [
             'Review policy requirements',
@@ -164,8 +170,8 @@ export default function TenantCompliancePage() {
         setViolations(extendedViolations);
 
         // Fetch reports
-        const reportsData = await governanceService.getReports(tenantId);
-        setReports(reportsData);
+        const reportsData = await governanceService.getReports();
+        setReports(reportsData || []);
       }
 
       // Generate timeline
@@ -219,7 +225,11 @@ export default function TenantCompliancePage() {
     setError('');
     setSuccess('');
     try {
-      await governanceService.generateReport(tenantId, reportFramework, reportDateFrom, reportDateTo);
+      await governanceService.generateReport({
+        type: 'compliance',
+        frameworkId: reportFramework,
+        params: { dateFrom: reportDateFrom, dateTo: reportDateTo }
+      });
       setSuccess('Compliance report generated successfully');
       setShowGenerateReportModal(false);
       fetchData();
@@ -232,8 +242,8 @@ export default function TenantCompliancePage() {
     if (!tenantId) return;
 
     try {
-      const blob = await governanceService.exportReport(tenantId, reportId, 'pdf');
-      const url = window.URL.createObjectURL(blob);
+      const blob = await governanceService.exportReport(reportId, 'pdf');
+      const url = window.URL.createObjectURL(blob as any);
       const a = document.createElement('a');
       a.href = url;
       a.download = `compliance-report-${reportId}.pdf`;
@@ -253,7 +263,7 @@ export default function TenantCompliancePage() {
     setError('');
     setSuccess('');
     try {
-      await governanceService.resolveViolation(tenantId, violationId, resolution);
+      await governanceService.resolveViolation(violationId, { resolution, notes: resolution });
       setSuccess('Violation resolved successfully');
       setSelectedViolation(null);
       setShowViolationModal(false);
@@ -317,6 +327,9 @@ export default function TenantCompliancePage() {
 
   return (
     <div className="p-8">
+      <Helmet>
+        <title>Compliance Dashboard</title>
+      </Helmet>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Compliance Dashboard</h1>
         <button
@@ -676,16 +689,16 @@ export default function TenantCompliancePage() {
               {reports.map(report => (
                 <tr key={report.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {report.reportType}
+                    {(report as any).reportType || 'Compliance Report'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {report.framework}
+                    {(report as any).framework || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(report.period.from).toLocaleDateString()} - {new Date(report.period.to).toLocaleDateString()}
+                    {(report as any).period ? new Date((report as any).period.from).toLocaleDateString() + ' - ' + new Date((report as any).period.to).toLocaleDateString() : 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    {report.overallScore}%
+                    {(report as any).overallScore || 0}%
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 rounded text-xs ${getStatusColor(report.status)}`}>
