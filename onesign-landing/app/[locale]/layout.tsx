@@ -2,6 +2,9 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { locales } from '@/i18n';
+import { ThemeProvider } from '@/app/components/ThemeProvider';
+import { ToastContainer } from '@/app/components/Toast';
+import { CookieConsent } from '@/app/components/CookieConsent';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -24,11 +27,15 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} dir={locale === 'fa' ? 'rtl' : 'ltr'}>
-      <body>
-        <NextIntlClientProvider messages={messages}>
-          {children}
-        </NextIntlClientProvider>
+    <html lang={locale} dir={locale === 'fa' ? 'rtl' : 'ltr'} suppressHydrationWarning>
+      <body suppressHydrationWarning>
+        <ThemeProvider>
+          <NextIntlClientProvider messages={messages}>
+            {children}
+            <ToastContainer />
+            <CookieConsent />
+          </NextIntlClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

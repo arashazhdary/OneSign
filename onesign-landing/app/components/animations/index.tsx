@@ -4,12 +4,12 @@ import { motion, HTMLMotionProps } from 'framer-motion';
 import { ReactNode } from 'react';
 
 // Fade in animation
-export function FadeIn({ children, ...props }: HTMLMotionProps<'div'>) {
+export function FadeIn({ children, delay = 0, ...props }: HTMLMotionProps<'div'> & { delay?: number }) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.5, delay }}
       {...props}
     >
       {children}
@@ -32,12 +32,12 @@ export function SlideUp({ children, delay = 0, ...props }: HTMLMotionProps<'div'
 }
 
 // Scale animation
-export function ScaleIn({ children, ...props }: HTMLMotionProps<'div'>) {
+export function ScaleIn({ children, delay = 0, ...props }: HTMLMotionProps<'div'> & { delay?: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.3, delay }}
       {...props}
     >
       {children}
