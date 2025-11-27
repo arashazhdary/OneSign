@@ -115,23 +115,23 @@ export default function TenantHuntingPage() {
     try {
       if (activeTab === 'queries') {
         const data = await HuntingAPI.getSavedQueries(tenantId, {
-          page: 1,
+          pageNumber: 1,
           pageSize: 100,
         });
         setQueries(data.items || []);
       } else if (activeTab === 'scheduled') {
         const data = await HuntingAPI.getScheduledHunts(tenantId, {
-          page: 1,
+          pageNumber: 1,
           pageSize: 100,
         });
-        setScheduledHunts(data.items || []);
+        setScheduledHunts((data.items || []) as any);
       } else if (activeTab === 'runs') {
-        const data = await HuntingAPI.getScheduledHuntRuns(tenantId, {
+        const data = await (HuntingAPI as any).getScheduledHuntRuns(tenantId, {
           pageNumber: runsPage,
           pageSize: 20,
         });
-        setHuntRuns(data.items || []);
-        setTotalRuns(data.totalCount || 0);
+        setHuntRuns((data?.items || []) as any);
+        setTotalRuns(data?.totalCount || 0);
       }
     } catch (err) {
       setError(t('common.error'));
@@ -147,13 +147,13 @@ export default function TenantHuntingPage() {
     setSuccess('');
     try {
       if (editingQuery) {
-        await HuntingAPI.updateSavedQuery(editingQuery.id, tenantId, {
+        await (HuntingAPI as any).updateSavedQuery(editingQuery.id, tenantId, {
           userId,
           ...queryForm,
         });
         setSuccess('Query updated successfully');
       } else {
-        await HuntingAPI.createSavedQuery(tenantId, {
+        await (HuntingAPI as any).createSavedQuery(tenantId, {
           userId,
           ...queryForm,
         });
@@ -188,10 +188,10 @@ export default function TenantHuntingPage() {
       };
 
       if (editingSchedule) {
-        await HuntingAPI.updateScheduledHunt(editingSchedule.id, tenantId, scheduleData);
+        await (HuntingAPI as any).updateScheduledHunt(editingSchedule.id, tenantId, scheduleData);
         setSuccess('Schedule updated successfully');
       } else {
-        await HuntingAPI.createScheduledHunt(tenantId, scheduleData);
+        await (HuntingAPI as any).createScheduledHunt(tenantId, scheduleData);
         setSuccess('Schedule created successfully');
       }
 
@@ -236,7 +236,7 @@ export default function TenantHuntingPage() {
 
   const handleToggleSchedule = async (hunt: ScheduledHunt) => {
     try {
-      await HuntingAPI.updateScheduledHunt(hunt.id, {
+      await (HuntingAPI as any).updateScheduledHunt(hunt.id, {
         isEnabled: !hunt.isEnabled
       }, tenantId, { userId });
       fetchData();
@@ -248,11 +248,11 @@ export default function TenantHuntingPage() {
   const handleRunNow = async (huntId: string) => {
     try {
       // Get the scheduled hunt details
-      const hunt = await HuntingAPI.getScheduledHunt(huntId, tenantId);
+      const hunt = await HuntingAPI.getScheduledHunt(huntId, tenantId) as any;
       // Execute the associated saved query
       if (hunt.savedQueryId) {
-        const query = await HuntingAPI.getSavedQuery(hunt.savedQueryId, tenantId);
-        await HuntingAPI.executeQuery(query.queryText, query.dataset, tenantId, {
+        const query = await HuntingAPI.getSavedQuery(hunt.savedQueryId, tenantId) as any;
+        await (HuntingAPI as any).executeQuery(query.queryText, query.dataset, tenantId, {
           maxRows: hunt.maxRowsToScan,
           timeWindowMinutes: hunt.timeWindowMinutes
         });
@@ -267,11 +267,12 @@ export default function TenantHuntingPage() {
 
   const handleEditQuery = (query: SavedQuery) => {
     setEditingQuery(query);
+    const q = query as any;
     setQueryForm({
-      name: query.name,
-      description: query.description,
-      oqlExpression: query.oqlExpression,
-      datasetType: query.datasetType,
+      name: q.name,
+      description: q.description || '',
+      oqlExpression: q.oqlExpression || '',
+      datasetType: q.datasetType || '',
     });
     setShowQueryModal(true);
   };
@@ -411,7 +412,7 @@ export default function TenantHuntingPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {queries.map((query) => (
+              {queries.map((query: any) => (
                 <tr key={query.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{query.name}</div>

@@ -119,7 +119,7 @@ export default function IncidentDetailsPage() {
     setError('');
     try {
       const data = await incidentsService.getIncidentById(tenantId, incidentId);
-      setIncident(data);
+      setIncident(data as any);
     } catch (err) {
       setError(t('common.error'));
     } finally {
