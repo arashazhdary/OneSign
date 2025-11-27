@@ -6610,5 +6610,30 @@
     "pastDate": "تاریخ باید در گذشته باشد",
     "invalidUrl": "لطفاً یک URL معتبر وارد کنید",
     "invalidPhone": "لطفاً یک شماره تلفن معتبر وارد کنید"
+  },
+  "miscText": {
+    "or": "یا",
+    "and": "و",
+    "combineConditions": "ترکیب شرایط:",
+    "newName": "نام جدید",
+    "new": "جدید",
+    "rootElementNotFound": "عنصر ریشه یافت نشد",
+    "invalidJsonFormat": "فرمت JSON نامعتبر است"
+  },
+  "authLabels": {
+    "forgotPassword": "رمز عبور را فراموش کرده‌اید؟",
+    "rememberMe": "مرا به خاطر بسپار",
+    "signIn": "ورود",
+    "signUp": "ثبت‌نام",
+    "signOut": "خروج",
+    "continueWith": "ادامه با",
+    "createAccount": "ایجاد حساب کاربری",
+    "alreadyHaveAccount": "قبلاً حساب کاربری دارید؟",
+    "dontHaveAccount": "حساب کاربری ندارید؟",
+    "resetPassword": "بازنشانی رمز عبور",
+    "changePassword": "تغییر رمز عبور",
+    "currentPassword": "رمز عبور فعلی",
+    "newPassword": "رمز عبور جدید",
+    "confirmPassword": "تأیید رمز عبور"
   }
 }

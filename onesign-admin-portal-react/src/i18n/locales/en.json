@@ -6611,5 +6611,30 @@
     "pastDate": "Date must be in the past",
     "invalidUrl": "Please enter a valid URL",
     "invalidPhone": "Please enter a valid phone number"
+  },
+  "miscText": {
+    "or": "OR",
+    "and": "AND",
+    "combineConditions": "Combine conditions:",
+    "newName": "New Name",
+    "new": "New",
+    "rootElementNotFound": "Root element not found",
+    "invalidJsonFormat": "Invalid JSON format"
+  },
+  "authLabels": {
+    "forgotPassword": "Forgot password?",
+    "rememberMe": "Remember me",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "continueWith": "Continue with",
+    "createAccount": "Create Account",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "resetPassword": "Reset Password",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password"
   }
 }
