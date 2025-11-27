@@ -6077,5 +6077,61 @@
   },
   "settingsHeadings": {
     "allowNewRegistrations": "اجازه ثبت‌نام‌های جدید"
+  },
+  "roleFormLabels": {
+    "roleName": "نام نقش",
+    "parentRoleOptional": "نقش والد (اختیاری)",
+    "permissions": "مجوزها"
+  },
+  "changeManagementFormLabels": {
+    "nameRequired": "نام *",
+    "targetModuleRequired": "ماژول هدف *",
+    "changesJsonRequired": "تغییرات (JSON) *",
+    "scheduledTimeRequired": "زمان برنامه‌ریزی شده *",
+    "timezone": "منطقه زمانی",
+    "commentOptional": "نظر (اختیاری)",
+    "reasonForRejectionRequired": "دلیل رد *",
+    "newNameRequired": "نام جدید *"
+  },
+  "complianceFormLabels": {
+    "framework": "چارچوب",
+    "fromDate": "از تاریخ",
+    "toDate": "تا تاریخ",
+    "policy": "سیاست",
+    "type": "نوع",
+    "severity": "شدت",
+    "remediationSteps": "مراحل اصلاح",
+    "resolutionNotes": "یادداشت‌های حل"
+  },
+  "huntingFormLabels": {
+    "dataset": "مجموعه داده",
+    "field": "فیلد",
+    "operator": "عملگر",
+    "value": "مقدار",
+    "generatedQuery": "پرس‌وجوی تولید شده",
+    "schedule": "زمان‌بندی",
+    "customCronExpression": "عبارت کرون سفارشی"
+  },
+  "dataRetentionFormLabels": {
+    "policyName": "نام سیاست",
+    "dataType": "نوع داده",
+    "retentionPeriodDays": "دوره نگهداری (روز)"
+  },
+  "anomalyDetectionFormLabels": {
+    "ruleName": "نام قانون",
+    "detectionType": "نوع تشخیص",
+    "detectionThreshold": "آستانه تشخیص"
+  },
+  "apiKeyFormLabels": {
+    "keyName": "نام کلید",
+    "expirationOptional": "انقضا (اختیاری)"
+  },
+  "automationFormLabels": {
+    "actionsExecuted": "عملیات اجرا شده:"
+  },
+  "exportFormLabels": {
+    "exportNameRequired": "نام صادرات *",
+    "dataTypeRequired": "نوع داده *",
+    "fileFormatRequired": "فرمت فایل *"
   }
 }

@@ -6078,5 +6078,61 @@
   },
   "settingsHeadings": {
     "allowNewRegistrations": "Allow New Registrations"
+  },
+  "roleFormLabels": {
+    "roleName": "Role Name",
+    "parentRoleOptional": "Parent Role (Optional)",
+    "permissions": "Permissions"
+  },
+  "changeManagementFormLabels": {
+    "nameRequired": "Name *",
+    "targetModuleRequired": "Target Module *",
+    "changesJsonRequired": "Changes (JSON) *",
+    "scheduledTimeRequired": "Scheduled Time *",
+    "timezone": "Timezone",
+    "commentOptional": "Comment (Optional)",
+    "reasonForRejectionRequired": "Reason for Rejection *",
+    "newNameRequired": "New Name *"
+  },
+  "complianceFormLabels": {
+    "framework": "Framework",
+    "fromDate": "From Date",
+    "toDate": "To Date",
+    "policy": "Policy",
+    "type": "Type",
+    "severity": "Severity",
+    "remediationSteps": "Remediation Steps",
+    "resolutionNotes": "Resolution Notes"
+  },
+  "huntingFormLabels": {
+    "dataset": "Dataset",
+    "field": "Field",
+    "operator": "Operator",
+    "value": "Value",
+    "generatedQuery": "Generated Query",
+    "schedule": "Schedule",
+    "customCronExpression": "Custom Cron Expression"
+  },
+  "dataRetentionFormLabels": {
+    "policyName": "Policy Name",
+    "dataType": "Data Type",
+    "retentionPeriodDays": "Retention Period (Days)"
+  },
+  "anomalyDetectionFormLabels": {
+    "ruleName": "Rule Name",
+    "detectionType": "Detection Type",
+    "detectionThreshold": "Detection Threshold"
+  },
+  "apiKeyFormLabels": {
+    "keyName": "Key Name",
+    "expirationOptional": "Expiration (Optional)"
+  },
+  "automationFormLabels": {
+    "actionsExecuted": "Actions Executed:"
+  },
+  "exportFormLabels": {
+    "exportNameRequired": "Export Name *",
+    "dataTypeRequired": "Data Type *",
+    "fileFormatRequired": "File Format *"
   }
 }
