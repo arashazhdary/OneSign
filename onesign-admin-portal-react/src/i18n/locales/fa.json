@@ -6479,5 +6479,64 @@
     "cacheUserInfo": "پاسخ را به درستی کش کنید تا فراخوانی‌های API غیرضروری کاهش یابد",
     "handleErrorsGracefully": "مدیریت خطای مناسب برای توکن‌های منقضی یا نامعتبر پیاده‌سازی کنید",
     "requestMinimalScopes": "فقط محدوده‌هایی که نیاز دارید درخواست کنید تا افشای داده کاهش یابد"
+  },
+  "labelPrefixes": {
+    "status": "وضعیت:",
+    "total": "مجموع:",
+    "lastUsed": "آخرین استفاده:",
+    "lastTrained": "آخرین آموزش:",
+    "lastRun": "آخرین اجرا:",
+    "lastDelivery": "آخرین تحویل:",
+    "note": "توجه:",
+    "important": "مهم:"
+  },
+  "instructionalTexts": {
+    "clickAnalyzeSecurityPosture": "برای شروع روی \"تحلیل وضعیت امنیتی\" کلیک کنید",
+    "clickOnStepToEdit": "برای ویرایش ویژگی‌ها روی یک مرحله کلیک کنید",
+    "afterAddingDomainConfigureDns": "پس از افزودن دامنه، باید رکوردهای DNS را پیکربندی کنید"
+  },
+  "timeLabelsExtended": {
+    "never": "هرگز",
+    "justNow": "همین الان",
+    "ago": "پیش",
+    "in": "در",
+    "today": "امروز",
+    "yesterday": "دیروز",
+    "tomorrow": "فردا",
+    "thisWeek": "این هفته",
+    "lastWeek": "هفته گذشته",
+    "thisMonth": "این ماه",
+    "lastMonth": "ماه گذشته",
+    "thisYear": "امسال",
+    "lastYear": "سال گذشته"
+  },
+  "filterOptions": {
+    "all": "همه",
+    "none": "هیچکدام",
+    "any": "هر کدام",
+    "custom": "سفارشی",
+    "default": "پیش‌فرض"
+  },
+  "sortLabels": {
+    "sortBy": "مرتب‌سازی بر اساس",
+    "ascending": "صعودی",
+    "descending": "نزولی",
+    "newest": "جدیدترین",
+    "oldest": "قدیمی‌ترین",
+    "alphabetical": "الفبایی",
+    "mostRecent": "اخیرترین",
+    "leastRecent": "قدیمی‌ترین"
+  },
+  "paginationLabels": {
+    "page": "صفحه",
+    "of": "از",
+    "showing": "نمایش",
+    "to": "تا",
+    "entries": "مورد",
+    "results": "نتیجه",
+    "items": "آیتم",
+    "perPage": "در هر صفحه",
+    "goToPage": "برو به صفحه",
+    "rowsPerPage": "ردیف در هر صفحه"
   }
 }

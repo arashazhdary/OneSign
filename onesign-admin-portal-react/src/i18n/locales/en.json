@@ -6480,5 +6480,64 @@
     "cacheUserInfo": "Cache the response appropriately to reduce unnecessary API calls",
     "handleErrorsGracefully": "Implement proper error handling for expired or invalid tokens",
     "requestMinimalScopes": "Only request the scopes you need to minimize data exposure"
+  },
+  "labelPrefixes": {
+    "status": "Status:",
+    "total": "Total:",
+    "lastUsed": "Last Used:",
+    "lastTrained": "Last Trained:",
+    "lastRun": "Last run:",
+    "lastDelivery": "Last Delivery:",
+    "note": "Note:",
+    "important": "Important:"
+  },
+  "instructionalTexts": {
+    "clickAnalyzeSecurityPosture": "Click \"Analyze Security Posture\" to start",
+    "clickOnStepToEdit": "Click on a step to edit its properties",
+    "afterAddingDomainConfigureDns": "After adding the domain, you'll need to configure DNS records"
+  },
+  "timeLabelsExtended": {
+    "never": "Never",
+    "justNow": "Just now",
+    "ago": "ago",
+    "in": "in",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "tomorrow": "Tomorrow",
+    "thisWeek": "This week",
+    "lastWeek": "Last week",
+    "thisMonth": "This month",
+    "lastMonth": "Last month",
+    "thisYear": "This year",
+    "lastYear": "Last year"
+  },
+  "filterOptions": {
+    "all": "All",
+    "none": "None",
+    "any": "Any",
+    "custom": "Custom",
+    "default": "Default"
+  },
+  "sortLabels": {
+    "sortBy": "Sort by",
+    "ascending": "Ascending",
+    "descending": "Descending",
+    "newest": "Newest",
+    "oldest": "Oldest",
+    "alphabetical": "Alphabetical",
+    "mostRecent": "Most Recent",
+    "leastRecent": "Least Recent"
+  },
+  "paginationLabels": {
+    "page": "Page",
+    "of": "of",
+    "showing": "Showing",
+    "to": "to",
+    "entries": "entries",
+    "results": "results",
+    "items": "items",
+    "perPage": "per page",
+    "goToPage": "Go to page",
+    "rowsPerPage": "Rows per page"
   }
 }
