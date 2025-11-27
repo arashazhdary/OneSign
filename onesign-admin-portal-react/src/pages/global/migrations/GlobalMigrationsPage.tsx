@@ -324,29 +324,14 @@ export default function GlobalMigrationsPage() {
       key: 'type',
       label: t('migrations.type'),
       render: (m) => (
-        <StatusBadge
-          status={m.type}
-          color={
-            m.type === 'Schema' ? 'blue' :
-            m.type === 'Data' ? 'purple' :
-            m.type === 'Index' ? 'green' : 'orange'
-          }
-        />
+        <StatusBadge status={m.type} />
       ),
     },
     {
       key: 'status',
       label: t('migrations.status'),
       render: (m) => (
-        <StatusBadge
-          status={m.status}
-          color={
-            m.status === 'Completed' ? 'green' :
-            m.status === 'Running' ? 'blue' :
-            m.status === 'Failed' ? 'red' :
-            m.status === 'Rolled Back' ? 'orange' : 'gray'
-          }
-        />
+        <StatusBadge status={m.status} />
       ),
     },
     {
@@ -381,14 +366,7 @@ export default function GlobalMigrationsPage() {
       key: 'type',
       label: t('migrations.type'),
       render: (m) => (
-        <StatusBadge
-          status={m.type}
-          color={
-            m.type === 'Schema' ? 'blue' :
-            m.type === 'Data' ? 'purple' :
-            m.type === 'Index' ? 'green' : 'orange'
-          }
-        />
+        <StatusBadge status={m.type} />
       ),
     },
     {
@@ -524,13 +502,7 @@ export default function GlobalMigrationsPage() {
                     <div className="text-xs text-gray-500 mt-1">{migration.description}</div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <StatusBadge
-                      status={migration.status}
-                      color={
-                        migration.status === 'Completed' ? 'green' :
-                        migration.status === 'Failed' ? 'red' : 'gray'
-                      }
-                    />
+                    <StatusBadge status={migration.status} />
                     <button
                       onClick={() => viewMigrationDetails(migration)}
                       className="text-blue-600 hover:text-blue-800 text-sm"
@@ -687,13 +659,7 @@ export default function GlobalMigrationsPage() {
               <div>
                 <label className="text-sm font-medium text-gray-600">{t('migrations.status')}</label>
                 <div>
-                  <StatusBadge
-                    status={selectedMigration.status}
-                    color={
-                      selectedMigration.status === 'Completed' ? 'green' :
-                      selectedMigration.status === 'Failed' ? 'red' : 'gray'
-                    }
-                  />
+                  <StatusBadge status={selectedMigration.status} />
                 </div>
               </div>
               <div>

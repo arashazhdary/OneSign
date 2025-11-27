@@ -522,41 +522,21 @@ export default function GlobalSecurityPage() {
       key: 'type',
       label: 'Type',
       render: (policy) => (
-        <StatusBadge
-          status={policy.type}
-          color={
-            policy.type === 'Security' ? 'blue' :
-            policy.type === 'Compliance' ? 'purple' :
-            policy.type === 'Access' ? 'green' : 'orange'
-          }
-        />
+        <StatusBadge status={policy.type} />
       ),
     },
     {
       key: 'severity',
       label: 'Severity',
       render: (policy) => (
-        <StatusBadge
-          status={policy.severity}
-          color={
-            policy.severity === 'Critical' ? 'red' :
-            policy.severity === 'High' ? 'orange' :
-            policy.severity === 'Medium' ? 'yellow' : 'green'
-          }
-        />
+        <StatusBadge status={policy.severity} />
       ),
     },
     {
       key: 'status',
       label: 'Status',
       render: (policy) => (
-        <StatusBadge
-          status={policy.status}
-          color={
-            policy.status === 'Active' ? 'green' :
-            policy.status === 'Inactive' ? 'gray' : 'yellow'
-          }
-        />
+        <StatusBadge status={policy.status} />
       ),
     },
     {

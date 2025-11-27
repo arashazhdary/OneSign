@@ -45,9 +45,7 @@ export default function GlobalIntegrationsPage() {
   }, []);
 
   const fetchData = async () => {
-    try {
-      const data = await globalService.getGlobalIntegrations();
-      const mockIntegrations: Integration[] = [
+    const mockIntegrations: Integration[] = [
         {
           id: '1',
           name: 'Stripe Payment Gateway',
@@ -212,9 +210,8 @@ export default function GlobalIntegrationsPage() {
           updatedAt: '2024-07-10T14:00:00Z',
         },
       ];
-      setIntegrations(data || mockIntegrations);
 
-      const mockWebhooks: WebhookEndpoint[] = [
+    const mockWebhooks: WebhookEndpoint[] = [
         {
           id: '1',
           url: 'https://api.partner.com/webhooks/onesign',
@@ -234,6 +231,9 @@ export default function GlobalIntegrationsPage() {
           successRate: 99.2,
         },
       ];
+
+    try {
+      const data = await globalService.getGlobalIntegrations();
       setIntegrations(data?.integrations || mockIntegrations);
       setWebhooks(data?.webhooks || mockWebhooks);
     } catch (err) {
