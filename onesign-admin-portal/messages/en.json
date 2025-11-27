@@ -267,6 +267,21 @@
       "description": "Our product demo video is being prepared. In the meantime, start your free trial to explore all features.",
       "close": "Close",
       "getStarted": "Start Free Trial"
+    },
+    "cookie": {
+      "title": "We use cookies",
+      "description": "We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies.",
+      "accept": "Accept",
+      "decline": "Decline"
+    },
+    "contact": {
+      "floating": "Contact Us",
+      "title": "Get in Touch",
+      "subtitle": "Fill out the form below and we'll get back to you shortly.",
+      "name": "Your Name",
+      "email": "Email Address",
+      "message": "Your Message",
+      "submit": "Send Message"
     }
   },
   "common": {

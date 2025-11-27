@@ -159,15 +159,32 @@ export default function LandingPage() {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [statsVisible, setStatsVisible] = useState(false);
   const [animatedStats, setAnimatedStats] = useState<{ [key: string]: string }>({});
+  const [showCookieConsent, setShowCookieConsent] = useState(true);
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [parallaxOffset, setParallaxOffset] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
       setShowBackToTop(window.scrollY > 400);
+      setParallaxOffset(window.scrollY * 0.3);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Check cookie consent from localStorage
+  useEffect(() => {
+    const consent = localStorage.getItem('cookieConsent');
+    if (consent === 'accepted') {
+      setShowCookieConsent(false);
+    }
+  }, []);
+
+  const acceptCookies = () => {
+    localStorage.setItem('cookieConsent', 'accepted');
+    setShowCookieConsent(false);
+  };
 
   // Scroll animation observer
   useEffect(() => {
@@ -498,11 +515,17 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-24 lg:pt-32 pb-16 lg:pb-24 overflow-hidden">
-        {/* Background Gradient */}
+      <section className="relative pt-24 lg:pt-32 pb-16 lg:pb-24 overflow-hidden" role="banner" aria-label={t('hero.badge')}>
+        {/* Background Gradient with Parallax */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50" />
-        <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-bl from-blue-100/50 to-transparent rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-gradient-to-tr from-indigo-100/50 to-transparent rounded-full blur-3xl" />
+        <div
+          className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-bl from-blue-100/50 to-transparent rounded-full blur-3xl transition-transform duration-100"
+          style={{ transform: `translateY(${parallaxOffset * 0.5}px)` }}
+        />
+        <div
+          className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-gradient-to-tr from-indigo-100/50 to-transparent rounded-full blur-3xl transition-transform duration-100"
+          style={{ transform: `translateY(${-parallaxOffset * 0.3}px)` }}
+        />
 
         {/* Grid Pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
@@ -1347,6 +1370,121 @@ export default function LandingPage() {
         </div>
       )}
 
+      {/* Mobile Sticky CTA Bar */}
+      <div className={`lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-lg transform transition-transform duration-300 ${
+        scrolled ? 'translate-y-0' : 'translate-y-full'
+      }`}>
+        <div className="flex items-center justify-between p-4 gap-3">
+          <Link
+            href={`/${locale}/login`}
+            className="flex-1 text-center py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl"
+          >
+            {t('nav.getStarted')}
+          </Link>
+          <button
+            onClick={() => setShowContactForm(true)}
+            className="px-4 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl"
+            aria-label={t('cta.demo')}
+          >
+            {t('cta.demo')}
+          </button>
+        </div>
+      </div>
+
+      {/* Floating Contact Button */}
+      <button
+        onClick={() => setShowContactForm(true)}
+        className={`hidden lg:flex fixed bottom-24 ${isRTL ? 'left-8' : 'right-8'} z-40 items-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all`}
+        aria-label={t('contact.floating')}
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+        <span>{t('contact.floating')}</span>
+      </button>
+
+      {/* Contact Form Modal */}
+      {showContactForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl p-6">
+            <button
+              onClick={() => setShowContactForm(false)}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors text-gray-500"
+              aria-label={t('videoModal.close')}
+            >
+              <Icons.X />
+            </button>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-2">{t('contact.title')}</h3>
+            <p className="text-gray-600 mb-6">{t('contact.subtitle')}</p>
+
+            <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setShowContactForm(false); }}>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('contact.name')}</label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('contact.email')}</label>
+                <input
+                  type="email"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('contact.message')}</label>
+                <textarea
+                  rows={4}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all"
+              >
+                {t('contact.submit')}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Cookie Consent Banner */}
+      {showCookieConsent && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 lg:bottom-4 lg:left-4 lg:right-auto lg:max-w-md bg-white border border-gray-200 rounded-t-2xl lg:rounded-2xl shadow-2xl p-4 lg:p-6 animate-slideUp">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h4 className="font-semibold text-gray-900 mb-1">{t('cookie.title')}</h4>
+              <p className="text-sm text-gray-600 mb-4">{t('cookie.description')}</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={acceptCookies}
+                  className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  {t('cookie.accept')}
+                </button>
+                <button
+                  onClick={() => setShowCookieConsent(false)}
+                  className="px-4 py-2 text-gray-600 text-sm font-medium hover:text-gray-900 transition-colors"
+                >
+                  {t('cookie.decline')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Custom Animations Style */}
       <style jsx global>{`
         @keyframes fadeInUp {
@@ -1368,6 +1506,19 @@ export default function LandingPage() {
         @keyframes fadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
+        }
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(100%);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-slideUp {
+          animation: slideUp 0.4s ease-out forwards;
         }
       `}</style>
     </div>
