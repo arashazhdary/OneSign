@@ -342,6 +342,5 @@ public class AnonymizationService : IAnonymizationService
         };
 
         dbContext.Set<AuditEventEntity>().Add(auditEvent);
-        await Task.CompletedTask;
     }
 }

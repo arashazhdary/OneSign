@@ -233,6 +233,5 @@ public class DataRetentionService : IDataRetentionService
         };
 
         dbContext.Set<AuditEventEntity>().Add(auditEvent);
-        await Task.CompletedTask;
     }
 }

@@ -154,7 +154,61 @@ public class AccessRequestWorkflowEngineService : IAccessRequestWorkflowEngine
     public async Task CheckAndProcessSlaBreachesAsync(CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Checking for SLA breaches...");
-        // This would typically query for pending requests past their SLA and auto-escalate or reject
-        await Task.CompletedTask;
+
+        // Define default SLA timeout (48 hours)
+        const int defaultSlaHours = 48;
+        var slaThreshold = DateTime.UtcNow.AddHours(-defaultSlaHours);
+
+        // Get all requests and filter for pending ones
+        var allRequests = await _requestRepository.GetAllAsync(cancellationToken);
+        var pendingRequests = allRequests
+            .Where(r => r.Status == RequestStatus.Pending || r.Status == RequestStatus.InReview)
+            .Where(r => r.CreatedAt < slaThreshold)
+            .ToList();
+
+        if (!pendingRequests.Any())
+        {
+            _logger.LogInformation("No SLA breaches found");
+            return;
+        }
+
+        _logger.LogWarning("Found {Count} requests with SLA breaches", pendingRequests.Count);
+
+        foreach (var request in pendingRequests)
+        {
+            try
+            {
+                // Auto-reject the request due to SLA breach
+                request.Status = RequestStatus.Rejected;
+                request.ReviewedAt = DateTime.UtcNow;
+                request.ReviewComment = $"Automatically rejected due to SLA breach. Request pending for more than {defaultSlaHours} hours.";
+
+                // Mark all items as rejected
+                foreach (var item in request.Items)
+                {
+                    item.Status = RequestStatus.Rejected;
+                }
+
+                // Mark all pending approval steps as rejected
+                foreach (var step in request.ApprovalSteps.Where(s => s.Action == null))
+                {
+                    step.Action = ApprovalAction.Reject;
+                    step.ActionAt = DateTime.UtcNow;
+                    step.Comment = "Auto-rejected due to SLA breach";
+                }
+
+                await _requestRepository.UpdateAsync(request, cancellationToken);
+
+                _logger.LogWarning(
+                    "Request {RequestId} auto-rejected due to SLA breach. Pending since {CreatedAt} (over {Hours} hours)",
+                    request.Id, request.CreatedAt, (DateTime.UtcNow - request.CreatedAt).TotalHours);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to process SLA breach for request {RequestId}", request.Id);
+            }
+        }
+
+        _logger.LogInformation("Processed {Count} SLA breaches", pendingRequests.Count);
     }
 }
