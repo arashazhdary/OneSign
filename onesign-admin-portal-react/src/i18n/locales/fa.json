@@ -6350,5 +6350,35 @@
     "lastPage": "صفحه آخر",
     "breadcrumb": "مسیر راهنما",
     "toggleTheme": "تغییر تم"
+  },
+  "imageAlts": {
+    "totpQrCode": "کد QR احراز هویت دو مرحله‌ای",
+    "logo": "لوگو",
+    "logoLight": "لوگوی روشن",
+    "logoDark": "لوگوی تاریک",
+    "favicon": "آیکون سایت",
+    "logoPreview": "پیش‌نمایش لوگو",
+    "oneSignLogo": "لوگوی OneSign"
+  },
+  "noResultsMessages": {
+    "noAdministratorsFound": "هیچ مدیری یافت نشد",
+    "noActivitiesFound": "هیچ فعالیتی یافت نشد",
+    "noTemplatesFound": "هیچ قالبی یافت نشد",
+    "noNotificationsFound": "هیچ اعلانی یافت نشد",
+    "noContextsFound": "هیچ زمینه‌ای یافت نشد",
+    "noIncidentsFound": "هیچ رخدادی یافت نشد"
+  },
+  "loadingMessages": {
+    "loading": "در حال بارگذاری...",
+    "loadingApiUsageData": "در حال بارگذاری داده‌های استفاده از API...",
+    "loadingSessions": "در حال بارگذاری جلسات...",
+    "loadingAdministrators": "در حال بارگذاری مدیران...",
+    "loadingDashboard": "در حال بارگذاری داشبورد...",
+    "loadingSettings": "در حال بارگذاری تنظیمات...",
+    "loadingTenants": "در حال بارگذاری مستأجران...",
+    "loadingQuotas": "در حال بارگذاری سهمیه‌ها...",
+    "loadingGovernanceData": "در حال بارگذاری داده‌های حاکمیت...",
+    "loadingSchedules": "در حال بارگذاری زمان‌بندی‌ها...",
+    "loadingExports": "در حال بارگذاری خروجی‌ها..."
   }
 }

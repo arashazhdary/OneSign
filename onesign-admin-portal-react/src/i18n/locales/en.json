@@ -6351,5 +6351,35 @@
     "lastPage": "Last page",
     "breadcrumb": "Breadcrumb",
     "toggleTheme": "Toggle theme"
+  },
+  "imageAlts": {
+    "totpQrCode": "TOTP QR Code",
+    "logo": "Logo",
+    "logoLight": "Logo Light",
+    "logoDark": "Logo Dark",
+    "favicon": "Favicon",
+    "logoPreview": "Logo preview",
+    "oneSignLogo": "OneSign Logo"
+  },
+  "noResultsMessages": {
+    "noAdministratorsFound": "No administrators found",
+    "noActivitiesFound": "No activities found",
+    "noTemplatesFound": "No templates found",
+    "noNotificationsFound": "No notifications found",
+    "noContextsFound": "No contexts found",
+    "noIncidentsFound": "No incidents found"
+  },
+  "loadingMessages": {
+    "loading": "Loading...",
+    "loadingApiUsageData": "Loading API usage data...",
+    "loadingSessions": "Loading sessions...",
+    "loadingAdministrators": "Loading administrators...",
+    "loadingDashboard": "Loading dashboard...",
+    "loadingSettings": "Loading settings...",
+    "loadingTenants": "Loading tenants...",
+    "loadingQuotas": "Loading quotas...",
+    "loadingGovernanceData": "Loading governance data...",
+    "loadingSchedules": "Loading schedules...",
+    "loadingExports": "Loading exports..."
   }
 }
