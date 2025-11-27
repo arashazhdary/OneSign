@@ -6732,5 +6732,29 @@
     "combineConditions": "ترکیب شرایط:",
     "useAndOr": "از AND یا OR استفاده کنید",
     "fieldOperatorValue": "فیلد عملگر \"مقدار\""
+  },
+  "reportLabels": {
+    "generateReport": "تولید گزارش",
+    "generatedDate": "تاریخ تولید",
+    "generatedBy": "تولید شده توسط",
+    "generated": "تولید شده",
+    "generateScheduleAndManageReports": "تولید، زمان‌بندی و مدیریت گزارش‌ها",
+    "generateComplianceReport": "تولید گزارش انطباق",
+    "generateNewSecret": "تولید کلید محرمانه جدید",
+    "generateCertificationSummaryReport": "تولید گزارش خلاصه گواهی",
+    "generatedExpression": "عبارت تولید شده:",
+    "generatedQuery": "کوئری تولید شده"
+  },
+  "dataTableLabels": {
+    "noDataAvailable": "داده‌ای موجود نیست",
+    "selectAllRows": "انتخاب همه ردیف‌ها",
+    "deselectAllRows": "لغو انتخاب همه ردیف‌ها",
+    "columnVisibility": "نمایش ستون‌ها",
+    "exportData": "صادر کردن داده‌ها",
+    "refreshData": "بازآوری داده‌ها",
+    "density": "تراکم",
+    "compact": "فشرده",
+    "standard": "استاندارد",
+    "comfortable": "راحت"
   }
 }
