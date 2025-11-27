@@ -152,14 +152,182 @@ export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [email, setEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [statsVisible, setStatsVisible] = useState(false);
+  const [animatedStats, setAnimatedStats] = useState<{ [key: string]: string }>({});
+  const [showCookieConsent, setShowCookieConsent] = useState(true);
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [parallaxOffset, setParallaxOffset] = useState(0);
+  const [typedText, setTypedText] = useState('');
+  const [isTypingComplete, setIsTypingComplete] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
+      setShowBackToTop(window.scrollY > 400);
+      setParallaxOffset(window.scrollY * 0.3);
+
+      // Calculate scroll progress
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight - windowHeight;
+      const scrolled = window.scrollY;
+      const progress = (scrolled / documentHeight) * 100;
+      setScrollProgress(Math.min(progress, 100));
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Check cookie consent from localStorage
+  useEffect(() => {
+    const consent = localStorage.getItem('cookieConsent');
+    if (consent === 'accepted') {
+      setShowCookieConsent(false);
+    }
+  }, []);
+
+  const acceptCookies = () => {
+    localStorage.setItem('cookieConsent', 'accepted');
+    setShowCookieConsent(false);
+  };
+
+  // Scroll animation observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-fadeInUp');
+            entry.target.classList.remove('opacity-0', 'translate-y-8');
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    );
+
+    const animatedElements = document.querySelectorAll('.scroll-animate');
+    animatedElements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Keyboard support for modals
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (showVideoModal) setShowVideoModal(false);
+        if (showContactForm) setShowContactForm(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showVideoModal, showContactForm]);
+
+  // Typing animation effect
+  useEffect(() => {
+    const fullText = t('hero.title');
+    let currentIndex = 0;
+    setTypedText('');
+    setIsTypingComplete(false);
+
+    const typingInterval = setInterval(() => {
+      if (currentIndex < fullText.length) {
+        setTypedText(fullText.slice(0, currentIndex + 1));
+        currentIndex++;
+      } else {
+        setIsTypingComplete(true);
+        clearInterval(typingInterval);
+      }
+    }, 50);
+
+    return () => clearInterval(typingInterval);
+  }, [t]);
+
+  // Auto-rotate testimonials
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveTestimonial((prev) => (prev + 1) % 3);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Animated stats counter
+  useEffect(() => {
+    if (!statsVisible) return;
+
+    const targetValues: { [key: string]: { value: number; suffix: string; prefix: string } } = {
+      users: { value: 500, suffix: 'K+', prefix: '' },
+      apps: { value: 1000, suffix: '+', prefix: '' },
+      authentications: { value: 10, suffix: 'M+', prefix: '' },
+      uptime: { value: 99.99, suffix: '%', prefix: '' },
+    };
+
+    const duration = 2000;
+    const steps = 60;
+    const stepTime = duration / steps;
+
+    let currentStep = 0;
+    const interval = setInterval(() => {
+      currentStep++;
+      const progress = currentStep / steps;
+      const easeOutQuad = 1 - (1 - progress) * (1 - progress);
+
+      const newStats: { [key: string]: string } = {};
+      Object.entries(targetValues).forEach(([key, { value, suffix, prefix }]) => {
+        const currentValue = value * easeOutQuad;
+        if (key === 'uptime') {
+          newStats[key] = `${prefix}${currentValue.toFixed(2)}${suffix}`;
+        } else if (key === 'apps') {
+          newStats[key] = `${prefix}${Math.floor(currentValue).toLocaleString()}${suffix}`;
+        } else {
+          newStats[key] = `${prefix}${Math.floor(currentValue)}${suffix}`;
+        }
+      });
+      setAnimatedStats(newStats);
+
+      if (currentStep >= steps) {
+        clearInterval(interval);
+      }
+    }, stepTime);
+
+    return () => clearInterval(interval);
+  }, [statsVisible]);
+
+  // Stats visibility observer
+  useEffect(() => {
+    const statsSection = document.getElementById('stats-section');
+    if (!statsSection) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !statsVisible) {
+          setStatsVisible(true);
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    observer.observe(statsSection);
+    return () => observer.disconnect();
+  }, [statsVisible]);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNewsletterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email) {
+      setSubscribed(true);
+      setEmail('');
+      setTimeout(() => setSubscribed(false), 3000);
+    }
+  };
 
   const toggleLocale = () => {
     const newLocale = locale === 'en' ? 'fa' : 'en';
@@ -197,10 +365,73 @@ export default function LandingPage() {
     { value: '99.99%', key: 'uptime' },
   ];
 
+  const testimonials = [
+    { key: 'testimonial1', company: 'TechCorp', role: 'CISO' },
+    { key: 'testimonial2', company: 'FinanceHub', role: 'IT Director' },
+    { key: 'testimonial3', company: 'HealthPlus', role: 'Security Lead' },
+  ];
+
+  const trustedCompanies = [
+    'Microsoft', 'Google', 'Amazon', 'IBM', 'Oracle', 'SAP'
+  ];
+
+  const faqs = [
+    { key: 'faq1' },
+    { key: 'faq2' },
+    { key: 'faq3' },
+    { key: 'faq4' },
+    { key: 'faq5' },
+  ];
+
+  const [openFaq, setOpenFaq] = useState<string | null>(null);
+
+  const howItWorksSteps = [
+    { key: 'step1', number: '01' },
+    { key: 'step2', number: '02' },
+    { key: 'step3', number: '03' },
+    { key: 'step4', number: '04' },
+  ];
+
+  const integrations = [
+    { name: 'Microsoft 365', category: 'productivity' },
+    { name: 'Google Workspace', category: 'productivity' },
+    { name: 'Salesforce', category: 'crm' },
+    { name: 'AWS', category: 'cloud' },
+    { name: 'Azure', category: 'cloud' },
+    { name: 'Slack', category: 'collaboration' },
+    { name: 'Jira', category: 'devops' },
+    { name: 'GitHub', category: 'devops' },
+  ];
+
+  const certifications = [
+    { key: 'soc2', name: 'SOC 2 Type II' },
+    { key: 'iso27001', name: 'ISO 27001' },
+    { key: 'gdpr', name: 'GDPR' },
+    { key: 'hipaa', name: 'HIPAA' },
+  ];
+
+  // Smooth scroll handler
+  const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
+    e.preventDefault();
+    const element = document.getElementById(targetId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    setMobileMenuOpen(false);
+  };
+
   return (
     <div className={`min-h-screen bg-white ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
+      {/* Scroll Progress Indicator */}
+      <div className="fixed top-0 left-0 right-0 z-[60] h-1 bg-gray-200/50">
+        <div
+          className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 transition-all duration-150"
+          style={{ width: `${scrollProgress}%` }}
+        />
+      </div>
+
       {/* Navigation */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      <nav className={`fixed top-1 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled ? 'bg-white/95 backdrop-blur-lg shadow-lg' : 'bg-transparent'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -212,12 +443,27 @@ export default function LandingPage() {
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center gap-8">
-              <Link href="#features" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">
+              <a
+                href="#features"
+                onClick={(e) => handleSmoothScroll(e, 'features')}
+                className="text-gray-600 hover:text-blue-600 transition-colors font-medium cursor-pointer"
+              >
                 {t('nav.features')}
-              </Link>
-              <Link href="#pricing" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">
+              </a>
+              <a
+                href="#how-it-works"
+                onClick={(e) => handleSmoothScroll(e, 'how-it-works')}
+                className="text-gray-600 hover:text-blue-600 transition-colors font-medium cursor-pointer"
+              >
+                {t('nav.howItWorks')}
+              </a>
+              <a
+                href="#pricing"
+                onClick={(e) => handleSmoothScroll(e, 'pricing')}
+                className="text-gray-600 hover:text-blue-600 transition-colors font-medium cursor-pointer"
+              >
                 {t('nav.pricing')}
-              </Link>
+              </a>
               <Link href="#" className="text-gray-600 hover:text-blue-600 transition-colors font-medium">
                 {t('nav.docs')}
               </Link>
@@ -259,12 +505,27 @@ export default function LandingPage() {
         {mobileMenuOpen && (
           <div className="lg:hidden bg-white border-t border-gray-100 shadow-lg">
             <div className="px-4 py-6 space-y-4">
-              <Link href="#features" className="block text-gray-600 hover:text-blue-600 font-medium py-2">
+              <a
+                href="#features"
+                onClick={(e) => handleSmoothScroll(e, 'features')}
+                className="block text-gray-600 hover:text-blue-600 font-medium py-2 cursor-pointer"
+              >
                 {t('nav.features')}
-              </Link>
-              <Link href="#pricing" className="block text-gray-600 hover:text-blue-600 font-medium py-2">
+              </a>
+              <a
+                href="#how-it-works"
+                onClick={(e) => handleSmoothScroll(e, 'how-it-works')}
+                className="block text-gray-600 hover:text-blue-600 font-medium py-2 cursor-pointer"
+              >
+                {t('nav.howItWorks')}
+              </a>
+              <a
+                href="#pricing"
+                onClick={(e) => handleSmoothScroll(e, 'pricing')}
+                className="block text-gray-600 hover:text-blue-600 font-medium py-2 cursor-pointer"
+              >
                 {t('nav.pricing')}
-              </Link>
+              </a>
               <Link href="#" className="block text-gray-600 hover:text-blue-600 font-medium py-2">
                 {t('nav.docs')}
               </Link>
@@ -293,11 +554,17 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-24 lg:pt-32 pb-16 lg:pb-24 overflow-hidden">
-        {/* Background Gradient */}
+      <section className="relative pt-24 lg:pt-32 pb-16 lg:pb-24 overflow-hidden" role="banner" aria-label={t('hero.badge')}>
+        {/* Background Gradient with Parallax */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-indigo-50" />
-        <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-bl from-blue-100/50 to-transparent rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-gradient-to-tr from-indigo-100/50 to-transparent rounded-full blur-3xl" />
+        <div
+          className="absolute top-0 right-0 w-1/2 h-1/2 bg-gradient-to-bl from-blue-100/50 to-transparent rounded-full blur-3xl transition-transform duration-100"
+          style={{ transform: `translateY(${parallaxOffset * 0.5}px)` }}
+        />
+        <div
+          className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-gradient-to-tr from-indigo-100/50 to-transparent rounded-full blur-3xl transition-transform duration-100"
+          style={{ transform: `translateY(${-parallaxOffset * 0.3}px)` }}
+        />
 
         {/* Grid Pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#e5e7eb_1px,transparent_1px),linear-gradient(to_bottom,#e5e7eb_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
@@ -305,15 +572,18 @@ export default function LandingPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-4xl mx-auto">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-6 animate-fadeIn">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-6 animate-fadeIn animate-pulse-slow">
               <Icons.Shield />
               {t('hero.badge')}
             </div>
 
-            {/* Title */}
+            {/* Title with Typing Effect */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
-              {t('hero.title')}{' '}
-              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <span className="inline-block">
+                {typedText || t('hero.title')}
+                {!isTypingComplete && <span className="animate-blink">|</span>}
+              </span>{' '}
+              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent animate-gradient">
                 {t('hero.titleHighlight')}
               </span>
             </h1>
@@ -327,12 +597,15 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
               <Link
                 href={`/${locale}/login`}
-                className="group w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 flex items-center justify-center gap-2"
+                className="group w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-[length:200%_auto] animate-gradient-x text-white font-semibold rounded-xl transition-all shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 flex items-center justify-center gap-2 hover:scale-105"
               >
                 {t('hero.cta')}
                 <Icons.ArrowRight />
               </Link>
-              <button className="group w-full sm:w-auto px-8 py-4 bg-white text-gray-700 font-semibold rounded-xl border-2 border-gray-200 hover:border-blue-300 transition-all flex items-center justify-center gap-2 hover:shadow-lg">
+              <button
+                onClick={() => setShowVideoModal(true)}
+                className="group w-full sm:w-auto px-8 py-4 bg-white text-gray-700 font-semibold rounded-xl border-2 border-gray-200 hover:border-blue-300 transition-all flex items-center justify-center gap-2 hover:shadow-lg"
+              >
                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
                   <Icons.Play />
                 </div>
@@ -341,17 +614,120 @@ export default function LandingPage() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 pt-8 border-t border-gray-200">
+            <div id="stats-section" className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 pt-8 border-t border-gray-200">
               {stats.map((stat) => (
                 <div key={stat.key} className="text-center">
-                  <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-1">
-                    {stat.value}
+                  <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-1 tabular-nums">
+                    {animatedStats[stat.key] || stat.value}
                   </div>
                   <div className="text-sm text-gray-500">
                     {t(`stats.${stat.key}`)}
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Scroll to Explore Indicator */}
+            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce-slow">
+              <span className="text-sm text-gray-500">{t('hero.scrollToExplore')}</span>
+              <div className="w-6 h-10 rounded-full border-2 border-gray-300 flex justify-center pt-2">
+                <div className="w-1 h-3 bg-gray-400 rounded-full animate-scroll-down" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trusted By Section */}
+      <section className="py-12 bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-center text-sm text-gray-500 mb-8">
+            {t('trustedBy.title')}
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-16 opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500">
+            {trustedCompanies.map((company) => (
+              <div key={company} className="text-2xl font-bold text-gray-400 hover:text-gray-600 transition-colors">
+                {company}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Dashboard Preview Section */}
+      <section className="py-16 lg:py-24 bg-gradient-to-b from-white to-gray-50 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              {t('preview.title')}
+            </h2>
+            <p className="text-lg text-gray-600">
+              {t('preview.subtitle')}
+            </p>
+          </div>
+
+          {/* Dashboard Preview */}
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl transform rotate-1 scale-[1.02] opacity-20 blur-xl" />
+            <div className="relative bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
+              {/* Browser Chrome */}
+              <div className="bg-gray-100 border-b border-gray-200 px-4 py-3 flex items-center gap-2">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-red-400" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                  <div className="w-3 h-3 rounded-full bg-green-400" />
+                </div>
+                <div className="flex-1 mx-4">
+                  <div className="bg-white rounded-lg px-4 py-1.5 text-sm text-gray-500 border border-gray-200">
+                    app.onesign.io/dashboard
+                  </div>
+                </div>
+              </div>
+              {/* Dashboard Content */}
+              <div className="p-6 bg-gray-50">
+                <div className="grid grid-cols-4 gap-4 mb-6">
+                  {[
+                    { label: t('preview.metrics.users'), value: '12,543', change: '+12%', color: 'blue' },
+                    { label: t('preview.metrics.logins'), value: '45,231', change: '+8%', color: 'green' },
+                    { label: t('preview.metrics.threats'), value: '3', change: '-25%', color: 'red' },
+                    { label: t('preview.metrics.uptime'), value: '99.99%', change: '', color: 'indigo' },
+                  ].map((metric, idx) => (
+                    <div key={idx} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                      <div className="text-sm text-gray-500 mb-1">{metric.label}</div>
+                      <div className="text-2xl font-bold text-gray-900">{metric.value}</div>
+                      {metric.change && (
+                        <div className={`text-sm ${metric.change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+                          {metric.change}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="col-span-2 bg-white rounded-xl p-4 shadow-sm border border-gray-100 h-48">
+                    <div className="text-sm font-medium text-gray-700 mb-4">{t('preview.chart.title')}</div>
+                    <div className="flex items-end gap-2 h-32">
+                      {[40, 65, 45, 80, 55, 70, 90, 60, 75, 85, 70, 95].map((h, i) => (
+                        <div key={i} className="flex-1 bg-gradient-to-t from-blue-500 to-indigo-500 rounded-t" style={{ height: `${h}%` }} />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                    <div className="text-sm font-medium text-gray-700 mb-4">{t('preview.activity.title')}</div>
+                    <div className="space-y-3">
+                      {[1, 2, 3, 4].map((_, i) => (
+                        <div key={i} className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gray-200" />
+                          <div className="flex-1">
+                            <div className="h-2 bg-gray-200 rounded w-3/4" />
+                            <div className="h-2 bg-gray-100 rounded w-1/2 mt-1" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -361,7 +737,7 @@ export default function LandingPage() {
       <section id="features" className="py-16 lg:py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Header */}
-          <div className="text-center max-w-3xl mx-auto mb-12 lg:mb-16">
+          <div className="text-center max-w-3xl mx-auto mb-12 lg:mb-16 scroll-animate opacity-0 translate-y-8 transition-all duration-700">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
               {t('features.title')}
             </h2>
@@ -372,17 +748,18 @@ export default function LandingPage() {
 
           {/* Features Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {features.map((feature) => {
+            {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
                 <div
                   key={feature.key}
-                  className="group p-6 bg-white rounded-2xl border border-gray-100 hover:border-blue-200 transition-all hover:shadow-xl hover:shadow-blue-500/10 cursor-pointer"
+                  className="group p-6 bg-white rounded-2xl border border-gray-100 hover:border-blue-200 transition-all hover:shadow-xl hover:shadow-blue-500/10 cursor-pointer scroll-animate opacity-0 translate-y-8"
+                  style={{ transitionDelay: `${index * 50}ms` }}
                 >
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-transform">
                     <Icon />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
                     {t(`features.${feature.key}.title`)}
                   </h3>
                   <p className="text-gray-600 text-sm leading-relaxed">
@@ -395,12 +772,48 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <section id="how-it-works" className="py-16 lg:py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-12 lg:mb-16 scroll-animate opacity-0 translate-y-8 transition-all duration-700">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              {t('howItWorks.title')}
+            </h2>
+            <p className="text-lg text-gray-600">
+              {t('howItWorks.subtitle')}
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {howItWorksSteps.map((step, index) => (
+              <div key={step.key} className="relative scroll-animate opacity-0 translate-y-8" style={{ transitionDelay: `${index * 150}ms` }}>
+                {/* Connector Line */}
+                {index < howItWorksSteps.length - 1 && (
+                  <div className="hidden lg:block absolute top-8 left-1/2 w-full h-0.5 bg-gradient-to-r from-blue-300 to-indigo-300 animate-pulse" />
+                )}
+                <div className="relative bg-white rounded-2xl p-6 border border-gray-100 hover:border-blue-200 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 text-center group">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-2xl font-bold flex items-center justify-center mx-auto mb-4 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
+                    {step.number}
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                    {t(`howItWorks.${step.key}.title`)}
+                  </h3>
+                  <p className="text-gray-600 text-sm">
+                    {t(`howItWorks.${step.key}.description`)}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Why Choose Us Section */}
-      <section className="py-16 lg:py-24 bg-white">
+      <section className="py-16 lg:py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Left Content */}
-            <div>
+            <div className="scroll-animate opacity-0 translate-y-8 transition-all duration-700">
               <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
                 {t('why.title')}
               </h2>
@@ -453,11 +866,179 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Testimonials Section */}
+      <section className="py-16 lg:py-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-12 scroll-animate opacity-0 translate-y-8 transition-all duration-700">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              {t('testimonials.title')}
+            </h2>
+            <p className="text-lg text-gray-600">
+              {t('testimonials.subtitle')}
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <div
+                key={testimonial.key}
+                className={`bg-white rounded-2xl p-8 shadow-lg border-2 transition-all duration-500 cursor-pointer ${
+                  activeTestimonial === index
+                    ? 'border-blue-500 scale-105 shadow-xl shadow-blue-500/10'
+                    : 'border-gray-100 hover:border-blue-200 hover:shadow-xl'
+                }`}
+                onClick={() => setActiveTestimonial(index)}
+              >
+                {/* Quote Icon */}
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-6 transition-colors ${
+                  activeTestimonial === index ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-600'
+                }`}>
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                  </svg>
+                </div>
+                {/* Quote */}
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  "{t(`testimonials.${testimonial.key}.quote`)}"
+                </p>
+                {/* Author */}
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold">
+                    {t(`testimonials.${testimonial.key}.name`).charAt(0)}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">
+                      {t(`testimonials.${testimonial.key}.name`)}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {testimonial.role}, {testimonial.company}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Carousel Indicators */}
+          <div className="flex items-center justify-center gap-2 mt-8">
+            {testimonials.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setActiveTestimonial(index)}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  activeTestimonial === index
+                    ? 'w-8 bg-blue-600'
+                    : 'bg-gray-300 hover:bg-gray-400'
+                }`}
+                aria-label={`Go to testimonial ${index + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Integrations Section */}
+      <section className="py-16 lg:py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-12 scroll-animate opacity-0 translate-y-8 transition-all duration-700">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              {t('integrations.title')}
+            </h2>
+            <p className="text-lg text-gray-600">
+              {t('integrations.subtitle')}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {integrations.map((integration) => (
+              <div
+                key={integration.name}
+                className="group bg-gray-50 rounded-2xl p-6 flex flex-col items-center justify-center hover:bg-white hover:shadow-xl hover:shadow-blue-500/10 transition-all border border-transparent hover:border-blue-200"
+              >
+                <div className="w-16 h-16 rounded-xl bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <span className="text-2xl font-bold text-gray-400 group-hover:text-blue-600 transition-colors">
+                    {integration.name.charAt(0)}
+                  </span>
+                </div>
+                <span className="font-medium text-gray-700 text-center">{integration.name}</span>
+                <span className="text-xs text-gray-400 mt-1 capitalize">{integration.category}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-10">
+            <p className="text-gray-600 mb-4">{t('integrations.more')}</p>
+            <Link
+              href="#"
+              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+            >
+              {t('integrations.viewAll')}
+              <Icons.ArrowRight />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-16 lg:py-24 bg-gray-50">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 scroll-animate opacity-0 translate-y-8 transition-all duration-700">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              {t('faq.title')}
+            </h2>
+            <p className="text-lg text-gray-600">
+              {t('faq.subtitle')}
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {faqs.map((faq) => (
+              <div key={faq.key} className="border border-gray-200 rounded-xl overflow-hidden">
+                <button
+                  onClick={() => setOpenFaq(openFaq === faq.key ? null : faq.key)}
+                  className="w-full flex items-center justify-between p-6 text-left bg-white hover:bg-gray-50 transition-colors"
+                >
+                  <span className="font-medium text-gray-900">
+                    {t(`faq.${faq.key}.question`)}
+                  </span>
+                  <svg
+                    className={`w-5 h-5 text-gray-500 transition-transform ${openFaq === faq.key ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {openFaq === faq.key && (
+                  <div className="px-6 pb-6 text-gray-600 leading-relaxed">
+                    {t(`faq.${faq.key}.answer`)}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-12 text-center">
+            <p className="text-gray-600 mb-4">
+              {t('faq.moreQuestions')}
+            </p>
+            <Link
+              href="#"
+              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+            >
+              {t('faq.contactSupport')}
+              <Icons.ArrowRight />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing Section */}
       <section id="pricing" className="py-16 lg:py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Header */}
-          <div className="text-center max-w-3xl mx-auto mb-12">
+          <div className="text-center max-w-3xl mx-auto mb-12 scroll-animate opacity-0 translate-y-8 transition-all duration-700">
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
               {t('pricing.title')}
             </h2>
@@ -496,7 +1077,7 @@ export default function LandingPage() {
           {/* Pricing Cards */}
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {/* Free Plan */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-xl transition-shadow">
+            <div className="bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-xl hover:border-blue-200 hover:-translate-y-2 transition-all duration-300 scroll-animate opacity-0 translate-y-8">
               <div className="text-center mb-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
                   {t('pricing.free.name')}
@@ -528,7 +1109,7 @@ export default function LandingPage() {
             </div>
 
             {/* Pro Plan - Featured */}
-            <div className="bg-gradient-to-b from-blue-600 to-indigo-700 rounded-2xl p-8 text-white relative shadow-xl shadow-blue-500/25 scale-105">
+            <div className="bg-gradient-to-b from-blue-600 to-indigo-700 rounded-2xl p-8 text-white relative shadow-xl shadow-blue-500/25 scale-105 hover:scale-110 hover:shadow-2xl hover:shadow-blue-500/40 transition-all duration-300 scroll-animate opacity-0 translate-y-8" style={{ transitionDelay: '100ms' }}>
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-orange-500 text-white text-sm font-semibold rounded-full">
                 Popular
               </div>
@@ -565,7 +1146,7 @@ export default function LandingPage() {
             </div>
 
             {/* Enterprise Plan */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-xl transition-shadow">
+            <div className="bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-xl hover:border-indigo-200 hover:-translate-y-2 transition-all duration-300 scroll-animate opacity-0 translate-y-8" style={{ transitionDelay: '200ms' }}>
               <div className="text-center mb-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-2">
                   {t('pricing.enterprise.name')}
@@ -591,6 +1172,32 @@ export default function LandingPage() {
                 {t('pricing.contact')}
               </button>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Security Certifications Section */}
+      <section className="py-16 lg:py-20 bg-white border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">
+              {t('certifications.title')}
+            </h2>
+            <p className="text-gray-600">
+              {t('certifications.subtitle')}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-16">
+            {certifications.map((cert) => (
+              <div key={cert.key} className="flex flex-col items-center">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-50 border border-gray-200 flex items-center justify-center mb-3 hover:shadow-lg transition-shadow">
+                  <Icons.ShieldCheck />
+                </div>
+                <span className="font-semibold text-gray-900">{cert.name}</span>
+                <span className="text-xs text-gray-500">{t(`certifications.${cert.key}`)}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -636,6 +1243,35 @@ export default function LandingPage() {
               <p className="text-gray-400 text-sm mb-6">
                 {t('footer.description')}
               </p>
+
+              {/* Newsletter Form */}
+              <div className="mb-6">
+                <p className="text-white text-sm font-medium mb-3">
+                  {t('footer.newsletter')}
+                </p>
+                <form onSubmit={handleNewsletterSubmit} className="flex gap-2">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={t('footer.emailPlaceholder')}
+                    className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    {t('footer.subscribe')}
+                  </button>
+                </form>
+                {subscribed && (
+                  <p className="mt-2 text-sm text-green-400">
+                    {t('footer.subscribed')}
+                  </p>
+                )}
+              </div>
+
               <button
                 onClick={toggleLocale}
                 className="px-4 py-2 text-sm border border-gray-700 rounded-lg hover:border-gray-500 transition-colors"
@@ -690,11 +1326,297 @@ export default function LandingPage() {
           </div>
 
           {/* Bottom Bar */}
-          <div className="pt-8 border-t border-gray-800 text-center text-sm text-gray-500">
+          <div className="pt-8 border-t border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-500">
             <p>&copy; {new Date().getFullYear()} OneSign. {t('footer.copyright')}</p>
+            {/* Social Media Links */}
+            <div className="flex items-center gap-4">
+              <a href="#" className="hover:text-white transition-colors" aria-label="Twitter">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+              </a>
+              <a href="#" className="hover:text-white transition-colors" aria-label="LinkedIn">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                </svg>
+              </a>
+              <a href="#" className="hover:text-white transition-colors" aria-label="GitHub">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+                </svg>
+              </a>
+              <a href="#" className="hover:text-white transition-colors" aria-label="YouTube">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                </svg>
+              </a>
+            </div>
           </div>
         </div>
       </footer>
+
+      {/* Back to Top Button */}
+      {showBackToTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-8 right-8 z-50 w-12 h-12 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all hover:scale-110 flex items-center justify-center"
+          aria-label="Back to top"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+          </svg>
+        </button>
+      )}
+
+      {/* Video Demo Modal */}
+      {showVideoModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="relative w-full max-w-4xl bg-gray-900 rounded-2xl overflow-hidden shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-700">
+              <h3 className="text-lg font-semibold text-white">
+                {t('videoModal.title')}
+              </h3>
+              <button
+                onClick={() => setShowVideoModal(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-700 transition-colors text-gray-400 hover:text-white"
+              >
+                <Icons.X />
+              </button>
+            </div>
+
+            {/* Video Container */}
+            <div className="aspect-video bg-black flex items-center justify-center">
+              <div className="text-center p-8">
+                <div className="w-20 h-20 rounded-full bg-blue-600/20 flex items-center justify-center mx-auto mb-6">
+                  <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center">
+                    <Icons.Play />
+                  </div>
+                </div>
+                <h4 className="text-xl font-semibold text-white mb-2">
+                  {t('videoModal.placeholder')}
+                </h4>
+                <p className="text-gray-400">
+                  {t('videoModal.description')}
+                </p>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-gray-700 flex justify-end gap-3">
+              <button
+                onClick={() => setShowVideoModal(false)}
+                className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+              >
+                {t('videoModal.close')}
+              </button>
+              <Link
+                href={`/${locale}/login`}
+                className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                {t('videoModal.getStarted')}
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Sticky CTA Bar */}
+      <div className={`lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 shadow-lg transform transition-transform duration-300 ${
+        scrolled ? 'translate-y-0' : 'translate-y-full'
+      }`}>
+        <div className="flex items-center justify-between p-4 gap-3">
+          <Link
+            href={`/${locale}/login`}
+            className="flex-1 text-center py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl"
+          >
+            {t('nav.getStarted')}
+          </Link>
+          <button
+            onClick={() => setShowContactForm(true)}
+            className="px-4 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl"
+            aria-label={t('cta.demo')}
+          >
+            {t('cta.demo')}
+          </button>
+        </div>
+      </div>
+
+      {/* Floating Contact Button */}
+      <button
+        onClick={() => setShowContactForm(true)}
+        className={`hidden lg:flex fixed bottom-24 ${isRTL ? 'left-8' : 'right-8'} z-40 items-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all`}
+        aria-label={t('contact.floating')}
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+        </svg>
+        <span>{t('contact.floating')}</span>
+      </button>
+
+      {/* Contact Form Modal */}
+      {showContactForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl p-6">
+            <button
+              onClick={() => setShowContactForm(false)}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors text-gray-500"
+              aria-label={t('videoModal.close')}
+            >
+              <Icons.X />
+            </button>
+
+            <h3 className="text-xl font-bold text-gray-900 mb-2">{t('contact.title')}</h3>
+            <p className="text-gray-600 mb-6">{t('contact.subtitle')}</p>
+
+            <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setShowContactForm(false); }}>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('contact.name')}</label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('contact.email')}</label>
+                <input
+                  type="email"
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('contact.message')}</label>
+                <textarea
+                  rows={4}
+                  className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all"
+              >
+                {t('contact.submit')}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Cookie Consent Banner */}
+      {showCookieConsent && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 lg:bottom-4 lg:left-4 lg:right-auto lg:max-w-md bg-white border border-gray-200 rounded-t-2xl lg:rounded-2xl shadow-2xl p-4 lg:p-6 animate-slideUp">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h4 className="font-semibold text-gray-900 mb-1">{t('cookie.title')}</h4>
+              <p className="text-sm text-gray-600 mb-4">{t('cookie.description')}</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={acceptCookies}
+                  className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  {t('cookie.accept')}
+                </button>
+                <button
+                  onClick={() => setShowCookieConsent(false)}
+                  className="px-4 py-2 text-gray-600 text-sm font-medium hover:text-gray-900 transition-colors"
+                >
+                  {t('cookie.decline')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Animations Style */}
+      <style jsx global>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(2rem);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fadeInUp {
+          animation: fadeInUp 0.6s ease-out forwards;
+        }
+        .animate-fadeIn {
+          animation: fadeIn 0.5s ease-out forwards;
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(100%);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-slideUp {
+          animation: slideUp 0.4s ease-out forwards;
+        }
+        @keyframes blink {
+          0%, 50% { opacity: 1; }
+          51%, 100% { opacity: 0; }
+        }
+        .animate-blink {
+          animation: blink 1s step-end infinite;
+        }
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
+        .animate-pulse-slow {
+          animation: pulse-slow 3s ease-in-out infinite;
+        }
+        @keyframes gradient-x {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .animate-gradient-x {
+          animation: gradient-x 3s ease infinite;
+        }
+        @keyframes gradient {
+          0% { background-position: 0% 50%; }
+          100% { background-position: 100% 50%; }
+        }
+        .animate-gradient {
+          background-size: 200% auto;
+          animation: gradient 2s linear infinite alternate;
+        }
+        @keyframes bounce-slow {
+          0%, 100% { transform: translateX(-50%) translateY(0); }
+          50% { transform: translateX(-50%) translateY(-10px); }
+        }
+        .animate-bounce-slow {
+          animation: bounce-slow 2s ease-in-out infinite;
+        }
+        @keyframes scroll-down {
+          0% { transform: translateY(0); opacity: 1; }
+          50% { transform: translateY(6px); opacity: 0.5; }
+          100% { transform: translateY(0); opacity: 1; }
+        }
+        .animate-scroll-down {
+          animation: scroll-down 1.5s ease-in-out infinite;
+        }
+      `}</style>
     </div>
   );
 }

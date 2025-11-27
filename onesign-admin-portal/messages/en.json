@@ -6,7 +6,8 @@
       "pricing": "Pricing",
       "docs": "Documentation",
       "login": "Login",
-      "getStarted": "Get Started"
+      "getStarted": "Get Started",
+      "howItWorks": "How It Works"
     },
     "hero": {
       "badge": "Enterprise Identity Management",
@@ -15,7 +16,8 @@
       "subtitle": "OneSign is a comprehensive enterprise IAM platform that protects your organization with advanced authentication, access control, and security governance.",
       "cta": "Start Free Trial",
       "secondaryCta": "Watch Demo",
-      "trustedBy": "Trusted by leading organizations"
+      "trustedBy": "Trusted by leading organizations",
+      "scrollToExplore": "Scroll to explore"
     },
     "features": {
       "title": "Powerful Features",
@@ -131,9 +133,100 @@
       "cta": "Get Started",
       "contact": "Contact Sales"
     },
+    "trustedBy": {
+      "title": "Trusted by leading enterprises worldwide"
+    },
+    "preview": {
+      "title": "Powerful Dashboard at Your Fingertips",
+      "subtitle": "Get complete visibility into your identity and access management with our intuitive dashboard",
+      "metrics": {
+        "users": "Active Users",
+        "logins": "Daily Logins",
+        "threats": "Threats Blocked",
+        "uptime": "System Uptime"
+      },
+      "chart": {
+        "title": "Authentication Activity"
+      },
+      "activity": {
+        "title": "Recent Activity"
+      }
+    },
     "testimonials": {
       "title": "Trusted by Security Leaders",
-      "subtitle": "See what our customers say about OneSign"
+      "subtitle": "See what our customers say about OneSign",
+      "testimonial1": {
+        "name": "Sarah Johnson",
+        "quote": "OneSign transformed our identity management. We reduced security incidents by 80% and our IT team can now focus on strategic initiatives instead of password resets."
+      },
+      "testimonial2": {
+        "name": "Michael Chen",
+        "quote": "The adaptive security features are incredible. OneSign detected and prevented a sophisticated phishing attack that would have compromised our entire finance department."
+      },
+      "testimonial3": {
+        "name": "Emma Williams",
+        "quote": "Implementing OneSign was seamless. The HIPAA compliance features saved us months of work, and the support team was exceptional throughout the process."
+      }
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "subtitle": "Get started with OneSign in four simple steps",
+      "step1": {
+        "title": "Sign Up",
+        "description": "Create your account in minutes with no credit card required"
+      },
+      "step2": {
+        "title": "Connect Apps",
+        "description": "Integrate your applications using our pre-built connectors or APIs"
+      },
+      "step3": {
+        "title": "Configure Policies",
+        "description": "Set up authentication rules, access policies, and security controls"
+      },
+      "step4": {
+        "title": "Go Live",
+        "description": "Deploy to your users and monitor everything from the dashboard"
+      }
+    },
+    "integrations": {
+      "title": "Seamless Integrations",
+      "subtitle": "Connect with your favorite tools and platforms",
+      "more": "And 100+ more integrations available",
+      "viewAll": "View all integrations"
+    },
+    "certifications": {
+      "title": "Enterprise-Grade Security & Compliance",
+      "subtitle": "We take security seriously. OneSign meets the highest industry standards.",
+      "soc2": "Certified",
+      "iso27001": "Certified",
+      "gdpr": "Compliant",
+      "hipaa": "Compliant"
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Everything you need to know about OneSign",
+      "moreQuestions": "Still have questions?",
+      "contactSupport": "Contact our support team",
+      "faq1": {
+        "question": "How long does it take to implement OneSign?",
+        "answer": "Most organizations can complete basic implementation within 1-2 weeks. Our guided setup wizard and comprehensive documentation make the process straightforward. For enterprise deployments with complex requirements, our professional services team provides hands-on assistance."
+      },
+      "faq2": {
+        "question": "Is OneSign compliant with industry regulations?",
+        "answer": "Yes, OneSign is designed with compliance in mind. We support GDPR, SOC2 Type II, HIPAA, ISO 27001, and PCI DSS requirements out of the box. Our audit logging and reporting features make compliance verification simple."
+      },
+      "faq3": {
+        "question": "Can OneSign integrate with our existing systems?",
+        "answer": "Absolutely. OneSign integrates with 100+ enterprise applications including Microsoft 365, Google Workspace, Salesforce, AWS, Azure, and more. We support SAML 2.0, OIDC, OAuth 2.0, and SCIM protocols for seamless integration."
+      },
+      "faq4": {
+        "question": "What authentication methods does OneSign support?",
+        "answer": "OneSign supports a wide range of authentication methods including passwords, TOTP authenticator apps, SMS and email OTP, push notifications, FIDO2 security keys, biometric authentication, and smart cards. You can configure different requirements based on user roles and risk levels."
+      },
+      "faq5": {
+        "question": "How does OneSign handle data security?",
+        "answer": "Security is our top priority. All data is encrypted at rest (AES-256) and in transit (TLS 1.3). We use zero-knowledge architecture where possible, employ strict access controls, and undergo regular third-party security audits. Your data is hosted in SOC2 certified data centers."
+      }
     },
     "cta": {
       "title": "Ready to Secure Your Organization?",
@@ -163,7 +256,33 @@
       "terms": "Terms of Service",
       "security": "Security",
       "compliance": "Compliance",
-      "copyright": "All rights reserved."
+      "copyright": "All rights reserved.",
+      "newsletter": "Subscribe to our newsletter",
+      "emailPlaceholder": "Enter your email",
+      "subscribe": "Subscribe",
+      "subscribed": "Thanks for subscribing!"
+    },
+    "videoModal": {
+      "title": "OneSign Platform Demo",
+      "placeholder": "Demo Video Coming Soon",
+      "description": "Our product demo video is being prepared. In the meantime, start your free trial to explore all features.",
+      "close": "Close",
+      "getStarted": "Start Free Trial"
+    },
+    "cookie": {
+      "title": "We use cookies",
+      "description": "We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies.",
+      "accept": "Accept",
+      "decline": "Decline"
+    },
+    "contact": {
+      "floating": "Contact Us",
+      "title": "Get in Touch",
+      "subtitle": "Fill out the form below and we'll get back to you shortly.",
+      "name": "Your Name",
+      "email": "Email Address",
+      "message": "Your Message",
+      "submit": "Send Message"
     }
   },
   "common": {
