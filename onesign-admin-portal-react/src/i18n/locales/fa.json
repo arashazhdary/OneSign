@@ -6635,5 +6635,45 @@
     "currentPassword": "رمز عبور فعلی",
     "newPassword": "رمز عبور جدید",
     "confirmPassword": "تأیید رمز عبور"
+  },
+  "additionalLabels": {
+    "createdBy": "ایجاد شده توسط:",
+    "selectAtLeastOneEvent": "حداقل یک رویداد انتخاب کنید",
+    "activeSessionsWillBeTerminated": "جلسات فعال با نسخه لغو شده خاتمه خواهند یافت"
+  },
+  "entityLabels": {
+    "user": "کاربر",
+    "users": "کاربران",
+    "role": "نقش",
+    "roles": "نقش‌ها",
+    "permission": "مجوز",
+    "permissions": "مجوزها",
+    "group": "گروه",
+    "groups": "گروه‌ها",
+    "tenant": "مستأجر",
+    "tenants": "مستأجران",
+    "application": "برنامه",
+    "applications": "برنامه‌ها",
+    "scope": "محدوده",
+    "scopes": "محدوده‌ها",
+    "policy": "سیاست",
+    "policies": "سیاست‌ها",
+    "session": "جلسه",
+    "sessions": "جلسات",
+    "token": "توکن",
+    "tokens": "توکن‌ها",
+    "key": "کلید",
+    "keys": "کلیدها",
+    "secret": "کلید محرمانه",
+    "secrets": "کلیدهای محرمانه",
+    "certificate": "گواهی",
+    "certificates": "گواهی‌ها"
+  },
+  "featureFlags": {
+    "enabled": "فعال",
+    "disabled": "غیرفعال",
+    "percentage": "درصد",
+    "userTargeting": "هدف‌گیری کاربر",
+    "rollout": "انتشار تدریجی"
   }
 }

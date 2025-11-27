@@ -6636,5 +6636,45 @@
     "currentPassword": "Current Password",
     "newPassword": "New Password",
     "confirmPassword": "Confirm Password"
+  },
+  "additionalLabels": {
+    "createdBy": "Created by:",
+    "selectAtLeastOneEvent": "Select at least one event",
+    "activeSessionsWillBeTerminated": "Active sessions using the revoked version will be terminated"
+  },
+  "entityLabels": {
+    "user": "User",
+    "users": "Users",
+    "role": "Role",
+    "roles": "Roles",
+    "permission": "Permission",
+    "permissions": "Permissions",
+    "group": "Group",
+    "groups": "Groups",
+    "tenant": "Tenant",
+    "tenants": "Tenants",
+    "application": "Application",
+    "applications": "Applications",
+    "scope": "Scope",
+    "scopes": "Scopes",
+    "policy": "Policy",
+    "policies": "Policies",
+    "session": "Session",
+    "sessions": "Sessions",
+    "token": "Token",
+    "tokens": "Tokens",
+    "key": "Key",
+    "keys": "Keys",
+    "secret": "Secret",
+    "secrets": "Secrets",
+    "certificate": "Certificate",
+    "certificates": "Certificates"
+  },
+  "featureFlags": {
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "percentage": "Percentage",
+    "userTargeting": "User Targeting",
+    "rollout": "Rollout"
   }
 }
