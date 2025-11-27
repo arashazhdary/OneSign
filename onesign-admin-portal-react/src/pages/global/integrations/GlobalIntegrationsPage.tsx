@@ -234,8 +234,8 @@ export default function GlobalIntegrationsPage() {
 
     try {
       const data = await globalService.getGlobalIntegrations();
-      setIntegrations(data?.integrations || mockIntegrations);
-      setWebhooks(data?.webhooks || mockWebhooks);
+      setIntegrations((data as any)?.integrations || mockIntegrations);
+      setWebhooks((data as any)?.webhooks || mockWebhooks);
     } catch (err) {
       console.error(err);
       setIntegrations(mockIntegrations);

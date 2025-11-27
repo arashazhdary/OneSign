@@ -106,7 +106,7 @@ export default function GlobalEnvironmentsPage() {
     setError('');
     setSuccess('');
     try {
-      await globalService.bootstrapEnvironment(bootstrapConfig);
+      await globalService.bootstrapEnvironment(bootstrapConfig as any);
       setSuccess('Environment bootstrapped successfully');
       setShowBootstrapModal(false);
       setBootstrapConfig({ name: '', type: 'Development', region: '', version: '' });

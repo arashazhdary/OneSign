@@ -585,11 +585,6 @@ export default function GlobalSecurityPage() {
       render: (threat) => (
         <StatusBadge
           status={threat.category}
-          color={
-            threat.category === 'Brute Force' ? 'red' :
-            threat.category === 'Data Exfiltration' ? 'orange' :
-            threat.category === 'Privilege Escalation' ? 'purple' : 'blue'
-          }
         />
       ),
     },
@@ -599,11 +594,6 @@ export default function GlobalSecurityPage() {
       render: (threat) => (
         <StatusBadge
           status={threat.severity}
-          color={
-            threat.severity === 'Critical' ? 'red' :
-            threat.severity === 'High' ? 'orange' :
-            threat.severity === 'Medium' ? 'yellow' : 'green'
-          }
         />
       ),
     },
@@ -620,7 +610,6 @@ export default function GlobalSecurityPage() {
       render: (threat) => (
         <StatusBadge
           status={threat.enabled ? 'Enabled' : 'Disabled'}
-          color={threat.enabled ? 'green' : 'gray'}
         />
       ),
     },
@@ -641,7 +630,7 @@ export default function GlobalSecurityPage() {
       key: 'type',
       label: 'Type',
       render: (framework) => (
-        <StatusBadge status={framework.type} color="blue" />
+        <StatusBadge status={framework.type} />
       ),
     },
     {
@@ -673,10 +662,6 @@ export default function GlobalSecurityPage() {
       render: (framework) => (
         <StatusBadge
           status={framework.status}
-          color={
-            framework.status === 'Compliant' ? 'green' :
-            framework.status === 'Non-Compliant' ? 'red' : 'yellow'
-          }
         />
       ),
     },
@@ -798,10 +783,6 @@ export default function GlobalSecurityPage() {
                     </div>
                     <StatusBadge
                       status={policy.severity}
-                      color={
-                        policy.severity === 'Critical' ? 'red' :
-                        policy.severity === 'High' ? 'orange' : 'yellow'
-                      }
                     />
                   </div>
                 ))}
@@ -817,7 +798,7 @@ export default function GlobalSecurityPage() {
                       <div className="font-medium text-sm">{threat.name}</div>
                       <div className="text-xs text-gray-500">{threat.detections} detections</div>
                     </div>
-                    <StatusBadge status={threat.category} color="red" />
+                    <StatusBadge status={threat.category} />
                   </div>
                 ))}
               </div>
