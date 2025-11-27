@@ -29,24 +29,6 @@ interface WebhookDelivery {
   error?: string;
 }
 
-  useEffect(() => {
-    fetchWebhooks();
-  }, []);
-
-  const fetchWebhooks = async () => {
-    try {
-      const tenantId = getTenantId();
-      const data = await tenantService.getWebhooks(tenantId);
-      setWebhooks(data);
-    } catch (error) {
-      console.error('Failed to fetch webhooks:', error);
-      // Fallback to mock data if API fails
-      setWebhooks(mockWebhooksFallback);
-    } finally {
-      setLoading(false);
-    }
-  };
-
 const mockWebhooksFallback: Webhook[] = [
   {
     id: '1',
