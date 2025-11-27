@@ -6,7 +6,8 @@
       "pricing": "Pricing",
       "docs": "Documentation",
       "login": "Login",
-      "getStarted": "Get Started"
+      "getStarted": "Get Started",
+      "howItWorks": "How It Works"
     },
     "hero": {
       "badge": "Enterprise Identity Management",
@@ -165,6 +166,40 @@
         "name": "Emma Williams",
         "quote": "Implementing OneSign was seamless. The HIPAA compliance features saved us months of work, and the support team was exceptional throughout the process."
       }
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "subtitle": "Get started with OneSign in four simple steps",
+      "step1": {
+        "title": "Sign Up",
+        "description": "Create your account in minutes with no credit card required"
+      },
+      "step2": {
+        "title": "Connect Apps",
+        "description": "Integrate your applications using our pre-built connectors or APIs"
+      },
+      "step3": {
+        "title": "Configure Policies",
+        "description": "Set up authentication rules, access policies, and security controls"
+      },
+      "step4": {
+        "title": "Go Live",
+        "description": "Deploy to your users and monitor everything from the dashboard"
+      }
+    },
+    "integrations": {
+      "title": "Seamless Integrations",
+      "subtitle": "Connect with your favorite tools and platforms",
+      "more": "And 100+ more integrations available",
+      "viewAll": "View all integrations"
+    },
+    "certifications": {
+      "title": "Enterprise-Grade Security & Compliance",
+      "subtitle": "We take security seriously. OneSign meets the highest industry standards.",
+      "soc2": "Certified",
+      "iso27001": "Certified",
+      "gdpr": "Compliant",
+      "hipaa": "Compliant"
     },
     "faq": {
       "title": "Frequently Asked Questions",
