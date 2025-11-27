@@ -77,7 +77,14 @@ export default function GlobalAutomationPage() {
     try {
       await createGlobalTemplate({
         userId,
-        ...newTemplate,
+        name: newTemplate.name,
+        description: newTemplate.description,
+        severity: newTemplate.severity,
+        tenantCanDisable: newTemplate.tenantCanDisable,
+        tenantCanOverrideConditions: newTemplate.tenantCanOverrideConditions,
+        triggers: newTemplate.triggers.map(t => ({ type: t.eventType, config: { sourceModule: t.sourceModule } })),
+        conditions: newTemplate.conditions,
+        actions: newTemplate.actions,
       });
       setSuccess(t('automation.workflowCreated'));
       setShowCreateModal(false);

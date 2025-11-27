@@ -109,7 +109,22 @@ export default function GlobalSecurityPage() {
       ]);
     } catch (err) {
       console.error('Error fetching data:', err);
-      loadMockData();
+      // Load mock data on error
+      setPolicies([
+        {
+          id: '1',
+          name: 'Multi-Factor Authentication Required',
+          description: 'Enforce MFA for all privileged accounts across all tenants',
+          type: 'Security',
+          severity: 'Critical',
+          status: 'Active',
+          scope: 'Global',
+          appliedTenants: 145,
+          violations: 3,
+          createdAt: '2024-01-15T10:00:00Z',
+          updatedAt: '2024-11-20T14:30:00Z',
+        },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -117,7 +132,7 @@ export default function GlobalSecurityPage() {
 
   const fetchPolicies = async () => {
     try {
-      const data = await securityService.getPolicies();
+      const data = await securityService.getSecurityPolicies();
       setPolicies(data as any);
     } catch (err) {
       console.error('Error fetching policies:', err);

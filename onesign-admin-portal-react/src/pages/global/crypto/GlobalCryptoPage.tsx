@@ -70,7 +70,7 @@ export default function GlobalCryptoPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await globalService.getCryptoKeysets();
+      const data = await globalService.getKeySets();
       setKeySets(data.items || data || []);
     } catch (err) {
       setError(t('common.error'));
@@ -82,7 +82,7 @@ export default function GlobalCryptoPage() {
   const getKeySet = async (id: string) => {
     setError('');
     try {
-      const data = await globalService.getCryptoKeyset(id);
+      const data = await globalService.getKeySet(id);
       return data;
     } catch (err) {
       setError(t('common.error'));
@@ -93,7 +93,7 @@ export default function GlobalCryptoPage() {
     setError('');
     setSuccess('');
     try {
-      await globalService.rolloverCryptoKey(id);
+      await globalService.rotateKeySet(id);
       setSuccess('Keyset rollover initiated successfully');
       fetchKeySets();
     } catch (err) {
@@ -105,7 +105,7 @@ export default function GlobalCryptoPage() {
     setError('');
     setSuccess('');
     try {
-      await globalService.revokeCryptoKeyVersion(versionId);
+      await globalService.revokeKeyVersion(versionId);
       setSuccess('Key version revoked successfully');
       fetchKeySets();
     } catch (err) {
@@ -117,7 +117,7 @@ export default function GlobalCryptoPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await globalService.getCryptoRotationPolicies();
+      const data = await globalService.getRotationPolicies();
       setRotationPolicies(data || []);
     } catch (err) {
       setError(t('common.error'));
@@ -136,7 +136,7 @@ export default function GlobalCryptoPage() {
     setError('');
     setSuccess('');
     try {
-      await globalService.createCryptoKeyset(newKeySet);
+      await globalService.createKeySet(newKeySet);
       setSuccess('Key set created successfully');
       setShowCreateKeySetModal(false);
       setNewKeySet({ name: '', algorithm: 'RSA', keySize: 2048, purpose: '' });
@@ -157,7 +157,7 @@ export default function GlobalCryptoPage() {
     setError('');
     setSuccess('');
     try {
-      await globalService.rotateCryptoKey(keySetId);
+      await globalService.rotateKeySet(keySetId);
       setSuccess('Key rotation started successfully');
       fetchKeySets();
     } catch (err) {
@@ -177,7 +177,7 @@ export default function GlobalCryptoPage() {
     setError('');
     setSuccess('');
     try {
-      await globalService.updateCryptoRotationPolicy(newPolicy);
+      await globalService.updateRotationPolicy(newPolicy);
       setSuccess('Rotation policy updated successfully');
       setShowCreatePolicyModal(false);
       setNewPolicy({
