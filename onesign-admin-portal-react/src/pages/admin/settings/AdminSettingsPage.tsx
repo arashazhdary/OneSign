@@ -62,6 +62,7 @@ interface LicenseInfo {
 }
 
 export default function AdminSettingsPage() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>('platform');
   const [error, setError] = useState('');

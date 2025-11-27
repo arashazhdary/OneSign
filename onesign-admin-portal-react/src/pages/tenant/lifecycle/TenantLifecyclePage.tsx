@@ -423,7 +423,7 @@ export default function TenantLifecyclePage() {
                   </p>
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">Next Sync
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">Next Sync</h3>
                   <p className="text-lg font-semibold">
                     {hrSyncStatus.nextSyncAt ? new Date(hrSyncStatus.nextSyncAt).toLocaleString(locale) : t('common.notScheduled')}
                   </p>
@@ -545,7 +545,7 @@ export default function TenantLifecyclePage() {
       {showPackageModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-2xl w-full">
-            <h2 className="text-xl font-bold mb-4">{t('common.create')} Access Package
+            <h2 className="text-xl font-bold mb-4">{t('common.create')} Access Package</h2>
             <form onSubmit={handleCreateAccessPackage}>
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-2">{t('common.name')}</label>
@@ -618,7 +618,7 @@ export default function TenantLifecyclePage() {
       {showPolicyModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-2xl w-full">
-            <h2 className="text-xl font-bold mb-4">{t('common.create')} Lifecycle Policy
+            <h2 className="text-xl font-bold mb-4">{t('common.create')} Lifecycle Policy</h2>
             <form onSubmit={handleCreateLifecyclePolicy}>
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-2">{t('common.name')}</label>
@@ -645,7 +645,7 @@ export default function TenantLifecyclePage() {
                 </select>
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('common.actions')} (comma-separated)
+                <label className="block text-sm font-medium mb-2">{t('common.actions')} (comma-separated)</label>
                 <input
                   type="text"
                   className="w-full px-3 py-2 border rounded"

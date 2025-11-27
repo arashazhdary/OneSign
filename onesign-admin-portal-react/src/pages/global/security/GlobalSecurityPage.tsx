@@ -935,7 +935,7 @@ export default function GlobalSecurityPage() {
           resetPolicyForm();
           setError('');
         }}
-        title={t('common.create')} {t('common.policy')}
+        title={`${t('common.create')} ${t('common.policy')}`}
         size="lg"
       >
         <form onSubmit={handleCreatePolicy} className="space-y-4">

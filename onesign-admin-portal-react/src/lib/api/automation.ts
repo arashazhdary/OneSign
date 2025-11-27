@@ -541,9 +541,6 @@ export const automationService = {
   },
 };
 
-// Export types for use in pages
-export type AutomationWorkflowDto = WorkflowDto;
-
 // Export constants
 export const EVENT_TYPES = [
   'UserCreated',
