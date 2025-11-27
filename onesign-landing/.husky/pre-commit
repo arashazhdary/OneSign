@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Run linter
+npm run lint:fix
+
+# Run tests
+npm run test:ci
+
+# Check for console.logs (warning only)
+if git diff --cached --name-only | grep -E '\.(ts|tsx|js|jsx)$' | xargs grep -n 'console\.log' 2>/dev/null; then
+  echo "⚠️  Warning: Found console.log statements"
+fi
+
+# Success message
+echo "✅ Pre-commit checks passed!"
