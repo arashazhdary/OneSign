@@ -6675,5 +6675,36 @@
     "percentage": "درصد",
     "userTargeting": "هدف‌گیری کاربر",
     "rollout": "انتشار تدریجی"
+  },
+  "fileUpload": {
+    "dropFilesHere": "فایل‌ها را اینجا رها کنید",
+    "dropFilesHereOrClick": "فایل‌ها را اینجا رها کنید یا کلیک کنید برای مرور",
+    "selectFile": "انتخاب فایل",
+    "selectFiles": "انتخاب فایل‌ها",
+    "browseFiles": "مرور فایل‌ها",
+    "uploadFile": "آپلود فایل",
+    "uploadFiles": "آپلود فایل‌ها",
+    "dragAndDrop": "کشیدن و رها کردن",
+    "maxFileSize": "حداکثر اندازه فایل:",
+    "allowedFileTypes": "انواع فایل مجاز:",
+    "removeFile": "حذف فایل"
+  },
+  "statusVariants": {
+    "healthy": "سالم",
+    "warning": "هشدار",
+    "critical": "بحرانی",
+    "error": "خطا",
+    "success": "موفق",
+    "info": "اطلاعات",
+    "pending": "در انتظار",
+    "active": "فعال",
+    "inactive": "غیرفعال",
+    "compliant": "منطبق",
+    "nonCompliant": "نامنطبق"
+  },
+  "httpHeaders": {
+    "accept": "پذیرش:",
+    "contentType": "نوع محتوا:",
+    "authorization": "احراز هویت:"
   }
 }

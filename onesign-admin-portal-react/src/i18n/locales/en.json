@@ -6676,5 +6676,36 @@
     "percentage": "Percentage",
     "userTargeting": "User Targeting",
     "rollout": "Rollout"
+  },
+  "fileUpload": {
+    "dropFilesHere": "Drop files here",
+    "dropFilesHereOrClick": "Drop files here or click to browse",
+    "selectFile": "Select file",
+    "selectFiles": "Select files",
+    "browseFiles": "Browse files",
+    "uploadFile": "Upload file",
+    "uploadFiles": "Upload files",
+    "dragAndDrop": "Drag and drop",
+    "maxFileSize": "Max file size:",
+    "allowedFileTypes": "Allowed file types:",
+    "removeFile": "Remove file"
+  },
+  "statusVariants": {
+    "healthy": "Healthy",
+    "warning": "Warning",
+    "critical": "Critical",
+    "error": "Error",
+    "success": "Success",
+    "info": "Info",
+    "pending": "Pending",
+    "active": "Active",
+    "inactive": "Inactive",
+    "compliant": "Compliant",
+    "nonCompliant": "Non-compliant"
+  },
+  "httpHeaders": {
+    "accept": "Accept:",
+    "contentType": "Content-Type:",
+    "authorization": "Authorization:"
   }
 }
