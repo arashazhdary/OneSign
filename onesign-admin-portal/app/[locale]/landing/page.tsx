@@ -162,6 +162,8 @@ export default function LandingPage() {
   const [showCookieConsent, setShowCookieConsent] = useState(true);
   const [showContactForm, setShowContactForm] = useState(false);
   const [parallaxOffset, setParallaxOffset] = useState(0);
+  const [typedText, setTypedText] = useState('');
+  const [isTypingComplete, setIsTypingComplete] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -206,16 +208,37 @@ export default function LandingPage() {
     return () => observer.disconnect();
   }, []);
 
-  // Keyboard support for modal
+  // Keyboard support for modals
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && showVideoModal) {
-        setShowVideoModal(false);
+      if (e.key === 'Escape') {
+        if (showVideoModal) setShowVideoModal(false);
+        if (showContactForm) setShowContactForm(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [showVideoModal]);
+  }, [showVideoModal, showContactForm]);
+
+  // Typing animation effect
+  useEffect(() => {
+    const fullText = t('hero.title');
+    let currentIndex = 0;
+    setTypedText('');
+    setIsTypingComplete(false);
+
+    const typingInterval = setInterval(() => {
+      if (currentIndex < fullText.length) {
+        setTypedText(fullText.slice(0, currentIndex + 1));
+        currentIndex++;
+      } else {
+        setIsTypingComplete(true);
+        clearInterval(typingInterval);
+      }
+    }, 50);
+
+    return () => clearInterval(typingInterval);
+  }, [t]);
 
   // Auto-rotate testimonials
   useEffect(() => {
@@ -533,15 +556,18 @@ export default function LandingPage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-4xl mx-auto">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-6 animate-fadeIn">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-medium mb-6 animate-fadeIn animate-pulse-slow">
               <Icons.Shield />
               {t('hero.badge')}
             </div>
 
-            {/* Title */}
+            {/* Title with Typing Effect */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
-              {t('hero.title')}{' '}
-              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <span className="inline-block">
+                {typedText || t('hero.title')}
+                {!isTypingComplete && <span className="animate-blink">|</span>}
+              </span>{' '}
+              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent animate-gradient">
                 {t('hero.titleHighlight')}
               </span>
             </h1>
@@ -555,7 +581,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
               <Link
                 href={`/${locale}/login`}
-                className="group w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 flex items-center justify-center gap-2"
+                className="group w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-[length:200%_auto] animate-gradient-x text-white font-semibold rounded-xl transition-all shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 flex items-center justify-center gap-2 hover:scale-105"
               >
                 {t('hero.cta')}
                 <Icons.ArrowRight />
@@ -698,17 +724,18 @@ export default function LandingPage() {
 
           {/* Features Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {features.map((feature) => {
+            {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
                 <div
                   key={feature.key}
-                  className="group p-6 bg-white rounded-2xl border border-gray-100 hover:border-blue-200 transition-all hover:shadow-xl hover:shadow-blue-500/10 cursor-pointer"
+                  className="group p-6 bg-white rounded-2xl border border-gray-100 hover:border-blue-200 transition-all hover:shadow-xl hover:shadow-blue-500/10 cursor-pointer scroll-animate opacity-0 translate-y-8"
+                  style={{ transitionDelay: `${index * 50}ms` }}
                 >
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-transform">
                     <Icon />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
                     {t(`features.${feature.key}.title`)}
                   </h3>
                   <p className="text-gray-600 text-sm leading-relaxed">
@@ -1519,6 +1546,36 @@ export default function LandingPage() {
         }
         .animate-slideUp {
           animation: slideUp 0.4s ease-out forwards;
+        }
+        @keyframes blink {
+          0%, 50% { opacity: 1; }
+          51%, 100% { opacity: 0; }
+        }
+        .animate-blink {
+          animation: blink 1s step-end infinite;
+        }
+        @keyframes pulse-slow {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
+        .animate-pulse-slow {
+          animation: pulse-slow 3s ease-in-out infinite;
+        }
+        @keyframes gradient-x {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        .animate-gradient-x {
+          animation: gradient-x 3s ease infinite;
+        }
+        @keyframes gradient {
+          0% { background-position: 0% 50%; }
+          100% { background-position: 100% 50%; }
+        }
+        .animate-gradient {
+          background-size: 200% auto;
+          animation: gradient 2s linear infinite alternate;
         }
       `}</style>
     </div>
