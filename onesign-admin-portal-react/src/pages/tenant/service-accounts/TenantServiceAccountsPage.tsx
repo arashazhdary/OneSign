@@ -124,8 +124,8 @@ export default function TenantServiceAccountsPage() {
             />
           </div>
           <div className="flex gap-4">
-            <ActionButton type="submit" fullWidth>Create</ActionButton>
-            <ActionButton type="button" variant="secondary" fullWidth onClick={() => setShowModal(false)}>
+            <ActionButton fullWidth>Create</ActionButton>
+            <ActionButton variant="secondary" fullWidth onClick={() => setShowModal(false)}>
               Cancel
             </ActionButton>
           </div>

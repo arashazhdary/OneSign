@@ -426,8 +426,8 @@ export default function TenantPrivilegedAccessPage() {
             />
           </div>
           <div className="flex gap-4">
-            <ActionButton type="submit" fullWidth>Request</ActionButton>
-            <ActionButton type="button" variant="secondary" fullWidth onClick={() => setShowRequestModal(false)}>
+            <ActionButton fullWidth>Request</ActionButton>
+            <ActionButton variant="secondary" fullWidth onClick={() => setShowRequestModal(false)}>
               Cancel
             </ActionButton>
           </div>

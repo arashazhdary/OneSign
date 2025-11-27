@@ -329,14 +329,7 @@ export default function TenantRolesDetailPage() {
 
   return (
     <div className="p-8">
-      <Breadcrumbs
-        customLabels={{
-          '/tenant': 'Tenant',
-          '/tenant/roles': 'Roles',
-          [`/tenant/roles/${id}`]: role.name,
-        }}
-        className="mb-6"
-      />
+      <Breadcrumbs className="mb-6" />
 
       <div className="flex justify-between items-center mb-6">
         <div>

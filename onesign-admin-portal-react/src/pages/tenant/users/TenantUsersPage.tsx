@@ -1,13 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '@/hooks/useLocale';
-import { getTenantId, setTenantId } from '@/lib/tenant-context';
+import { getTenantId } from '@/lib/tenant-context';
 import { usersService } from '@/lib/api/services/users.service';
 import { tenantService } from '@/lib/api/services/tenant.service';
-import type { TenantUserDto, CurrentUserScopeDto } from '@/lib/api/types/users';
 import { Helmet } from 'react-helmet-async';
-
-type TenantUser = TenantUserDto;
 
 interface OrgUnitTreeNode {
   id: string;
