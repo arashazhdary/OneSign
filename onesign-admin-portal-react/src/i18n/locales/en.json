@@ -5995,5 +5995,88 @@
     "of": "{current} of {total}",
     "showing": "Showing {start} to {end} of {total}",
     "page": "Page {current} of {total}"
+  },
+  "complianceHeadings": {
+    "overallComplianceScore": "Overall Compliance Score",
+    "generateComplianceReport": "Generate Compliance Report",
+    "complianceScoreDashboard": "Compliance Score Dashboard",
+    "complianceStatusDistribution": "Compliance Status Distribution",
+    "complianceFrameworkReports": "Compliance Framework Reports"
+  },
+  "securityHeadings": {
+    "conditionalAccessPolicies": "Conditional Access Policies",
+    "recentPolicyViolations": "Recent Policy Violations",
+    "activeThreatDetections": "Active Threat Detections",
+    "globalSecurityPolicies": "Global Security Policies",
+    "threatDetectionRules": "Threat Detection Rules",
+    "securityAnalyticsDashboard": "Security Analytics Dashboard",
+    "riskScoreDistribution": "Risk Score Distribution",
+    "topRiskCategories": "Top Risk Categories",
+    "recentSecurityEvents": "Recent Security Events",
+    "suspiciousActivityDetected": "Suspicious Activity Detected"
+  },
+  "performanceHeadings": {
+    "databaseQueryTime": "Database Query Time",
+    "cacheHitRate": "Cache Hit Rate",
+    "slowQueriesLog": "Slow Queries Log",
+    "avgErrorRate": "Avg Error Rate"
+  },
+  "serviceAccountHeadings": {
+    "generateNewSecret": "Generate New Secret",
+    "yourNewSecret": "Your New Secret",
+    "deleteServiceAccount": "Delete Service Account"
+  },
+  "exportHeadings": {
+    "dataExportManagement": "Data Export Management"
+  },
+  "insightHeadings": {
+    "userBehaviorAnalysis": "User Behavior Analysis",
+    "saveCustomView": "Save Custom View",
+    "avgDailyLogins": "Avg Daily Logins",
+    "highRiskUsers": "High Risk Users",
+    "createReportSubscription": "Create Report Subscription",
+    "editReportSubscription": "Edit Report Subscription"
+  },
+  "applicationHeadings": {
+    "organizationalUnitAssignments": "Organizational Unit Assignments",
+    "avgSessionDuration": "Avg Session Duration"
+  },
+  "domainHeadings": {
+    "addCustomDomain": "Add Custom Domain"
+  },
+  "automationHeadings": {
+    "tenantCanDisable": "Tenant Can Disable",
+    "createGlobalTemplate": "Create Global Template",
+    "stepExecutionFlow": "Step Execution Flow"
+  },
+  "roleHeadings": {
+    "roleNotFound": "Role Not Found"
+  },
+  "delegatedAdminHeadings": {
+    "deleteDelegatedAdmin": "Delete Delegated Admin"
+  },
+  "dataRetentionHeadings": {
+    "dataRetentionPolicies": "Data Retention Policies",
+    "dataStorageOverview": "Data Storage Overview",
+    "createRetentionPolicy": "Create Retention Policy"
+  },
+  "orgUnitHeadings": {
+    "orgUnitInformation": "Org Unit Information",
+    "parentOrgUnit": "Parent Org Unit"
+  },
+  "extensibilityHeadings": {
+    "availableEventTypes": "Available Event Types"
+  },
+  "notificationHeadings": {
+    "sendTestNotification": "Send Test Notification"
+  },
+  "sessionHeadings": {
+    "activeSessionsManagement": "Active Sessions Management"
+  },
+  "tokenHeadings": {
+    "createNewToken": "Create New Token"
+  },
+  "settingsHeadings": {
+    "allowNewRegistrations": "Allow New Registrations"
   }
 }

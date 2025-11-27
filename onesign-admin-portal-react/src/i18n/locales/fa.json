@@ -5994,5 +5994,88 @@
     "of": "{current} از {total}",
     "showing": "نمایش {start} تا {end} از {total}",
     "page": "صفحه {current} از {total}"
+  },
+  "complianceHeadings": {
+    "overallComplianceScore": "امتیاز انطباق کلی",
+    "generateComplianceReport": "تولید گزارش انطباق",
+    "complianceScoreDashboard": "داشبورد امتیاز انطباق",
+    "complianceStatusDistribution": "توزیع وضعیت انطباق",
+    "complianceFrameworkReports": "گزارش‌های چارچوب انطباق"
+  },
+  "securityHeadings": {
+    "conditionalAccessPolicies": "سیاست‌های دسترسی شرطی",
+    "recentPolicyViolations": "تخلفات اخیر سیاست",
+    "activeThreatDetections": "تشخیص‌های فعال تهدید",
+    "globalSecurityPolicies": "سیاست‌های امنیتی سراسری",
+    "threatDetectionRules": "قوانین تشخیص تهدید",
+    "securityAnalyticsDashboard": "داشبورد تحلیل امنیتی",
+    "riskScoreDistribution": "توزیع امتیاز ریسک",
+    "topRiskCategories": "دسته‌های ریسک برتر",
+    "recentSecurityEvents": "رویدادهای امنیتی اخیر",
+    "suspiciousActivityDetected": "فعالیت مشکوک شناسایی شد"
+  },
+  "performanceHeadings": {
+    "databaseQueryTime": "زمان پرس‌وجوی پایگاه داده",
+    "cacheHitRate": "نرخ برخورد کش",
+    "slowQueriesLog": "لاگ پرس‌وجوهای کند",
+    "avgErrorRate": "میانگین نرخ خطا"
+  },
+  "serviceAccountHeadings": {
+    "generateNewSecret": "تولید کلید محرمانه جدید",
+    "yourNewSecret": "کلید محرمانه جدید شما",
+    "deleteServiceAccount": "حذف حساب سرویس"
+  },
+  "exportHeadings": {
+    "dataExportManagement": "مدیریت صادرات داده"
+  },
+  "insightHeadings": {
+    "userBehaviorAnalysis": "تحلیل رفتار کاربر",
+    "saveCustomView": "ذخیره نمای سفارشی",
+    "avgDailyLogins": "میانگین ورودهای روزانه",
+    "highRiskUsers": "کاربران پرخطر",
+    "createReportSubscription": "ایجاد اشتراک گزارش",
+    "editReportSubscription": "ویرایش اشتراک گزارش"
+  },
+  "applicationHeadings": {
+    "organizationalUnitAssignments": "تخصیص‌های واحد سازمانی",
+    "avgSessionDuration": "میانگین مدت نشست"
+  },
+  "domainHeadings": {
+    "addCustomDomain": "افزودن دامنه سفارشی"
+  },
+  "automationHeadings": {
+    "tenantCanDisable": "مستأجر می‌تواند غیرفعال کند",
+    "createGlobalTemplate": "ایجاد الگوی سراسری",
+    "stepExecutionFlow": "جریان اجرای مرحله"
+  },
+  "roleHeadings": {
+    "roleNotFound": "نقش یافت نشد"
+  },
+  "delegatedAdminHeadings": {
+    "deleteDelegatedAdmin": "حذف ادمین تفویض شده"
+  },
+  "dataRetentionHeadings": {
+    "dataRetentionPolicies": "سیاست‌های نگهداری داده",
+    "dataStorageOverview": "بررسی اجمالی ذخیره‌سازی داده",
+    "createRetentionPolicy": "ایجاد سیاست نگهداری"
+  },
+  "orgUnitHeadings": {
+    "orgUnitInformation": "اطلاعات واحد سازمانی",
+    "parentOrgUnit": "واحد سازمانی والد"
+  },
+  "extensibilityHeadings": {
+    "availableEventTypes": "انواع رویداد موجود"
+  },
+  "notificationHeadings": {
+    "sendTestNotification": "ارسال اعلان آزمایشی"
+  },
+  "sessionHeadings": {
+    "activeSessionsManagement": "مدیریت نشست‌های فعال"
+  },
+  "tokenHeadings": {
+    "createNewToken": "ایجاد توکن جدید"
+  },
+  "settingsHeadings": {
+    "allowNewRegistrations": "اجازه ثبت‌نام‌های جدید"
   }
 }
