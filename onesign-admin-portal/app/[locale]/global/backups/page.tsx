@@ -40,6 +40,9 @@ export default function GlobalBackupsPage() {
   const [activeTab, setActiveTab] = useState<'backups' | 'schedules' | 'restore'>('backups');
   const [showCreate, setShowCreate] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
+  const [backupName, setBackupName] = useState('');
+  const [backupType, setBackupType] = useState<'full' | 'incremental'>('full');
+  const [retentionDays, setRetentionDays] = useState(90);
 
   useEffect(() => {
     fetchData();
@@ -147,20 +150,27 @@ export default function GlobalBackupsPage() {
 
   const handleCreateBackup = async () => {
     try {
-      // TODO: createGlobalBackup not implemented
-      // await (platformService as any).createGlobalBackup?.(...)
+      await platformService.createGlobalBackup({
+        name: backupName,
+        type: backupType,
+        retentionDays: retentionDays,
+      });
       setShowCreate(false);
+      setBackupName('');
+      setBackupType('full');
+      setRetentionDays(90);
+      alert('Backup created successfully!');
       fetchData();
     } catch (error) {
       console.error('Failed to create backup:', error);
+      alert('Failed to create backup. Check console for details.');
     }
   };
 
   const handleRestore = async (backupId: string) => {
     if (!confirm('This will restore the entire platform to this backup. Continue?')) return;
     try {
-      // TODO: restoreGlobalBackup not implemented
-      // await (platformService as any).restoreGlobalBackup?.(...)
+      await platformService.restoreGlobalBackup(backupId);
       alert('Restore initiated successfully!');
       fetchData();
     } catch (error) {
@@ -171,8 +181,15 @@ export default function GlobalBackupsPage() {
 
   const handleDownload = async (backupId: string) => {
     try {
-      // TODO: downloadBackup not implemented
-      // await (platformService as any).downloadBackup?.(...)
+      const blob = await platformService.downloadBackup(backupId);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `backup-${backupId}-${new Date().toISOString()}.tar.gz`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
       alert('Backup download started!');
     } catch (error) {
       console.error('Failed to download backup:', error);
@@ -489,12 +506,18 @@ export default function GlobalBackupsPage() {
                 <input
                   type="text"
                   placeholder="e.g., Pre-Migration Backup"
+                  value={backupName}
+                  onChange={(e) => setBackupName(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg p-2"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Backup Type</label>
-                <select className="w-full border border-gray-300 rounded-lg p-2">
+                <select
+                  value={backupType}
+                  onChange={(e) => setBackupType(e.target.value as 'full' | 'incremental')}
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                >
                   <option value="full">Full Backup</option>
                   <option value="incremental">Incremental Backup</option>
                 </select>
@@ -503,7 +526,8 @@ export default function GlobalBackupsPage() {
                 <label className="block text-sm font-medium mb-2">Retention Days</label>
                 <input
                   type="number"
-                  defaultValue={90}
+                  value={retentionDays}
+                  onChange={(e) => setRetentionDays(parseInt(e.target.value) || 90)}
                   className="w-full border border-gray-300 rounded-lg p-2"
                 />
               </div>

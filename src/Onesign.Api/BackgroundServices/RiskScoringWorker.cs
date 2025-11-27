@@ -230,6 +230,33 @@ public class RiskScoringWorker : BackgroundService
         List<string> riskFactors,
         CancellationToken cancellationToken)
     {
+        // Check if an open insight already exists for this user to avoid duplicates
+        var existingInsight = await dbContext.Insights
+            .FirstOrDefaultAsync(i => i.TenantId == tenantId &&
+                                     i.MessageKey == "insight.user.risk.elevated" &&
+                                     i.ScopeId == userId &&
+                                     i.Status == 0, // Open
+                                     cancellationToken);
+
+        if (existingInsight != null)
+        {
+            // Update existing insight with new data
+            existingInsight.Title = $"User risk score increased to {newScore}";
+            existingInsight.Severity = newScore >= CriticalRiskThreshold ? 2 : 1;
+            existingInsight.DataJson = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                UserId = userId,
+                NewScore = newScore,
+                PreviousScore = previousScore,
+                RiskFactors = riskFactors,
+                UpdatedAt = DateTime.UtcNow
+            });
+
+            _logger.LogInformation("Updated existing high-risk insight for user {UserId} with score {Score}",
+                userId, newScore);
+            return;
+        }
+
         var severity = newScore >= CriticalRiskThreshold ? 2 : 1; // 2 = High, 1 = Medium
 
         var insight = new Onesign.Modules.IdentityInsights.Infrastructure.EfCore.Entities.InsightEntity
@@ -256,7 +283,5 @@ public class RiskScoringWorker : BackgroundService
         dbContext.Insights.Add(insight);
 
         _logger.LogWarning("Generated high-risk insight for user {UserId} with score {Score}", userId, newScore);
-
-        await Task.CompletedTask;
     }
 }

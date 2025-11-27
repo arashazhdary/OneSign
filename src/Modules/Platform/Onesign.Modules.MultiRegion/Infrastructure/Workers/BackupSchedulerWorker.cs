@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Onesign.Modules.MultiRegion.Domain.Repositories;
 using Onesign.Modules.MultiRegion.Domain.Services;
 
 namespace Onesign.Modules.MultiRegion.Infrastructure.Workers;
@@ -7,14 +8,17 @@ namespace Onesign.Modules.MultiRegion.Infrastructure.Workers;
 public class BackupSchedulerWorker : BackgroundService
 {
     private readonly IBackupService _backupService;
+    private readonly ITenantBackupSetRepository _backupRepository;
     private readonly ILogger<BackupSchedulerWorker> _logger;
     private readonly TimeSpan _checkInterval = TimeSpan.FromMinutes(5);
 
     public BackupSchedulerWorker(
         IBackupService backupService,
+        ITenantBackupSetRepository backupRepository,
         ILogger<BackupSchedulerWorker> logger)
     {
         _backupService = backupService;
+        _backupRepository = backupRepository;
         _logger = logger;
     }
 
@@ -98,7 +102,31 @@ public class BackupSchedulerWorker : BackgroundService
 
     private async Task<IEnumerable<Guid>> GetTenantsWithScheduledBackupsAsync(CancellationToken cancellationToken)
     {
-        await Task.CompletedTask;
-        return new List<Guid>();
+        // In a production system, this would query a BackupScheduleRepository to get
+        // all tenants that have active backup schedules configured.
+        // For now, we'll query the backup repository to get tenants that have existing backups,
+        // as they are likely to have schedules configured.
+
+        try
+        {
+            // Get all backups and extract distinct tenant IDs
+            var allBackups = await _backupRepository.GetByStatusAsync(
+                Domain.Enums.BackupStatus.Completed,
+                cancellationToken);
+
+            var tenantIds = allBackups
+                .Select(b => b.TenantId)
+                .Distinct()
+                .ToList();
+
+            _logger.LogDebug("Found {Count} tenants with backup history", tenantIds.Count);
+
+            return tenantIds;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving tenants with scheduled backups");
+            return new List<Guid>();
+        }
     }
 }

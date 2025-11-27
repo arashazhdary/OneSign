@@ -11,7 +11,7 @@ namespace Onesign.Api.Controllers.Tenant;
 /// </summary>
 [Route("api/tenant/privacy")]
 [ApiController]
-public class PrivacyController : ControllerBase
+public class PrivacyController : TenantControllerBase
 {
     private readonly IMediator _mediator;
 
@@ -26,8 +26,7 @@ public class PrivacyController : ControllerBase
     [HttpGet("retention-policies")]
     public async Task<ActionResult> GetRetentionPolicies()
     {
-        // TODO: Get TenantId from context
-        var tenantId = Guid.Empty;
+        var tenantId = GetCurrentTenantId();
 
         var query = new GetRetentionPoliciesQuery { TenantId = tenantId };
         var result = await _mediator.Send(query);
@@ -42,10 +41,7 @@ public class PrivacyController : ControllerBase
         DataCategory category,
         [FromBody] UpdateRetentionPolicyRequest request)
     {
-        var tenantIdClaim = User.FindFirst("tenant_id")?.Value;
-        var tenantId = !string.IsNullOrEmpty(tenantIdClaim) && Guid.TryParse(tenantIdClaim, out var tid)
-            ? tid
-            : Guid.Empty;
+        var tenantId = GetCurrentTenantId();
 
         var command = new UpdateRetentionPolicyCommand
         {
@@ -71,8 +67,7 @@ public class PrivacyController : ControllerBase
     public async Task<ActionResult> GetDataRequests(
         [FromQuery] DataSubjectRequestStatus? status = null)
     {
-        // TODO: Get TenantId from context
-        var tenantId = Guid.Empty;
+        var tenantId = GetCurrentTenantId();
 
         var query = new GetDataSubjectRequestsQuery
         {
@@ -89,9 +84,8 @@ public class PrivacyController : ControllerBase
     [HttpPost("data-requests")]
     public async Task<ActionResult> CreateDataRequest([FromBody] CreateDataRequestRequest request)
     {
-        // TODO: Get TenantId and RequesterId from context
-        var tenantId = Guid.Empty;
-        var requesterId = Guid.Empty;
+        var tenantId = GetCurrentTenantId();
+        var requesterId = GetCurrentUserId();
 
         var command = new CreateDataSubjectRequestCommand
         {

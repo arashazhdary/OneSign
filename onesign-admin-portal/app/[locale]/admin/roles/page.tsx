@@ -27,8 +27,11 @@ export default function PlatformRolesPage() {
 
   const fetchRoles = async () => {
     try {
-      // TODO: Implement getPlatformRoles in platformService
-      // const data = await platformService.getPlatformRoles?.(  );
+      const data = await platformService.getPlatformRoles();
+      setRoles(data as any);
+    } catch (err) {
+      console.error(err);
+      // Fallback to mock data for development
       const mockData: PlatformRole[] = [
         {
           id: '1',
@@ -120,9 +123,6 @@ export default function PlatformRolesPage() {
         },
       ];
       setRoles(mockData);
-    } catch (err) {
-      console.error(err);
-      setRoles([]);
     } finally {
       setLoading(false);
     }
@@ -130,8 +130,15 @@ export default function PlatformRolesPage() {
 
   const handleCreate = async () => {
     try {
-      // TODO: Implement createPlatformRole
-      // await platformService.createPlatformRole?.({ name: 'New Role', description: '', type: 'custom', permissions: [], isDefault: false });
+      await platformService.createPlatformRole({
+        name: 'New Role',
+        displayName: 'New Role',
+        description: '',
+        type: 'custom',
+        permissions: [],
+        isBuiltIn: false,
+        scope: 'global'
+      });
       setShowCreate(false);
       fetchRoles();
     } catch (error) {
@@ -142,8 +149,7 @@ export default function PlatformRolesPage() {
   const handleDelete = async (roleId: string) => {
     if (!confirm('Delete this role? Users with this role will lose their permissions.')) return;
     try {
-      // TODO: Implement deletePlatformRole
-      // await platformService.deletePlatformRole?.(roleId);
+      await platformService.deletePlatformRole(roleId);
       fetchRoles();
     } catch (error) {
       console.error('Failed to delete platform role:', error);

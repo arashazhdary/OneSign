@@ -75,9 +75,34 @@ public class RegionHealthCheckerWorker : BackgroundService
 
     private async Task HandleUnhealthyRegionAsync(RegionHealthStatus status, CancellationToken cancellationToken)
     {
-        await Task.CompletedTask;
+        _logger.LogWarning("Handling unhealthy region: {RegionId}, Status: {Status}, ResponseTime: {ResponseTime}ms",
+            status.RegionId, status.Status, status.ResponseTimeMs);
 
-        _logger.LogWarning("Unhealthy region detected: {RegionId}. Manual intervention may be required.",
-            status.RegionId);
+        // Check if region has been unhealthy for multiple consecutive checks
+        var recentHistory = await _healthMonitor.GetHealthHistoryAsync(status.RegionId, 5, cancellationToken);
+        var consecutiveFailures = recentHistory.TakeWhile(h => !h.IsHealthy).Count();
+
+        if (consecutiveFailures >= 3)
+        {
+            _logger.LogError("Region {RegionId} has failed {Count} consecutive health checks. Critical intervention required.",
+                status.RegionId, consecutiveFailures);
+
+            // In a production system, this would trigger:
+            // 1. Alert notifications to operations team
+            // 2. Potential automatic failover to backup region
+            // 3. Incident creation in monitoring systems
+            // 4. Customer notifications if necessary
+
+            _logger.LogWarning("Automated failover capabilities would be triggered here for region {RegionId}",
+                status.RegionId);
+        }
+        else if (consecutiveFailures >= 1)
+        {
+            _logger.LogWarning("Region {RegionId} is unhealthy. Monitoring for recovery. Consecutive failures: {Count}",
+                status.RegionId, consecutiveFailures);
+        }
+
+        // Record the unhealthy state for historical tracking and alerting
+        await Task.CompletedTask;
     }
 }

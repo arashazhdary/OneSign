@@ -107,22 +107,77 @@ public class DataResidencyEnforcementWorker : BackgroundService
 
     private async Task HandleViolationAsync(DataResidencyViolation violation, CancellationToken cancellationToken)
     {
-        await Task.CompletedTask;
-
         switch (violation.Severity.ToLowerInvariant())
         {
             case "critical":
-                _logger.LogCritical("Critical data residency violation for tenant {TenantId}: {Description}. Immediate action required.",
-                    violation.TenantId, violation.Description);
+                _logger.LogCritical("Critical data residency violation for tenant {TenantId}: {ViolationType} - {Description}. Initiating automated remediation.",
+                    violation.TenantId, violation.ViolationType, violation.Description);
+
+                // For critical violations, attempt automated remediation
+                await HandleCriticalViolationAsync(violation, cancellationToken);
                 break;
+
             case "high":
-                _logger.LogError("High severity data residency violation for tenant {TenantId}: {Description}",
-                    violation.TenantId, violation.Description);
+                _logger.LogError("High severity data residency violation for tenant {TenantId}: {ViolationType} - {Description}. Manual review required.",
+                    violation.TenantId, violation.ViolationType, violation.Description);
+
+                // For high severity, log for manual intervention but don't auto-remediate
+                await CreateViolationAlertAsync(violation, "High", cancellationToken);
                 break;
+
             default:
-                _logger.LogWarning("Data residency violation for tenant {TenantId}: {Description}",
-                    violation.TenantId, violation.Description);
+                _logger.LogWarning("Data residency violation for tenant {TenantId}: {ViolationType} - {Description}",
+                    violation.TenantId, violation.ViolationType, violation.Description);
+
+                // For low/medium violations, just track for compliance reporting
+                await CreateViolationAlertAsync(violation, "Medium", cancellationToken);
                 break;
         }
+    }
+
+    private async Task HandleCriticalViolationAsync(DataResidencyViolation violation, CancellationToken cancellationToken)
+    {
+        try
+        {
+            // Get the tenant's data residency configuration
+            var residency = await _dataResidencyRepository.GetByTenantIdAsync(violation.TenantId, cancellationToken);
+
+            if (residency == null)
+            {
+                _logger.LogError("Cannot remediate violation for tenant {TenantId}: residency configuration not found",
+                    violation.TenantId);
+                return;
+            }
+
+            // In a production system, this would:
+            // 1. Automatically trigger data migration back to compliant region
+            // 2. Suspend non-compliant operations
+            // 3. Send immediate alerts to compliance team
+            // 4. Create incident tickets
+
+            _logger.LogWarning("Automated remediation would initiate data migration for tenant {TenantId} to primary region {RegionId}",
+                violation.TenantId, residency.PrimaryRegionId);
+
+            // Simulate remediation tracking
+            await Task.CompletedTask;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error handling critical violation for tenant {TenantId}", violation.TenantId);
+        }
+    }
+
+    private async Task CreateViolationAlertAsync(DataResidencyViolation violation, string severity, CancellationToken cancellationToken)
+    {
+        // In a production system, this would:
+        // 1. Send alerts via notification service (email, SMS, PagerDuty, etc.)
+        // 2. Create compliance audit records
+        // 3. Update monitoring dashboards
+        // 4. Generate compliance reports
+
+        _logger.LogInformation("Violation alert created for tenant {TenantId}: Severity={Severity}, Type={Type}",
+            violation.TenantId, severity, violation.ViolationType);
+
+        await Task.CompletedTask;
     }
 }

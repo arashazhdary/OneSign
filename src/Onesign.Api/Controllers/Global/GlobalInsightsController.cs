@@ -6,6 +6,7 @@ using Onesign.Modules.Insights.Application.Queries;
 using Onesign.Modules.Insights.Application.Services;
 using Onesign.Modules.Insights.Domain.Enums;
 using System.Security.Claims;
+using GetDashboardStatsQuery = Onesign.Modules.Insights.Application.Queries.GetDashboardStatsQuery;
 
 namespace Onesign.Api.Controllers.Global;
 
@@ -20,6 +21,26 @@ public class GlobalInsightsController : ControllerBase
     {
         _mediator = mediator;
         _exportService = exportService;
+    }
+
+    /// <summary>
+    /// Get dashboard statistics for admin portal
+    /// </summary>
+    [HttpGet("dashboard")]
+    public async Task<ActionResult<DashboardStatsDto>> GetDashboardStats(
+        [FromQuery] int trendDays = 7,
+        [FromQuery] int topTenantsCount = 5,
+        [FromQuery] int recentEventsCount = 10)
+    {
+        var query = new GetDashboardStatsQuery
+        {
+            TrendDays = Math.Min(trendDays, 30),
+            TopTenantsCount = Math.Min(topTenantsCount, 20),
+            RecentEventsCount = Math.Min(recentEventsCount, 50)
+        };
+
+        var result = await _mediator.Send(query);
+        return Ok(result);
     }
 
     /// <summary>

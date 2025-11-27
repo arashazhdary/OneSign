@@ -156,6 +156,30 @@ export interface ApiKey extends AuditFields {
   isActive: boolean;
 }
 
+export interface AdminAPIKey {
+  id: string;
+  name: string;
+  key: string;
+  prefix: string;
+  scope: 'platform' | 'readonly' | 'admin' | 'superadmin';
+  permissions: string[];
+  status: 'active' | 'revoked' | 'expired';
+  expiresAt?: string;
+  lastUsed?: string;
+  usageCount: number;
+  createdBy: string;
+  createdAt: string;
+  ipWhitelist?: string[];
+}
+
+export interface CreateAdminAPIKeyRequest {
+  name: string;
+  scope: 'platform' | 'readonly' | 'admin' | 'superadmin';
+  permissions: string[];
+  expiresAt?: string;
+  ipWhitelist?: string[];
+}
+
 export interface SystemHealth {
   status: 'healthy' | 'degraded' | 'unhealthy';
   version: string;

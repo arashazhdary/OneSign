@@ -159,8 +159,7 @@ export default function GlobalAlertsPage() {
 
   const handleAcknowledge = async (alertId: string) => {
     try {
-      // TODO: Global alerts need different endpoint
-      // await securityService.acknowledgeAlert?.(globalTenantId, alertId);
+      await securityService.acknowledgeGlobalAlert(alertId);
       fetchData();
     } catch (error) {
       console.error('Failed to acknowledge alert:', error);
@@ -169,8 +168,7 @@ export default function GlobalAlertsPage() {
 
   const handleResolve = async (alertId: string) => {
     try {
-      // TODO: Global alerts need different endpoint
-      // await securityService.resolveAlert?.(globalTenantId, alertId);
+      await securityService.resolveGlobalAlert(alertId);
       fetchData();
     } catch (error) {
       console.error('Failed to resolve alert:', error);
@@ -179,8 +177,7 @@ export default function GlobalAlertsPage() {
 
   const handleSilence = async (alertId: string) => {
     try {
-      // TODO: silenceAlert not implemented
-      // await securityService.silenceAlert?.(alertId);
+      await securityService.silenceGlobalAlert(alertId);
       fetchData();
     } catch (error) {
       console.error('Failed to silence alert:', error);

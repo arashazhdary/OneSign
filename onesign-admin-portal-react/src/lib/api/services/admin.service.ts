@@ -15,6 +15,87 @@ export interface GlobalInsightsDto {
   storageAvailableGB?: number;
 }
 
+// Dashboard Statistics DTOs
+export interface DashboardStatsDto {
+  summary: DashboardSummaryDto;
+  authenticationTrend: AuthenticationTrendItemDto[];
+  mfaDistribution: MfaDistributionDto;
+  riskDistribution: RiskDistributionDto;
+  topTenants: TopTenantDto[];
+  recentSecurityEvents: SecurityEventDto[];
+}
+
+export interface DashboardSummaryDto {
+  totalTenants: number;
+  activeTenants: number;
+  totalUsers: number;
+  activeUsersToday: number;
+  totalApplications: number;
+  totalAuthenticationsToday: number;
+  failedAuthenticationsToday: number;
+  authSuccessRate: number;
+  mfaAdoptionRate: number;
+  highRiskUsers: number;
+  pendingAccessRequests: number;
+}
+
+export interface AuthenticationTrendItemDto {
+  date: string;
+  dayName: string;
+  successfulLogins: number;
+  failedLogins: number;
+  mfaChallenges: number;
+  uniqueUsers: number;
+}
+
+export interface MfaDistributionDto {
+  usersWithMfa: number;
+  usersWithoutMfa: number;
+  mfaAdoptionPercent: number;
+  methodBreakdown: MfaMethodCountDto[];
+}
+
+export interface MfaMethodCountDto {
+  method: string;
+  count: number;
+  percentage: number;
+}
+
+export interface RiskDistributionDto {
+  highRiskCount: number;
+  mediumRiskCount: number;
+  lowRiskCount: number;
+  noRiskCount: number;
+  eventTypeBreakdown: RiskEventTypeCountDto[];
+}
+
+export interface RiskEventTypeCountDto {
+  eventType: string;
+  count: number;
+  severity: string;
+}
+
+export interface TopTenantDto {
+  tenantId: string;
+  tenantName: string;
+  userCount: number;
+  applicationCount: number;
+  authenticationsToday: number;
+  mfaAdoptionPercent: number;
+  riskLevel: string;
+}
+
+export interface SecurityEventDto {
+  id: string;
+  eventType: string;
+  severity: string;
+  description: string;
+  tenantName: string;
+  userEmail: string;
+  ipAddress: string;
+  timestamp: string;
+}
+
 export interface ServiceHealthDto {
   name: string;
   status: 'healthy' | 'degraded' | 'down';
@@ -164,6 +245,23 @@ export const adminService = {
       return response.data;
     } catch (error) {
       console.error('Failed to fetch global insights:', error);
+      return null;
+    }
+  },
+
+  // ==================== DASHBOARD STATISTICS ====================
+  getDashboardStats: async (
+    trendDays: number = 7,
+    topTenantsCount: number = 5,
+    recentEventsCount: number = 10
+  ): Promise<DashboardStatsDto | null> => {
+    try {
+      const response = await apiClient.get('/api/global/insights/dashboard', {
+        params: { trendDays, topTenantsCount, recentEventsCount }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch dashboard stats:', error);
       return null;
     }
   },

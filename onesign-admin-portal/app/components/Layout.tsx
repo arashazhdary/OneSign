@@ -22,6 +22,9 @@ interface LayoutProps {
   onLogout?: () => void;
   breadcrumbLabels?: Record<string, string>;
   className?: string;
+  onNotificationMarkAsRead?: (id: string) => void;
+  onNotificationMarkAllAsRead?: () => void;
+  onNotificationClearAll?: () => void;
 }
 
 const Layout: React.FC<LayoutProps> = ({
@@ -34,6 +37,9 @@ const Layout: React.FC<LayoutProps> = ({
   onLogout,
   breadcrumbLabels,
   className = '',
+  onNotificationMarkAsRead,
+  onNotificationMarkAllAsRead,
+  onNotificationClearAll,
 }) => {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -175,6 +181,9 @@ const Layout: React.FC<LayoutProps> = ({
             onLogout={onLogout}
             onSearch={handleSearch}
             breadcrumbLabels={breadcrumbLabels}
+            onNotificationMarkAsRead={onNotificationMarkAsRead}
+            onNotificationMarkAllAsRead={onNotificationMarkAllAsRead}
+            onNotificationClearAll={onNotificationClearAll}
           />
 
           {/* Page Content */}

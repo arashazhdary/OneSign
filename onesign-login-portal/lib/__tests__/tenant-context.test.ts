@@ -1,4 +1,7 @@
-import { getTenantId, setTenantId } from '../tenant-context';
+import { getTenantId, getTenantIdAsync, setTenantId } from '../tenant-context';
+
+// Mock fetch
+global.fetch = jest.fn();
 
 describe('tenant-context', () => {
   const originalLocation = window.location;
@@ -7,6 +10,7 @@ describe('tenant-context', () => {
     jest.clearAllMocks();
     (window.localStorage.getItem as jest.Mock).mockReturnValue(null);
     (window.sessionStorage.getItem as jest.Mock).mockReturnValue(null);
+    (global.fetch as jest.Mock).mockReset();
   });
 
   afterEach(() => {
@@ -92,7 +96,7 @@ describe('tenant-context', () => {
       expect(result).toBeNull();
     });
 
-    it('should return null for subdomain with more than 2 parts', () => {
+    it('should return null for subdomain (sync version does not do lookup)', () => {
       delete (window as any).location;
       window.location = {
         ...originalLocation,
@@ -105,7 +109,7 @@ describe('tenant-context', () => {
 
       const result = getTenantId();
 
-      // Returns null as subdomain lookup is placeholder in Phase 1
+      // Sync version returns null, use getTenantIdAsync for subdomain lookup
       expect(result).toBeNull();
     });
 
@@ -140,6 +144,103 @@ describe('tenant-context', () => {
 
       expect(window.sessionStorage.setItem).toHaveBeenLastCalledWith('tenantId', 'second-tenant');
       expect(window.localStorage.setItem).toHaveBeenLastCalledWith('tenantId', 'second-tenant');
+    });
+  });
+
+  describe('getTenantIdAsync', () => {
+    it('should return tenantId from URL query parameter', async () => {
+      delete (window as any).location;
+      window.location = {
+        ...originalLocation,
+        search: '?tenantId=url-tenant-id',
+        hostname: 'localhost',
+      } as Location;
+
+      const result = await getTenantIdAsync();
+
+      expect(result).toBe('url-tenant-id');
+    });
+
+    it('should lookup tenant by subdomain when no other source available', async () => {
+      delete (window as any).location;
+      window.location = {
+        ...originalLocation,
+        search: '',
+        hostname: 'tenant1.onesign.com',
+      } as Location;
+
+      (window.sessionStorage.getItem as jest.Mock).mockReturnValue(null);
+      (window.localStorage.getItem as jest.Mock).mockReturnValue(null);
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          items: [{ id: 'resolved-tenant-id', name: 'Tenant 1' }]
+        })
+      });
+
+      const result = await getTenantIdAsync();
+
+      expect(result).toBe('resolved-tenant-id');
+      expect(global.fetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/global/tenants?search=tenant1')
+      );
+    });
+
+    it('should skip lookup for www subdomain', async () => {
+      delete (window as any).location;
+      window.location = {
+        ...originalLocation,
+        search: '',
+        hostname: 'www.onesign.com',
+      } as Location;
+
+      (window.sessionStorage.getItem as jest.Mock).mockReturnValue(null);
+      (window.localStorage.getItem as jest.Mock).mockReturnValue(null);
+
+      const result = await getTenantIdAsync();
+
+      expect(result).toBeNull();
+      expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it('should return null when API returns no results', async () => {
+      delete (window as any).location;
+      window.location = {
+        ...originalLocation,
+        search: '',
+        hostname: 'unknown.onesign.com',
+      } as Location;
+
+      (window.sessionStorage.getItem as jest.Mock).mockReturnValue(null);
+      (window.localStorage.getItem as jest.Mock).mockReturnValue(null);
+
+      (global.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ items: [] })
+      });
+
+      const result = await getTenantIdAsync();
+
+      expect(result).toBeNull();
+    });
+
+    it('should handle API errors gracefully', async () => {
+      delete (window as any).location;
+      window.location = {
+        ...originalLocation,
+        search: '',
+        hostname: 'tenant1.onesign.com',
+      } as Location;
+
+      (window.sessionStorage.getItem as jest.Mock).mockReturnValue(null);
+      (window.localStorage.getItem as jest.Mock).mockReturnValue(null);
+
+      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+
+      const result = await getTenantIdAsync();
+
+      expect(result).toBeNull();
     });
   });
 });

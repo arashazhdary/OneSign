@@ -270,7 +270,6 @@ public class LifecycleProcessorWorker : BackgroundService
         };
 
         dbContext.NotificationOutboxItems.Add(notification);
-        await Task.CompletedTask;
     }
 
     private static string GetEventTypeName(int eventType) => eventType switch

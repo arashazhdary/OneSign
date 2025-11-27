@@ -9,6 +9,8 @@ import {
   Webhook,
   WebhookEvent,
   ApiKey,
+  AdminAPIKey,
+  CreateAdminAPIKeyRequest,
   SystemHealth,
   Permission,
 } from '../types/platform';
@@ -135,6 +137,29 @@ export class PlatformService {
   async getPermissions(): Promise<Permission[]> {
     const response = await this.client.get<Permission[]>('/api/global/permissions');
     return response.data;
+  }
+
+  /**
+   * Get platform roles (global admin roles)
+   */
+  async getPlatformRoles(): Promise<Role[]> {
+    const response = await this.client.get<Role[]>('/api/global/roles');
+    return response.data;
+  }
+
+  /**
+   * Create platform role (global admin role)
+   */
+  async createPlatformRole(data: Partial<Role>): Promise<Role> {
+    const response = await this.client.post<Role>('/api/global/roles', data);
+    return response.data;
+  }
+
+  /**
+   * Delete platform role (global admin role)
+   */
+  async deletePlatformRole(roleId: string): Promise<void> {
+    await this.client.delete(`/api/global/roles/${roleId}`);
   }
 
   // Organization Units
@@ -399,6 +424,31 @@ export class PlatformService {
     await this.client.delete(`/api/tenant/api-keys/${apiKeyId}`, {
       params: { tenantId },
     });
+  }
+
+  // Admin API Keys (Platform-level)
+
+  /**
+   * Get admin API keys (platform-level)
+   */
+  async getAdminAPIKeys(): Promise<AdminAPIKey[]> {
+    const response = await this.client.get<AdminAPIKey[]>('/api/admin/api-keys');
+    return response.data;
+  }
+
+  /**
+   * Create admin API key (platform-level)
+   */
+  async createAdminAPIKey(data: CreateAdminAPIKeyRequest): Promise<AdminAPIKey> {
+    const response = await this.client.post<AdminAPIKey>('/api/admin/api-keys', data);
+    return response.data;
+  }
+
+  /**
+   * Revoke admin API key (platform-level)
+   */
+  async revokeAdminAPIKey(keyId: string): Promise<void> {
+    await this.client.delete(`/api/admin/api-keys/${keyId}`);
   }
 
   // System Health
@@ -1449,6 +1499,34 @@ export class PlatformService {
    */
   async updateAdminTenantStatus(tenantId: string, status: string): Promise<void> {
     await this.client.patch(`/api/admin/tenants/${tenantId}/status`, { status });
+  }
+
+  // ==================== Global Backups Management ====================
+
+  /**
+   * Create global platform backup
+   */
+  async createGlobalBackup(data: { name: string; type: string; retentionDays: number }): Promise<any> {
+    const response = await this.client.post<any>('/api/global/backups', data);
+    return response.data;
+  }
+
+  /**
+   * Restore global platform backup
+   */
+  async restoreGlobalBackup(backupId: string, options?: any): Promise<any> {
+    const response = await this.client.post<any>(`/api/global/backups/${backupId}/restore`, options);
+    return response.data;
+  }
+
+  /**
+   * Download global platform backup
+   */
+  async downloadBackup(backupId: string): Promise<Blob> {
+    const response = await this.client.get<Blob>(`/api/global/backups/${backupId}/download`, {
+      responseType: 'blob'
+    });
+    return response.data;
   }
 }
 

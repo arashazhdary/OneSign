@@ -1,18 +1,19 @@
 /**
  * Tenant ID Extractor Utility
- * 
+ *
  * This utility extracts tenant ID from multiple sources in priority order:
  * 1. X-Tenant-Id header
  * 2. X-Tenant-Slug header (requires lookup to get ID)
  * 3. Subdomain (e.g., tenant1.onesign.com)
  * 4. URL path (e.g., /api/tenants/{tenantId}/...)
  * 5. JWT token claims
- * 
+ *
  * Falls back to store/context if none of the above are available
  */
 
 import { useTenantStore } from '@/stores/tenantStore';
 import { DEFAULT_TENANT_ID } from '@/lib/constants/testIds';
+import { globalService } from '@/lib/api/services/global.service';
 
 /**
  * Decode JWT token and extract claims
@@ -87,13 +88,13 @@ function extractFromPath(url?: string): string | null {
  */
 function extractFromJWT(): string | null {
   if (typeof window === 'undefined') return null;
-  
+
   const token = localStorage.getItem('auth-token') || localStorage.getItem('accessToken');
   if (!token) return null;
-  
+
   const claims = decodeJWT(token);
   if (!claims) return null;
-  
+
   // Check common JWT claim names for tenant ID
   return (
     claims.tenantId ||
@@ -106,14 +107,61 @@ function extractFromJWT(): string | null {
 }
 
 /**
+ * Lookup tenant ID by slug using the global API
+ */
+async function lookupTenantBySlug(slug: string): Promise<string | null> {
+  try {
+    // Use the global service to search for tenant by slug
+    const result = await globalService.getTenants({
+      search: slug,
+      pageSize: 1
+    });
+
+    // Check if we found a tenant with matching slug
+    if (result.items.length > 0 && result.items[0].slug === slug) {
+      return result.items[0].id;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error looking up tenant by slug:', error);
+    return null;
+  }
+}
+
+/**
+ * Lookup tenant ID by subdomain using the global API
+ */
+async function lookupTenantBySubdomain(subdomain: string): Promise<string | null> {
+  try {
+    // Use the global service to search for tenant by subdomain
+    // Subdomain is typically stored as the tenant slug
+    const result = await globalService.getTenants({
+      search: subdomain,
+      pageSize: 1
+    });
+
+    // Check if we found a tenant with matching slug/subdomain
+    if (result.items.length > 0 && result.items[0].slug === subdomain) {
+      return result.items[0].id;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error looking up tenant by subdomain:', error);
+    return null;
+  }
+}
+
+/**
  * Main function to extract tenant ID from all available sources
  * Returns tenant ID in priority order, or null if not found
  */
-export function extractTenantId(options?: {
+export async function extractTenantId(options?: {
   headers?: Record<string, string>;
   url?: string;
   skipStore?: boolean;
-}): string | null {
+}): Promise<string | null> {
   const { headers, url, skipStore = false } = options || {};
 
   // 1. Try to extract from X-Tenant-Id header
@@ -124,23 +172,29 @@ export function extractTenantId(options?: {
     }
   }
 
-  // 2. Try to extract from X-Tenant-Slug header
-  // Note: This requires a lookup service to convert slug to ID
-  // For now, we'll return the slug and let the API handle it
+  // 2. Try to extract from X-Tenant-Slug header and lookup ID
   if (headers?.['X-Tenant-Slug'] || headers?.['x-tenant-slug']) {
     const tenantSlug = headers['X-Tenant-Slug'] || headers['x-tenant-slug'];
     if (tenantSlug) {
-      // TODO: Implement slug to ID lookup if needed
-      // For now, return slug as-is (API should handle slug resolution)
+      // Lookup tenant ID by slug
+      const tenantId = await lookupTenantBySlug(tenantSlug);
+      if (tenantId) {
+        return tenantId;
+      }
+      // If lookup fails, return slug as-is (API might handle it)
       return tenantSlug;
     }
   }
 
-  // 3. Try to extract from subdomain
+  // 3. Try to extract from subdomain and lookup ID
   const subdomainTenant = extractFromSubdomain();
   if (subdomainTenant) {
-    // TODO: Implement subdomain to ID lookup if needed
-    // For now, return subdomain as-is
+    // Lookup tenant ID by subdomain
+    const tenantId = await lookupTenantBySubdomain(subdomainTenant);
+    if (tenantId) {
+      return tenantId;
+    }
+    // If lookup fails, return subdomain as-is
     return subdomainTenant;
   }
 
@@ -170,26 +224,26 @@ export function extractTenantId(options?: {
 /**
  * Get tenant ID with fallback to default
  */
-export function getTenantId(options?: {
+export async function getTenantId(options?: {
   headers?: Record<string, string>;
   url?: string;
   skipStore?: boolean;
-}): string {
-  const tenantId = extractTenantId(options);
+}): Promise<string> {
+  const tenantId = await extractTenantId(options);
   return tenantId || DEFAULT_TENANT_ID;
 }
 
 /**
  * Extract tenant ID from request headers (for server-side or API calls)
  */
-export function extractTenantIdFromHeaders(headers: Record<string, string | undefined>): string | null {
-  return extractTenantId({ headers, skipStore: true });
+export async function extractTenantIdFromHeaders(headers: Record<string, string | undefined>): Promise<string | null> {
+  return await extractTenantId({ headers, skipStore: true });
 }
 
 /**
  * Extract tenant ID from current browser context
  */
-export function extractTenantIdFromContext(): string | null {
-  return extractTenantId({ skipStore: false });
+export async function extractTenantIdFromContext(): Promise<string | null> {
+  return await extractTenantId({ skipStore: false });
 }
 

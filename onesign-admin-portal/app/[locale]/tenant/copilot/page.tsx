@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { getTenantId } from '@/lib/tenant-context';
+import { useAuth } from '@/app/contexts/AuthContext';
 import { copilotService } from '@/lib/api/services/copilot.service';
 
 interface Message {
@@ -54,6 +55,7 @@ type SidebarTab = 'suggestions' | 'insights' | 'analysis';
 
 export default function TenantCopilotPage() {
   const t = useTranslations();
+  const { user } = useAuth();
   const [tenantId, setTenantIdState] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -102,8 +104,7 @@ export default function TenantCopilotPage() {
   const fetchConversations = async () => {
     setLoading(true);
     try {
-      // TODO: Get userId from auth context
-      const userId = 'current-user-id'; // This should come from auth context
+      const userId = user?.id || '';
       const data = await copilotService.getConversations(tenantId, userId);
       setConversations(data.map(conv => ({
         id: conv.id,
@@ -164,8 +165,7 @@ export default function TenantCopilotPage() {
     setInputMessage('');
 
     try {
-      // TODO: Get userId from auth context
-      const userId = 'current-user-id'; // This should come from auth context
+      const userId = user?.id || '';
       const data = await copilotService.sendQuery({
         tenantId,
         userId,

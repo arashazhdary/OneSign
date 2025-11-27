@@ -119,21 +119,23 @@ public class FailoverService : IFailoverService
         };
     }
 
-    public async Task<FailoverStatus> GetFailoverStatusAsync(Guid failoverId, CancellationToken cancellationToken = default)
+    public Task<FailoverStatus> GetFailoverStatusAsync(Guid failoverId, CancellationToken cancellationToken = default)
     {
-        await Task.CompletedTask;
-
         if (_failoverJobs.TryGetValue(failoverId, out var status))
         {
-            return status;
+            _logger.LogDebug("Retrieved failover status for {FailoverId}: {Status} - {Progress}%",
+                failoverId, status.Status, status.ProgressPercent);
+            return Task.FromResult(status);
         }
 
-        return new FailoverStatus
+        _logger.LogWarning("Failover job {FailoverId} not found in active jobs", failoverId);
+
+        return Task.FromResult(new FailoverStatus
         {
             FailoverId = failoverId,
             Status = "NotFound",
             ErrorMessage = $"Failover job {failoverId} not found"
-        };
+        });
     }
 
     public async Task<bool> CancelFailoverAsync(Guid failoverId, CancellationToken cancellationToken = default)

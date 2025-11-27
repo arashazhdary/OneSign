@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Onesign.Modules.Deployment.Domain.Enums;
+using Onesign.Modules.Deployment.Domain.Repositories;
 using Onesign.Shared.Result;
 
 namespace Onesign.Modules.Deployment.Application.Queries;
@@ -8,10 +9,14 @@ namespace Onesign.Modules.Deployment.Application.Queries;
 public class GetEnvironmentsQueryHandler : IRequestHandler<GetEnvironmentsQuery, Result<List<EnvironmentSummaryDto>>>
 {
     private readonly ILogger<GetEnvironmentsQueryHandler> _logger;
+    private readonly IDeploymentEnvironmentRepository _environmentRepository;
 
-    public GetEnvironmentsQueryHandler(ILogger<GetEnvironmentsQueryHandler> logger)
+    public GetEnvironmentsQueryHandler(
+        ILogger<GetEnvironmentsQueryHandler> logger,
+        IDeploymentEnvironmentRepository environmentRepository)
     {
         _logger = logger;
+        _environmentRepository = environmentRepository;
     }
 
     public async Task<Result<List<EnvironmentSummaryDto>>> Handle(GetEnvironmentsQuery request, CancellationToken cancellationToken)
@@ -19,18 +24,26 @@ public class GetEnvironmentsQueryHandler : IRequestHandler<GetEnvironmentsQuery,
         _logger.LogInformation("Retrieving environments with filters - Type: {Type}, RegionId: {RegionId}",
             request.FilterByType, request.FilterByRegionId);
 
-        // TODO: Implement repository to retrieve environments
-        // var environments = await _environmentRepository.GetAllAsync(cancellationToken);
-        //
-        // if (request.FilterByType.HasValue)
-        //     environments = environments.Where(e => e.Type == request.FilterByType.Value).ToList();
-        //
-        // if (!string.IsNullOrEmpty(request.FilterByRegionId))
-        //     environments = environments.Where(e => e.RegionId == request.FilterByRegionId).ToList();
+        var environments = await _environmentRepository.GetAllAsync(cancellationToken);
 
-        var result = new List<EnvironmentSummaryDto>();
+        if (request.FilterByType.HasValue)
+            environments = environments.Where(e => e.Type == request.FilterByType.Value).ToList();
 
-        await Task.CompletedTask;
+        if (!string.IsNullOrEmpty(request.FilterByRegionId))
+            environments = environments.Where(e => e.RegionId == request.FilterByRegionId).ToList();
+
+        var result = environments.Select(e => new EnvironmentSummaryDto
+        {
+            Id = e.Id,
+            Name = e.Name,
+            Type = e.Type,
+            RegionId = e.RegionId,
+            BaseUrl = e.BaseUrl,
+            AppVersion = e.AppVersion,
+            Status = DetermineStatus(e.LastHeartbeatAt),
+            CreatedAt = e.CreatedAt,
+            LastHeartbeatAt = e.LastHeartbeatAt
+        }).ToList();
 
         return Result.Success(result);
     }

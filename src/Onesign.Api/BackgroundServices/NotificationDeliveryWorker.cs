@@ -138,30 +138,64 @@ public class NotificationDeliveryWorker : BackgroundService
         return true;
     }
 
-    private Task<bool> SendSmsAsync(
+    private async Task<bool> SendSmsAsync(
         Onesign.Modules.NotificationCenter.Infrastructure.EfCore.Entities.NotificationOutboxItemEntity item,
         IServiceProvider serviceProvider,
         CancellationToken cancellationToken)
     {
-        // SMS provider integration would go here
-        _logger.LogInformation("SMS notification {Id} to {Recipient} - SMS provider not configured",
-            item.Id, item.RecipientAddress);
+        var smsService = serviceProvider.GetService<Onesign.Shared.Sms.ISmsService>();
 
-        // Return true for now as SMS is not yet implemented
-        return Task.FromResult(true);
+        if (smsService == null)
+        {
+            _logger.LogWarning("SMS service not configured, skipping SMS notification {Id}", item.Id);
+            return false;
+        }
+
+        await smsService.SendSmsAsync(
+            item.RecipientAddress,
+            item.Body,
+            cancellationToken);
+
+        return true;
     }
 
-    private Task<bool> SendPushAsync(
+    private async Task<bool> SendPushAsync(
         Onesign.Modules.NotificationCenter.Infrastructure.EfCore.Entities.NotificationOutboxItemEntity item,
         IServiceProvider serviceProvider,
         CancellationToken cancellationToken)
     {
-        // Push notification integration would go here
-        _logger.LogInformation("Push notification {Id} to user {UserId} - Push provider not configured",
-            item.Id, item.RecipientUserId);
+        var pushService = serviceProvider.GetService<Onesign.Shared.Push.IPushNotificationService>();
 
-        // Return true for now as Push is not yet implemented
-        return Task.FromResult(true);
+        if (pushService == null)
+        {
+            _logger.LogWarning("Push notification service not configured, skipping push notification {Id}", item.Id);
+            return false;
+        }
+
+        // If we have a recipient address (device token), use it; otherwise use userId
+        if (!string.IsNullOrEmpty(item.RecipientAddress))
+        {
+            await pushService.SendPushNotificationByTokenAsync(
+                item.RecipientAddress,
+                item.Subject ?? string.Empty,
+                item.Body,
+                cancellationToken: cancellationToken);
+        }
+        else if (!string.IsNullOrEmpty(item.RecipientUserId))
+        {
+            await pushService.SendPushNotificationAsync(
+                item.RecipientUserId,
+                item.Subject ?? string.Empty,
+                item.Body,
+                cancellationToken: cancellationToken);
+        }
+        else
+        {
+            _logger.LogWarning("Push notification {Id} has no recipient address or user ID", item.Id);
+            return false;
+        }
+
+        return true;
     }
 
     private Task HandleFailedDeliveryAsync(

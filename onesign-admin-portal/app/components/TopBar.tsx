@@ -5,11 +5,12 @@
  * Top navigation bar with breadcrumbs, search, notifications, and user menu
  */
 
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Icon } from './Icon';
 import Breadcrumbs from './Breadcrumbs';
 import NotificationDropdown from './NotificationDropdown';
 import { User, Notification, Tenant } from '../types/navigation';
+import { NotificationContext } from '../contexts/NotificationContext';
 
 interface TopBarProps {
   user?: User;
@@ -25,6 +26,9 @@ interface TopBarProps {
   onSearch?: (query: string) => void;
   breadcrumbLabels?: Record<string, string>;
   className?: string;
+  onNotificationMarkAsRead?: (id: string) => void;
+  onNotificationMarkAllAsRead?: () => void;
+  onNotificationClearAll?: () => void;
 }
 
 const TopBar: React.FC<TopBarProps> = ({
@@ -41,12 +45,18 @@ const TopBar: React.FC<TopBarProps> = ({
   onSearch,
   breadcrumbLabels,
   className = '',
+  onNotificationMarkAsRead,
+  onNotificationMarkAllAsRead,
+  onNotificationClearAll,
 }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
   const [showTenantDropdown, setShowTenantDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
+
+  // Get NotificationContext as fallback
+  const notificationContext = useContext(NotificationContext);
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -63,18 +73,30 @@ const TopBar: React.FC<TopBarProps> = ({
   };
 
   const handleNotificationMarkAsRead = (id: string) => {
-    // Handle mark as read
-    console.log('Mark as read:', id);
+    // Use callback prop if provided, otherwise use NotificationContext
+    if (onNotificationMarkAsRead) {
+      onNotificationMarkAsRead(id);
+    } else if (notificationContext) {
+      notificationContext.markAsRead(id);
+    }
   };
 
   const handleNotificationMarkAllAsRead = () => {
-    // Handle mark all as read
-    console.log('Mark all as read');
+    // Use callback prop if provided, otherwise use NotificationContext
+    if (onNotificationMarkAllAsRead) {
+      onNotificationMarkAllAsRead();
+    } else if (notificationContext) {
+      notificationContext.markAllAsRead();
+    }
   };
 
   const handleNotificationClearAll = () => {
-    // Handle clear all
-    console.log('Clear all notifications');
+    // Use callback prop if provided, otherwise use NotificationContext
+    if (onNotificationClearAll) {
+      onNotificationClearAll();
+    } else if (notificationContext) {
+      notificationContext.clearAll();
+    }
   };
 
   return (
