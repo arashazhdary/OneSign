@@ -76,6 +76,19 @@ export default function LayoutWithHooks({
     clearAll,
   } = useNotifications(initialNotifications);
 
+  // Notification handlers
+  const handleNotificationMarkAsRead = (id: string) => {
+    markAsRead(id);
+  };
+
+  const handleNotificationMarkAllAsRead = () => {
+    markAllAsRead();
+  };
+
+  const handleNotificationClearAll = () => {
+    clearAll();
+  };
+
   // Use tenant hook
   const {
     currentTenant,
@@ -111,6 +124,9 @@ export default function LayoutWithHooks({
       onTenantChange={switchTenant}
       onLogout={handleLogout}
       breadcrumbLabels={breadcrumbLabels}
+      onNotificationMarkAsRead={handleNotificationMarkAsRead}
+      onNotificationMarkAllAsRead={handleNotificationMarkAllAsRead}
+      onNotificationClearAll={handleNotificationClearAll}
     >
       {children}
     </Layout>
