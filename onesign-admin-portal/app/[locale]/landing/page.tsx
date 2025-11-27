@@ -197,6 +197,26 @@ export default function LandingPage() {
     { value: '99.99%', key: 'uptime' },
   ];
 
+  const testimonials = [
+    { key: 'testimonial1', company: 'TechCorp', role: 'CISO' },
+    { key: 'testimonial2', company: 'FinanceHub', role: 'IT Director' },
+    { key: 'testimonial3', company: 'HealthPlus', role: 'Security Lead' },
+  ];
+
+  const trustedCompanies = [
+    'Microsoft', 'Google', 'Amazon', 'IBM', 'Oracle', 'SAP'
+  ];
+
+  const faqs = [
+    { key: 'faq1' },
+    { key: 'faq2' },
+    { key: 'faq3' },
+    { key: 'faq4' },
+    { key: 'faq5' },
+  ];
+
+  const [openFaq, setOpenFaq] = useState<string | null>(null);
+
   return (
     <div className={`min-h-screen bg-white ${isRTL ? 'rtl' : 'ltr'}`} dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Navigation */}
@@ -357,6 +377,101 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Trusted By Section */}
+      <section className="py-12 bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-center text-sm text-gray-500 mb-8">
+            {t('trustedBy.title')}
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-16 opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500">
+            {trustedCompanies.map((company) => (
+              <div key={company} className="text-2xl font-bold text-gray-400 hover:text-gray-600 transition-colors">
+                {company}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Dashboard Preview Section */}
+      <section className="py-16 lg:py-24 bg-gradient-to-b from-white to-gray-50 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              {t('preview.title')}
+            </h2>
+            <p className="text-lg text-gray-600">
+              {t('preview.subtitle')}
+            </p>
+          </div>
+
+          {/* Dashboard Preview */}
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl transform rotate-1 scale-[1.02] opacity-20 blur-xl" />
+            <div className="relative bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
+              {/* Browser Chrome */}
+              <div className="bg-gray-100 border-b border-gray-200 px-4 py-3 flex items-center gap-2">
+                <div className="flex gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-red-400" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                  <div className="w-3 h-3 rounded-full bg-green-400" />
+                </div>
+                <div className="flex-1 mx-4">
+                  <div className="bg-white rounded-lg px-4 py-1.5 text-sm text-gray-500 border border-gray-200">
+                    app.onesign.io/dashboard
+                  </div>
+                </div>
+              </div>
+              {/* Dashboard Content */}
+              <div className="p-6 bg-gray-50">
+                <div className="grid grid-cols-4 gap-4 mb-6">
+                  {[
+                    { label: t('preview.metrics.users'), value: '12,543', change: '+12%', color: 'blue' },
+                    { label: t('preview.metrics.logins'), value: '45,231', change: '+8%', color: 'green' },
+                    { label: t('preview.metrics.threats'), value: '3', change: '-25%', color: 'red' },
+                    { label: t('preview.metrics.uptime'), value: '99.99%', change: '', color: 'indigo' },
+                  ].map((metric, idx) => (
+                    <div key={idx} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                      <div className="text-sm text-gray-500 mb-1">{metric.label}</div>
+                      <div className="text-2xl font-bold text-gray-900">{metric.value}</div>
+                      {metric.change && (
+                        <div className={`text-sm ${metric.change.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+                          {metric.change}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="col-span-2 bg-white rounded-xl p-4 shadow-sm border border-gray-100 h-48">
+                    <div className="text-sm font-medium text-gray-700 mb-4">{t('preview.chart.title')}</div>
+                    <div className="flex items-end gap-2 h-32">
+                      {[40, 65, 45, 80, 55, 70, 90, 60, 75, 85, 70, 95].map((h, i) => (
+                        <div key={i} className="flex-1 bg-gradient-to-t from-blue-500 to-indigo-500 rounded-t" style={{ height: `${h}%` }} />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                    <div className="text-sm font-medium text-gray-700 mb-4">{t('preview.activity.title')}</div>
+                    <div className="space-y-3">
+                      {[1, 2, 3, 4].map((_, i) => (
+                        <div key={i} className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gray-200" />
+                          <div className="flex-1">
+                            <div className="h-2 bg-gray-200 rounded w-3/4" />
+                            <div className="h-2 bg-gray-100 rounded w-1/2 mt-1" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section id="features" className="py-16 lg:py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -449,6 +564,106 @@ export default function LandingPage() {
                 <Icons.Lock />
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-16 lg:py-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              {t('testimonials.title')}
+            </h2>
+            <p className="text-lg text-gray-600">
+              {t('testimonials.subtitle')}
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial) => (
+              <div key={testimonial.key} className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
+                {/* Quote Icon */}
+                <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-6">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                  </svg>
+                </div>
+                {/* Quote */}
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  "{t(`testimonials.${testimonial.key}.quote`)}"
+                </p>
+                {/* Author */}
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold">
+                    {t(`testimonials.${testimonial.key}.name`).charAt(0)}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">
+                      {t(`testimonials.${testimonial.key}.name`)}
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      {testimonial.role}, {testimonial.company}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-16 lg:py-24 bg-white">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              {t('faq.title')}
+            </h2>
+            <p className="text-lg text-gray-600">
+              {t('faq.subtitle')}
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {faqs.map((faq) => (
+              <div key={faq.key} className="border border-gray-200 rounded-xl overflow-hidden">
+                <button
+                  onClick={() => setOpenFaq(openFaq === faq.key ? null : faq.key)}
+                  className="w-full flex items-center justify-between p-6 text-left bg-white hover:bg-gray-50 transition-colors"
+                >
+                  <span className="font-medium text-gray-900">
+                    {t(`faq.${faq.key}.question`)}
+                  </span>
+                  <svg
+                    className={`w-5 h-5 text-gray-500 transition-transform ${openFaq === faq.key ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {openFaq === faq.key && (
+                  <div className="px-6 pb-6 text-gray-600 leading-relaxed">
+                    {t(`faq.${faq.key}.answer`)}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-12 text-center">
+            <p className="text-gray-600 mb-4">
+              {t('faq.moreQuestions')}
+            </p>
+            <Link
+              href="#"
+              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+            >
+              {t('faq.contactSupport')}
+              <Icons.ArrowRight />
+            </Link>
           </div>
         </div>
       </section>
