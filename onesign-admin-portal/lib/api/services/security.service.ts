@@ -248,6 +248,41 @@ export class SecurityService {
     await this.client.post(`/api/tenant/security/alerts/${alertId}/suppress`, { tenantId });
   }
 
+  /**
+   * Get global alerts (Global Admin only)
+   */
+  async getGlobalAlerts(status?: string): Promise<SecurityAlert[]> {
+    const response = await this.client.get<SecurityAlert[]>('/api/global/security/alerts', {
+      status,
+    });
+    return response.data;
+  }
+
+  /**
+   * Acknowledge global alert (Global Admin only)
+   */
+  async acknowledgeGlobalAlert(alertId: string): Promise<void> {
+    await this.client.post(`/api/global/security/alerts/${alertId}/acknowledge`, {});
+  }
+
+  /**
+   * Resolve global alert (Global Admin only)
+   */
+  async resolveGlobalAlert(alertId: string, notes?: string): Promise<void> {
+    await this.client.post(`/api/global/security/alerts/${alertId}/resolve`, {
+      notes,
+    });
+  }
+
+  /**
+   * Silence global alert (Global Admin only)
+   */
+  async silenceGlobalAlert(alertId: string, duration?: number): Promise<void> {
+    await this.client.post(`/api/global/security/alerts/${alertId}/silence`, {
+      duration,
+    });
+  }
+
   // Audit Logs
 
   /**
