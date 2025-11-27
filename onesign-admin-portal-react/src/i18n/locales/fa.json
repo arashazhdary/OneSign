@@ -6113,5 +6113,33 @@
     "compact": "فشرده",
     "standard": "استاندارد",
     "comfortable": "راحت"
+  },
+  "adminDashboard": {
+    "title": "داشبورد مدیریت",
+    "subtitle": "نمای کلی از وضعیت پلتفرم",
+    "totalTenants": "تعداد سازمان‌ها",
+    "totalUsers": "تعداد کاربران",
+    "totalApps": "برنامه‌ها",
+    "authToday": "احراز هویت امروز",
+    "activeToday": "فعال امروز",
+    "failed": "ناموفق",
+    "authSuccessRate": "نرخ موفقیت احراز هویت",
+    "mfaAdoption": "نرخ استفاده از MFA",
+    "highRiskUsers": "کاربران پرخطر",
+    "pendingRequests": "درخواست‌های در انتظار",
+    "authTrend": "روند احراز هویت (۷ روز گذشته)",
+    "mfaDistribution": "وضعیت MFA کاربران",
+    "withMfa": "کاربر با MFA",
+    "withoutMfa": "کاربر بدون MFA",
+    "riskDistribution": "توزیع ریسک سازمان‌ها",
+    "recentRiskEvents": "رویدادهای اخیر",
+    "topTenants": "سازمان‌های برتر",
+    "securityEvents": "رویدادهای امنیتی اخیر",
+    "noSecurityEvents": "هیچ رویداد امنیتی اخیری وجود ندارد",
+    "systemHealth": "سلامت سیستم",
+    "overallStatus": "وضعیت کلی",
+    "memoryUsage": "استفاده از حافظه",
+    "database": "پایگاه داده",
+    "connections": "اتصالات"
   }
 }
