@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getTenantId, setTenantId } from '@/lib/tenant-context';
+import { getTenantId, getTenantIdAsync, setTenantId } from '@/lib/tenant-context';
 import { getTenantBranding, TenantBranding } from '@/lib/tenant-branding';
 import LoadingOverlay from '@/app/components/LoadingOverlay';
 import LoadingSpinner from '@/app/components/LoadingSpinner';
@@ -46,13 +46,15 @@ export default function LoginPage() {
       setTenantId(urlTenantId);
       setTenantIdState(urlTenantId);
     } else {
-      const contextTenantId = getTenantId();
-      if (contextTenantId) {
-        setTenantIdState(contextTenantId);
-      } else {
-        // Default placeholder for Phase 1
-        setTenantIdState('00000000-0000-0000-0000-000000000000');
-      }
+      // Try async lookup (subdomain, etc.)
+      getTenantIdAsync().then((resolvedTenantId) => {
+        if (resolvedTenantId) {
+          setTenantIdState(resolvedTenantId);
+        } else {
+          // Fallback to default tenant for development
+          setTenantIdState('00000000-0000-0000-0000-000000000000');
+        }
+      });
     }
   }, [searchParams]);
 
