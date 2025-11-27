@@ -272,7 +272,7 @@ public class DataRetentionEnforcementWorker : BackgroundService
         return oldLogs.Count;
     }
 
-    private static async Task LogRetentionEventAsync(
+    private static Task LogRetentionEventAsync(
         OnesignDbContext dbContext,
         Guid tenantId,
         int dataCategory,
@@ -304,6 +304,6 @@ public class DataRetentionEnforcementWorker : BackgroundService
         };
 
         dbContext.AuditEvents.Add(auditEvent);
-        await Task.CompletedTask;
+        return Task.CompletedTask;
     }
 }

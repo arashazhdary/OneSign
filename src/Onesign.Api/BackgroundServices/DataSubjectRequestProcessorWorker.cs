@@ -208,7 +208,7 @@ public class DataSubjectRequestProcessorWorker : BackgroundService
         };
 
         dbContext.AuditEvents.Add(auditEvent);
-        await Task.CompletedTask;
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     private static async Task LogDsrFailureAsync(
@@ -234,7 +234,7 @@ public class DataSubjectRequestProcessorWorker : BackgroundService
         };
 
         dbContext.AuditEvents.Add(auditEvent);
-        await Task.CompletedTask;
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     private static async Task CreateDeadlineWarningAsync(
@@ -257,7 +257,7 @@ public class DataSubjectRequestProcessorWorker : BackgroundService
         };
 
         dbContext.NotificationOutboxItems.Add(notification);
-        await Task.CompletedTask;
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 
     private static Onesign.Modules.Audit.Domain.Enums.AuditEventType GetAuditEventType(DataSubjectRequestType type)

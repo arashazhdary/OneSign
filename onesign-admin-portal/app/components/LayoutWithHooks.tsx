@@ -6,9 +6,11 @@
  */
 
 import React from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import Layout from './Layout';
 import { useNavigation, useNotifications, useTenant } from '../hooks/useNavigation';
 import { User, Notification, Tenant } from '../types/navigation';
+import { authService } from '@/lib/api/services/auth.service';
 
 // Mock data fetching (replace with real API calls)
 const mockUser: User = {
@@ -56,15 +58,23 @@ export default function LayoutWithHooks({
   initialNotifications = mockNotifications,
   initialTenants = mockTenants,
 }: LayoutWithHooksProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+
   // Use navigation hook for theme and language management
   const navigation = useNavigation({
     initialTheme: 'light',
     initialLanguage: 'en',
     onThemeChange: (theme) => {
-      console.log('Theme changed to:', theme);
+      // Persist theme to localStorage and update document class
+      localStorage.setItem('theme', theme);
+      document.documentElement.classList.toggle('dark', theme === 'dark');
     },
     onLanguageChange: (language) => {
-      console.log('Language changed to:', language);
+      // Change locale by navigating to the new locale path
+      const currentLocale = pathname.split('/')[1];
+      const pathWithoutLocale = pathname.replace(`/${currentLocale}`, '');
+      router.push(`/${language}${pathWithoutLocale || '/dashboard'}`);
     },
   });
 
@@ -96,15 +106,27 @@ export default function LayoutWithHooks({
     switchTenant,
   } = useTenant(initialTenants[0], initialTenants);
 
-  const handleLogout = () => {
-    console.log('Logging out...');
-    // Implement logout logic
-    // Example: router.push('/login');
+  const handleLogout = async () => {
+    try {
+      // Call auth service to logout
+      await authService.signOut();
+      // Clear tokens from localStorage
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      // Redirect to login page
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Still redirect to login even if API call fails
+      router.push('/login');
+    }
   };
 
   const handleSearch = (query: string) => {
-    console.log('Searching for:', query);
-    // Implement search logic
+    if (!query.trim()) return;
+    // Navigate to search results page with query parameter
+    const currentLocale = pathname.split('/')[1];
+    router.push(`/${currentLocale}/search?q=${encodeURIComponent(query)}`);
   };
 
   const breadcrumbLabels = {
