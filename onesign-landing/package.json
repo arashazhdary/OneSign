@@ -6,7 +6,20 @@
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
-    "lint": "eslint"
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "clean": "rm -rf .next node_modules",
+    "analyze": "ANALYZE=true next build",
+    "docker:build": "docker build -t onesign-landing:latest .",
+    "docker:run": "docker run -d -p 3001:3001 --name onesign-landing onesign-landing:latest",
+    "docker:stop": "docker stop onesign-landing && docker rm onesign-landing",
+    "docker:dev": "docker-compose up landing-dev",
+    "docker:prod": "docker-compose up landing",
+    "pm2:start": "pm2 start ecosystem.config.js",
+    "pm2:stop": "pm2 stop onesign-landing",
+    "pm2:restart": "pm2 restart onesign-landing",
+    "pm2:logs": "pm2 logs onesign-landing",
+    "health": "curl http://localhost:3001/api/health"
   },
   "dependencies": {
     "next": "16.0.3",
