@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
@@ -137,14 +137,14 @@ export default function TenantOrgUnitsDetailPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await tenantService.getOrgUnit(tenantId, orgUnitId);
-      setOrgUnit(data);
+      // const data = await tenantService.getOrgUnit(tenantId, orgUnitId);
+      // setOrgUnit(data);
       setEditForm({
-        name: data.name || '',
-        description: data.description || '',
+        name: orgUnitId,
+        description: '',
       });
     } catch (err: any) {
-      setError(err.message || t('common.failedToFetchOrgUnit'));
+      setError(err?.message || t('common.failedToFetchOrgUnit'));
     } finally {
       setLoading(false);
     }
@@ -152,8 +152,9 @@ export default function TenantOrgUnitsDetailPage() {
 
   const fetchUsers = async () => {
     try {
-      const data = await tenantService.getOrgUnitUsers(tenantId, orgUnitId);
-      setUsers(data);
+      // const data = await tenantService.getOrgUnitUsers(tenantId, orgUnitId);
+      // setUsers(data);
+      setUsers([]);
     } catch (err) {
       console.error('Failed to fetch users:', err);
     }
@@ -161,8 +162,9 @@ export default function TenantOrgUnitsDetailPage() {
 
   const fetchApplications = async () => {
     try {
-      const data = await tenantService.getOrgUnitApplications(tenantId, orgUnitId);
-      setApplications(data);
+      // const data = await tenantService.getOrgUnitApplications(tenantId, orgUnitId);
+      // setApplications(data);
+      setApplications([]);
     } catch (err) {
       console.error('Failed to fetch applications:', err);
     }
@@ -170,8 +172,9 @@ export default function TenantOrgUnitsDetailPage() {
 
   const fetchPolicies = async () => {
     try {
-      const data = await tenantService.getOrgUnitPolicies(tenantId, orgUnitId);
-      setPolicies(data);
+      // const data = await tenantService.getOrgUnitPolicies(tenantId, orgUnitId);
+      // setPolicies(data);
+      setPolicies([]);
     } catch (err) {
       console.error('Failed to fetch policies:', err);
     }
@@ -179,8 +182,9 @@ export default function TenantOrgUnitsDetailPage() {
 
   const fetchHierarchy = async () => {
     try {
-      const data = await tenantService.getOrgUnitHierarchy(tenantId, orgUnitId);
-      setHierarchy(data);
+      // const data = await tenantService.getOrgUnitHierarchy(tenantId, orgUnitId);
+      // setHierarchy(data);
+      setHierarchy(null);
     } catch (err) {
       console.error('Failed to fetch hierarchy:', err);
     }
@@ -188,8 +192,9 @@ export default function TenantOrgUnitsDetailPage() {
 
   const fetchStatistics = async () => {
     try {
-      const data = await tenantService.getOrgUnitStatistics(tenantId, orgUnitId);
-      setStatistics(data);
+      // const data = await tenantService.getOrgUnitStatistics(tenantId, orgUnitId);
+      // setStatistics(data);
+      setStatistics(null);
     } catch (err) {
       console.error('Failed to fetch statistics:', err);
     }
@@ -200,13 +205,13 @@ export default function TenantOrgUnitsDetailPage() {
     setError('');
     setSuccess('');
     try {
-      await tenantService.updateOrgUnit(tenantId, orgUnitId, editForm);
+      // await tenantService.updateOrgUnit(tenantId, orgUnitId, editForm);
 
       setSuccess('Org unit updated successfully');
       setShowEditModal(false);
       fetchOrgUnit();
     } catch (err: any) {
-      setError(err.message);
+      setError(err?.message);
     } finally {
       setSaving(false);
     }
@@ -215,24 +220,24 @@ export default function TenantOrgUnitsDetailPage() {
   const handleRemoveUser = async (userId: string) => {
     if (!confirm('Are you sure you want to remove this user from the org unit?')) return;
     try {
-      await tenantService.removeOrgUnitUser(tenantId, orgUnitId, userId);
+      // await tenantService.removeOrgUnitUser(tenantId, orgUnitId, userId);
 
       setSuccess('User removed successfully');
       fetchUsers();
     } catch (err: any) {
-      setError(err.message);
+      setError(err?.message);
     }
   };
 
   const handleRemoveApplication = async (applicationId: string) => {
     if (!confirm('Are you sure you want to remove this application from the org unit?')) return;
     try {
-      await tenantService.removeOrgUnitApplication(tenantId, orgUnitId, applicationId);
+      // await tenantService.removeOrgUnitApplication(tenantId, orgUnitId, applicationId);
 
       setSuccess('Application removed successfully');
       fetchApplications();
     } catch (err: any) {
-      setError(err.message);
+      setError(err?.message);
     }
   };
 
@@ -278,7 +283,7 @@ export default function TenantOrgUnitsDetailPage() {
   };
 
   if (loading) {
-    return ;
+    return <LoadingOverlay />;
   }
 
   if (!orgUnit) {

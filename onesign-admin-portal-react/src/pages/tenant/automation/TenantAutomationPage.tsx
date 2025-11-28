@@ -110,17 +110,17 @@ export default function TenantAutomationPage() {
     setError('');
     try {
       if (activeTab === 'workflows') {
-        const data = await AutomationAPI.getWorkflows(tenantId);
+        const data = await AutomationAPI.getWorkflows();
         setWorkflows(data);
       } else if (activeTab === 'executionHistory') {
-        const data = await AutomationAPI.getExecutions(tenantId, { page: executionPage, pageSize: 20 });
+        const data = await AutomationAPI.getExecutions({ page: executionPage, pageSize: 20 });
         setExecutions(data.items);
         setTotalExecutions(data.totalCount);
       } else if (activeTab === 'templates') {
         const data = await AutomationAPI.getAvailableTemplates();
         setTemplates(data);
       } else if (activeTab === 'triggers') {
-        const data = await AutomationAPI.getAvailableTriggers(tenantId);
+        const data = await AutomationAPI.getAvailableTriggers();
         setAvailableTriggers(data);
       }
     } catch (err) {
@@ -146,7 +146,7 @@ export default function TenantAutomationPage() {
   const fetchExecutionDetail = async (workflowId: string, execId: string) => {
     setLoading(true);
     try {
-      const data = await AutomationAPI.getExecutionDetail(tenantId, workflowId, execId);
+      const data = await AutomationAPI.getExecutionDetail(execId);
       setExecutionDetail(data);
       setShowExecutionDetail(true);
     } catch (err) {
@@ -158,7 +158,7 @@ export default function TenantAutomationPage() {
 
   const handleTestWorkflow = async (workflowId: string) => {
     try {
-      const data = await AutomationAPI.testWorkflowWithPayload(tenantId, workflowId, userId);
+      const data = await AutomationAPI.testWorkflowWithPayload(workflowId, { userId });
       setSuccess(`Test completed: ${data.result}`);
       fetchData();
     } catch (err: any) {
@@ -168,7 +168,7 @@ export default function TenantAutomationPage() {
 
   const handleCreateTemplate = async (workflow: AutomationWorkflowDto) => {
     try {
-      await AutomationAPI.createTemplate(tenantId, {
+      await AutomationAPI.createTemplate({
         name: workflow.name,
         description: workflow.description,
         severity: workflow.severity,
@@ -191,10 +191,9 @@ export default function TenantAutomationPage() {
     setSuccess('');
     try {
       await AutomationAPI.createWorkflow({
-        tenantId,
-        userId,
         ...newWorkflow,
-      });
+        userId,
+      } as any);
       setSuccess(t('automation.workflowCreated'));
       setShowCreateModal(false);
       setNewWorkflow({
@@ -215,7 +214,7 @@ export default function TenantAutomationPage() {
   const handleDeleteWorkflow = async (id: string) => {
     if (!confirm(t('automation.confirmDelete'))) return;
     try {
-      await AutomationAPI.deleteWorkflow(tenantId, id);
+      await AutomationAPI.deleteWorkflow(id);
       setSuccess(t('automation.workflowDeleted'));
       fetchData();
     } catch (err) {
@@ -226,9 +225,9 @@ export default function TenantAutomationPage() {
   const handleToggleWorkflow = async (workflow: AutomationWorkflowDto) => {
     try {
       if (workflow.isEnabled) {
-        await AutomationAPI.disableWorkflow(tenantId, workflow.id, userId);
+        await AutomationAPI.disableWorkflow(workflow.id);
       } else {
-        await AutomationAPI.enableWorkflow(tenantId, workflow.id, userId);
+        await AutomationAPI.enableWorkflow(workflow.id);
       }
       fetchData();
     } catch (err) {
@@ -238,7 +237,7 @@ export default function TenantAutomationPage() {
 
   const handleCloneTemplate = async (template: AutomationWorkflowDto) => {
     try {
-      await AutomationAPI.cloneTemplate(tenantId, template.id, userId);
+      await AutomationAPI.cloneTemplate(template.id);
       setSuccess(t('automation.templateCloned'));
       setActiveTab('workflows');
       fetchData();
@@ -329,7 +328,7 @@ export default function TenantAutomationPage() {
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {workflow.triggers.map(t => t.eventType).join(', ')}
+                    {workflow.triggers.map(t => t.type).join(', ')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 rounded text-xs ${getSeverityColor(workflow.severity)}`}>
@@ -479,7 +478,7 @@ export default function TenantAutomationPage() {
                 </span>
               </div>
               <div className="text-sm text-gray-500 mb-4">
-                <strong>{t('automation.triggers')}:</strong> {template.triggers.map(t => t.eventType).join(', ')}
+                <strong>{t('automation.triggers')}:</strong> {template.triggers.map(t => t.type).join(', ')}
               </div>
               <button
                 onClick={() => handleCloneTemplate(template)}

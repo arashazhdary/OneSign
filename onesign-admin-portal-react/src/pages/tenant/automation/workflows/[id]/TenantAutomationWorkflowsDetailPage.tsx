@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
@@ -125,10 +125,10 @@ export default function TenantAutomationWorkflowsDetailPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await getWorkflow(workflowId, tenantId);
-      setWorkflow(data);
-      setEditName(data.name);
-      setEditDescription(data.description);
+      const data = await getWorkflow(workflowId);
+      setWorkflow(data as any);
+      setEditName(data?.name || '');
+      setEditDescription(data?.description || '');
     } catch (err) {
       setError(t('common.error'));
     } finally {
@@ -138,7 +138,7 @@ export default function TenantAutomationWorkflowsDetailPage() {
 
   const fetchRuns = async () => {
     try {
-      const data = await getWorkflowRuns(workflowId, tenantId, 20);
+      const data = await getWorkflowRuns(workflowId, { limit: 20 });
       setRuns(data);
     } catch (err) {
       console.error('Failed to fetch runs:', err);
@@ -147,7 +147,7 @@ export default function TenantAutomationWorkflowsDetailPage() {
 
   const fetchLogs = async () => {
     try {
-      const data = await getWorkflowLogs(workflowId, tenantId, 50);
+      const data = await getWorkflowLogs(workflowId, { limit: 50 });
       setLogs(data);
     } catch (err) {
       console.error('Failed to fetch logs:', err);
@@ -163,9 +163,9 @@ export default function TenantAutomationWorkflowsDetailPage() {
     try {
       const action = workflow.isActive ? 'deactivate' : 'activate';
       if (workflow.isActive) {
-        await deactivateWorkflow(workflowId, tenantId);
+        await deactivateWorkflow(workflowId);
       } else {
-        await activateWorkflow(workflowId, tenantId);
+        await activateWorkflow(workflowId);
       }
 
       setSuccess(`Workflow ${action}d successfully`);
@@ -189,7 +189,7 @@ export default function TenantAutomationWorkflowsDetailPage() {
         throw new Error('Invalid JSON format');
       }
 
-      await testWorkflowDetail(workflowId, tenantId, parsedData);
+      await testWorkflowDetail(workflowId);
       setSuccess('Workflow test completed successfully');
       setShowTestModal(false);
       setActiveTab('runs');
@@ -206,7 +206,7 @@ export default function TenantAutomationWorkflowsDetailPage() {
     setError('');
     setSuccess('');
     try {
-      await updateWorkflowBasicInfo(workflowId, tenantId, editName, editDescription);
+      await updateWorkflowBasicInfo(workflowId, { name: editName, description: editDescription });
 
       setSuccess('Workflow updated successfully');
       setShowEditModal(false);
@@ -247,7 +247,7 @@ export default function TenantAutomationWorkflowsDetailPage() {
   };
 
   if (loading) {
-    return ;
+    return <LoadingOverlay />;
   }
 
   if (!workflow) {
