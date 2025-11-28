@@ -68,7 +68,7 @@ export default function TenantIntegrationsDetailPage() {
 
     try {
       setLoading(true);
-      const result = await tenantService.getIntegrationById(tenantId, id);
+      const result = await tenantService.getIntegrationById(id);
 
       const integrationData: IntegrationDetails = {
         id: result.id,
@@ -240,7 +240,7 @@ export default function TenantIntegrationsDetailPage() {
     const newStatus = integration.status === 'active' ? 'inactive' : 'active';
 
     try {
-      await tenantService.updateIntegration(tenantId, id, { status: newStatus });
+      await tenantService.updateIntegration(id, { status: newStatus });
       setSuccess(`Integration ${newStatus === 'active' ? 'enabled' : 'disabled'} successfully`);
       fetchData();
     } catch (err: any) {
@@ -267,7 +267,6 @@ export default function TenantIntegrationsDetailPage() {
 
     try {
       await tenantService.updateIntegration(
-        tenantId,
         id,
         {
           name: editName,
@@ -290,7 +289,7 @@ export default function TenantIntegrationsDetailPage() {
     setSuccess('');
 
     try {
-      await tenantService.deleteIntegration(tenantId, id);
+      await tenantService.deleteIntegration(id);
       setSuccess('Integration deleted successfully');
       setTimeout(() => {
         navigate('/tenant/integrations');

@@ -175,20 +175,20 @@ export const getUserSecurityPosture = async (tenantId?: string) => {
   }
 };
 
-export const exportTenantInsightsOverview = async (format: string, tenantId?: string) => {
+export const exportTenantInsightsOverview = async (tenantId: string, format: string = 'xlsx') => {
   try {
-    const response = await apiClient.get('/api/tenant/insights/export', {
+    const response = await apiClient.get('/api/tenant/insights/overview/export', {
       params: { format, tenantId },
       responseType: 'blob'
     });
     return response.data;
   } catch (error) {
-    console.error('Failed to export tenant insights:', error);
+    console.error('Failed to export tenant insights overview:', error);
     throw error;
   }
 };
 
-export const exportUserSecurityPosture = async (format: string, tenantId?: string) => {
+export const exportUserSecurityPosture = async (tenantId: string, format: string = 'xlsx') => {
   try {
     const response = await apiClient.get('/api/tenant/insights/user-security-posture/export', {
       params: { format, tenantId },
@@ -212,9 +212,9 @@ export const getReportSubscriptions = async (tenantId?: string) => {
   }
 };
 
-export const createReportSubscription = async (data: any) => {
+export const createReportSubscription = async (tenantId: string, data: any) => {
   try {
-    const response = await apiClient.post('/api/tenant/insights/report-subscriptions', data);
+    const response = await apiClient.post('/api/tenant/insights/report-subscriptions', data, { params: { tenantId } });
     return response.data;
   } catch (error) {
     console.error('Failed to create report subscription:', error);
@@ -222,9 +222,9 @@ export const createReportSubscription = async (data: any) => {
   }
 };
 
-export const updateReportSubscription = async (subscriptionId: string, data: any) => {
+export const updateReportSubscription = async (tenantId: string, subscriptionId: string, data: any) => {
   try {
-    const response = await apiClient.put(`/api/tenant/insights/report-subscriptions/${subscriptionId}`, data);
+    const response = await apiClient.put(`/api/tenant/insights/report-subscriptions/${subscriptionId}`, data, { params: { tenantId } });
     return response.data;
   } catch (error) {
     console.error('Failed to update report subscription:', error);
@@ -232,9 +232,9 @@ export const updateReportSubscription = async (subscriptionId: string, data: any
   }
 };
 
-export const deleteReportSubscription = async (subscriptionId: string) => {
+export const deleteReportSubscription = async (tenantId: string, subscriptionId: string) => {
   try {
-    await apiClient.delete(`/api/tenant/insights/report-subscriptions/${subscriptionId}`);
+    await apiClient.delete(`/api/tenant/insights/report-subscriptions/${subscriptionId}`, { params: { tenantId } });
   } catch (error) {
     console.error('Failed to delete report subscription:', error);
     throw error;

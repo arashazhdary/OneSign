@@ -67,9 +67,8 @@ export default function TenantAccountPage() {
   }, [tenantId]);
 
   const fetchProfile = async () => {
-    if (!tenantId) return;
     try {
-      const data = await usersService.getAccountProfile(tenantId);
+      const data = await usersService.getAccountProfile();
       setProfile(data);
       setFirstName(data.firstName);
       setLastName(data.lastName);
@@ -85,9 +84,8 @@ export default function TenantAccountPage() {
   };
 
   const fetchSessions = async () => {
-    if (!tenantId) return;
     try {
-      const data = await usersService.getAccountSessions(tenantId);
+      const data = await usersService.getAccountSessions();
       setSessions(data);
     } catch (err: any) {
       console.error('Error fetching sessions:', err);
@@ -99,13 +97,12 @@ export default function TenantAccountPage() {
     e.preventDefault();
     setError('');
     setSuccess('');
-    if (!tenantId) return;
 
     try {
-      await usersService.updateAccountProfile(tenantId, {
+      await usersService.updateAccountProfile({
         firstName,
         lastName,
-        phoneNumber,
+        phone: phoneNumber,
         timezone,
         language
       });
@@ -128,10 +125,12 @@ export default function TenantAccountPage() {
       return;
     }
 
-    if (!tenantId) return;
-
     try {
-      await usersService.changePassword(tenantId, currentPassword, newPassword);
+      await usersService.changePassword({
+        currentPassword,
+        newPassword,
+        confirmPassword
+      });
       setSuccess(t('tenant.account.passwordChanged'));
       setCurrentPassword('');
       setNewPassword('');
@@ -147,10 +146,8 @@ export default function TenantAccountPage() {
     setError('');
     setSuccess('');
 
-    if (!tenantId) return;
-
     try {
-      await usersService.revokeSession(tenantId, sessionId);
+      await usersService.revokeSession(sessionId);
       setSuccess(t('tenant.account.sessionRevoked'));
       fetchSessions();
     } catch (err: any) {

@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
 import { governanceService } from '@/lib/api/services';
 import { Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 
 interface GovernanceStats {
   totalPolicies: number;
@@ -181,13 +180,13 @@ export default function TenantGovernancePage() {
         </div>
         <div className="flex gap-3">
           <Link
-            href="governance/campaigns"
+            to="governance/campaigns"
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             New Campaign
           </Link>
           <Link
-            href="/tenant/policies"
+            to="/tenant/policies"
             className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
           >
             View Policies
@@ -267,7 +266,7 @@ export default function TenantGovernancePage() {
         {governanceFeatures.map((feature) => (
           <Link
             key={feature.href}
-            href={feature.href}
+            to={feature.href}
             className="group bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden"
           >
             <div className={`h-2 bg-gradient-to-r ${feature.color}`}></div>
