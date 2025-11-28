@@ -35,10 +35,8 @@ export function LiveChat() {
   useEffect(() => {
     // In production, initialize your chat service here
     // Example: window.Intercom?.('boot', { app_id: 'your_app_id' });
-    console.log('[LiveChat] Initialized');
-
     return () => {
-      console.log('[LiveChat] Cleanup');
+      // Cleanup
     };
   }, []);
 

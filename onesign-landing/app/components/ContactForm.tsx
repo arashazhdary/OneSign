@@ -60,7 +60,9 @@ export function ContactForm() {
       // Hide success message after 5 seconds
       setTimeout(() => setSubmitSuccess(false), 5000);
     } catch (error) {
-      console.error('Error submitting form:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error submitting form:', error);
+      }
     } finally {
       setIsSubmitting(false);
     }

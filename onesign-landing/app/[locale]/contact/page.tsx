@@ -14,14 +14,14 @@ export default function ContactPage() {
       icon: '📧',
       title: t('methods.email.title'),
       description: t('methods.email.description'),
-      value: 'support@onesign.com',
+      value: t('methods.email.value'),
       link: 'mailto:support@onesign.com',
     },
     {
       icon: '📞',
       title: t('methods.phone.title'),
       description: t('methods.phone.description'),
-      value: '+1 (555) 123-4567',
+      value: t('methods.phone.value'),
       link: 'tel:+15551234567',
     },
     {
@@ -35,7 +35,7 @@ export default function ContactPage() {
       icon: '📍',
       title: t('methods.office.title'),
       description: t('methods.office.description'),
-      value: '123 Business St, San Francisco, CA 94105',
+      value: t('methods.office.value'),
       link: 'https://maps.google.com',
     },
   ];

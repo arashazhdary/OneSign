@@ -677,11 +677,13 @@
     "methods": {
       "email": {
         "title": "Email",
-        "description": "Send us an email anytime"
+        "description": "Send us an email anytime",
+        "value": "support@onesign.com"
       },
       "phone": {
         "title": "Phone",
-        "description": "Mon-Fri from 9am to 6pm"
+        "description": "Mon-Fri from 9am to 6pm",
+        "value": "+1 (555) 123-4567"
       },
       "liveChat": {
         "title": "Live Chat",
@@ -690,7 +692,8 @@
       },
       "office": {
         "title": "Office",
-        "description": "Visit our headquarters"
+        "description": "Visit our headquarters",
+        "value": "123 Business St, San Francisco, CA 94105"
       }
     },
     "form": {
@@ -720,7 +723,12 @@
     "description": "We're sorry, but something unexpected happened. Please try refreshing the page.",
     "refreshPage": "Refresh Page",
     "goToHomepage": "Go to Homepage",
-    "errorDetails": "Error Details"
+    "errorDetails": "Error Details",
+    "support": {
+      "message": "Need help? Our support team is here for you.",
+      "emailButton": "Email Support",
+      "email": "support@onesign.com"
+    }
   },
   "featuresPage": {
     "hero": {

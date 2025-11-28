@@ -677,11 +677,13 @@
     "methods": {
       "email": {
         "title": "ایمیل",
-        "description": "هر زمان برای ما ایمیل بفرستید"
+        "description": "هر زمان برای ما ایمیل بفرستید",
+        "value": "support@onesign.com"
       },
       "phone": {
         "title": "تلفن",
-        "description": "دوشنبه تا جمعه از ساعت ۹ صبح تا ۶ بعد از ظهر"
+        "description": "دوشنبه تا جمعه از ساعت ۹ صبح تا ۶ بعد از ظهر",
+        "value": "+1 (555) 123-4567"
       },
       "liveChat": {
         "title": "گفتگوی زنده",
@@ -690,7 +692,8 @@
       },
       "office": {
         "title": "دفتر",
-        "description": "از دفتر مرکزی ما بازدید کنید"
+        "description": "از دفتر مرکزی ما بازدید کنید",
+        "value": "123 Business St, San Francisco, CA 94105"
       }
     },
     "form": {
@@ -720,7 +723,12 @@
     "description": "متأسفیم، اما اتفاق غیرمنتظره‌ای رخ داد. لطفاً صفحه را مجدداً بارگذاری کنید.",
     "refreshPage": "بارگذاری مجدد صفحه",
     "goToHomepage": "رفتن به صفحه اصلی",
-    "errorDetails": "جزئیات خطا"
+    "errorDetails": "جزئیات خطا",
+    "support": {
+      "message": "به کمک نیاز دارید؟ تیم پشتیبانی ما در خدمت شماست.",
+      "emailButton": "پشتیبانی ایمیلی",
+      "email": "support@onesign.com"
+    }
   },
   "featuresPage": {
     "hero": {

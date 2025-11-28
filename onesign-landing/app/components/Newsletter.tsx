@@ -49,7 +49,9 @@ export function Newsletter() {
       // Hide success message after 5 seconds
       setTimeout(() => setIsSuccess(false), 5000);
     } catch (error) {
-      console.error('Error subscribing to newsletter:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error subscribing to newsletter:', error);
+      }
       alert(t('blog.newsletter.errors.failedRetry'));
     } finally {
       setIsSubmitting(false);
