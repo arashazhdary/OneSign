@@ -1,0 +1,139 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: onesign-landing
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: landing-config
+  namespace: onesign-landing
+data:
+  NEXT_PUBLIC_APP_URL: "https://landing.yourdomain.com"
+  NODE_ENV: "production"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: onesign-landing
+  namespace: onesign-landing
+  labels:
+    app: onesign-landing
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: onesign-landing
+  template:
+    metadata:
+      labels:
+        app: onesign-landing
+    spec:
+      containers:
+      - name: landing
+        image: onesign-landing:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3001
+          name: http
+        env:
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: landing-config
+              key: NODE_ENV
+        - name: NEXT_PUBLIC_APP_URL
+          valueFrom:
+            configMapKeyRef:
+              name: landing-config
+              key: NEXT_PUBLIC_APP_URL
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3001
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: onesign-landing-service
+  namespace: onesign-landing
+spec:
+  type: ClusterIP
+  selector:
+    app: onesign-landing
+  ports:
+  - port: 80
+    targetPort: 3001
+    protocol: TCP
+    name: http
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: onesign-landing-ingress
+  namespace: onesign-landing
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  tls:
+  - hosts:
+    - landing.yourdomain.com
+    secretName: landing-tls
+  rules:
+  - host: landing.yourdomain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: onesign-landing-service
+            port:
+              number: 80
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: onesign-landing-hpa
+  namespace: onesign-landing
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: onesign-landing
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
