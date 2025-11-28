@@ -1,142 +1,73 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Header } from '@/app/components/Header';
 import { Footer } from '@/app/components/Footer';
 import { Card, CardHeader, CardTitle, CardContent } from '@/app/components/ui/Card';
 import { FadeIn, SlideUp } from '@/app/components/animations';
 
 export default function FeaturesPage() {
+  const t = useTranslations('featuresPage');
+
   const features = [
     {
-      category: 'Security & Compliance',
+      categoryKey: 'securityCompliance',
       icon: '🔒',
       items: [
-        {
-          title: 'Bank-Level Encryption',
-          description: 'AES-256 encryption ensures your documents are always protected in transit and at rest.',
-        },
-        {
-          title: 'Legal Compliance',
-          description: 'Compliant with eIDAS, ESIGN, UETA, and GDPR. Legally binding in 180+ countries.',
-        },
-        {
-          title: 'Audit Trail',
-          description: 'Complete document history with timestamp, IP address, and authentication details.',
-        },
-        {
-          title: 'SOC 2 Type II Certified',
-          description: 'Independently audited and certified for security, availability, and confidentiality.',
-        },
+        { titleKey: 'bankLevelEncryption', descriptionKey: 'bankLevelEncryptionDesc' },
+        { titleKey: 'legalCompliance', descriptionKey: 'legalComplianceDesc' },
+        { titleKey: 'auditTrail', descriptionKey: 'auditTrailDesc' },
+        { titleKey: 'soc2Certified', descriptionKey: 'soc2CertifiedDesc' },
       ],
     },
     {
-      category: 'Signing & Workflow',
+      categoryKey: 'signingWorkflow',
       icon: '✍️',
       items: [
-        {
-          title: 'Multi-Signature Support',
-          description: 'Collect signatures from multiple parties in any order or simultaneously.',
-        },
-        {
-          title: 'Custom Workflows',
-          description: 'Create automated workflows with conditional routing and approval chains.',
-        },
-        {
-          title: 'In-Person Signing',
-          description: 'Use your device to collect signatures in person with full authentication.',
-        },
-        {
-          title: 'Bulk Send',
-          description: 'Send the same document to multiple recipients at once with personalized fields.',
-        },
+        { titleKey: 'multiSignature', descriptionKey: 'multiSignatureDesc' },
+        { titleKey: 'customWorkflows', descriptionKey: 'customWorkflowsDesc' },
+        { titleKey: 'inPersonSigning', descriptionKey: 'inPersonSigningDesc' },
+        { titleKey: 'bulkSend', descriptionKey: 'bulkSendDesc' },
       ],
     },
     {
-      category: 'Document Management',
+      categoryKey: 'documentManagement',
       icon: '📄',
       items: [
-        {
-          title: 'Templates Library',
-          description: 'Create reusable templates with pre-defined fields for faster document preparation.',
-        },
-        {
-          title: 'Document Storage',
-          description: 'Unlimited secure cloud storage with advanced search and organization capabilities.',
-        },
-        {
-          title: 'Version Control',
-          description: 'Track all document versions with the ability to revert to previous versions.',
-        },
-        {
-          title: 'Smart Fields',
-          description: 'Auto-fill recipient information and create conditional fields based on responses.',
-        },
+        { titleKey: 'templatesLibrary', descriptionKey: 'templatesLibraryDesc' },
+        { titleKey: 'documentStorage', descriptionKey: 'documentStorageDesc' },
+        { titleKey: 'versionControl', descriptionKey: 'versionControlDesc' },
+        { titleKey: 'smartFields', descriptionKey: 'smartFieldsDesc' },
       ],
     },
     {
-      category: 'Integration & API',
+      categoryKey: 'integrationAPI',
       icon: '🔄',
       items: [
-        {
-          title: 'REST API',
-          description: 'Full-featured API with comprehensive documentation for custom integrations.',
-        },
-        {
-          title: 'Pre-Built Connectors',
-          description: 'Connect with Salesforce, Google Drive, Dropbox, Microsoft 365, and more.',
-        },
-        {
-          title: 'Webhooks',
-          description: 'Real-time notifications for document events to keep your systems in sync.',
-        },
-        {
-          title: 'Zapier Integration',
-          description: 'Connect with 3,000+ apps without writing any code.',
-        },
+        { titleKey: 'restAPI', descriptionKey: 'restAPIDesc' },
+        { titleKey: 'preBuiltConnectors', descriptionKey: 'preBuiltConnectorsDesc' },
+        { titleKey: 'webhooks', descriptionKey: 'webhooksDesc' },
+        { titleKey: 'zapierIntegration', descriptionKey: 'zapierIntegrationDesc' },
       ],
     },
     {
-      category: 'Mobile & Accessibility',
+      categoryKey: 'mobileAccessibility',
       icon: '📱',
       items: [
-        {
-          title: 'Native Mobile Apps',
-          description: 'Full-featured iOS and Android apps for signing on the go.',
-        },
-        {
-          title: 'Offline Mode',
-          description: 'Download documents and sign offline, then sync when connected.',
-        },
-        {
-          title: 'Biometric Authentication',
-          description: 'Use Face ID, Touch ID, or fingerprint for secure mobile access.',
-        },
-        {
-          title: 'Responsive Design',
-          description: 'Optimized experience across all devices and screen sizes.',
-        },
+        { titleKey: 'nativeMobileApps', descriptionKey: 'nativeMobileAppsDesc' },
+        { titleKey: 'offlineMode', descriptionKey: 'offlineModeDesc' },
+        { titleKey: 'biometricAuth', descriptionKey: 'biometricAuthDesc' },
+        { titleKey: 'responsiveDesign', descriptionKey: 'responsiveDesignDesc' },
       ],
     },
     {
-      category: 'Team & Collaboration',
+      categoryKey: 'teamCollaboration',
       icon: '👥',
       items: [
-        {
-          title: 'Team Management',
-          description: 'Organize users into teams with role-based access control.',
-        },
-        {
-          title: 'Shared Templates',
-          description: 'Share templates and documents across your organization.',
-        },
-        {
-          title: 'Activity Dashboard',
-          description: 'Monitor team activity and document status in real-time.',
-        },
-        {
-          title: 'Custom Branding',
-          description: 'Add your logo and brand colors to emails and signing pages.',
-        },
+        { titleKey: 'teamManagement', descriptionKey: 'teamManagementDesc' },
+        { titleKey: 'sharedTemplates', descriptionKey: 'sharedTemplatesDesc' },
+        { titleKey: 'activityDashboard', descriptionKey: 'activityDashboardDesc' },
+        { titleKey: 'customBranding', descriptionKey: 'customBrandingDesc' },
       ],
     },
   ];
@@ -150,10 +81,10 @@ export default function FeaturesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <FadeIn>
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-              Powerful Features for Modern Teams
+              {t('hero.title')}
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Everything you need to sign, send, and manage documents securely. Built for businesses of all sizes.
+              {t('hero.subtitle')}
             </p>
           </FadeIn>
         </div>
@@ -162,7 +93,7 @@ export default function FeaturesPage() {
       {/* Features Sections */}
       {features.map((category, categoryIndex) => (
         <section
-          key={category.category}
+          key={category.categoryKey}
           className={`py-20 ${
             categoryIndex % 2 === 0
               ? 'bg-white dark:bg-gray-900'
@@ -174,7 +105,7 @@ export default function FeaturesPage() {
               <div className="text-center mb-12">
                 <div className="text-6xl mb-4">{category.icon}</div>
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {category.category}
+                  {t(`categories.${category.categoryKey}`)}
                 </h2>
               </div>
             </FadeIn>
@@ -183,11 +114,11 @@ export default function FeaturesPage() {
                 <SlideUp key={index} delay={index * 0.1}>
                   <Card hover className="h-full">
                     <CardHeader>
-                      <CardTitle>{feature.title}</CardTitle>
+                      <CardTitle>{t(`features.${feature.titleKey}`)}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <p className="text-gray-600 dark:text-gray-300">
-                        {feature.description}
+                        {t(`features.${feature.descriptionKey}`)}
                       </p>
                     </CardContent>
                   </Card>
@@ -203,13 +134,13 @@ export default function FeaturesPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <FadeIn>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              Ready to Experience These Features?
+              {t('cta.title')}
             </h2>
             <p className="text-xl text-blue-100 mb-8">
-              Start your free 14-day trial today. No credit card required.
+              {t('cta.subtitle')}
             </p>
             <button className="px-8 py-4 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors shadow-lg">
-              Start Free Trial
+              {t('cta.button')}
             </button>
           </FadeIn>
         </div>

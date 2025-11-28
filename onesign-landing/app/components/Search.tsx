@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 
 /**
  * Global Search Component
@@ -107,6 +108,7 @@ interface SearchProps {
 }
 
 export function Search({ onClose }: SearchProps) {
+  const t = useTranslations('search');
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -205,7 +207,7 @@ export function Search({ onClose }: SearchProps) {
         className="flex items-center gap-2 px-4 py-2 text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
       >
         <span>🔍</span>
-        <span className="hidden sm:inline">Search</span>
+        <span className="hidden sm:inline">{t('search')}</span>
         <kbd className="hidden md:inline-block px-2 py-1 text-xs font-semibold text-gray-500 dark:text-gray-500 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded">
           ⌘K
         </kbd>
@@ -241,7 +243,7 @@ export function Search({ onClose }: SearchProps) {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Search pages, features, blog posts..."
+                    placeholder={t('placeholder')}
                     className="flex-1 bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-500 focus:outline-none text-lg"
                   />
                   <button
@@ -258,13 +260,13 @@ export function Search({ onClose }: SearchProps) {
                 <div className="max-h-96 overflow-y-auto">
                   {results.length === 0 && query.trim().length > 0 && (
                     <div className="p-8 text-center text-gray-500 dark:text-gray-500">
-                      No results found for "{query}"
+                      {t('noResults')} "{query}"
                     </div>
                   )}
 
                   {results.length === 0 && query.trim().length === 0 && (
                     <div className="p-8 text-center text-gray-500 dark:text-gray-500">
-                      Start typing to search...
+                      {t('startTyping')}
                     </div>
                   )}
 
@@ -311,16 +313,16 @@ export function Search({ onClose }: SearchProps) {
                         <kbd className="px-1.5 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded">
                           ↑↓
                         </kbd>{' '}
-                        Navigate
+                        {t('shortcuts.navigate')}
                       </span>
                       <span className="flex items-center gap-1">
                         <kbd className="px-1.5 py-0.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded">
                           ↵
                         </kbd>{' '}
-                        Select
+                        {t('shortcuts.select')}
                       </span>
                     </div>
-                    <span>{results.length} results</span>
+                    <span>{results.length} {t('results')}</span>
                   </div>
                 )}
               </div>

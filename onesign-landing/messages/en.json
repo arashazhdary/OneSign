@@ -17,7 +17,12 @@
       "cta": "Start Free Trial",
       "secondaryCta": "Watch Demo",
       "trustedBy": "Trusted by leading organizations",
-      "scrollToExplore": "Scroll to explore"
+      "scrollToExplore": "Scroll to explore",
+      "signatureCard": {
+        "readyToSign": "Ready to sign",
+        "signHere": "Sign here",
+        "signDocument": "Sign Document"
+      }
     },
     "features": {
       "title": "Powerful Features",
@@ -280,7 +285,10 @@
       "newsletter": "Subscribe to our newsletter",
       "emailPlaceholder": "Enter your email",
       "subscribe": "Subscribe",
-      "subscribed": "Thanks for subscribing!"
+      "subscribed": "Thanks for subscribing!",
+      "sslSecured": "SSL Secured",
+      "uptime": "99.9% Uptime",
+      "soc2Certified": "SOC 2 Certified"
     },
     "videoModal": {
       "title": "OneSign Platform Demo",
@@ -290,10 +298,11 @@
       "getStarted": "Start Free Trial"
     },
     "cookie": {
-      "title": "We use cookies",
-      "description": "We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies.",
-      "accept": "Accept",
-      "decline": "Decline"
+      "title": "Cookie Notice",
+      "description": "We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic. By clicking \"Accept All\", you consent to our use of cookies.",
+      "learnMore": "Learn more",
+      "decline": "Decline",
+      "accept": "Accept All"
     },
     "contact": {
       "floating": "Contact Us",
@@ -347,10 +356,16 @@
         "title": "Stay Updated",
         "subtitle": "Get the latest articles and insights delivered to your inbox",
         "placeholder": "Enter your email",
-        "button": "Subscribe"
+        "button": "Subscribe",
+        "errors": {
+          "invalidEmail": "Please enter a valid email address",
+          "failed": "Failed to subscribe",
+          "failedRetry": "Failed to subscribe. Please try again."
+        }
       }
     },
     "search": {
+      "search": "Search",
       "placeholder": "Search pages, features, blog posts...",
       "noResults": "No results found for",
       "startTyping": "Start typing to search...",
@@ -453,6 +468,7 @@
       "online": "Online",
       "offline": "Offline",
       "placeholder": "Type your message...",
+      "quickRepliesLabel": "Quick replies:",
       "quickReplies": {
         "docs": "📖 Documentation",
         "pricing": "💰 Pricing",
@@ -462,6 +478,152 @@
       "greeting": "Hi! 👋 How can I help you today?",
       "typicalReply": "We typically reply within minutes",
       "send": "Send"
+    },
+    "testimonialSubmission": {
+      "title": "Share Your Experience",
+      "form": {
+        "name": "Your Name *",
+        "email": "Email Address *",
+        "company": "Company (Optional)",
+        "role": "Your Role (Optional)",
+        "rolePlaceholder": "e.g., CTO, Developer",
+        "rating": "Rating *",
+        "ratingDisplay": "{rating} / 5",
+        "testimonial": "Your Testimonial *",
+        "testimonialPlaceholder": "Tell us about your experience with OneSign...",
+        "characterCount": "{count} / 500 characters",
+        "allowPublic": "I allow OneSign to publicly display this testimonial on their website and marketing materials",
+        "consentText": "I agree to the",
+        "terms": "Terms of Service",
+        "and": "and",
+        "privacy": "Privacy Policy",
+        "required": "*",
+        "submit": "Submit Testimonial",
+        "submitting": "Submitting..."
+      },
+      "success": {
+        "title": "Thank You!",
+        "message": "Your testimonial has been submitted and will be reviewed shortly.",
+        "submitAnother": "Submit Another"
+      }
+    }
+  },
+  "contactPage": {
+    "hero": {
+      "title": "Get in Touch",
+      "subtitle": "Have a question or need help? We're here for you. Reach out to our team and we'll get back to you as soon as possible."
+    },
+    "methods": {
+      "email": {
+        "title": "Email",
+        "description": "Send us an email anytime"
+      },
+      "phone": {
+        "title": "Phone",
+        "description": "Mon-Fri from 9am to 6pm"
+      },
+      "liveChat": {
+        "title": "Live Chat",
+        "description": "Available 24/7",
+        "value": "Start a conversation"
+      },
+      "office": {
+        "title": "Office",
+        "description": "Visit our headquarters"
+      }
+    },
+    "form": {
+      "title": "Send Us a Message",
+      "subtitle": "Fill out the form below and we'll respond within 24 hours"
+    },
+    "office": {
+      "title": "Visit Our Office",
+      "description": "We'd love to meet you in person! Our headquarters is located in the heart of San Francisco. Stop by for a coffee and a demo.",
+      "hours": {
+        "title": "Business Hours",
+        "weekdays": "Monday - Friday: 9:00 AM - 6:00 PM",
+        "weekends": "Saturday - Sunday: Closed"
+      },
+      "transit": {
+        "title": "Getting Here",
+        "description": "Easily accessible by BART, MUNI, and major bus lines. Street parking available."
+      }
+    }
+  },
+  "error": {
+    "title": "Something went wrong",
+    "description": "We're sorry, but something unexpected happened. Please try refreshing the page.",
+    "refreshPage": "Refresh Page",
+    "goToHomepage": "Go to Homepage",
+    "errorDetails": "Error Details"
+  },
+  "featuresPage": {
+    "hero": {
+      "title": "Powerful Features for Modern Teams",
+      "subtitle": "Everything you need to sign, send, and manage documents securely. Built for businesses of all sizes."
+    },
+    "categories": {
+      "securityCompliance": "Security & Compliance",
+      "signingWorkflow": "Signing & Workflow",
+      "documentManagement": "Document Management",
+      "integrationAPI": "Integration & API",
+      "mobileAccessibility": "Mobile & Accessibility",
+      "teamCollaboration": "Team & Collaboration"
+    },
+    "features": {
+      "bankLevelEncryption": "Bank-Level Encryption",
+      "bankLevelEncryptionDesc": "AES-256 encryption ensures your documents are always protected in transit and at rest.",
+      "legalCompliance": "Legal Compliance",
+      "legalComplianceDesc": "Compliant with eIDAS, ESIGN, UETA, and GDPR. Legally binding in 180+ countries.",
+      "auditTrail": "Audit Trail",
+      "auditTrailDesc": "Complete document history with timestamp, IP address, and authentication details.",
+      "soc2Certified": "SOC 2 Type II Certified",
+      "soc2CertifiedDesc": "Independently audited and certified for security, availability, and confidentiality.",
+      "multiSignature": "Multi-Signature Support",
+      "multiSignatureDesc": "Collect signatures from multiple parties in any order or simultaneously.",
+      "customWorkflows": "Custom Workflows",
+      "customWorkflowsDesc": "Create automated workflows with conditional routing and approval chains.",
+      "inPersonSigning": "In-Person Signing",
+      "inPersonSigningDesc": "Use your device to collect signatures in person with full authentication.",
+      "bulkSend": "Bulk Send",
+      "bulkSendDesc": "Send the same document to multiple recipients at once with personalized fields.",
+      "templatesLibrary": "Templates Library",
+      "templatesLibraryDesc": "Create reusable templates with pre-defined fields for faster document preparation.",
+      "documentStorage": "Document Storage",
+      "documentStorageDesc": "Unlimited secure cloud storage with advanced search and organization capabilities.",
+      "versionControl": "Version Control",
+      "versionControlDesc": "Track all document versions with the ability to revert to previous versions.",
+      "smartFields": "Smart Fields",
+      "smartFieldsDesc": "Auto-fill recipient information and create conditional fields based on responses.",
+      "restAPI": "REST API",
+      "restAPIDesc": "Full-featured API with comprehensive documentation for custom integrations.",
+      "preBuiltConnectors": "Pre-Built Connectors",
+      "preBuiltConnectorsDesc": "Connect with Salesforce, Google Drive, Dropbox, Microsoft 365, and more.",
+      "webhooks": "Webhooks",
+      "webhooksDesc": "Real-time notifications for document events to keep your systems in sync.",
+      "zapierIntegration": "Zapier Integration",
+      "zapierIntegrationDesc": "Connect with 3,000+ apps without writing any code.",
+      "nativeMobileApps": "Native Mobile Apps",
+      "nativeMobileAppsDesc": "Full-featured iOS and Android apps for signing on the go.",
+      "offlineMode": "Offline Mode",
+      "offlineModeDesc": "Download documents and sign offline, then sync when connected.",
+      "biometricAuth": "Biometric Authentication",
+      "biometricAuthDesc": "Use Face ID, Touch ID, or fingerprint for secure mobile access.",
+      "responsiveDesign": "Responsive Design",
+      "responsiveDesignDesc": "Optimized experience across all devices and screen sizes.",
+      "teamManagement": "Team Management",
+      "teamManagementDesc": "Organize users into teams with role-based access control.",
+      "sharedTemplates": "Shared Templates",
+      "sharedTemplatesDesc": "Share templates and documents across your organization.",
+      "activityDashboard": "Activity Dashboard",
+      "activityDashboardDesc": "Monitor team activity and document status in real-time.",
+      "customBranding": "Custom Branding",
+      "customBrandingDesc": "Add your logo and brand colors to emails and signing pages."
+    },
+    "cta": {
+      "title": "Ready to Experience These Features?",
+      "subtitle": "Start your free 14-day trial today. No credit card required.",
+      "button": "Start Free Trial"
     }
   }
 }

@@ -180,7 +180,7 @@ export function Hero() {
                         <div className="text-sm font-semibold text-gray-900 dark:text-white">
                           Contract.pdf
                         </div>
-                        <div className="text-xs text-gray-500">Ready to sign</div>
+                        <div className="text-xs text-gray-500">{t('hero.signatureCard.readyToSign')}</div>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -207,14 +207,14 @@ export function Hero() {
                             d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
                           />
                         </svg>
-                        <span className="font-medium">Sign here</span>
+                        <span className="font-medium">{t('hero.signatureCard.signHere')}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Action Button */}
                   <button className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg transition-all">
-                    Sign Document
+                    {t('hero.signatureCard.signDocument')}
                   </button>
                 </div>
 

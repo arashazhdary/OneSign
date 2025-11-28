@@ -40,7 +40,7 @@ export function Newsletter() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to subscribe');
+        throw new Error(result.error || t('blog.newsletter.errors.failed'));
       }
 
       setIsSuccess(true);
@@ -50,7 +50,7 @@ export function Newsletter() {
       setTimeout(() => setIsSuccess(false), 5000);
     } catch (error) {
       console.error('Error subscribing to newsletter:', error);
-      alert('Failed to subscribe. Please try again.');
+      alert(t('blog.newsletter.errors.failedRetry'));
     } finally {
       setIsSubmitting(false);
     }
@@ -83,7 +83,7 @@ export function Newsletter() {
                   className="w-full px-4 py-3 rounded-lg border-2 border-transparent focus:border-white focus:outline-none text-gray-900"
                 />
                 {errors.email && (
-                  <p className="mt-2 text-sm text-red-200 text-left">{errors.email.message}</p>
+                  <p className="mt-2 text-sm text-red-200 text-left">{t('blog.newsletter.errors.invalidEmail')}</p>
                 )}
               </div>
               <Button
