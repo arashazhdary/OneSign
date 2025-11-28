@@ -6,7 +6,7 @@ import { FadeIn, SlideUp, ScaleIn } from './animations';
 import { useEffect, useState } from 'react';
 
 export function Hero() {
-  const t = useTranslations('Landing');
+  const t = useTranslations('landing');
   const [stats, setStats] = useState({
     users: 0,
     documents: 0,
@@ -78,24 +78,23 @@ export function Hero() {
 
             <SlideUp delay={0.1}>
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
-                {t('hero.title') || 'Sign Documents Digitally'}
+                {t('hero.title')}
                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-                  {t('hero.subtitle') || 'Fast & Secure'}
+                  {t('hero.titleHighlight')}
                 </span>
               </h1>
             </SlideUp>
 
             <SlideUp delay={0.2}>
               <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl">
-                {t('hero.description') ||
-                  'The most secure and user-friendly electronic signature platform. Sign, send, and manage documents from anywhere.'}
+                {t('hero.subtitle')}
               </p>
             </SlideUp>
 
             <SlideUp delay={0.3}>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
                 <Button variant="primary" size="lg" className="group">
-                  {t('hero.cta_primary') || 'Start Free Trial'}
+                  {t('hero.cta')}
                   <svg
                     className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform"
                     fill="none"
@@ -125,7 +124,7 @@ export function Hero() {
                       d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  {t('hero.cta_secondary') || 'Watch Demo'}
+                  {t('hero.secondaryCta')}
                 </Button>
               </div>
             </SlideUp>
@@ -138,7 +137,7 @@ export function Hero() {
                     {formatNumber(stats.users)}+
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Active Users
+                    {t('stats.users')}
                   </div>
                 </div>
                 <div className="text-center lg:text-left">
@@ -146,7 +145,7 @@ export function Hero() {
                     {formatNumber(stats.documents)}+
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Documents Signed
+                    {t('stats.apps')}
                   </div>
                 </div>
                 <div className="text-center lg:text-left">
@@ -154,7 +153,7 @@ export function Hero() {
                     {stats.countries}+
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Countries
+                    {t('stats.authentications')}
                   </div>
                 </div>
               </div>
