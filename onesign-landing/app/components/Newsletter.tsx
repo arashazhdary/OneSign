@@ -29,17 +29,17 @@ export function Newsletter() {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
 
-      console.log('Newsletter signup:', data);
+      const result = await response.json();
 
-      // Here you would send the data to your API
-      // const response = await fetch('/api/newsletter', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(data),
-      // });
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to subscribe');
+      }
 
       setIsSuccess(true);
       reset();
@@ -48,6 +48,7 @@ export function Newsletter() {
       setTimeout(() => setIsSuccess(false), 5000);
     } catch (error) {
       console.error('Error subscribing to newsletter:', error);
+      alert('Failed to subscribe. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

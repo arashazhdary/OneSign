@@ -38,17 +38,17 @@ export function ContactForm() {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
 
-      console.log('Form data:', data);
+      const result = await response.json();
 
-      // Here you would send the data to your API
-      // const response = await fetch('/api/contact', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(data),
-      // });
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to submit form');
+      }
 
       setSubmitSuccess(true);
       reset();
