@@ -7,6 +7,9 @@ import { ToastContainer } from '@/app/components/Toast';
 import { CookieConsent } from '@/app/components/CookieConsent';
 import { BackToTop } from '@/app/components/BackToTop';
 import { ProgressBar } from '@/app/components/ProgressBar';
+import { GoogleAnalytics } from '@/app/components/GoogleAnalytics';
+import { WebVitals } from '@/app/components/WebVitals';
+import { LiveChat } from '@/app/components/LiveChat';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -33,9 +36,12 @@ export default async function LocaleLayout({
       <body suppressHydrationWarning>
         <ThemeProvider>
           <NextIntlClientProvider messages={messages}>
+            <GoogleAnalytics />
+            <WebVitals />
             <ProgressBar />
             {children}
             <BackToTop />
+            <LiveChat />
             <ToastContainer />
             <CookieConsent />
           </NextIntlClientProvider>
