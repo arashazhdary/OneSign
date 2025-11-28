@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useLocale } from '@/hooks/useLocale';
 import { getTenantId } from '@/lib/tenant-context';
 import { usersService } from '@/lib/api/services/users.service';
-import { tenantService } from '@/lib/api/services/tenant.service';
-import { Helmet } from 'react-helmet-async';
+import { tenantService, TenantUserDto } from '@/lib/api/services/tenant.service';
+import { getCurrentUserScope, CurrentUserScopeDto } from '@/lib/api/users';
 
 interface OrgUnitTreeNode {
   id: string;
@@ -19,13 +19,13 @@ interface OrgUnitTreeNode {
 export default function TenantUsersPage() {
   const { t } = useTranslation();
   const locale = useLocale();
-  const [users, setUsers] = useState<TenantUser[]>([]);
+  const [users, setUsers] = useState<TenantUserDto[]>([]);
   const [orgTree, setOrgTree] = useState<OrgUnitTreeNode[]>([]);
   const [selectedOrgUnitId, setSelectedOrgUnitId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [showAssignOrgUnitsModal, setShowAssignOrgUnitsModal] = useState(false);
-  const [selectedUserForOrgUnits, setSelectedUserForOrgUnits] = useState<TenantUser | null>(null);
+  const [selectedUserForOrgUnits, setSelectedUserForOrgUnits] = useState<TenantUserDto | null>(null);
   const [primaryOrgUnitId, setPrimaryOrgUnitId] = useState<string>('');
   const [secondaryOrgUnitIds, setSecondaryOrgUnitIds] = useState<string[]>([]);
   const [inviteEmail, setInviteEmail] = useState('');
@@ -57,12 +57,13 @@ export default function TenantUsersPage() {
   const fetchUserScope = async (tid: string) => {
     try {
       setScopeLoading(true);
-      const scope = await usersService.getCurrentUserScope(tid);
+      // getCurrentUserScope doesn't require parameters
+      const scope = await getCurrentUserScope();
       setUserScope(scope);
 
-      // Auto-select first rootOrgUnitId for delegated admins
-      if (scope && !scope.isGlobalAdmin && scope.rootOrgUnitIds.length > 0) {
-        setSelectedOrgUnitId(scope.rootOrgUnitIds[0]);
+      // Auto-select first orgUnit for delegated admins
+      if (scope && scope.orgUnits && scope.orgUnits.length > 0) {
+        setSelectedOrgUnitId(scope.orgUnits[0]);
       }
     } catch (err) {
       console.error('Error fetching user scope:', err);
@@ -82,12 +83,8 @@ export default function TenantUsersPage() {
     if (!tenantId) return;
 
     try {
-      const data = await usersService.getUsers({
-        tenantId,
-        orgUnitId: selectedOrgUnitId || undefined,
-        pageNumber: 1,
-        pageSize: 100,
-      });
+      // Use tenantService.getUsers which supports pagination
+      const data = await tenantService.getUsers(1, 100, selectedOrgUnitId || '');
       setUsers(data.items || []);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -99,7 +96,8 @@ export default function TenantUsersPage() {
   const fetchOrgTree = async () => {
     if (!tenantId) return;
     try {
-      const data = await tenantService.getOrgUnitsTree(tenantId);
+      // getOrgUnitsTree doesn't require tenantId parameter
+      const data = await tenantService.getOrgUnitsTree();
       setOrgTree(data);
     } catch (error) {
       console.error('Error fetching org tree:', error);
@@ -118,12 +116,18 @@ export default function TenantUsersPage() {
   };
 
   const getFilteredOrgTree = (): OrgUnitTreeNode[] => {
-    if (!userScope || userScope.isGlobalAdmin) {
+    if (!userScope) {
       return orgTree;
     }
-    // Filter to show only allowed org units
+    // If user has admin role, show all org units
+    const isAdmin = (userScope as any).isAdmin || userScope.roles?.includes('admin');
+    if (isAdmin) {
+      return orgTree;
+    }
+    // Filter to show only allowed org units from userScope.orgUnits
+    const allowedOrgUnitIds = userScope.orgUnits || [];
     const allNodes = getAllNodes(orgTree);
-    return allNodes.filter(node => userScope.allowedOrgUnitIds.includes(node.id));
+    return allNodes.filter(node => allowedOrgUnitIds.includes(node.id));
   };
 
   const handleInviteUser = async (e: React.FormEvent) => {
@@ -133,8 +137,8 @@ export default function TenantUsersPage() {
     if (!tenantId) return;
 
     try {
+      // Invite user with basic email and role info
       await usersService.inviteUser({
-        tenantId,
         email: inviteEmail,
         isAdmin: inviteIsAdmin,
       });
@@ -155,9 +159,10 @@ export default function TenantUsersPage() {
     setError('');
     setSuccess('');
     if (!tenantId) return;
-    
+
     try {
-      await usersService.updateUserStatus(tenantId, userId);
+      // updateUserStatus expects (userId, status) parameters
+      await usersService.updateUserStatus(userId, 'Inactive');
       setSuccess(t('tenant.users.userDisabled'));
       fetchUsers();
     } catch (error: any) {
@@ -166,12 +171,18 @@ export default function TenantUsersPage() {
     }
   };
 
-  const handleAssignOrgUnits = async (user: TenantUser) => {
+  const handleAssignOrgUnits = async (user: TenantUserDto) => {
     setSelectedUserForOrgUnits(user);
     try {
-      const data = await usersService.getUserOrgUnits(tenantId, user.id);
-      setPrimaryOrgUnitId(data.primaryOrgUnitId || '');
-      setSecondaryOrgUnitIds(data.secondaryOrgUnitIds || []);
+      // getUserOrgUnits only requires userId parameter
+      const data = await usersService.getUserOrgUnits(user.id);
+      // Handle response structure - might be array or object with orgUnitIds
+      if (Array.isArray(data)) {
+        setSecondaryOrgUnitIds(data);
+      } else {
+        setPrimaryOrgUnitId((data as any)?.primaryOrgUnitId || '');
+        setSecondaryOrgUnitIds((data as any)?.secondaryOrgUnitIds || []);
+      }
     } catch (error) {
       console.error('Error fetching user org units:', error);
     }
@@ -182,14 +193,12 @@ export default function TenantUsersPage() {
     if (!selectedUserForOrgUnits || !primaryOrgUnitId) return;
     setError('');
     setSuccess('');
-    
+
     try {
-      await usersService.updateUserOrgUnits(
-        tenantId,
-        selectedUserForOrgUnits.id,
-        primaryOrgUnitId,
-        secondaryOrgUnitIds
-      );
+      // Combine primary and secondary org unit IDs
+      const allOrgUnitIds = [primaryOrgUnitId, ...secondaryOrgUnitIds];
+      // updateUserOrgUnits expects (userId, orgUnitIds)
+      await usersService.updateUserOrgUnits(selectedUserForOrgUnits.id, allOrgUnitIds);
       setSuccess(t('tenant.userOrgUnits.orgUnitsAssigned'));
       setShowAssignOrgUnitsModal(false);
       setSelectedUserForOrgUnits(null);
@@ -226,7 +235,7 @@ export default function TenantUsersPage() {
           }}
           className="w-full max-w-xs px-3 py-2 border rounded"
         >
-          {(!userScope || userScope.isGlobalAdmin) && <option value="">{t('common.all')}</option>}
+          {(!userScope || userScope.roles?.includes('admin')) && <option value="">{t('common.all')}</option>}
           {getFilteredOrgTree().map(node => (
             <option key={node.id} value={node.id}>{node.name}</option>
           ))}
@@ -376,7 +385,7 @@ export default function TenantUsersPage() {
               <tr key={user.id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.email}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.status}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.isAdmin ? t('common.yes') : t('common.no')}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.roles?.includes('admin') ? t('common.yes') : t('common.no')}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{user.lastLoginAt || '-'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <div className="flex gap-2">

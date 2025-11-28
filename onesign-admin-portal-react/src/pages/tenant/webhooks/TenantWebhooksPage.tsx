@@ -156,11 +156,11 @@ export default function TenantWebhooksPage() {
     if (!tenantId) return;
 
     try {
-      const data = await tenantService.getWebhooks(tenantId);
+      const data = await tenantService.getWebhooks();
       setWebhooks(data);
     } catch (error) {
       console.error('Error fetching webhooks:', error);
-      setWebhooks(mockWebhooks);
+      setWebhooks(mockWebhooksFallback);
     } finally {
       setLoading(false);
     }
@@ -170,7 +170,7 @@ export default function TenantWebhooksPage() {
     if (!tenantId) return;
 
     try {
-      const data = await tenantService.getWebhookEvents(tenantId, webhookId);
+      const data = await tenantService.getWebhookEvents(webhookId);
       setDeliveries(data);
     } catch (error) {
       console.error('Error fetching webhook deliveries:', error);
@@ -186,7 +186,7 @@ export default function TenantWebhooksPage() {
     if (!tenantId) return;
 
     try {
-      await tenantService.createWebhook(tenantId, {
+      await tenantService.createWebhook({
         url: formUrl,
         events: formEvents,
         secret: formSecret,
@@ -210,7 +210,7 @@ export default function TenantWebhooksPage() {
     if (!tenantId || !selectedWebhook) return;
 
     try {
-      await tenantService.updateWebhook(tenantId, selectedWebhook.id, {
+      await tenantService.updateWebhook(selectedWebhook.id, {
         url: formUrl,
         events: formEvents,
         secret: formSecret,
@@ -235,7 +235,7 @@ export default function TenantWebhooksPage() {
     setSuccess('');
 
     try {
-      await tenantService.deleteWebhook(tenantId, webhookId);
+      await tenantService.deleteWebhook(webhookId);
       setSuccess('Webhook deleted successfully');
       fetchWebhooks();
     } catch (error: any) {
@@ -251,7 +251,7 @@ export default function TenantWebhooksPage() {
     setSuccess('');
 
     try {
-      const result = await tenantService.testWebhook(tenantId, webhookId);
+      const result = await tenantService.testWebhook(webhookId);
       if (result.success) {
         setSuccess('Test payload sent successfully');
       } else {
@@ -267,7 +267,7 @@ export default function TenantWebhooksPage() {
     if (!tenantId) return;
 
     try {
-      await tenantService.updateWebhook(tenantId, webhook.id, {
+      await tenantService.updateWebhook(webhook.id, {
         isActive: !webhook.isActive,
       });
       setSuccess(`Webhook ${!webhook.isActive ? 'enabled' : 'disabled'} successfully`);

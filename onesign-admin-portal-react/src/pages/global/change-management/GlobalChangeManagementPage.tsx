@@ -293,7 +293,7 @@ export default function GlobalChangeManagementPage() {
   const handleSimulate = async (id: string) => {
     setLoading(true);
     try {
-      const data = await changeManagementService.simulateGlobalChangeSet(id, userId);
+      const data = await changeManagementService.simulateGlobalChangeSet(id);
       setSimulationResult(data);
       setSuccess('Simulation completed successfully');
     } catch (err) {
@@ -359,7 +359,7 @@ export default function GlobalChangeManagementPage() {
 
     setLoading(true);
     try {
-      await changeManagementService.applyGlobalChangeSet(selectedChangeSet.id, userId);
+      await changeManagementService.applyGlobalChangeSet(selectedChangeSet.id);
       setSuccess('Change set applied successfully');
       setShowExecuteModal(false);
       fetchData();
@@ -375,7 +375,7 @@ export default function GlobalChangeManagementPage() {
 
     setLoading(true);
     try {
-      await changeManagementService.rollbackGlobalChangeSet(selectedChangeSet.id, userId);
+      await changeManagementService.rollbackGlobalChangeSet(selectedChangeSet.id);
       setSuccess('Change set rolled back successfully');
       setShowRollbackModal(false);
       fetchData();
@@ -391,7 +391,7 @@ export default function GlobalChangeManagementPage() {
 
     setLoading(true);
     try {
-      await changeManagementService.approveGlobalChangeSet(selectedChangeSet.id, userId, approvalComment);
+      await changeManagementService.approveGlobalChangeSet(selectedChangeSet.id, approvalComment);
       setSuccess('Change set approved');
       setShowApprovalModal(false);
       setApprovalComment('');
@@ -411,7 +411,7 @@ export default function GlobalChangeManagementPage() {
 
     setLoading(true);
     try {
-      await changeManagementService.rejectGlobalChangeSet(selectedChangeSet.id, userId, rejectReason);
+      await changeManagementService.rejectGlobalChangeSet(selectedChangeSet.id, rejectReason);
       setSuccess('Change set rejected');
       setShowRejectModal(false);
       setRejectReason('');
@@ -428,7 +428,7 @@ export default function GlobalChangeManagementPage() {
 
     setLoading(true);
     try {
-      await changeManagementService.submitGlobalChangeSet(selectedChangeSet.id, userId);
+      await changeManagementService.submitGlobalChangeSet(selectedChangeSet.id);
       setSuccess('Change set submitted for review');
       fetchData();
     } catch (err) {
@@ -584,7 +584,7 @@ export default function GlobalChangeManagementPage() {
 
   const handleToggleRule = async (rule: GlobalApprovalRule) => {
     try {
-      await changeManagementService.toggleGlobalApprovalRule(rule.id, userId, !rule.isActive);
+      await changeManagementService.toggleGlobalApprovalRule(rule.id, !rule.isActive);
       setSuccess(`Rule ${rule.isActive ? 'disabled' : 'enabled'}`);
       fetchData();
     } catch (err) {
@@ -594,7 +594,7 @@ export default function GlobalChangeManagementPage() {
 
   const handleEnforceRule = async (rule: GlobalApprovalRule) => {
     try {
-      await changeManagementService.enforceGlobalApprovalRule(rule.id, userId, !rule.isEnforced);
+      await changeManagementService.enforceGlobalApprovalRule(rule.id);
       setSuccess(`Rule ${rule.isEnforced ? 'unenforced' : 'enforced'} globally`);
       fetchData();
     } catch (err) {
