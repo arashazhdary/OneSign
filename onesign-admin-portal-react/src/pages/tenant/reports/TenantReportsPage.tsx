@@ -4,7 +4,6 @@ import { getTenantId } from '@/lib/tenant-context';
 import { governanceService } from '@/lib/api/services';
 import * as InsightsAPI from '@/lib/api/insights';
 import { Link } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
 
 interface Report {
   id: string;
@@ -124,7 +123,8 @@ export default function TenantReportsPage() {
 
   const fetchSubscriptions = async () => {
     try {
-      const data = await InsightsAPI.getReportSubscriptions(tenantId);
+      // getReportSubscriptions doesn't take tenantId parameter
+      const data = await InsightsAPI.getReportSubscriptions();
       setSubscriptions(data.subscriptions || []);
     } catch (err) {
       console.error('Error fetching subscriptions:', err);
@@ -208,8 +208,11 @@ export default function TenantReportsPage() {
 
   const handleExportReport = async (reportId: string, format: string) => {
     try {
-      // exportTenantInsightsOverview expects (format, tenantId)
-      const blob = await InsightsAPI.exportTenantInsightsOverview(format, tenantId);
+      // exportTenantInsightsOverview expects (tenantId, from, to, format)
+      const now = new Date();
+      const from = new Date(now.setDate(now.getDate() - 30)).toISOString();
+      const to = new Date().toISOString();
+      const blob = await InsightsAPI.exportTenantInsightsOverview(tenantId!, from, to, format);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;

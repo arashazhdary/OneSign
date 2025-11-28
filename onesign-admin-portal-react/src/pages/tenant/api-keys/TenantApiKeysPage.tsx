@@ -7,7 +7,6 @@ import ActionButton from '@/components/common/ActionButton';
 import Modal from '@/components/common/Modal';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import { tenantService } from '@/lib/api/services/tenant.service';
-import { Helmet } from 'react-helmet-async';
 
 interface APIKey {
   id: string;
@@ -97,7 +96,7 @@ export default function TenantApiKeysPage() {
     {
       key: 'isRevoked',
       label: 'Status',
-      render: (k) => <StatusBadge status={k.isRevoked ? 'Revoked' : 'Active'} variant={k.isRevoked ? 'error' : 'success'} />
+      render: (k) => <StatusBadge status={k.isRevoked ? 'Revoked' : 'Active'} />
     },
     { key: 'createdAt', label: 'Created', render: (k) => new Date(k.createdAt).toLocaleDateString() },
     { key: 'expiresAt', label: 'Expires', render: (k) => k.expiresAt ? new Date(k.expiresAt).toLocaleDateString() : 'Never' },
@@ -159,7 +158,7 @@ export default function TenantApiKeysPage() {
             <button type="submit" className="flex-1">
               <ActionButton className="w-full">Create</ActionButton>
             </button>
-            <ActionButton variant="secondary" className="flex-1" onClick={() => setShowModal(false)}>
+            <ActionButton className="flex-1" onClick={() => setShowModal(false)}>
               Cancel
             </ActionButton>
           </div>

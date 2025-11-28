@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { tenantService } from '@/lib/api/services/tenant.service';
 import { getTenantId } from '@/lib/tenant-context';
 import Breadcrumbs from '@/components/common/Breadcrumbs';
-import { Helmet } from 'react-helmet-async';
 
 interface Scope {
   id: string;
@@ -41,7 +40,7 @@ interface DelegatedAdminDetails {
 
 export default function TenantDelegatedAdminsDetailPage() {
   const { t } = useTranslation();
-  const params = useParams();
+  const params = useParams<{ id: string }>();
   const navigate = useNavigate();
   const id = params.id as string;
   const [tenantId, setTenantIdState] = useState<string | null>(null);
@@ -78,7 +77,8 @@ export default function TenantDelegatedAdminsDetailPage() {
     try {
       setLoading(true);
       // Since there's no getDelegatedAdminById in the service, we'll fetch the list and find by ID
-      const admins = await tenantService.getDelegatedAdmins(tenantId);
+      const response = (await tenantService.getDelegatedAdmins(tenantId)) as any;
+      const admins = Array.isArray(response) ? response : response?.data || [];
       const adminData = admins.find((a: any) => a.id === id);
 
       if (!adminData) {

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import DataTable, { Column } from '@/components/common/DataTable';
 import { globalService } from '@/lib/api/services/global.service';
-import { Helmet } from 'react-helmet-async';
 
 interface PerformanceMetrics {
   cpuUsage: number;
@@ -62,7 +61,7 @@ export default function GlobalPerformancePage() {
     setLoading(true);
     setError('');
     try {
-      const data = await globalService.getPerformanceMetrics();
+      const data = (await globalService.getPerformanceMetrics()) as any;
       setMetrics(data);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -73,7 +72,7 @@ export default function GlobalPerformancePage() {
 
   const fetchSlowQueries = async () => {
     try {
-      const data = await globalService.getSlowQueries();
+      const data = (await globalService.getSlowQueries()) as any;
       setSlowQueries(data.queries || []);
     } catch (err) {
       console.error('Failed to fetch slow queries');
