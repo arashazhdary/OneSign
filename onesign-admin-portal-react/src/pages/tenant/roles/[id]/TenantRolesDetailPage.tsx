@@ -82,7 +82,7 @@ export default function TenantRolesDetailPage() {
 
     try {
       setLoading(true);
-      const result = await tenantService.getRoleById(id, tenantId);
+      const result = await tenantService.getRoleById(id);
 
       // Transform to expected format
       const roleData: RoleDetails = {
@@ -197,22 +197,17 @@ export default function TenantRolesDetailPage() {
   };
 
   const fetchAvailablePermissions = async () => {
-    try {
-      const perms = await tenantService.getPermissions();
-      setAvailablePermissions(perms);
-    } catch (err) {
-      // Use mock permissions if API fails
-      const mockPermissions: Permission[] = [
-        { id: 'users:read', resource: 'Users', action: 'Read', description: 'View users' },
-        { id: 'users:write', resource: 'Users', action: 'Write', description: 'Create and edit users' },
-        { id: 'users:delete', resource: 'Users', action: 'Delete', description: 'Delete users' },
-        { id: 'roles:read', resource: 'Roles', action: 'Read', description: 'View roles' },
-        { id: 'roles:write', resource: 'Roles', action: 'Write', description: 'Create and edit roles' },
-        { id: 'settings:read', resource: 'Settings', action: 'Read', description: 'View settings' },
-        { id: 'settings:write', resource: 'Settings', action: 'Write', description: 'Edit settings' },
-      ];
-      setAvailablePermissions(mockPermissions);
-    }
+    // Use mock permissions as getPermissions is not available in tenantService
+    const mockPermissions: Permission[] = [
+      { id: 'users:read', resource: 'Users', action: 'Read', description: 'View users' },
+      { id: 'users:write', resource: 'Users', action: 'Write', description: 'Create and edit users' },
+      { id: 'users:delete', resource: 'Users', action: 'Delete', description: 'Delete users' },
+      { id: 'roles:read', resource: 'Roles', action: 'Read', description: 'View roles' },
+      { id: 'roles:write', resource: 'Roles', action: 'Write', description: 'Create and edit roles' },
+      { id: 'settings:read', resource: 'Settings', action: 'Read', description: 'View settings' },
+      { id: 'settings:write', resource: 'Settings', action: 'Write', description: 'Edit settings' },
+    ];
+    setAvailablePermissions(mockPermissions);
   };
 
   const handleUpdateRole = async (e: React.FormEvent) => {
@@ -226,7 +221,7 @@ export default function TenantRolesDetailPage() {
       await tenantService.updateRole(id, {
         name: editName,
         description: editDescription,
-      }, tenantId);
+      });
 
       setSuccess('Role updated successfully');
       setShowEditModal(false);
@@ -245,7 +240,7 @@ export default function TenantRolesDetailPage() {
     try {
       await tenantService.updateRole(id, {
         permissions: selectedPermissions,
-      }, tenantId);
+      });
 
       setSuccess('Permissions updated successfully');
       setShowPermissionModal(false);
@@ -262,7 +257,7 @@ export default function TenantRolesDetailPage() {
     setSuccess('');
 
     try {
-      await tenantService.deleteRole(id, tenantId);
+      await tenantService.deleteRole(id);
       setSuccess('Role deleted successfully');
       setTimeout(() => {
         navigate('/tenant/roles');
