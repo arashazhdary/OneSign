@@ -42,3 +42,31 @@ export { ErrorBoundary } from './ErrorBoundary';
 
 // Animations
 export * from './animations';
+
+// Advanced Features
+export { GoogleAnalytics, analytics, trackEvent, trackPageView } from './GoogleAnalytics';
+export { WebVitals, useWebVitalsMonitoring, WebVitalsDisplay } from './WebVitals';
+export { Search } from './Search';
+export { LiveChat, useLiveChat } from './LiveChat';
+export { TestimonialSubmission } from './TestimonialSubmission';
+export { CurrencySelector } from './CurrencySelector';
+
+// Image Optimization
+export {
+  OptimizedImage,
+  ResponsiveImage,
+  AvatarImage,
+  LogoImage
+} from './OptimizedImage';
+
+// Lazy Loading
+export {
+  LazyLoad,
+  LazyImage,
+  LazySection,
+  LazyIframe,
+  lazyLoadComponent,
+  withLazyLoading,
+  preloadComponent,
+  useLazyLoad
+} from './LazyLoad';
