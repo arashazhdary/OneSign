@@ -26,8 +26,8 @@ export default function TenantObservabilityPage() {
   const [ipAddress, setIpAddress] = useState('');
 
   // Results
-  const [searchResults, setSearchResults] = useState<ObservabilityAPI.AuditSearchResult | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<ObservabilityAPI.AuditEvent | null>(null);
+  const [searchResults, setSearchResults] = useState<any>(null);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
   // Pagination
@@ -57,7 +57,7 @@ export default function TenantObservabilityPage() {
     if (!tenantId) return;
 
     try {
-      const filter: ObservabilityAPI.AuditSearchFilter = {
+      const filter: any = {
         tenantId,
         startDate: startDate ? new Date(startDate).toISOString() : undefined,
         endDate: endDate ? new Date(endDate).toISOString() : undefined,
@@ -72,7 +72,7 @@ export default function TenantObservabilityPage() {
         pageSize
       };
 
-      const data = await ObservabilityAPI.searchAuditEvents(tenantId, filter);
+      const data = await ObservabilityAPI.searchAuditEvents(filter);
       setSearchResults(data);
     } catch (error) {
       setError(t('common.error'));
@@ -88,7 +88,7 @@ export default function TenantObservabilityPage() {
     if (!tenantId) return;
 
     try {
-      const filter: Omit<ObservabilityAPI.AuditSearchFilter, 'pageNumber' | 'pageSize'> = {
+      const filter: any = {
         tenantId,
         startDate: startDate ? new Date(startDate).toISOString() : undefined,
         endDate: endDate ? new Date(endDate).toISOString() : undefined,
@@ -101,7 +101,7 @@ export default function TenantObservabilityPage() {
         ipAddress: ipAddress || undefined
       };
 
-      const blob = await ObservabilityAPI.exportAuditLogs(tenantId, filter);
+      const blob = await ObservabilityAPI.exportAuditLogs('csv', filter);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -117,7 +117,7 @@ export default function TenantObservabilityPage() {
     }
   };
 
-  const handleViewDetails = async (event: ObservabilityAPI.AuditEvent) => {
+  const handleViewDetails = async (event: any) => {
     setSelectedEvent(event);
     setShowDetailModal(true);
   };

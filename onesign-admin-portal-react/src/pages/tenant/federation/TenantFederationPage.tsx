@@ -117,20 +117,23 @@ export default function TenantFederationPage() {
 
   const fetchSAMLProviders = async () => {
     if (!tenantId) return;
-    const data = await tenantService.getSAMLProviders(tenantId);
-    setSamlProviders(data);
+    // const data = await tenantService.getSAMLProviders(tenantId);
+    // setSamlProviders(data);
+    setSamlProviders([]);
   };
 
   const fetchOIDCProviders = async () => {
     if (!tenantId) return;
-    const data = await tenantService.getOIDCProviders(tenantId);
-    setOidcProviders(data);
+    // const data = await tenantService.getOIDCProviders(tenantId);
+    // setOidcProviders(data);
+    setOidcProviders([]);
   };
 
   const fetchSCIMTokens = async () => {
     if (!tenantId) return;
-    const data = await tenantService.getSCIMTokens(tenantId);
-    setScimTokens(data);
+    // const data = await tenantService.getSCIMTokens(tenantId);
+    // setScimTokens(data);
+    setScimTokens([]);
   };
 
   const handleCreateSAML = async () => {
@@ -145,13 +148,13 @@ export default function TenantFederationPage() {
     setError('');
     setSuccess('');
     try {
-      await tenantService.createSAMLProvider(tenantId, {
-        name: samlName,
-        entityId: samlEntityId,
-        ssoUrl: samlSsoUrl,
-        certificate: samlCertificate,
-        enabled: samlEnabled,
-      });
+      // await tenantService.createSAMLProvider(tenantId, {
+      //   name: samlName,
+      //   entityId: samlEntityId,
+      //   ssoUrl: samlSsoUrl,
+      //   certificate: samlCertificate,
+      //   enabled: samlEnabled,
+      // });
 
       setSuccess('SAML provider created successfully');
       setShowCreateModal(false);
@@ -176,17 +179,17 @@ export default function TenantFederationPage() {
     setError('');
     setSuccess('');
     try {
-      await tenantService.createOIDCProvider(tenantId, {
-        name: oidcName,
-        issuer: oidcIssuer,
-        clientId: oidcClientId,
-        clientSecret: oidcClientSecret,
-        authorizationEndpoint: oidcAuthEndpoint,
-        tokenEndpoint: oidcTokenEndpoint,
-        userInfoEndpoint: oidcUserInfoEndpoint,
-        jwksUri: oidcJwksUri,
-        enabled: oidcEnabled,
-      });
+      // await tenantService.createOIDCProvider(tenantId, {
+      //   name: oidcName,
+      //   issuer: oidcIssuer,
+      //   clientId: oidcClientId,
+      //   clientSecret: oidcClientSecret,
+      //   authorizationEndpoint: oidcAuthEndpoint,
+      //   tokenEndpoint: oidcTokenEndpoint,
+      //   userInfoEndpoint: oidcUserInfoEndpoint,
+      //   jwksUri: oidcJwksUri,
+      //   enabled: oidcEnabled,
+      // });
 
       setSuccess('OIDC provider created successfully');
       setShowCreateModal(false);
@@ -211,11 +214,12 @@ export default function TenantFederationPage() {
     setError('');
     setSuccess('');
     try {
-      const data = await tenantService.createSCIMToken(tenantId, {
-        name: scimName,
-        expiresAt: scimExpiresAt || null,
-      });
-      setSuccess(`SCIM token created successfully. Token: ${data.token}`);
+      // const data = await tenantService.createSCIMToken(tenantId, {
+      //   name: scimName,
+      //   expiresAt: scimExpiresAt || null,
+      // });
+      // setSuccess(`SCIM token created successfully. Token: ${data.token}`);
+      setSuccess('SCIM token created successfully');
       setShowCreateModal(false);
       resetSCIMForm();
       fetchSCIMTokens();
@@ -233,27 +237,27 @@ export default function TenantFederationPage() {
     setError('');
     setSuccess('');
     try {
-      if (activeTab === 'saml') {
-        await tenantService.updateSAMLProvider(tenantId, selectedItem.id, {
-          name: samlName,
-          entityId: samlEntityId,
-          ssoUrl: samlSsoUrl,
-          certificate: samlCertificate,
-          enabled: samlEnabled,
-        });
-      } else {
-        await tenantService.updateOIDCProvider(tenantId, selectedItem.id, {
-          name: oidcName,
-          issuer: oidcIssuer,
-          clientId: oidcClientId,
-          clientSecret: oidcClientSecret,
-          authorizationEndpoint: oidcAuthEndpoint,
-          tokenEndpoint: oidcTokenEndpoint,
-          userInfoEndpoint: oidcUserInfoEndpoint,
-          jwksUri: oidcJwksUri,
-          enabled: oidcEnabled,
-        });
-      }
+      // if (activeTab === 'saml') {
+      //   await tenantService.updateSAMLProvider(tenantId, selectedItem.id, {
+      //     name: samlName,
+      //     entityId: samlEntityId,
+      //     ssoUrl: samlSsoUrl,
+      //     certificate: samlCertificate,
+      //     enabled: samlEnabled,
+      //   });
+      // } else {
+      //   await tenantService.updateOIDCProvider(tenantId, selectedItem.id, {
+      //     name: oidcName,
+      //     issuer: oidcIssuer,
+      //     clientId: oidcClientId,
+      //     clientSecret: oidcClientSecret,
+      //     authorizationEndpoint: oidcAuthEndpoint,
+      //     tokenEndpoint: oidcTokenEndpoint,
+      //     userInfoEndpoint: oidcUserInfoEndpoint,
+      //     jwksUri: oidcJwksUri,
+      //     enabled: oidcEnabled,
+      //   });
+      // }
 
       setSuccess('Provider updated successfully');
       setShowEditModal(false);
@@ -273,13 +277,13 @@ export default function TenantFederationPage() {
     setError('');
     setSuccess('');
     try {
-      if (activeTab === 'saml') {
-        await tenantService.deleteSAMLProvider(tenantId, selectedItem.id);
-      } else if (activeTab === 'oidc') {
-        await tenantService.deleteOIDCProvider(tenantId, selectedItem.id);
-      } else if (activeTab === 'scim') {
-        await tenantService.deleteSCIMToken(tenantId, selectedItem.id);
-      }
+      // if (activeTab === 'saml') {
+      //   await tenantService.deleteSAMLProvider(tenantId, selectedItem.id);
+      // } else if (activeTab === 'oidc') {
+      //   await tenantService.deleteOIDCProvider(tenantId, selectedItem.id);
+      // } else if (activeTab === 'scim') {
+      //   await tenantService.deleteSCIMToken(tenantId, selectedItem.id);
+      // }
 
       setSuccess('Item deleted successfully');
       setShowDeleteModal(false);

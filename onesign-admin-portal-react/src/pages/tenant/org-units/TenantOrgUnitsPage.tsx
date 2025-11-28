@@ -49,7 +49,7 @@ export default function TenantOrgUnitsPage() {
   const fetchUserScope = async (tid: string) => {
     try {
       setScopeLoading(true);
-      const scope = await getCurrentUserScope(tid);
+      const scope = await getCurrentUserScope();
       setUserScope(scope);
     } catch (err) {
       console.error('Error fetching user scope:', err);
@@ -222,15 +222,23 @@ export default function TenantOrgUnitsPage() {
 
   const canEditOrgUnit = (nodeId: string): boolean => {
     if (!userScope) return true;
-    if (userScope.isGlobalAdmin) return true;
-    return userScope.rootOrgUnitIds.includes(nodeId);
+    // Check if user is admin or if the org unit is in their assigned org units
+    const isAdmin = userScope.roles?.includes('admin') ?? false;
+    if (isAdmin) return true;
+    return (userScope.orgUnits as any)?.includes(nodeId) ?? false;
   };
 
   const getFilteredTree = (): OrgUnitTreeNode[] => {
-    if (!userScope || userScope.isGlobalAdmin) {
+    if (!userScope) {
       return tree;
     }
-    return filterTreeByAllowedOrgUnits(tree, userScope.allowedOrgUnitIds);
+    // Check if user is admin - if so, return full tree
+    const isAdmin = userScope.roles?.includes('admin') ?? false;
+    if (isAdmin) {
+      return tree;
+    }
+    // Otherwise filter by assigned org units
+    return filterTreeByAllowedOrgUnits(tree, (userScope.orgUnits as any) ?? []);
   };
 
   if (loading || scopeLoading) {
@@ -241,7 +249,7 @@ export default function TenantOrgUnitsPage() {
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{t('tenant.orgUnits.title')}</h1>
-        {(!userScope || userScope.isGlobalAdmin || userScope.rootOrgUnitIds.length > 0) && (
+        {(!userScope || (userScope.roles?.includes('admin') ?? false) || (userScope.orgUnits?.length ?? 0) > 0) && (
           <button
             onClick={() => {
               setNewParentId(null);

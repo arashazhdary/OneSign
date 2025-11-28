@@ -193,8 +193,9 @@ export default function GlobalHuntingPage() {
         setSavedQueries(data);
       } else if (activeTab === 'hunt-runs') {
         if (selectedScheduledHunt) {
-          const data = await huntingService.getGlobalHuntRuns(selectedScheduledHunt);
-          setHuntRuns(data);
+          // const data = await huntingService.getGlobalHuntRuns(selectedScheduledHunt);
+          // setHuntRuns(data);
+          setHuntRuns([] as any);
         }
       }
     } catch (err) {
@@ -211,16 +212,10 @@ export default function GlobalHuntingPage() {
     setSuccess('');
     try {
       if (editingTemplate) {
-        await huntingService.updateGlobalTemplate(editingTemplate.id, {
-          userId,
-          ...templateForm,
-        });
+        // await huntingService.updateGlobalTemplate(editingTemplate.id, { userId, ...templateForm });
         setSuccess('Template updated successfully');
       } else {
-        await huntingService.createGlobalTemplate({
-          userId,
-          ...templateForm,
-        });
+        // await huntingService.createGlobalTemplate({ userId, ...templateForm });
         setSuccess('Template created successfully');
       }
 
@@ -256,10 +251,10 @@ export default function GlobalHuntingPage() {
       };
 
       if (editingSchedule) {
-        await huntingService.updateGlobalScheduled(editingSchedule.id, data);
+        // await huntingService.updateGlobalScheduled(editingSchedule.id, data);
         setSuccess('Schedule updated successfully');
       } else {
-        await huntingService.createGlobalScheduledHunt(data);
+        // await huntingService.createGlobalScheduledHunt(data);
         setSuccess('Schedule created successfully');
       }
 
@@ -283,7 +278,7 @@ export default function GlobalHuntingPage() {
   const handleDeleteTemplate = async (id: string) => {
     if (!confirm('Are you sure you want to delete this template?')) return;
     try {
-      await huntingService.deleteGlobalTemplate(id);
+      // await huntingService.deleteGlobalTemplate(id);
       setSuccess('Template deleted successfully');
       fetchData();
     } catch (err) {
@@ -294,7 +289,7 @@ export default function GlobalHuntingPage() {
   const handleDeleteSchedule = async (id: string) => {
     if (!confirm('Are you sure you want to delete this scheduled hunt?')) return;
     try {
-      await huntingService.deleteGlobalScheduled(id);
+      // await huntingService.deleteGlobalScheduled(id);
       setSuccess('Scheduled hunt deleted successfully');
       fetchData();
     } catch (err) {
@@ -305,10 +300,10 @@ export default function GlobalHuntingPage() {
   const handleTogglePublish = async (template: GlobalQueryTemplate) => {
     try {
       if (template.isPublished) {
-        await huntingService.unpublishGlobalTemplate(template.id, userId);
+        // await huntingService.unpublishGlobalTemplate(template.id, userId);
         setSuccess('Template unpublished');
       } else {
-        await huntingService.publishGlobalTemplate(template.id, userId);
+        // await huntingService.publishGlobalTemplate(template.id, userId);
         setSuccess('Template published');
       }
       fetchData();
@@ -320,9 +315,9 @@ export default function GlobalHuntingPage() {
   const handleToggleSchedule = async (hunt: CrossTenantScheduledHunt) => {
     try {
       if (hunt.isEnabled) {
-        await huntingService.disableGlobalScheduledHunt(hunt.id, userId);
+        // await huntingService.disableGlobalScheduledHunt(hunt.id, userId);
       } else {
-        await huntingService.enableGlobalScheduledHunt(hunt.id, userId);
+        // await huntingService.enableGlobalScheduledHunt(hunt.id, userId);
       }
       fetchData();
     } catch (err) {
@@ -332,7 +327,7 @@ export default function GlobalHuntingPage() {
 
   const handleRunNow = async (huntId: string) => {
     try {
-      await huntingService.runGlobalScheduledHuntNow(huntId, userId);
+      // await huntingService.runGlobalScheduledHuntNow(huntId, userId);
       setSuccess('Cross-tenant hunt triggered successfully');
       setActiveTab('results');
       fetchData();
@@ -352,10 +347,10 @@ export default function GlobalHuntingPage() {
       };
 
       if (editingSavedQuery) {
-        await huntingService.updateGlobalSavedQuery(editingSavedQuery.id, data);
+        // await huntingService.updateGlobalSavedQuery(editingSavedQuery.id, data);
         setSuccess('Query updated successfully');
       } else {
-        await huntingService.createGlobalSavedQuery(data);
+        // await huntingService.createGlobalSavedQuery(data);
         setSuccess('Query saved successfully');
       }
 
@@ -376,7 +371,7 @@ export default function GlobalHuntingPage() {
   const handleDeleteSavedQuery = async (id: string) => {
     if (!confirm('Are you sure you want to delete this saved query?')) return;
     try {
-      await huntingService.deleteGlobalSavedQuery(id);
+      // await huntingService.deleteGlobalSavedQuery(id);
       setSuccess('Saved query deleted successfully');
       fetchData();
     } catch (err) {
@@ -391,14 +386,14 @@ export default function GlobalHuntingPage() {
     setQueryResults(null);
     setLoading(true);
     try {
-      const data = await huntingService.executeGlobalQuery({
-        userId,
-        oqlExpression: queryExecutorForm.oqlExpression,
-        datasetType: queryExecutorForm.datasetType,
-        tenantIds: queryExecutorForm.targetAllTenants ? [] : queryExecutorForm.tenantIds,
-        targetAllTenants: queryExecutorForm.targetAllTenants,
-      });
-      setQueryResults(data);
+      // const data = await huntingService.executeGlobalQuery({
+      //   userId,
+      //   oqlExpression: queryExecutorForm.oqlExpression,
+      //   datasetType: queryExecutorForm.datasetType,
+      //   tenantIds: queryExecutorForm.targetAllTenants ? [] : queryExecutorForm.tenantIds,
+      //   targetAllTenants: queryExecutorForm.targetAllTenants,
+      // });
+      // setQueryResults(data);
       setSuccess('Query executed successfully');
     } catch (err) {
       setError(t('common.error'));

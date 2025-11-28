@@ -9,12 +9,25 @@ export interface AutomationWorkflowDto {
     type: string;
     config?: any;
   };
+  triggers?: Array<{
+    type: string;
+    config?: any;
+  }>;
   actions: Array<{
     type: string;
     config?: any;
   }>;
+  conditions?: Array<{
+    type: string;
+    config?: any;
+  }>;
   isActive: boolean;
+  isEnabled?: boolean;
   isEnforced?: boolean;
+  severity?: 'low' | 'medium' | 'high' | 'critical';
+  category?: string;
+  tenantCanDisable?: boolean;
+  userId?: string;
   createdAt: string;
   updatedAt: string;
   createdBy?: string;
@@ -540,9 +553,6 @@ export const automationService = {
     return response.data;
   },
 };
-
-// Export types for use in pages
-export type AutomationWorkflowDto = WorkflowDto;
 
 // Export constants
 export const EVENT_TYPES = [

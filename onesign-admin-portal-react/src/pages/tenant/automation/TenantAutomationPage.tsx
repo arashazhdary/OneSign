@@ -5,10 +5,29 @@ import { DEFAULT_TENANT_ID } from '@/lib/constants/testIds';
 import * as AutomationAPI from '@/lib/api/automation';
 import {
   AutomationWorkflowDto,
-  AutomationExecutionDto,
   EVENT_TYPES,
   ACTION_TYPES,
 } from '@/lib/api/automation';
+
+// Define missing types
+interface AutomationExecutionDto {
+  id: string;
+  workflowId: string;
+  workflowName?: string;
+  status: string;
+  startedAt: string;
+  completedAt?: string;
+  type: string;
+  actionsExecutedCount: number;
+  actionsFailedCount: number;
+}
+
+interface AvailableTrigger {
+  eventType: string;
+  sourceModule: string;
+  description: string;
+  samplePayload: string;
+}
 import { Helmet } from 'react-helmet-async';
 
 interface WorkflowExecution {
@@ -18,7 +37,7 @@ interface WorkflowExecution {
   status: string;
   startedAt: string;
   completedAt?: string;
-  eventType: string;
+  type: string;
   actionsExecutedCount: number;
   actionsFailedCount: number;
   errorMessage?: string;
@@ -31,7 +50,7 @@ interface ExecutionDetail {
   status: string;
   startedAt: string;
   completedAt?: string;
-  eventType: string;
+  type: string;
   eventPayload: string;
   actionsExecuted: {
     actionType: string;
@@ -56,7 +75,7 @@ export default function TenantAutomationPage() {
   const [workflows, setWorkflows] = useState<AutomationWorkflowDto[]>([]);
   const [executions, setExecutions] = useState<AutomationExecutionDto[]>([]);
   const [templates, setTemplates] = useState<AutomationWorkflowDto[]>([]);
-  const [availableTriggers, setAvailableTriggers] = useState<AutomationAPI.AvailableTrigger[]>([]);
+  const [availableTriggers, setAvailableTriggers] = useState<AvailableTrigger[]>([]);
   const [workflowExecutions, setWorkflowExecutions] = useState<WorkflowExecution[]>([]);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string>('');
   const [executionDetail, setExecutionDetail] = useState<ExecutionDetail | null>(null);
@@ -91,17 +110,17 @@ export default function TenantAutomationPage() {
     setError('');
     try {
       if (activeTab === 'workflows') {
-        const data = await AutomationAPI.getWorkflows(tenantId);
+        const data = await AutomationAPI.getWorkflows();
         setWorkflows(data);
       } else if (activeTab === 'executionHistory') {
-        const data = await AutomationAPI.getExecutions(tenantId, { page: executionPage, pageSize: 20 });
+        const data = await AutomationAPI.getExecutions({ page: executionPage, pageSize: 20 });
         setExecutions(data.items);
         setTotalExecutions(data.totalCount);
       } else if (activeTab === 'templates') {
         const data = await AutomationAPI.getAvailableTemplates();
         setTemplates(data);
       } else if (activeTab === 'triggers') {
-        const data = await AutomationAPI.getAvailableTriggers(tenantId);
+        const data = await AutomationAPI.getAvailableTriggers();
         setAvailableTriggers(data);
       }
     } catch (err) {
@@ -127,7 +146,7 @@ export default function TenantAutomationPage() {
   const fetchExecutionDetail = async (workflowId: string, execId: string) => {
     setLoading(true);
     try {
-      const data = await AutomationAPI.getExecutionDetail(tenantId, workflowId, execId);
+      const data = await AutomationAPI.getExecutionDetail(execId);
       setExecutionDetail(data);
       setShowExecutionDetail(true);
     } catch (err) {
@@ -139,7 +158,7 @@ export default function TenantAutomationPage() {
 
   const handleTestWorkflow = async (workflowId: string) => {
     try {
-      const data = await AutomationAPI.testWorkflowWithPayload(workflowId, tenantId, userId);
+      const data = await AutomationAPI.testWorkflowWithPayload(workflowId, { userId });
       setSuccess(`Test completed: ${data.result}`);
       fetchData();
     } catch (err: any) {
@@ -149,7 +168,7 @@ export default function TenantAutomationPage() {
 
   const handleCreateTemplate = async (workflow: AutomationWorkflowDto) => {
     try {
-      await AutomationAPI.createTemplate(tenantId, {
+      await AutomationAPI.createTemplate({
         name: workflow.name,
         description: workflow.description,
         severity: workflow.severity,
@@ -172,10 +191,9 @@ export default function TenantAutomationPage() {
     setSuccess('');
     try {
       await AutomationAPI.createWorkflow({
-        tenantId,
-        userId,
         ...newWorkflow,
-      });
+        userId,
+      } as any);
       setSuccess(t('automation.workflowCreated'));
       setShowCreateModal(false);
       setNewWorkflow({
@@ -196,7 +214,7 @@ export default function TenantAutomationPage() {
   const handleDeleteWorkflow = async (id: string) => {
     if (!confirm(t('automation.confirmDelete'))) return;
     try {
-      await AutomationAPI.deleteWorkflow(id, tenantId);
+      await AutomationAPI.deleteWorkflow(id);
       setSuccess(t('automation.workflowDeleted'));
       fetchData();
     } catch (err) {
@@ -207,9 +225,9 @@ export default function TenantAutomationPage() {
   const handleToggleWorkflow = async (workflow: AutomationWorkflowDto) => {
     try {
       if (workflow.isEnabled) {
-        await AutomationAPI.disableWorkflow(workflow.id, tenantId, userId);
+        await AutomationAPI.disableWorkflow(workflow.id);
       } else {
-        await AutomationAPI.enableWorkflow(workflow.id, tenantId, userId);
+        await AutomationAPI.enableWorkflow(workflow.id);
       }
       fetchData();
     } catch (err) {
@@ -219,7 +237,7 @@ export default function TenantAutomationPage() {
 
   const handleCloneTemplate = async (template: AutomationWorkflowDto) => {
     try {
-      await AutomationAPI.cloneTemplate(template.id, tenantId, userId);
+      await AutomationAPI.cloneTemplate(template.id);
       setSuccess(t('automation.templateCloned'));
       setActiveTab('workflows');
       fetchData();
@@ -310,7 +328,7 @@ export default function TenantAutomationPage() {
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {workflow.triggers.map(t => t.eventType).join(', ')}
+                    {workflow.triggers.map(t => t.type).join(', ')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 rounded text-xs ${getSeverityColor(workflow.severity)}`}>
@@ -395,7 +413,7 @@ export default function TenantAutomationPage() {
                     {execution.workflowName || execution.workflowId}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {execution.eventType}
+                    {execution.type}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(execution.startedAt).toLocaleString()}
@@ -460,7 +478,7 @@ export default function TenantAutomationPage() {
                 </span>
               </div>
               <div className="text-sm text-gray-500 mb-4">
-                <strong>{t('automation.triggers')}:</strong> {template.triggers.map(t => t.eventType).join(', ')}
+                <strong>{t('automation.triggers')}:</strong> {template.triggers.map(t => t.type).join(', ')}
               </div>
               <button
                 onClick={() => handleCloneTemplate(template)}
@@ -550,7 +568,7 @@ export default function TenantAutomationPage() {
                     <td className="px-4 py-2 whitespace-nowrap text-sm">
                       {new Date(exec.startedAt).toLocaleString()}
                     </td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm">{exec.eventType}</td>
+                    <td className="px-4 py-2 whitespace-nowrap text-sm">{exec.type}</td>
                     <td className="px-4 py-2 whitespace-nowrap">
                       <span className={`px-2 py-1 rounded text-xs ${getStatusColor(exec.status)}`}>
                         {exec.status}
@@ -609,7 +627,7 @@ export default function TenantAutomationPage() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">Event Type:</label>
-                  <p className="text-sm text-gray-900">{executionDetail.eventType}</p>
+                  <p className="text-sm text-gray-900">{executionDetail.type}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">Started At:</label>

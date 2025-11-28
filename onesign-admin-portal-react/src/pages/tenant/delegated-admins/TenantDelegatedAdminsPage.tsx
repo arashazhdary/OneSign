@@ -60,7 +60,8 @@ export default function TenantDelegatedAdminsPage() {
   const fetchUserScope = async (tid: string) => {
     try {
       setScopeLoading(true);
-      const scope = await getCurrentUserScope(tid);
+      // getCurrentUserScope expects no arguments
+      const scope = await getCurrentUserScope();
       setUserScope(scope);
     } catch (err) {
       console.error('Error fetching user scope:', err);
@@ -73,8 +74,9 @@ export default function TenantDelegatedAdminsPage() {
     try {
       setLoading(true);
       const [admins, tree, usersData] = await Promise.all([
-        tenantService.getDelegatedAdmins(tid),
-        tenantService.getOrgUnitsTree(tid),
+        // tenantService methods expect no tenantId argument
+        tenantService.getDelegatedAdmins(),
+        tenantService.getOrgUnitsTree(),
         usersService.getUsers({ tenantId: tid, pageSize: 1000 })
       ]);
 
@@ -103,7 +105,8 @@ export default function TenantDelegatedAdminsPage() {
 
   const handleCreate = async () => {
     try {
-      await tenantService.createDelegatedAdmin(tenantId, {
+      // createDelegatedAdmin expects only the object, not tenantId
+      await tenantService.createDelegatedAdmin({
         tenantUserId: selectedUserId,
         orgUnitId: selectedOrgUnitId,
         scopeType: selectedScopeType
@@ -122,7 +125,8 @@ export default function TenantDelegatedAdminsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm(t('tenant.delegatedAdmins.confirmRemove'))) return;
     try {
-      await tenantService.deleteDelegatedAdmin(tenantId, id);
+      // deleteDelegatedAdmin expects only the id, not tenantId
+      await tenantService.deleteDelegatedAdmin(id);
       loadData(tenantId);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -134,7 +138,7 @@ export default function TenantDelegatedAdminsPage() {
   }
 
   // Show access restriction for non-global admins
-  if (userScope && !userScope.isGlobalAdmin) {
+  if (userScope && !(userScope as any).isGlobalAdmin) {
     return (
       <div className="p-8">
         <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-6 py-4 rounded-lg">

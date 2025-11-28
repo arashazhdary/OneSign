@@ -33,12 +33,12 @@ export default function GlobalAutomationPage() {
   const [newTemplate, setNewTemplate] = useState({
     name: '',
     description: '',
-    severity: 'Info',
+    severity: 'Info' as 'critical' | 'high' | 'medium' | 'low',
     tenantCanDisable: true,
     tenantCanOverrideConditions: true,
     triggers: [{ eventType: EVENT_TYPES[0], sourceModule: 'Auth' }],
-    conditions: [] as { expressionType: string; expression: string; order: number }[],
-    actions: [{ actionType: ACTION_TYPES[0], order: 0, configJson: '{}', isCritical: false }],
+    conditions: [] as { type: string; config?: any }[],
+    actions: [{ type: ACTION_TYPES[0], config: {} }],
   });
 
   useEffect(() => {
@@ -77,19 +77,26 @@ export default function GlobalAutomationPage() {
     try {
       await createGlobalTemplate({
         userId,
-        ...newTemplate,
+        name: newTemplate.name,
+        description: newTemplate.description,
+        severity: newTemplate.severity,
+        tenantCanDisable: newTemplate.tenantCanDisable,
+        tenantCanOverrideConditions: newTemplate.tenantCanOverrideConditions,
+        triggers: newTemplate.triggers.map(t => ({ type: t.eventType, config: { sourceModule: t.sourceModule } })),
+        conditions: newTemplate.conditions,
+        actions: newTemplate.actions,
       });
       setSuccess(t('automation.workflowCreated'));
       setShowCreateModal(false);
       setNewTemplate({
         name: '',
         description: '',
-        severity: 'Info',
+        severity: 'Info' as 'critical' | 'high' | 'medium' | 'low',
         tenantCanDisable: true,
         tenantCanOverrideConditions: true,
         triggers: [{ eventType: EVENT_TYPES[0], sourceModule: 'Auth' }],
         conditions: [],
-        actions: [{ actionType: ACTION_TYPES[0], order: 0, configJson: '{}', isCritical: false }],
+        actions: [{ type: ACTION_TYPES[0], config: {} }],
       });
       fetchTemplates();
     } catch (err) {
@@ -99,7 +106,7 @@ export default function GlobalAutomationPage() {
 
   const handlePublish = async (id: string) => {
     try {
-      await publishTemplate(id, userId);
+      await publishTemplate(id);
       setSuccess('Template published successfully');
       fetchTemplates();
     } catch (err) {
@@ -110,10 +117,10 @@ export default function GlobalAutomationPage() {
   const handleEnforce = async (template: AutomationWorkflowDto) => {
     try {
       if (template.isEnforced) {
-        await unenforceTemplate(template.id, userId);
+        await unenforceTemplate(template.id);
         setSuccess('Template unenforced successfully');
       } else {
-        await enforceTemplate(template.id, userId);
+        await enforceTemplate(template.id);
         setSuccess('Template enforced successfully');
       }
       fetchTemplates();
@@ -124,7 +131,7 @@ export default function GlobalAutomationPage() {
 
   const handleUpdateTemplate = async (id: string, data: any) => {
     try {
-      await updateGlobalTemplate(id, { ...data, userId });
+      await updateGlobalTemplate(id, data);
       setSuccess('Template updated successfully');
       fetchTemplates();
     } catch (err) {
@@ -135,7 +142,7 @@ export default function GlobalAutomationPage() {
   const handleDeleteTemplate = async (id: string) => {
     if (!confirm('Are you sure you want to delete this template?')) return;
     try {
-      await deleteGlobalTemplate(id, userId);
+      await deleteGlobalTemplate(id);
       setSuccess('Template deleted successfully');
       fetchTemplates();
     } catch (err) {
@@ -218,7 +225,7 @@ export default function GlobalAutomationPage() {
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {template.triggers.map(t => t.eventType).join(', ')}
+                    {template.triggers?.map(t => t.type).join(', ') || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 rounded text-xs ${getSeverityColor(template.severity)}`}>
@@ -293,7 +300,7 @@ export default function GlobalAutomationPage() {
                     <div className="text-sm font-medium text-gray-900">{template.name}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {template.triggers.map(t => t.eventType).join(', ')}
+                    {template.triggers?.map(t => t.type).join(', ') || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 rounded text-xs ${getSeverityColor(template.severity)}`}>
@@ -377,10 +384,10 @@ export default function GlobalAutomationPage() {
                 <label className="block text-sm font-medium mb-2">{t('automation.action')}</label>
                 <select
                   className="w-full px-3 py-2 border rounded"
-                  value={newTemplate.actions[0]?.actionType}
+                  value={newTemplate.actions[0]?.type}
                   onChange={(e) => setNewTemplate({
                     ...newTemplate,
-                    actions: [{ actionType: e.target.value, order: 0, configJson: '{}', isCritical: false }]
+                    actions: [{ type: e.target.value, config: {} }]
                   })}
                 >
                   {ACTION_TYPES.map(at => (

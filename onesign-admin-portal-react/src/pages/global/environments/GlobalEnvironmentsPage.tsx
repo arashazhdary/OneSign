@@ -75,9 +75,10 @@ export default function GlobalEnvironmentsPage() {
     setError('');
     try {
       const data = await globalService.getEnvironments();
-      setEnvironments(data.items || data || []);
-      if (data.items?.length > 0 && !selectedEnvironment) {
-        setSelectedEnvironment(data.items[0].id);
+      const envArray = Array.isArray(data) ? data : (data as any)?.items || [];
+      setEnvironments(envArray);
+      if (envArray.length > 0 && !selectedEnvironment) {
+        setSelectedEnvironment(envArray[0].id);
       }
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -105,7 +106,7 @@ export default function GlobalEnvironmentsPage() {
     setError('');
     setSuccess('');
     try {
-      await globalService.bootstrapEnvironment(bootstrapConfig);
+      await globalService.bootstrapEnvironment(bootstrapConfig as any);
       setSuccess('Environment bootstrapped successfully');
       setShowBootstrapModal(false);
       setBootstrapConfig({ name: '', type: 'Development', region: '', version: '' });

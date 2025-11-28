@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
 import { tenantService } from '@/lib/api/services/tenant.service';
 import DataTable, { Column } from '@/components/common/DataTable';
@@ -18,6 +19,7 @@ interface ServiceAccount {
 }
 
 export default function TenantServiceAccountsPage() {
+  const { t } = useTranslation();
   const [tenantId, setTenantIdState] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -122,8 +124,8 @@ export default function TenantServiceAccountsPage() {
             />
           </div>
           <div className="flex gap-4">
-            <ActionButton type="submit" fullWidth>Create</ActionButton>
-            <ActionButton type="button" variant="secondary" fullWidth onClick={() => setShowModal(false)}>
+            <ActionButton fullWidth>Create</ActionButton>
+            <ActionButton variant="secondary" fullWidth onClick={() => setShowModal(false)}>
               Cancel
             </ActionButton>
           </div>

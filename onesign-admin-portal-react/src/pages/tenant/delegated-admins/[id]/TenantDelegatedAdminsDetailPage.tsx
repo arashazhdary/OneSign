@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { tenantService } from '@/lib/api/services/tenant.service';
 import { getTenantId } from '@/lib/tenant-context';
@@ -379,14 +379,7 @@ export default function TenantDelegatedAdminsDetailPage() {
 
   return (
     <div className="p-8">
-      <Breadcrumbs
-        customLabels={{
-          '/tenant': 'Tenant',
-          '/tenant/delegated-admins': 'Delegated Admins',
-          [`/tenant/delegated-admins/${id}`]: admin.name,
-        }}
-        className="mb-6"
-      />
+      <Breadcrumbs className="mb-6" />
 
       <div className="flex justify-between items-center mb-6">
         <div>

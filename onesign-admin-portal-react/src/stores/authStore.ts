@@ -52,7 +52,7 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
         try {
           // Exchange authorization code for tokens and user data
-          const data = await apiClient.post<{
+          const { data } = await apiClient.post<{
             accessToken: string;
             refreshToken?: string;
             user: User;

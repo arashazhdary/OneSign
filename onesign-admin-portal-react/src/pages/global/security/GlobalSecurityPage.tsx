@@ -109,7 +109,22 @@ export default function GlobalSecurityPage() {
       ]);
     } catch (err) {
       console.error('Error fetching data:', err);
-      loadMockData();
+      // Load mock data on error
+      setPolicies([
+        {
+          id: '1',
+          name: 'Multi-Factor Authentication Required',
+          description: 'Enforce MFA for all privileged accounts across all tenants',
+          type: 'Security',
+          severity: 'Critical',
+          status: 'Active',
+          scope: 'Global',
+          appliedTenants: 145,
+          violations: 3,
+          createdAt: '2024-01-15T10:00:00Z',
+          updatedAt: '2024-11-20T14:30:00Z',
+        },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -117,7 +132,7 @@ export default function GlobalSecurityPage() {
 
   const fetchPolicies = async () => {
     try {
-      const data = await securityService.getPolicies();
+      const data = await securityService.getSecurityPolicies();
       setPolicies(data as any);
     } catch (err) {
       console.error('Error fetching policies:', err);
@@ -522,41 +537,21 @@ export default function GlobalSecurityPage() {
       key: 'type',
       label: 'Type',
       render: (policy) => (
-        <StatusBadge
-          status={policy.type}
-          color={
-            policy.type === 'Security' ? 'blue' :
-            policy.type === 'Compliance' ? 'purple' :
-            policy.type === 'Access' ? 'green' : 'orange'
-          }
-        />
+        <StatusBadge status={policy.type} />
       ),
     },
     {
       key: 'severity',
       label: 'Severity',
       render: (policy) => (
-        <StatusBadge
-          status={policy.severity}
-          color={
-            policy.severity === 'Critical' ? 'red' :
-            policy.severity === 'High' ? 'orange' :
-            policy.severity === 'Medium' ? 'yellow' : 'green'
-          }
-        />
+        <StatusBadge status={policy.severity} />
       ),
     },
     {
       key: 'status',
       label: 'Status',
       render: (policy) => (
-        <StatusBadge
-          status={policy.status}
-          color={
-            policy.status === 'Active' ? 'green' :
-            policy.status === 'Inactive' ? 'gray' : 'yellow'
-          }
-        />
+        <StatusBadge status={policy.status} />
       ),
     },
     {
@@ -590,11 +585,6 @@ export default function GlobalSecurityPage() {
       render: (threat) => (
         <StatusBadge
           status={threat.category}
-          color={
-            threat.category === 'Brute Force' ? 'red' :
-            threat.category === 'Data Exfiltration' ? 'orange' :
-            threat.category === 'Privilege Escalation' ? 'purple' : 'blue'
-          }
         />
       ),
     },
@@ -604,11 +594,6 @@ export default function GlobalSecurityPage() {
       render: (threat) => (
         <StatusBadge
           status={threat.severity}
-          color={
-            threat.severity === 'Critical' ? 'red' :
-            threat.severity === 'High' ? 'orange' :
-            threat.severity === 'Medium' ? 'yellow' : 'green'
-          }
         />
       ),
     },
@@ -625,7 +610,6 @@ export default function GlobalSecurityPage() {
       render: (threat) => (
         <StatusBadge
           status={threat.enabled ? 'Enabled' : 'Disabled'}
-          color={threat.enabled ? 'green' : 'gray'}
         />
       ),
     },
@@ -646,7 +630,7 @@ export default function GlobalSecurityPage() {
       key: 'type',
       label: 'Type',
       render: (framework) => (
-        <StatusBadge status={framework.type} color="blue" />
+        <StatusBadge status={framework.type} />
       ),
     },
     {
@@ -678,10 +662,6 @@ export default function GlobalSecurityPage() {
       render: (framework) => (
         <StatusBadge
           status={framework.status}
-          color={
-            framework.status === 'Compliant' ? 'green' :
-            framework.status === 'Non-Compliant' ? 'red' : 'yellow'
-          }
         />
       ),
     },
@@ -803,10 +783,6 @@ export default function GlobalSecurityPage() {
                     </div>
                     <StatusBadge
                       status={policy.severity}
-                      color={
-                        policy.severity === 'Critical' ? 'red' :
-                        policy.severity === 'High' ? 'orange' : 'yellow'
-                      }
                     />
                   </div>
                 ))}
@@ -822,7 +798,7 @@ export default function GlobalSecurityPage() {
                       <div className="font-medium text-sm">{threat.name}</div>
                       <div className="text-xs text-gray-500">{threat.detections} detections</div>
                     </div>
-                    <StatusBadge status={threat.category} color="red" />
+                    <StatusBadge status={threat.category} />
                   </div>
                 ))}
               </div>
@@ -935,7 +911,7 @@ export default function GlobalSecurityPage() {
           resetPolicyForm();
           setError('');
         }}
-        title={t('common.create')} {t('common.policy')}
+        title={`${t('common.create')} ${t('common.policy')}`}
         size="lg"
       >
         <form onSubmit={handleCreatePolicy} className="space-y-4">

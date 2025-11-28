@@ -782,19 +782,6 @@ export const tenantService = {
   // ==================== CERTIFICATES ====================
 
   /**
-   * GET /api/tenant/certificates - لیست گواهینامه‌ها
-   */
-  getCertificates: async (): Promise<any[]> => {
-    try {
-      const response = await apiClient.get('/api/tenant/certificates');
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch certificates:', error);
-      return [];
-    }
-  },
-
-  /**
    * POST /api/tenant/certificates - آپلود گواهینامه
    */
   uploadCertificate: async (tenantId: string, file: File): Promise<any> => {
@@ -804,13 +791,6 @@ export const tenantService = {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     return response.data;
-  },
-
-  /**
-   * DELETE /api/tenant/certificates/{id} - حذف گواهینامه
-   */
-  deleteCertificate: async (tenantId: string, certificateId: string): Promise<void> => {
-    await apiClient.delete(`/api/tenant/certificates/${certificateId}`);
   },
 
   /**

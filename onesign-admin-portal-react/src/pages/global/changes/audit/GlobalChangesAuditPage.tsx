@@ -593,7 +593,7 @@ export default function GlobalChangesAuditPage() {
         isOpen={showDetailsModal}
         onClose={() => setShowDetailsModal(false)}
         title="Change Audit Details"
-        size="large"
+        size="lg"
       >
         {selectedAudit && (
           <div className="space-y-6">

@@ -162,7 +162,7 @@ export default function TenantUsersDetailPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await usersService.getUserProfile(tenantId, userId);
+      const data = await usersService.getUserProfile(userId);
       setProfile(data);
       setFirstName(data.firstName || '');
       setLastName(data.lastName || '');
@@ -177,7 +177,7 @@ export default function TenantUsersDetailPage() {
 
   const fetchActivities = async () => {
     try {
-      const data = await usersService.getUserActivities(tenantId, userId, 50);
+      const data = await usersService.getUserActivities(userId, { limit: 50 });
       setActivities(data);
     } catch (err) {
       console.error('Failed to fetch activities:', err);
@@ -186,7 +186,7 @@ export default function TenantUsersDetailPage() {
 
   const fetchLifecycleEvents = async () => {
     try {
-      const data = await usersService.getUserLifecycle(tenantId, userId);
+      const data = await usersService.getUserLifecycle(userId);
       setLifecycleEvents(data);
     } catch (err) {
       console.error('Failed to fetch lifecycle events:', err);
@@ -195,7 +195,7 @@ export default function TenantUsersDetailPage() {
 
   const fetchRiskAssessment = async () => {
     try {
-      const data = await usersService.getUserRiskAssessment(tenantId, userId);
+      const data = await usersService.getUserRiskAssessment(userId);
       setRiskAssessment(data);
     } catch (err) {
       console.error('Failed to fetch risk assessment:', err);
@@ -204,7 +204,7 @@ export default function TenantUsersDetailPage() {
 
   const fetchAccessPackages = async () => {
     try {
-      const data = await usersService.getUserAccessPackages(tenantId, userId);
+      const data = await usersService.getUserAccessPackages(userId);
       setAccessPackages(data);
     } catch (err) {
       console.error('Failed to fetch access packages:', err);
@@ -213,7 +213,7 @@ export default function TenantUsersDetailPage() {
 
   const fetchPrivilegedSessions = async () => {
     try {
-      const data = await usersService.getUserPrivilegedSessions(tenantId, userId);
+      const data = await usersService.getUserPrivilegedSessions(userId);
       setPrivilegedSessions(data);
     } catch (err) {
       console.error('Failed to fetch privileged sessions:', err);
@@ -222,7 +222,7 @@ export default function TenantUsersDetailPage() {
 
   const fetchAuditTrail = async () => {
     try {
-      const data = await usersService.getUserAuditTrail(tenantId, userId, 50);
+      const data = await usersService.getUserAuditTrail(userId, { limit: 50 });
       setAuditTrail(data);
     } catch (err) {
       console.error('Failed to fetch audit trail:', err);
@@ -234,7 +234,7 @@ export default function TenantUsersDetailPage() {
     setError('');
     setSuccess('');
     try {
-      await usersService.updateUserProfile(tenantId, userId, {
+      await usersService.updateUserProfile(userId, {
         firstName,
         lastName,
         displayName,
@@ -258,7 +258,7 @@ export default function TenantUsersDetailPage() {
   };
 
   if (loading) {
-    return ;
+    return <LoadingOverlay />;
   }
 
   if (!profile) {
