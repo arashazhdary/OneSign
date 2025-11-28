@@ -39,7 +39,7 @@ export default function TenantSettingsPage() {
     if (!tenantId) return;
 
     try {
-      const data = await tenantService.getSettings(tenantId);
+      const data = await tenantService.getSettings();
       setSettings(data);
       setLogoUrl(data.logoUrl || '');
       setPrimaryColor(data.primaryColor || '');
@@ -59,7 +59,7 @@ export default function TenantSettingsPage() {
     if (!tenantId) return;
     
     try {
-      const data = await tenantService.updateBrandingSettings(tenantId, {
+      const data = await tenantService.updateBrandingSettings({
         logoUrl: logoUrl || null,
         primaryColor: primaryColor || null
       });

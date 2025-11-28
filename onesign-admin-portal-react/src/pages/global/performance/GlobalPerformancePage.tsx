@@ -70,40 +70,40 @@ export default function GlobalPerformancePage() {
     }
   };
 
-  const fetchSlowQueries = async () => {
-    try {
-      const data = (await globalService.getSlowQueries()) as any;
-      setSlowQueries(data.queries || []);
-    } catch (err) {
-      console.error('Failed to fetch slow queries');
-    }
-  };
+  // const fetchSlowQueries = async () => {
+  //   try {
+  //     const data = (await globalService.getSlowQueries()) as any;
+  //     setSlowQueries(data.queries || []);
+  //   } catch (err) {
+  //     console.error('Failed to fetch slow queries');
+  //   }
+  // };
 
-  const fetchAlerts = async () => {
-    try {
-      const data = await globalService.getPerformanceAlerts();
-      setAlerts(data.alerts || []);
-    } catch (err) {
-      console.error('Failed to fetch alerts');
-    }
-  };
+  // const fetchAlerts = async () => {
+  //   try {
+  //     const data = await globalService.getPerformanceAlerts();
+  //     setAlerts(data.alerts || []);
+  //   } catch (err) {
+  //     console.error('Failed to fetch alerts');
+  //   }
+  // };
 
-  const resolveAlert = async (alertId: string) => {
-    try {
-      await globalService.resolvePerformanceAlert(alertId);
-      setAlerts(prev => prev.map(alert =>
-        alert.id === alertId ? { ...alert, resolved: true } : alert
-      ));
-    } catch (err) {
-      console.error('Failed to resolve alert');
-    }
-  };
+  // const resolveAlert = async (alertId: string) => {
+  //   try {
+  //     await globalService.resolvePerformanceAlert(alertId);
+  //     setAlerts(prev => prev.map(alert =>
+  //       alert.id === alertId ? { ...alert, resolved: true } : alert
+  //     ));
+  //   } catch (err) {
+  //     console.error('Failed to resolve alert');
+  //   }
+  // };
 
   // Simulate real-time data updates
   useEffect(() => {
     fetchMetrics();
-    fetchSlowQueries();
-    fetchAlerts();
+    // fetchSlowQueries();
+    // fetchAlerts();
 
     const interval = setInterval(() => {
       // Simulate real-time metrics
@@ -295,7 +295,8 @@ export default function GlobalPerformancePage() {
       </div>
 
       {/* Performance Alerts */}
-      {alerts.length > 0 && (
+      {/* Disabled: getPerformanceAlerts and resolvePerformanceAlert do not exist in globalService */}
+      {false && alerts.length > 0 && (
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4">Performance Alerts</h2>
           <div className="space-y-3">
@@ -325,7 +326,7 @@ export default function GlobalPerformancePage() {
                 </div>
                 {!alert.resolved && (
                   <button
-                    onClick={() => resolveAlert(alert.id)}
+                    onClick={() => {}} // resolveAlert is not available
                     className="ml-4 px-3 py-1 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm"
                   >
                     Resolve
@@ -338,15 +339,18 @@ export default function GlobalPerformancePage() {
       )}
 
       {/* Slow Queries Log */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-semibold mb-4">Slow Queries Log</h2>
-        <DataTable
-          data={slowQueries}
-          columns={slowQueryColumns}
-          loading={loading}
-          emptyMessage="No slow queries detected"
-        />
-      </div>
+      {/* Disabled: getSlowQueries does not exist in globalService */}
+      {false && (
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-semibold mb-4">Slow Queries Log</h2>
+          <DataTable
+            data={slowQueries}
+            columns={slowQueryColumns}
+            loading={loading}
+            emptyMessage="No slow queries detected"
+          />
+        </div>
+      )}
     </div>
   );
 }

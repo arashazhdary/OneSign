@@ -123,9 +123,9 @@ export default function TenantReportsPage() {
 
   const fetchSubscriptions = async () => {
     try {
-      // getReportSubscriptions doesn't take tenantId parameter
-      const data = await InsightsAPI.getReportSubscriptions();
-      setSubscriptions(data.subscriptions || []);
+      // getReportSubscriptions takes optional tenantId parameter
+      const data = await InsightsAPI.getReportSubscriptions(tenantId || undefined);
+      setSubscriptions((data as any)?.subscriptions || []);
     } catch (err) {
       console.error('Error fetching subscriptions:', err);
       // Mock data
@@ -191,8 +191,8 @@ export default function TenantReportsPage() {
     setSuccess('');
 
     try {
-      // createReportSubscription only takes data parameter, not tenantId
-      await InsightsAPI.createReportSubscription({
+      // createReportSubscription takes tenantId and data parameters
+      await InsightsAPI.createReportSubscription(tenantId!, {
         reportType: newSubscription.reportType as any,
         cronOrFrequency: newSubscription.frequency,
         emailRecipients: newSubscription.recipients.split(',').map((r) => r.trim()).filter(Boolean),
@@ -208,11 +208,8 @@ export default function TenantReportsPage() {
 
   const handleExportReport = async (reportId: string, format: string) => {
     try {
-      // exportTenantInsightsOverview expects (tenantId, from, to, format)
-      const now = new Date();
-      const from = new Date(now.setDate(now.getDate() - 30)).toISOString();
-      const to = new Date().toISOString();
-      const blob = await InsightsAPI.exportTenantInsightsOverview(tenantId!, from, to, format);
+      // exportTenantInsightsOverview expects (tenantId, format)
+      const blob = await InsightsAPI.exportTenantInsightsOverview(tenantId!, format);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -232,8 +229,8 @@ export default function TenantReportsPage() {
       const sub = subscriptions.find((s) => s.id === id);
       if (!sub) return;
 
-      // updateReportSubscription expects (subscriptionId, data) - no tenantId parameter
-      await InsightsAPI.updateReportSubscription(id, {
+      // updateReportSubscription expects (tenantId, subscriptionId, data)
+      await InsightsAPI.updateReportSubscription(tenantId!, id, {
         reportType: sub.reportType as any,
         cronOrFrequency: sub.frequency,
         emailRecipients: sub.recipients,
@@ -251,8 +248,8 @@ export default function TenantReportsPage() {
     if (!confirm('Are you sure you want to delete this subscription?')) return;
 
     try {
-      // deleteReportSubscription only takes subscriptionId parameter
-      await InsightsAPI.deleteReportSubscription(id);
+      // deleteReportSubscription takes tenantId and subscriptionId parameters
+      await InsightsAPI.deleteReportSubscription(tenantId!, id);
       setSuccess('Subscription deleted successfully');
       fetchSubscriptions();
     } catch (err) {

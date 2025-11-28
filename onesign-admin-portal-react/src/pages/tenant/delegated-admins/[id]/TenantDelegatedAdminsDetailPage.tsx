@@ -77,7 +77,7 @@ export default function TenantDelegatedAdminsDetailPage() {
     try {
       setLoading(true);
       // Since there's no getDelegatedAdminById in the service, we'll fetch the list and find by ID
-      const response = (await tenantService.getDelegatedAdmins(tenantId)) as any;
+      const response = (await tenantService.getDelegatedAdmins()) as any;
       const admins = Array.isArray(response) ? response : response?.data || [];
       const adminData = admins.find((a: any) => a.id === id);
 
@@ -244,7 +244,7 @@ export default function TenantDelegatedAdminsDetailPage() {
     if (!tenantId) return;
 
     try {
-      const orgUnits = await tenantService.getOrgUnits(tenantId);
+      const orgUnits = await tenantService.getOrgUnitsTree();
       setAvailableOrgUnits(orgUnits);
     } catch (err) {
       // Use mock data on error
@@ -318,7 +318,7 @@ export default function TenantDelegatedAdminsDetailPage() {
     setSuccess('');
 
     try {
-      await tenantService.deleteDelegatedAdmin(tenantId, id);
+      await tenantService.deleteDelegatedAdmin(id);
       setSuccess('Delegated admin deleted successfully');
       setTimeout(() => {
         navigate('/tenant/delegated-admins');
