@@ -108,7 +108,7 @@ export default function TenantAppsPage() {
       const appsWithDetails = await Promise.all(
         apps.map(async (app: Application) => {
           try {
-            const detailData = await applicationsService.getApplicationById(tenantId, app.id);
+            const detailData = await applicationsService.getApplicationById(app.id);
             return {
               ...app,
               redirectUris: detailData.redirectUris || [],
@@ -145,7 +145,7 @@ export default function TenantAppsPage() {
   const fetchOrgTree = async () => {
     if (!tenantId) return;
     try {
-      const data = await applicationsService.getOrgUnitsTree(tenantId);
+      const data = await applicationsService.getOrgUnitsTree();
       setOrgTree(data || []);
     } catch (error) {
       console.error('Error fetching org tree:', error);
@@ -249,7 +249,7 @@ export default function TenantAppsPage() {
     if (!tenantId || !editingApp) return;
 
     try {
-      await applicationsService.updateApplication(tenantId, editingApp.id, {
+      await applicationsService.updateApplication(editingApp.id, {
         name: editAppName,
         applicationType: editAppType === 'Web' ? 1 : editAppType === 'Mobile' ? 2 : 3,
         grantType: 2 // AuthorizationCodeWithPkce
@@ -273,7 +273,7 @@ export default function TenantAppsPage() {
     if (!tenantId) return;
 
     try {
-      await applicationsService.deleteApplication(tenantId, appId);
+      await applicationsService.deleteApplication(appId);
       setSuccess(t('tenant.applications.applicationDeleted'));
       fetchApplications();
     } catch (error: any) {
@@ -295,7 +295,7 @@ export default function TenantAppsPage() {
     if (!tenantId || !selectedAppForRedirectUris) return;
 
     try {
-      await applicationsService.addRedirectUri(tenantId, selectedAppForRedirectUris.id, newRedirectUri);
+      await applicationsService.addRedirectUri(selectedAppForRedirectUris.id, newRedirectUri);
       setNewRedirectUri('');
       setSuccess(t('tenant.applications.redirectUriAdded'));
       await fetchApplications();
@@ -334,7 +334,7 @@ export default function TenantAppsPage() {
     if (!tenantId || !selectedAppForSecrets) return;
 
     try {
-      await applicationsService.addClientSecret(tenantId, selectedAppForSecrets.id, newSecretDescription);
+      await applicationsService.addClientSecret(selectedAppForSecrets.id, newSecretDescription);
       setNewSecretDescription('');
       setSuccess('Client secret added successfully');
       await fetchApplications();

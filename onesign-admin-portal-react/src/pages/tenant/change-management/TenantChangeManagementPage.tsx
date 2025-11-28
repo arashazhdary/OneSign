@@ -153,6 +153,7 @@ export default function TenantChangeManagementPage() {
   const [showRollbackModal, setShowRollbackModal] = useState(false);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showRuleModal, setShowRuleModal] = useState(false);
 
   // Form states
   const [newChangeSet, setNewChangeSet] = useState({
@@ -172,6 +173,13 @@ export default function TenantChangeManagementPage() {
   const [approvalComment, setApprovalComment] = useState('');
   const [rejectReason, setRejectReason] = useState('');
   const [cloneName, setCloneName] = useState('');
+  const [newRule, setNewRule] = useState({
+    name: '',
+    targetModule: 'Users',
+    requiredApprovers: 1,
+    approverRoles: ['Admin'],
+    isActive: true,
+  });
 
   const targetModules = ['Users', 'Groups', 'Applications', 'Policies', 'Settings', 'Security'];
 
@@ -323,7 +331,7 @@ export default function TenantChangeManagementPage() {
   const fetchChangeSetDetails = async (id: string) => {
     try {
       const data = await changeManagementService.getTenantChangeSet(tenantId, id);
-      setChangeSetDetails(data);
+      setChangeSetDetails(data as any);
     } catch (err) {
       // Mock data
       const mockData: ChangeSetDetails = {
@@ -361,7 +369,7 @@ export default function TenantChangeManagementPage() {
     setLoading(true);
     try {
       const data = await changeManagementService.simulateTenantChangeSet(tenantId, id);
-      setSimulationResult(data);
+      setSimulationResult(data as any);
       setSuccess('Simulation completed successfully');
     } catch (err) {
       // Mock data
@@ -559,7 +567,7 @@ export default function TenantChangeManagementPage() {
   const fetchImpactAnalysis = async (id: string) => {
     try {
       const data = await changeManagementService.getTenantImpactAnalysis(tenantId, id);
-      setImpactAnalysis(data);
+      setImpactAnalysis(data as any);
     } catch (err) {
       // Mock data
       const mockImpact: ImpactAnalysis = {
