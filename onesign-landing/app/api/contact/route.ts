@@ -1,7 +1,34 @@
 import { NextResponse } from 'next/server';
+import { rateLimit } from '@/app/lib/rateLimit';
+
+// Rate limit: 5 requests per 15 minutes per IP
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5,
+});
 
 export async function POST(request: Request) {
   try {
+    // Get IP address for rate limiting
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    const rateLimitResult = limiter(ip);
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        {
+          error: 'Too many requests. Please try again later.',
+          retryAfter: new Date(rateLimitResult.resetTime).toISOString(),
+        },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': rateLimitResult.resetTime.toString(),
+          },
+        }
+      );
+    }
+
     const body = await request.json();
     const { name, email, company, phone, subject, message, consent } = body;
 
@@ -48,7 +75,13 @@ export async function POST(request: Request) {
         success: true,
         message: 'Thank you for contacting us! We will get back to you soon.',
       },
-      { status: 200 }
+      {
+        status: 200,
+        headers: {
+          'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+          'X-RateLimit-Reset': rateLimitResult.resetTime.toString(),
+        },
+      }
     );
   } catch (error) {
     console.error('Contact form error:', error);

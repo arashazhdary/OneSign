@@ -1,7 +1,34 @@
 import { NextResponse } from 'next/server';
+import { rateLimit } from '@/app/lib/rateLimit';
+
+// Rate limit: 10 requests per hour per IP
+const limiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10,
+});
 
 export async function POST(request: Request) {
   try {
+    // Get IP address for rate limiting
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    const rateLimitResult = limiter(ip);
+
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        {
+          error: 'Too many requests. Please try again later.',
+          retryAfter: new Date(rateLimitResult.resetTime).toISOString(),
+        },
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': rateLimitResult.resetTime.toString(),
+          },
+        }
+      );
+    }
+
     const body = await request.json();
     const { email } = body;
 
@@ -53,7 +80,13 @@ export async function POST(request: Request) {
         success: true,
         message: 'Thank you for subscribing! Check your inbox for a confirmation email.',
       },
-      { status: 200 }
+      {
+        status: 200,
+        headers: {
+          'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+          'X-RateLimit-Reset': rateLimitResult.resetTime.toString(),
+        },
+      }
     );
   } catch (error) {
     console.error('Newsletter subscription error:', error);
