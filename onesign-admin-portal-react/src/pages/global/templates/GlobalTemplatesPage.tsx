@@ -93,7 +93,7 @@ export default function GlobalTemplatesPage() {
           conditions: wt.conditions,
           actions: wt.actions,
           tenantCanDisable: wt.tenantCanDisable,
-          tenantCanOverrideConditions: wt.tenantCanOverrideConditions,
+          // tenantCanOverrideConditions is not available in AutomationWorkflowDto type
         },
         variables: extractVariables(wt),
         isPublished: wt.isEnabled,
@@ -170,7 +170,9 @@ export default function GlobalTemplatesPage() {
     const variables: string[] = [];
     workflow.actions.forEach(action => {
       try {
-        const config = JSON.parse(action.configJson);
+        const config = typeof (action as any).config === 'string'
+          ? JSON.parse((action as any).config)
+          : (action as any).config || {};
         const matches = JSON.stringify(config).match(/\{\{(\w+)\}\}/g);
         if (matches) {
           variables.push(...matches.map(m => m.replace(/\{\{|\}\}/g, '')));
@@ -229,13 +231,21 @@ export default function GlobalTemplatesPage() {
 
       // For workflow templates, use the automation API
       if (newTemplate.type === 'workflow') {
+        // Map category to valid severity level
+        const severityMap: { [key: string]: 'critical' | 'high' | 'medium' | 'low' } = {
+          'Security': 'high',
+          'Onboarding': 'medium',
+          'Compliance': 'high',
+          'General': 'medium',
+        };
+        const severity = severityMap[newTemplate.category] || 'medium';
+
         await createGlobalTemplate({
           userId,
           name: newTemplate.name,
           description: newTemplate.description,
-          severity: newTemplate.category || 'Info',
+          severity,
           tenantCanDisable: content.tenantCanDisable ?? true,
-          tenantCanOverrideConditions: content.tenantCanOverrideConditions ?? true,
           triggers: content.triggers || [],
           conditions: content.conditions || [],
           actions: content.actions || [],
@@ -266,7 +276,7 @@ export default function GlobalTemplatesPage() {
   const handlePublishTemplate = async (template: Template) => {
     try {
       if (template.type === 'workflow') {
-        await publishTemplate(template.id, userId);
+        await publishTemplate(template.id);
         setSuccess('Template published successfully');
         fetchTemplates();
       } else {
@@ -294,7 +304,7 @@ export default function GlobalTemplatesPage() {
 
     try {
       if (template.type === 'workflow') {
-        await deleteGlobalTemplate(template.id, userId);
+        await deleteGlobalTemplate(template.id);
         setSuccess('Template deleted successfully');
         fetchTemplates();
       } else {
@@ -327,13 +337,21 @@ export default function GlobalTemplatesPage() {
       const content = JSON.parse(newTemplate.content);
 
       if (selectedTemplate.type === 'workflow') {
+        // Map category to valid severity level
+        const severityMap: { [key: string]: 'critical' | 'high' | 'medium' | 'low' } = {
+          'Security': 'high',
+          'Onboarding': 'medium',
+          'Compliance': 'high',
+          'General': 'medium',
+        };
+        const severity = severityMap[newTemplate.category] || 'medium';
+
         await updateGlobalTemplate(selectedTemplate.id, {
           userId,
           name: newTemplate.name,
           description: newTemplate.description,
-          severity: newTemplate.category,
+          severity,
           tenantCanDisable: content.tenantCanDisable ?? true,
-          tenantCanOverrideConditions: content.tenantCanOverrideConditions ?? true,
           triggers: content.triggers || [],
           conditions: content.conditions || [],
           actions: content.actions || [],

@@ -4,9 +4,8 @@ import { useLocale } from '@/hooks/useLocale';
 import { getTenantId } from '@/lib/tenant-context';
 import {
   getAvailableTemplates,
-  cloneTemplate,
-  createTemplate,
   AutomationWorkflowDto,
+  automationService,
 } from '@/lib/api/automation';
 import {
   getChangeSetTemplates,
@@ -110,12 +109,12 @@ export default function TenantTemplatesPage() {
           id: ct.id,
           name: ct.name,
           type: 'policy' as TemplateType,
-          category: ct.category,
-          description: ct.description,
-          content: JSON.parse(ct.templateJson || '{}'),
+          category: ct.type || 'General',
+          description: ct.description || '',
+          content: ct.steps || [],
           variables: [],
           createdAt: ct.createdAt,
-          updatedAt: ct.createdAt,
+          updatedAt: ct.updatedAt,
         })),
         // Mock email templates for demonstration
         ...getMockEmailTemplates(),
@@ -138,7 +137,7 @@ export default function TenantTemplatesPage() {
     const variables: string[] = [];
     workflow.actions.forEach(action => {
       try {
-        const config = JSON.parse(action.configJson);
+        const config = typeof action.config === 'string' ? JSON.parse(action.config) : action.config;
         const matches = JSON.stringify(config).match(/\{\{(\w+)\}\}/g);
         if (matches) {
           variables.push(...matches.map(m => m.replace(/\{\{|\}\}/g, '')));
@@ -242,14 +241,10 @@ export default function TenantTemplatesPage() {
 
       // For workflow templates, use the automation API
       if (newTemplate.type === 'workflow') {
-        await createTemplate(tenantId, {
+        await automationService.createTemplate({
           name: newTemplate.name,
           description: newTemplate.description,
-          severity: newTemplate.category || 'Info',
-          triggers: content.triggers || [],
-          conditions: content.conditions || [],
-          actions: content.actions || [],
-          userId: '00000000-0000-0000-0000-000000000001',
+          category: newTemplate.category || 'General',
         });
       } else {
         // For other types, we would use appropriate APIs
@@ -278,7 +273,7 @@ export default function TenantTemplatesPage() {
 
     try {
       if (template.type === 'workflow') {
-        await cloneTemplate(template.id, tenantId, '00000000-0000-0000-0000-000000000001', `${template.name} (Copy)`);
+        await automationService.cloneTemplate(template.id, `${template.name} (Copy)`);
         setSuccess('Template cloned successfully');
         fetchTemplates();
       } else {

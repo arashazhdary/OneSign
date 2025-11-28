@@ -106,7 +106,7 @@ export default function TenantExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await tenantService.getWebhooks(tenantId);
+      const data = await tenantService.getWebhooks();
       setWebhooks(data || []);
     } catch (err) {
       console.error('Error fetching webhooks:', err);
@@ -162,7 +162,7 @@ export default function TenantExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await tenantService.createWebhook(tenantId, webhookForm);
+      await tenantService.createWebhook(webhookForm);
       setSuccess('Webhook created successfully');
       setShowWebhookModal(false);
       fetchWebhooks();
@@ -178,7 +178,7 @@ export default function TenantExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await tenantService.updateWebhook(tenantId, id, data);
+      await tenantService.updateWebhook(id, data);
       setSuccess('Webhook updated successfully');
       setEditingWebhook(null);
       setShowWebhookModal(false);
@@ -194,7 +194,7 @@ export default function TenantExtensibilityPage() {
     if (!tenantId || !confirm('Are you sure you want to delete this webhook?')) return;
     setLoading(true);
     try {
-      await tenantService.deleteWebhook(tenantId, id);
+      await tenantService.deleteWebhook(id);
       setSuccess('Webhook deleted successfully');
       fetchWebhooks();
     } catch (err) {
@@ -208,7 +208,7 @@ export default function TenantExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await tenantService.testWebhook(tenantId, id);
+      await tenantService.testWebhook(id);
       setSuccess('Test event sent successfully');
     } catch (err) {
       setError('Failed to send test event');
