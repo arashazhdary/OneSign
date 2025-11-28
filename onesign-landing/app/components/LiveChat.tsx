@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations, useLocale } from 'next-intl';
 
 /**
  * Live Chat Integration Component
@@ -16,11 +17,13 @@ interface Message {
 }
 
 export function LiveChat() {
+  const t = useTranslations('landing');
+  const locale = useLocale();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: 'Hi! 👋 How can I help you today?',
+      text: t('chat.greeting'),
       sender: 'agent',
       timestamp: new Date(),
     },
@@ -32,10 +35,8 @@ export function LiveChat() {
   useEffect(() => {
     // In production, initialize your chat service here
     // Example: window.Intercom?.('boot', { app_id: 'your_app_id' });
-    console.log('[LiveChat] Initialized');
-
     return () => {
-      console.log('[LiveChat] Cleanup');
+      // Cleanup
     };
   }, []);
 
@@ -57,10 +58,10 @@ export function LiveChat() {
     // Simulate agent response
     setTimeout(() => {
       const responses = [
-        "Thanks for your message! I'll connect you with our team right away.",
-        'Let me help you with that. Can you provide more details?',
-        "I understand. Let me check our documentation for you.",
-        "Great question! I'll get back to you shortly with an answer.",
+        t('chat.responses.connecting'),
+        t('chat.responses.moreDetails'),
+        t('chat.responses.checkingDocs'),
+        t('chat.responses.gettingAnswer'),
       ];
 
       const agentMessage: Message = {
@@ -83,10 +84,10 @@ export function LiveChat() {
   };
 
   const quickReplies = [
-    '📖 Documentation',
-    '💰 Pricing',
-    '🚀 Get Started',
-    '📧 Email Support',
+    t('chat.quickReplies.docs'),
+    t('chat.quickReplies.pricing'),
+    t('chat.quickReplies.getStarted'),
+    t('chat.quickReplies.support'),
   ];
 
   return (
@@ -122,10 +123,10 @@ export function LiveChat() {
                   👋
                 </div>
                 <div>
-                  <h3 className="font-semibold">OneSign Support</h3>
+                  <h3 className="font-semibold">{t('chat.title')}</h3>
                   <div className="flex items-center gap-1 text-xs">
                     <span className="w-2 h-2 bg-green-400 rounded-full"></span>
-                    <span>Online</span>
+                    <span>{t('chat.online')}</span>
                   </div>
                 </div>
               </div>
@@ -161,7 +162,7 @@ export function LiveChat() {
                           : 'text-gray-500 dark:text-gray-500'
                       }`}
                     >
-                      {message.timestamp.toLocaleTimeString('en-US', {
+                      {message.timestamp.toLocaleTimeString(locale, {
                         hour: '2-digit',
                         minute: '2-digit',
                       })}
@@ -187,7 +188,7 @@ export function LiveChat() {
             {messages.length === 1 && (
               <div className="px-4 pb-2">
                 <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                  Quick replies:
+                  {t('chat.quickRepliesLabel')}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {quickReplies.map((reply) => (
@@ -214,7 +215,7 @@ export function LiveChat() {
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Type your message..."
+                  placeholder={t('chat.placeholder')}
                   className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600"
                 />
                 <button
@@ -226,7 +227,7 @@ export function LiveChat() {
                 </button>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-500 mt-2 text-center">
-                We typically reply within minutes
+                {t('chat.typicalReply')}
               </p>
             </div>
           </motion.div>

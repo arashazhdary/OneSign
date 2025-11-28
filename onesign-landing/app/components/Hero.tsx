@@ -6,7 +6,7 @@ import { FadeIn, SlideUp, ScaleIn } from './animations';
 import { useEffect, useState } from 'react';
 
 export function Hero() {
-  const t = useTranslations('Landing');
+  const t = useTranslations('landing');
   const [stats, setStats] = useState({
     users: 0,
     documents: 0,
@@ -71,31 +71,30 @@ export function Hero() {
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-full mb-6">
                 <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
                 <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                  Trusted by 50,000+ businesses
+                  {t('hero.trustedBy')}
                 </span>
               </div>
             </FadeIn>
 
             <SlideUp delay={0.1}>
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
-                {t('hero.title') || 'Sign Documents Digitally'}
+                {t('hero.title')}
                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-                  {t('hero.subtitle') || 'Fast & Secure'}
+                  {t('hero.titleHighlight')}
                 </span>
               </h1>
             </SlideUp>
 
             <SlideUp delay={0.2}>
               <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl">
-                {t('hero.description') ||
-                  'The most secure and user-friendly electronic signature platform. Sign, send, and manage documents from anywhere.'}
+                {t('hero.subtitle')}
               </p>
             </SlideUp>
 
             <SlideUp delay={0.3}>
               <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
                 <Button variant="primary" size="lg" className="group">
-                  {t('hero.cta_primary') || 'Start Free Trial'}
+                  {t('hero.cta')}
                   <svg
                     className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform"
                     fill="none"
@@ -125,7 +124,7 @@ export function Hero() {
                       d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  {t('hero.cta_secondary') || 'Watch Demo'}
+                  {t('hero.secondaryCta')}
                 </Button>
               </div>
             </SlideUp>
@@ -138,7 +137,7 @@ export function Hero() {
                     {formatNumber(stats.users)}+
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Active Users
+                    {t('stats.users')}
                   </div>
                 </div>
                 <div className="text-center lg:text-left">
@@ -146,7 +145,7 @@ export function Hero() {
                     {formatNumber(stats.documents)}+
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Documents Signed
+                    {t('stats.apps')}
                   </div>
                 </div>
                 <div className="text-center lg:text-left">
@@ -154,7 +153,7 @@ export function Hero() {
                     {stats.countries}+
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Countries
+                    {t('stats.authentications')}
                   </div>
                 </div>
               </div>
@@ -179,9 +178,9 @@ export function Hero() {
                       </div>
                       <div>
                         <div className="text-sm font-semibold text-gray-900 dark:text-white">
-                          Contract.pdf
+                          {t('hero.signatureCard.documentName')}
                         </div>
-                        <div className="text-xs text-gray-500">Ready to sign</div>
+                        <div className="text-xs text-gray-500">{t('hero.signatureCard.readyToSign')}</div>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -208,23 +207,23 @@ export function Hero() {
                             d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
                           />
                         </svg>
-                        <span className="font-medium">Sign here</span>
+                        <span className="font-medium">{t('hero.signatureCard.signHere')}</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Action Button */}
                   <button className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg transition-all">
-                    Sign Document
+                    {t('hero.signatureCard.signDocument')}
                   </button>
                 </div>
 
                 {/* Floating Badges */}
                 <div className="absolute -top-4 -right-4 bg-green-500 text-white px-4 py-2 rounded-full shadow-lg text-sm font-semibold">
-                  ✓ Verified
+                  {t('hero.badges.verified')}
                 </div>
                 <div className="absolute -bottom-4 -left-4 bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg text-sm font-semibold">
-                  🔒 Secure
+                  {t('hero.badges.secure')}
                 </div>
               </div>
             </div>

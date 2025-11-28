@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/app/components/ui';
 
 export default function Error({
@@ -10,6 +11,8 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const t = useTranslations('error');
+
   useEffect(() => {
     // Log the error to an error reporting service
     console.error('Application error:', error);
@@ -81,18 +84,18 @@ export default function Error({
         {/* Support Info */}
         <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            Need help? Our support team is here for you.
+            {t('support.message')}
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4 text-sm">
             <a
-              href="mailto:support@onesign.com"
+              href={`mailto:${t('support.email')}`}
               className="text-blue-600 hover:underline flex items-center justify-center gap-2"
             >
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
                 <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
               </svg>
-              Email Support
+              {t('support.emailButton')}
             </a>
             <a
               href="/help"

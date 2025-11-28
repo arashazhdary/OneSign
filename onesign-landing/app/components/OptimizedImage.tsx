@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 /**
  * Optimized Image Component
@@ -35,6 +36,7 @@ export function OptimizedImage({
   onLoad,
   onError,
 }: OptimizedImageProps) {
+  const t = useTranslations('common');
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
@@ -58,7 +60,7 @@ export function OptimizedImage({
         <div className="text-center p-4">
           <span className="text-4xl">🖼️</span>
           <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
-            Image failed to load
+            {t('imageError')}
           </p>
         </div>
       </div>

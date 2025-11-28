@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 
 export function BackToTop() {
   const [isVisible, setIsVisible] = useState(false);
+  const t = useTranslations('common');
 
   useEffect(() => {
     const toggleVisibility = () => {
@@ -35,7 +37,7 @@ export function BackToTop() {
           exit={{ opacity: 0, y: 20 }}
           onClick={scrollToTop}
           className="fixed bottom-8 right-8 z-50 p-3 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-colors"
-          aria-label="Back to top"
+          aria-label={t('aria.backToTop')}
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path

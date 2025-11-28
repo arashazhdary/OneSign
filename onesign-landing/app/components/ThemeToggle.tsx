@@ -2,10 +2,12 @@
 
 import { useThemeStore } from '@/app/stores';
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 export function ThemeToggle() {
   const { theme, setTheme } = useThemeStore();
   const [mounted, setMounted] = useState(false);
+  const t = useTranslations('common');
 
   useEffect(() => {
     setMounted(true);
@@ -19,7 +21,7 @@ export function ThemeToggle() {
     <button
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
       className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-      aria-label="Toggle theme"
+      aria-label={t('aria.toggleTheme')}
     >
       {theme === 'dark' ? (
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">

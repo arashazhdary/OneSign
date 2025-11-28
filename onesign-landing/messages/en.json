@@ -1,4 +1,15 @@
 {
+  "common": {
+    "loading": "Loading...",
+    "imageError": "Image failed to load",
+    "aria": {
+      "toggleLanguage": "Toggle language",
+      "toggleMenu": "Toggle menu",
+      "toggleTheme": "Toggle theme",
+      "backToTop": "Back to top",
+      "close": "Close"
+    }
+  },
   "landing": {
     "nav": {
       "features": "Features",
@@ -17,7 +28,17 @@
       "cta": "Start Free Trial",
       "secondaryCta": "Watch Demo",
       "trustedBy": "Trusted by leading organizations",
-      "scrollToExplore": "Scroll to explore"
+      "scrollToExplore": "Scroll to explore",
+      "signatureCard": {
+        "documentName": "Contract.pdf",
+        "readyToSign": "Ready to sign",
+        "signHere": "Sign here",
+        "signDocument": "Sign Document"
+      },
+      "badges": {
+        "verified": "✓ Verified",
+        "secure": "🔒 Secure"
+      }
     },
     "features": {
       "title": "Powerful Features",
@@ -111,6 +132,7 @@
       "monthly": "Monthly",
       "yearly": "Yearly",
       "save": "Save 20%",
+      "mostPopular": "Most Popular",
       "perUser": "per user/month",
       "free": {
         "name": "Free",
@@ -177,14 +199,20 @@
       "subtitle": "See what our customers say about OneSign",
       "testimonial1": {
         "name": "Sarah Johnson",
+        "role": "CISO",
+        "company": "TechCorp Inc.",
         "quote": "OneSign transformed our identity management. We reduced security incidents by 80% and our IT team can now focus on strategic initiatives instead of password resets."
       },
       "testimonial2": {
         "name": "Michael Chen",
+        "role": "IT Director",
+        "company": "Finance Partners",
         "quote": "The adaptive security features are incredible. OneSign detected and prevented a sophisticated phishing attack that would have compromised our entire finance department."
       },
       "testimonial3": {
         "name": "Emma Williams",
+        "role": "CTO",
+        "company": "Healthcare Solutions",
         "quote": "Implementing OneSign was seamless. The HIPAA compliance features saved us months of work, and the support team was exceptional throughout the process."
       }
     },
@@ -280,7 +308,10 @@
       "newsletter": "Subscribe to our newsletter",
       "emailPlaceholder": "Enter your email",
       "subscribe": "Subscribe",
-      "subscribed": "Thanks for subscribing!"
+      "subscribed": "Thanks for subscribing!",
+      "sslSecured": "SSL Secured",
+      "uptime": "99.9% Uptime",
+      "soc2Certified": "SOC 2 Certified"
     },
     "videoModal": {
       "title": "OneSign Platform Demo",
@@ -290,19 +321,43 @@
       "getStarted": "Start Free Trial"
     },
     "cookie": {
-      "title": "We use cookies",
-      "description": "We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies.",
-      "accept": "Accept",
-      "decline": "Decline"
+      "title": "Cookie Notice",
+      "description": "We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic. By clicking \"Accept All\", you consent to our use of cookies.",
+      "learnMore": "Learn more",
+      "decline": "Decline",
+      "accept": "Accept All"
     },
     "contact": {
       "floating": "Contact Us",
-      "title": "Get in Touch",
+      "title": "Contact Us",
       "subtitle": "Fill out the form below and we'll get back to you shortly.",
-      "name": "Your Name",
-      "email": "Email Address",
-      "message": "Your Message",
-      "submit": "Send Message"
+      "name": "Name",
+      "namePlaceholder": "Your name",
+      "email": "Email",
+      "emailPlaceholder": "your@email.com",
+      "company": "Company",
+      "companyPlaceholder": "Your company",
+      "phone": "Phone",
+      "phonePlaceholder": "+1 (555) 123-4567",
+      "subject": "Subject",
+      "subjectPlaceholder": "How can we help?",
+      "message": "Message",
+      "messagePlaceholder": "Tell us more about your inquiry...",
+      "consent": "I agree to the",
+      "privacyPolicy": "privacy policy",
+      "consentText": "and consent to being contacted",
+      "required": "*",
+      "submit": "Send Message",
+      "submitting": "Sending...",
+      "successMessage": "Thank you for your message! We'll get back to you soon.",
+      "errors": {
+        "nameMin": "Name must be at least 2 characters",
+        "emailInvalid": "Invalid email address",
+        "subjectMin": "Subject must be at least 5 characters",
+        "messageMin": "Message must be at least 10 characters",
+        "consentRequired": "You must agree to the privacy policy",
+        "submitFailed": "Failed to submit form"
+      }
     },
     "blog": {
       "title": "Blog & News",
@@ -325,10 +380,16 @@
         "title": "Stay Updated",
         "subtitle": "Get the latest articles and insights delivered to your inbox",
         "placeholder": "Enter your email",
-        "button": "Subscribe"
+        "button": "Subscribe",
+        "errors": {
+          "invalidEmail": "Please enter a valid email address",
+          "failed": "Failed to subscribe",
+          "failedRetry": "Failed to subscribe. Please try again."
+        }
       }
     },
     "search": {
+      "search": "Search",
       "placeholder": "Search pages, features, blog posts...",
       "noResults": "No results found for",
       "startTyping": "Start typing to search...",
@@ -343,6 +404,48 @@
         "navigate": "Navigate",
         "select": "Select",
         "close": "Close"
+      },
+      "index": {
+        "home": {
+          "title": "Home - Landing Page",
+          "description": "OneSign - Modern Identity & Access Management platform"
+        },
+        "pricing": {
+          "title": "Pricing Plans",
+          "description": "Find the perfect plan for your organization"
+        },
+        "contact": {
+          "title": "Contact Us",
+          "description": "Get in touch with our team"
+        },
+        "about": {
+          "title": "About OneSign",
+          "description": "Learn about our mission and team"
+        },
+        "mfa": {
+          "title": "Multi-Factor Authentication",
+          "description": "Secure your accounts with MFA"
+        },
+        "sso": {
+          "title": "Single Sign-On (SSO)",
+          "description": "One login for all your applications"
+        },
+        "documentSigning": {
+          "title": "Document Signing",
+          "description": "Sign documents securely with electronic signatures"
+        },
+        "security": {
+          "title": "Security & Compliance",
+          "description": "Enterprise-grade security and compliance features"
+        },
+        "api": {
+          "title": "API Documentation",
+          "description": "Integrate OneSign with your applications"
+        },
+        "enterprise": {
+          "title": "Enterprise Solutions",
+          "description": "Scalable solutions for large organizations"
+        }
       }
     },
     "dashboard": {
@@ -379,7 +482,7 @@
         "error": "Error"
       }
     },
-    "testimonials": {
+    "testimonialForm": {
       "title": "Share Your Experience",
       "form": {
         "name": "Your Name",
@@ -431,6 +534,7 @@
       "online": "Online",
       "offline": "Offline",
       "placeholder": "Type your message...",
+      "quickRepliesLabel": "Quick replies:",
       "quickReplies": {
         "docs": "📖 Documentation",
         "pricing": "💰 Pricing",
@@ -439,7 +543,526 @@
       },
       "greeting": "Hi! 👋 How can I help you today?",
       "typicalReply": "We typically reply within minutes",
-      "send": "Send"
+      "send": "Send",
+      "responses": {
+        "connecting": "Thanks for your message! I'll connect you with our team right away.",
+        "moreDetails": "Let me help you with that. Can you provide more details?",
+        "checkingDocs": "I understand. Let me check our documentation for you.",
+        "gettingAnswer": "Great question! I'll get back to you shortly with an answer."
+      }
+    },
+    "testimonialSubmission": {
+      "title": "Share Your Experience",
+      "form": {
+        "name": "Your Name *",
+        "email": "Email Address *",
+        "company": "Company (Optional)",
+        "role": "Your Role (Optional)",
+        "rolePlaceholder": "e.g., CTO, Developer",
+        "rating": "Rating *",
+        "ratingDisplay": "{rating} / 5",
+        "testimonial": "Your Testimonial *",
+        "testimonialPlaceholder": "Tell us about your experience with OneSign...",
+        "characterCount": "{count} / 500 characters",
+        "allowPublic": "I allow OneSign to publicly display this testimonial on their website and marketing materials",
+        "consentText": "I agree to the",
+        "terms": "Terms of Service",
+        "and": "and",
+        "privacy": "Privacy Policy",
+        "required": "*",
+        "submit": "Submit Testimonial",
+        "submitting": "Submitting..."
+      },
+      "success": {
+        "title": "Thank You!",
+        "message": "Your testimonial has been submitted and will be reviewed shortly.",
+        "submitAnother": "Submit Another"
+      },
+      "errors": {
+        "submitFailed": "Submission failed"
+      }
+    }
+  },
+  "blogPage": {
+    "title": "Blog & News",
+    "subtitle": "Insights, updates, and best practices from the OneSign team",
+    "categories": {
+      "all": "All",
+      "product": "Product",
+      "security": "Security",
+      "technology": "Technology",
+      "compliance": "Compliance",
+      "development": "Development",
+      "caseStudy": "Case Study"
+    },
+    "tags": {
+      "iam": "IAM",
+      "security": "Security",
+      "productLaunch": "Product Launch",
+      "bestPractices": "Best Practices",
+      "guide": "Guide",
+      "zeroTrust": "Zero Trust",
+      "architecture": "Architecture",
+      "gdpr": "GDPR",
+      "hipaa": "HIPAA",
+      "compliance": "Compliance",
+      "api": "API",
+      "authentication": "Authentication",
+      "customerStory": "Customer Story",
+      "enterprise": "Enterprise",
+      "success": "Success"
+    },
+    "loadMore": "Load More Articles",
+    "readTime": "min read",
+    "newsletter": {
+      "title": "Stay Updated",
+      "subtitle": "Get the latest articles and insights delivered to your inbox",
+      "placeholder": "Enter your email",
+      "button": "Subscribe"
+    },
+    "post1": {
+      "title": "Introducing OneSign: Next Generation Identity & Access Management",
+      "excerpt": "Discover how OneSign revolutionizes digital identity management with cutting-edge technology and unparalleled security.",
+      "author": {
+        "name": "Sarah Johnson",
+        "role": "Product Manager"
+      }
+    },
+    "post2": {
+      "title": "Security Best Practices for 2024: A Comprehensive Guide",
+      "excerpt": "Learn the latest security best practices to protect your organization from modern cyber threats.",
+      "author": {
+        "name": "Michael Chen",
+        "role": "Security Architect"
+      }
+    },
+    "post3": {
+      "title": "Zero Trust Architecture Explained: Why It Matters",
+      "excerpt": "Understanding zero trust security model and how it can transform your organization's security posture.",
+      "author": {
+        "name": "David Kim",
+        "role": "Lead Engineer"
+      }
+    },
+    "post4": {
+      "title": "Compliance Made Easy: GDPR, HIPAA, and Beyond",
+      "excerpt": "Navigate the complex world of compliance regulations with confidence using OneSign.",
+      "author": {
+        "name": "Emma Williams",
+        "role": "Compliance Officer"
+      }
+    },
+    "post5": {
+      "title": "API Security: Authentication and Authorization Tips",
+      "excerpt": "Secure your APIs with proven authentication and authorization strategies.",
+      "author": {
+        "name": "Alex Rodriguez",
+        "role": "API Architect"
+      }
+    },
+    "post6": {
+      "title": "Customer Success Story: How Enterprise X Scaled Securely",
+      "excerpt": "Learn how a Fortune 500 company transformed their IAM infrastructure with OneSign.",
+      "author": {
+        "name": "Jessica Lee",
+        "role": "Customer Success"
+      }
+    }
+  },
+  "contactPage": {
+    "hero": {
+      "title": "Get in Touch",
+      "subtitle": "Have a question or need help? We're here for you. Reach out to our team and we'll get back to you as soon as possible."
+    },
+    "methods": {
+      "email": {
+        "title": "Email",
+        "description": "Send us an email anytime",
+        "value": "support@onesign.com"
+      },
+      "phone": {
+        "title": "Phone",
+        "description": "Mon-Fri from 9am to 6pm",
+        "value": "+1 (555) 123-4567"
+      },
+      "liveChat": {
+        "title": "Live Chat",
+        "description": "Available 24/7",
+        "value": "Start a conversation"
+      },
+      "office": {
+        "title": "Office",
+        "description": "Visit our headquarters",
+        "value": "123 Business St, San Francisco, CA 94105"
+      }
+    },
+    "form": {
+      "title": "Send Us a Message",
+      "subtitle": "Fill out the form below and we'll respond within 24 hours"
+    },
+    "office": {
+      "title": "Visit Our Office",
+      "description": "We'd love to meet you in person! Our headquarters is located in the heart of San Francisco. Stop by for a coffee and a demo.",
+      "hours": {
+        "title": "Business Hours",
+        "weekdays": "Monday - Friday: 9:00 AM - 6:00 PM",
+        "weekends": "Saturday - Sunday: Closed"
+      },
+      "transit": {
+        "title": "Getting Here",
+        "description": "Easily accessible by BART, MUNI, and major bus lines. Street parking available."
+      },
+      "map": {
+        "title": "OneSign Office Location",
+        "ariaLabel": "Map showing OneSign office location in San Francisco"
+      }
+    }
+  },
+  "error": {
+    "title": "Something went wrong",
+    "description": "We're sorry, but something unexpected happened. Please try refreshing the page.",
+    "refreshPage": "Refresh Page",
+    "goToHomepage": "Go to Homepage",
+    "errorDetails": "Error Details",
+    "support": {
+      "message": "Need help? Our support team is here for you.",
+      "emailButton": "Email Support",
+      "email": "support@onesign.com"
+    }
+  },
+  "featuresPage": {
+    "hero": {
+      "title": "Powerful Features for Modern Teams",
+      "subtitle": "Everything you need to sign, send, and manage documents securely. Built for businesses of all sizes."
+    },
+    "categories": {
+      "securityCompliance": "Security & Compliance",
+      "signingWorkflow": "Signing & Workflow",
+      "documentManagement": "Document Management",
+      "integrationAPI": "Integration & API",
+      "mobileAccessibility": "Mobile & Accessibility",
+      "teamCollaboration": "Team & Collaboration"
+    },
+    "features": {
+      "bankLevelEncryption": "Bank-Level Encryption",
+      "bankLevelEncryptionDesc": "AES-256 encryption ensures your documents are always protected in transit and at rest.",
+      "legalCompliance": "Legal Compliance",
+      "legalComplianceDesc": "Compliant with eIDAS, ESIGN, UETA, and GDPR. Legally binding in 180+ countries.",
+      "auditTrail": "Audit Trail",
+      "auditTrailDesc": "Complete document history with timestamp, IP address, and authentication details.",
+      "soc2Certified": "SOC 2 Type II Certified",
+      "soc2CertifiedDesc": "Independently audited and certified for security, availability, and confidentiality.",
+      "multiSignature": "Multi-Signature Support",
+      "multiSignatureDesc": "Collect signatures from multiple parties in any order or simultaneously.",
+      "customWorkflows": "Custom Workflows",
+      "customWorkflowsDesc": "Create automated workflows with conditional routing and approval chains.",
+      "inPersonSigning": "In-Person Signing",
+      "inPersonSigningDesc": "Use your device to collect signatures in person with full authentication.",
+      "bulkSend": "Bulk Send",
+      "bulkSendDesc": "Send the same document to multiple recipients at once with personalized fields.",
+      "templatesLibrary": "Templates Library",
+      "templatesLibraryDesc": "Create reusable templates with pre-defined fields for faster document preparation.",
+      "documentStorage": "Document Storage",
+      "documentStorageDesc": "Unlimited secure cloud storage with advanced search and organization capabilities.",
+      "versionControl": "Version Control",
+      "versionControlDesc": "Track all document versions with the ability to revert to previous versions.",
+      "smartFields": "Smart Fields",
+      "smartFieldsDesc": "Auto-fill recipient information and create conditional fields based on responses.",
+      "restAPI": "REST API",
+      "restAPIDesc": "Full-featured API with comprehensive documentation for custom integrations.",
+      "preBuiltConnectors": "Pre-Built Connectors",
+      "preBuiltConnectorsDesc": "Connect with Salesforce, Google Drive, Dropbox, Microsoft 365, and more.",
+      "webhooks": "Webhooks",
+      "webhooksDesc": "Real-time notifications for document events to keep your systems in sync.",
+      "zapierIntegration": "Zapier Integration",
+      "zapierIntegrationDesc": "Connect with 3,000+ apps without writing any code.",
+      "nativeMobileApps": "Native Mobile Apps",
+      "nativeMobileAppsDesc": "Full-featured iOS and Android apps for signing on the go.",
+      "offlineMode": "Offline Mode",
+      "offlineModeDesc": "Download documents and sign offline, then sync when connected.",
+      "biometricAuth": "Biometric Authentication",
+      "biometricAuthDesc": "Use Face ID, Touch ID, or fingerprint for secure mobile access.",
+      "responsiveDesign": "Responsive Design",
+      "responsiveDesignDesc": "Optimized experience across all devices and screen sizes.",
+      "teamManagement": "Team Management",
+      "teamManagementDesc": "Organize users into teams with role-based access control.",
+      "sharedTemplates": "Shared Templates",
+      "sharedTemplatesDesc": "Share templates and documents across your organization.",
+      "activityDashboard": "Activity Dashboard",
+      "activityDashboardDesc": "Monitor team activity and document status in real-time.",
+      "customBranding": "Custom Branding",
+      "customBrandingDesc": "Add your logo and brand colors to emails and signing pages."
+    },
+    "cta": {
+      "title": "Ready to Experience These Features?",
+      "subtitle": "Start your free 14-day trial today. No credit card required.",
+      "button": "Start Free Trial"
+    }
+  },
+  "aboutPage": {
+    "hero": {
+      "title": "About OneSign",
+      "subtitle": "We're on a mission to make digital signatures simple, secure, and accessible for everyone."
+    },
+    "story": {
+      "title": "Our Story",
+      "paragraph1": "OneSign was born out of frustration with complicated, expensive e-signature solutions. In 2018, our founders Sarah and Michael were working on a project that required hundreds of signatures. The existing tools were either too complex, too expensive, or lacking in security features.",
+      "paragraph2": "They decided to build something better. A platform that combined enterprise-grade security with consumer-grade simplicity. Something that small businesses could afford but that enterprises would trust.",
+      "paragraph3": "Today, OneSign is used by over 50,000 businesses worldwide, from solo entrepreneurs to Fortune 500 companies. We've processed millions of signatures and saved countless hours of manual work. But we're just getting started."
+    },
+    "values": {
+      "title": "Our Values",
+      "subtitle": "The principles that guide everything we do",
+      "items": {
+        "customerFirst": {
+          "title": "Customer First",
+          "description": "Every decision we make starts with how it benefits our customers."
+        },
+        "securityAlways": {
+          "title": "Security Always",
+          "description": "We never compromise on security. Your trust is our top priority."
+        },
+        "innovation": {
+          "title": "Innovation",
+          "description": "We constantly push boundaries to deliver cutting-edge solutions."
+        },
+        "integrity": {
+          "title": "Integrity",
+          "description": "We do what's right, even when no one is watching."
+        }
+      }
+    },
+    "team": {
+      "title": "Meet Our Leadership",
+      "subtitle": "The team behind OneSign",
+      "members": {
+        "sarah": {
+          "name": "Sarah Johnson",
+          "role": "CEO & Co-Founder",
+          "bio": "Former VP at DocuSign with 15+ years in digital transformation."
+        },
+        "michael": {
+          "name": "Michael Chen",
+          "role": "CTO & Co-Founder",
+          "bio": "Ex-Google engineer specializing in security and scalability."
+        },
+        "emily": {
+          "name": "Emily Rodriguez",
+          "role": "Head of Product",
+          "bio": "Product leader from Dropbox focused on user experience."
+        },
+        "david": {
+          "name": "David Kumar",
+          "role": "Head of Security",
+          "bio": "Cybersecurity expert with background in financial services."
+        }
+      }
+    },
+    "journey": {
+      "title": "Our Journey",
+      "milestones": {
+        "milestone2018": {
+          "year": "2018",
+          "event": "OneSign founded in San Francisco"
+        },
+        "milestone2019": {
+          "year": "2019",
+          "event": "Reached 1,000 customers"
+        },
+        "milestone2020": {
+          "year": "2020",
+          "event": "Series A funding - $10M"
+        },
+        "milestone2021": {
+          "year": "2021",
+          "event": "Expanded to Europe and Asia"
+        },
+        "milestone2022": {
+          "year": "2022",
+          "event": "10,000+ businesses using OneSign"
+        },
+        "milestone2023": {
+          "year": "2023",
+          "event": "SOC 2 Type II certification"
+        },
+        "milestone2024": {
+          "year": "2024",
+          "event": "50,000+ active users worldwide"
+        }
+      }
+    },
+    "cta": {
+      "title": "Join Our Mission",
+      "subtitle": "We're always looking for talented people to join our team",
+      "button": "View Open Positions"
+    }
+  },
+  "privacyPage": {
+    "title": "Privacy Policy",
+    "lastUpdatedLabel": "Last Updated:",
+    "lastUpdatedDate": "November 28, 2024",
+    "section1": {
+      "title": "1. Information We Collect",
+      "content": "We collect information you provide directly to us, including:",
+      "items": [
+        "Name, email address, and contact information",
+        "Account credentials and profile information",
+        "Documents you upload and electronic signatures",
+        "Payment and billing information",
+        "Communications with us"
+      ]
+    },
+    "section2": {
+      "title": "2. How We Use Your Information",
+      "content": "We use the information we collect to:",
+      "items": [
+        "Provide, maintain, and improve our services",
+        "Process transactions and send related information",
+        "Send you technical notices and support messages",
+        "Respond to your comments and questions",
+        "Protect against fraudulent or illegal activity"
+      ]
+    },
+    "section3": {
+      "title": "3. Information Sharing",
+      "content": "We do not sell your personal information. We may share your information only in the following circumstances:",
+      "items": [
+        "With your consent or at your direction",
+        "With service providers who perform services on our behalf",
+        "To comply with legal obligations",
+        "To protect our rights and prevent fraud",
+        "In connection with a business transaction"
+      ]
+    },
+    "section4": {
+      "title": "4. Data Security",
+      "content": "We implement appropriate technical and organizational measures to protect your personal information, including encryption, access controls, and secure data storage. However, no security system is impenetrable."
+    },
+    "section5": {
+      "title": "5. Your Rights",
+      "content": "Depending on your location, you may have certain rights regarding your personal information:",
+      "items": [
+        "Access and receive a copy of your personal data",
+        "Correct inaccurate personal data",
+        "Request deletion of your personal data",
+        "Object to or restrict processing",
+        "Data portability",
+        "Withdraw consent"
+      ]
+    },
+    "section6": {
+      "title": "6. Cookies and Tracking",
+      "content": "We use cookies and similar tracking technologies to collect information about your browsing activities. You can control cookies through your browser settings."
+    },
+    "section7": {
+      "title": "7. International Data Transfers",
+      "content": "Your information may be transferred to and processed in countries other than your country of residence. We ensure appropriate safeguards are in place for such transfers."
+    },
+    "section8": {
+      "title": "8. Children's Privacy",
+      "content": "Our services are not directed to children under 13. We do not knowingly collect personal information from children under 13."
+    },
+    "section9": {
+      "title": "9. Changes to This Policy",
+      "content": "We may update this privacy policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the \"Last Updated\" date."
+    },
+    "section10": {
+      "title": "10. Contact Us",
+      "content": "If you have questions about this privacy policy, please contact us at:",
+      "contact": [
+        "Email: privacy@onesign.com",
+        "Address: 123 Business St, San Francisco, CA 94105",
+        "Phone: +1 (555) 123-4567"
+      ]
+    }
+  },
+  "termsPage": {
+    "title": "Terms of Service",
+    "lastUpdated": "Last Updated:",
+    "lastUpdatedDate": "November 28, 2024",
+    "acceptanceOfTerms": {
+      "title": "1. Acceptance of Terms",
+      "content": "By accessing and using OneSign (\"the Service\"), you accept and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the Service."
+    },
+    "descriptionOfService": {
+      "title": "2. Description of Service",
+      "intro": "OneSign provides electronic signature and document management services. The Service allows users to:",
+      "items": [
+        "Create and send documents for electronic signature",
+        "Sign documents electronically",
+        "Store and manage signed documents",
+        "Track document status and history"
+      ]
+    },
+    "userAccounts": {
+      "title": "3. User Accounts",
+      "intro": "To use the Service, you must:",
+      "items": [
+        "Be at least 18 years old",
+        "Provide accurate and complete registration information",
+        "Maintain the security of your account credentials",
+        "Accept responsibility for all activities under your account",
+        "Notify us immediately of any unauthorized use"
+      ]
+    },
+    "acceptableUse": {
+      "title": "4. Acceptable Use",
+      "intro": "You agree not to:",
+      "items": [
+        "Use the Service for any illegal purpose",
+        "Upload malicious code or viruses",
+        "Attempt to gain unauthorized access",
+        "Interfere with the Service's operation",
+        "Impersonate others or provide false information",
+        "Violate any applicable laws or regulations"
+      ]
+    },
+    "electronicSignatures": {
+      "title": "5. Electronic Signatures",
+      "content": "Electronic signatures created through the Service are legally binding under applicable laws, including the ESIGN Act and UETA. By using the Service, you consent to conduct transactions electronically."
+    },
+    "intellectualProperty": {
+      "title": "6. Intellectual Property",
+      "content": "The Service and its original content, features, and functionality are owned by OneSign and are protected by international copyright, trademark, and other intellectual property laws."
+    },
+    "paymentTerms": {
+      "title": "7. Payment Terms",
+      "intro": "Paid subscriptions are billed in advance on a recurring basis. You agree to:",
+      "items": [
+        "Pay all fees associated with your subscription",
+        "Provide accurate billing information",
+        "Authorize automatic renewal unless cancelled",
+        "Accept that refunds are subject to our refund policy"
+      ]
+    },
+    "termination": {
+      "title": "8. Termination",
+      "content": "We reserve the right to terminate or suspend your account at any time for violation of these terms. You may terminate your account at any time through your account settings."
+    },
+    "disclaimerOfWarranties": {
+      "title": "9. Disclaimer of Warranties",
+      "content": "THE SERVICE IS PROVIDED \"AS IS\" WITHOUT WARRANTIES OF ANY KIND. WE DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, ERROR-FREE, OR COMPLETELY SECURE."
+    },
+    "limitationOfLiability": {
+      "title": "10. Limitation of Liability",
+      "content": "IN NO EVENT SHALL ONESIGN BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES ARISING OUT OF OR IN CONNECTION WITH THE SERVICE."
+    },
+    "governingLaw": {
+      "title": "11. Governing Law",
+      "content": "These Terms shall be governed by the laws of the State of California, without regard to its conflict of law provisions."
+    },
+    "changesToTerms": {
+      "title": "12. Changes to Terms",
+      "content": "We reserve the right to modify these terms at any time. We will notify users of any material changes. Continued use of the Service constitutes acceptance of modified terms."
+    },
+    "contactInformation": {
+      "title": "13. Contact Information",
+      "intro": "For questions about these Terms of Service, please contact:",
+      "items": [
+        "Email: legal@onesign.com",
+        "Address: 123 Business St, San Francisco, CA 94105",
+        "Phone: +1 (555) 123-4567"
+      ]
     }
   }
 }

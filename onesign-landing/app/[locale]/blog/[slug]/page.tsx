@@ -1,6 +1,7 @@
 'use client';
 
 import { use } from 'react';
+import { useLocale } from 'next-intl';
 import { Header } from '@/app/components/Header';
 import { Footer } from '@/app/components/Footer';
 import { FadeIn } from '@/app/components/animations';
@@ -16,6 +17,7 @@ interface BlogPostPageProps {
 
 export default function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = use(params);
+  const locale = useLocale();
 
   // Mock blog post data
   const post = {
@@ -160,7 +162,7 @@ OneSign represents a new era in identity management - one that doesn't compromis
                   </div>
                 </div>
                 <span>•</span>
-                <span>{new Date(post.publishedAt).toLocaleDateString('en-US', {
+                <span>{new Date(post.publishedAt).toLocaleDateString(locale, {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric',

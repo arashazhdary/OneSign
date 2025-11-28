@@ -1,82 +1,55 @@
 'use client';
 
 import { Card } from '@/app/components/ui';
+import { useTranslations } from 'next-intl';
 
 interface Testimonial {
-  name: string;
-  role: string;
-  company: string;
+  nameKey: string;
+  roleKey: string;
+  companyKey: string;
   avatar: string;
-  content: string;
+  quoteKey: string;
   rating: number;
 }
 
 const testimonials: Testimonial[] = [
   {
-    name: 'Sarah Johnson',
-    role: 'CEO',
-    company: 'TechCorp Inc.',
+    nameKey: 'testimonial1.name',
+    roleKey: 'testimonial1.role',
+    companyKey: 'testimonial1.company',
     avatar: '👩‍💼',
-    content:
-      'OneSign has transformed how we handle contracts. The process is now 10x faster and our clients love the seamless experience.',
+    quoteKey: 'testimonial1.quote',
     rating: 5,
   },
   {
-    name: 'Michael Chen',
-    role: 'Legal Director',
-    company: 'LawFirm Partners',
+    nameKey: 'testimonial2.name',
+    roleKey: 'testimonial2.role',
+    companyKey: 'testimonial2.company',
     avatar: '👨‍💼',
-    content:
-      'As a law firm, security and compliance are paramount. OneSign exceeds our expectations in both areas while being incredibly user-friendly.',
+    quoteKey: 'testimonial2.quote',
     rating: 5,
   },
   {
-    name: 'Emily Rodriguez',
-    role: 'Operations Manager',
-    company: 'Global Solutions',
+    nameKey: 'testimonial3.name',
+    roleKey: 'testimonial3.role',
+    companyKey: 'testimonial3.company',
     avatar: '👩‍💻',
-    content:
-      'The integration with our existing tools was seamless. OneSign has become an essential part of our workflow.',
-    rating: 5,
-  },
-  {
-    name: 'David Kumar',
-    role: 'Founder',
-    company: 'StartupXYZ',
-    avatar: '👨‍🚀',
-    content:
-      'We needed a reliable e-signature solution that could scale with us. OneSign has been perfect, and the pricing is very competitive.',
-    rating: 5,
-  },
-  {
-    name: 'Lisa Thompson',
-    role: 'HR Director',
-    company: 'Enterprise Co.',
-    avatar: '👩‍🏫',
-    content:
-      'Onboarding new employees is so much easier now. OneSign has streamlined our entire HR documentation process.',
-    rating: 5,
-  },
-  {
-    name: 'James Wilson',
-    role: 'Sales Manager',
-    company: 'SalesPro Inc.',
-    avatar: '👨‍💼',
-    content:
-      'Closing deals is faster than ever. Our sales cycle has shortened by 40% since implementing OneSign.',
+    quoteKey: 'testimonial3.quote',
     rating: 5,
   },
 ];
 
 export function Testimonials() {
+  const t = useTranslations('landing');
+
   return (
     <div className="py-16">
       <div className="text-center mb-12">
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-          Trusted by Thousands
+          {t('testimonials.title')}
         </h2>
         <p className="text-lg text-gray-600 dark:text-gray-300">
-          See what our customers have to say about OneSign
+          {t('testimonials.subtitle')}
         </p>
       </div>
 
@@ -100,7 +73,7 @@ export function Testimonials() {
 
               {/* Content */}
               <p className="text-gray-700 dark:text-gray-300 mb-6 flex-1">
-                "{testimonial.content}"
+                "{t(`testimonials.${testimonial.quoteKey}`)}"
               </p>
 
               {/* Author */}
@@ -108,10 +81,10 @@ export function Testimonials() {
                 <div className="text-4xl">{testimonial.avatar}</div>
                 <div>
                   <div className="font-semibold text-gray-900 dark:text-white">
-                    {testimonial.name}
+                    {t(`testimonials.${testimonial.nameKey}`)}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {testimonial.role}, {testimonial.company}
+                    {t(`testimonials.${testimonial.roleKey}`)}, {t(`testimonials.${testimonial.companyKey}`)}
                   </div>
                 </div>
               </div>
@@ -124,19 +97,19 @@ export function Testimonials() {
       <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8">
         <div className="text-center">
           <div className="text-4xl font-bold text-blue-600 mb-2">50K+</div>
-          <div className="text-gray-600 dark:text-gray-400">Active Users</div>
+          <div className="text-gray-600 dark:text-gray-400">{t('stats.users')}</div>
+        </div>
+        <div className="text-center">
+          <div className="text-4xl font-bold text-blue-600 mb-2">100+</div>
+          <div className="text-gray-600 dark:text-gray-400">{t('stats.apps')}</div>
         </div>
         <div className="text-center">
           <div className="text-4xl font-bold text-blue-600 mb-2">1M+</div>
-          <div className="text-gray-600 dark:text-gray-400">Documents Signed</div>
+          <div className="text-gray-600 dark:text-gray-400">{t('stats.authentications')}</div>
         </div>
         <div className="text-center">
           <div className="text-4xl font-bold text-blue-600 mb-2">99.9%</div>
-          <div className="text-gray-600 dark:text-gray-400">Uptime</div>
-        </div>
-        <div className="text-center">
-          <div className="text-4xl font-bold text-blue-600 mb-2">4.9/5</div>
-          <div className="text-gray-600 dark:text-gray-400">Customer Rating</div>
+          <div className="text-gray-600 dark:text-gray-400">{t('stats.uptime')}</div>
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button, Card } from './ui';
 
 /**
@@ -20,6 +21,7 @@ interface FormData {
 }
 
 export function TestimonialSubmission() {
+  const t = useTranslations('testimonialSubmission');
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -50,7 +52,7 @@ export function TestimonialSubmission() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Submission failed');
+        throw new Error(data.error || t('errors.submitFailed'));
       }
 
       setSubmitted(true);
@@ -83,13 +85,13 @@ export function TestimonialSubmission() {
       <Card className="p-8 text-center">
         <div className="text-6xl mb-4">✅</div>
         <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          Thank You!
+          {t('success.title')}
         </h3>
         <p className="text-gray-600 dark:text-gray-400 mb-6">
-          Your testimonial has been submitted and will be reviewed shortly.
+          {t('success.message')}
         </p>
         <Button onClick={() => setSubmitted(false)} variant="outline">
-          Submit Another
+          {t('success.submitAnother')}
         </Button>
       </Card>
     );
@@ -98,7 +100,7 @@ export function TestimonialSubmission() {
   return (
     <Card className="p-8">
       <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-        Share Your Experience
+        {t('title')}
       </h3>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -108,7 +110,7 @@ export function TestimonialSubmission() {
             htmlFor="name"
             className="block text-sm font-medium text-gray-900 dark:text-white mb-2"
           >
-            Your Name *
+            {t('form.name')}
           </label>
           <input
             type="text"
@@ -127,7 +129,7 @@ export function TestimonialSubmission() {
             htmlFor="email"
             className="block text-sm font-medium text-gray-900 dark:text-white mb-2"
           >
-            Email Address *
+            {t('form.email')}
           </label>
           <input
             type="email"
@@ -147,7 +149,7 @@ export function TestimonialSubmission() {
               htmlFor="company"
               className="block text-sm font-medium text-gray-900 dark:text-white mb-2"
             >
-              Company (Optional)
+              {t('form.company')}
             </label>
             <input
               type="text"
@@ -163,7 +165,7 @@ export function TestimonialSubmission() {
               htmlFor="role"
               className="block text-sm font-medium text-gray-900 dark:text-white mb-2"
             >
-              Your Role (Optional)
+              {t('form.role')}
             </label>
             <input
               type="text"
@@ -171,7 +173,7 @@ export function TestimonialSubmission() {
               name="role"
               value={formData.role}
               onChange={handleChange}
-              placeholder="e.g., CTO, Developer"
+              placeholder={t('form.rolePlaceholder')}
               className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent"
             />
           </div>
@@ -180,7 +182,7 @@ export function TestimonialSubmission() {
         {/* Rating */}
         <div>
           <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
-            Rating *
+            {t('form.rating')}
           </label>
           <div className="flex gap-2">
             {stars.map((star) => (
@@ -194,7 +196,7 @@ export function TestimonialSubmission() {
               </button>
             ))}
             <span className="ml-2 text-gray-600 dark:text-gray-400">
-              {formData.rating} / 5
+              {t('form.ratingDisplay', { rating: formData.rating })}
             </span>
           </div>
         </div>
@@ -205,7 +207,7 @@ export function TestimonialSubmission() {
             htmlFor="testimonial"
             className="block text-sm font-medium text-gray-900 dark:text-white mb-2"
           >
-            Your Testimonial *
+            {t('form.testimonial')}
           </label>
           <textarea
             id="testimonial"
@@ -214,11 +216,11 @@ export function TestimonialSubmission() {
             onChange={handleChange}
             required
             rows={5}
-            placeholder="Tell us about your experience with OneSign..."
+            placeholder={t('form.testimonialPlaceholder')}
             className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-600 focus:border-transparent resize-none"
           />
           <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
-            {formData.testimonial.length} / 500 characters
+            {t('form.characterCount', { count: formData.testimonial.length })}
           </p>
         </div>
 
@@ -233,8 +235,7 @@ export function TestimonialSubmission() {
               className="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-600"
             />
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              I allow OneSign to publicly display this testimonial on their website
-              and marketing materials
+              {t('form.allowPublic')}
             </span>
           </label>
 
@@ -248,15 +249,15 @@ export function TestimonialSubmission() {
               className="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-600"
             />
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              I agree to the{' '}
+              {t('form.consentText')}{' '}
               <a href="/en/terms" className="text-blue-600 dark:text-blue-400 hover:underline">
-                Terms of Service
+                {t('form.terms')}
               </a>{' '}
-              and{' '}
+              {t('form.and')}{' '}
               <a href="/en/privacy" className="text-blue-600 dark:text-blue-400 hover:underline">
-                Privacy Policy
+                {t('form.privacy')}
               </a>{' '}
-              *
+              {t('form.required')}
             </span>
           </label>
         </div>
@@ -277,10 +278,10 @@ export function TestimonialSubmission() {
           {isSubmitting ? (
             <span className="flex items-center justify-center gap-2">
               <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              Submitting...
+              {t('form.submitting')}
             </span>
           ) : (
-            'Submit Testimonial'
+            t('form.submit')
           )}
         </Button>
       </form>

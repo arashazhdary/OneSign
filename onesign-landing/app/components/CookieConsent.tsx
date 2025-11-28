@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/app/components/ui';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function CookieConsent() {
+  const t = useTranslations('cookie');
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -37,23 +39,21 @@ export function CookieConsent() {
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Cookie Notice
+                  {t('title')}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                  We use cookies to enhance your browsing experience, serve personalized content,
-                  and analyze our traffic. By clicking "Accept All", you consent to our use of
-                  cookies.{' '}
+                  {t('description')}{' '}
                   <a href="/privacy" className="text-blue-600 hover:underline">
-                    Learn more
+                    {t('learnMore')}
                   </a>
                 </p>
               </div>
               <div className="flex gap-3">
                 <Button variant="outline" size="sm" onClick={declineCookies}>
-                  Decline
+                  {t('decline')}
                 </Button>
                 <Button variant="primary" size="sm" onClick={acceptCookies}>
-                  Accept All
+                  {t('accept')}
                 </Button>
               </div>
             </div>

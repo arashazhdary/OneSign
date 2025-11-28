@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations, useLocale } from 'next-intl';
 import { Header } from '@/app/components/Header';
 import { Footer } from '@/app/components/Footer';
 import { Card } from '@/app/components/ui';
@@ -13,18 +14,18 @@ import { FadeIn } from '@/app/components/animations';
 interface BlogPost {
   id: string;
   slug: string;
-  title: string;
-  excerpt: string;
+  titleKey: string;
+  excerptKey: string;
   content: string;
   author: {
-    name: string;
+    nameKey: string;
     avatar: string;
-    role: string;
+    roleKey: string;
   };
   publishedAt: string;
   readTime: number;
-  category: string;
-  tags: string[];
+  categoryKey: string;
+  tagKeys: string[];
   coverImage: string;
 }
 
@@ -33,110 +34,113 @@ const blogPosts: BlogPost[] = [
   {
     id: '1',
     slug: 'introducing-onesign-next-generation-iam',
-    title: 'Introducing OneSign: Next Generation Identity & Access Management',
-    excerpt: 'Discover how OneSign revolutionizes digital identity management with cutting-edge technology and unparalleled security.',
+    titleKey: 'post1.title',
+    excerptKey: 'post1.excerpt',
     content: '',
     author: {
-      name: 'Sarah Johnson',
+      nameKey: 'post1.author.name',
       avatar: '👩‍💼',
-      role: 'Product Manager',
+      roleKey: 'post1.author.role',
     },
     publishedAt: '2024-11-15',
     readTime: 5,
-    category: 'Product',
-    tags: ['IAM', 'Security', 'Product Launch'],
+    categoryKey: 'categories.product',
+    tagKeys: ['iam', 'security', 'productLaunch'],
     coverImage: '🚀',
   },
   {
     id: '2',
     slug: 'security-best-practices-2024',
-    title: 'Security Best Practices for 2024: A Comprehensive Guide',
-    excerpt: 'Learn the latest security best practices to protect your organization from modern cyber threats.',
+    titleKey: 'post2.title',
+    excerptKey: 'post2.excerpt',
     content: '',
     author: {
-      name: 'Michael Chen',
+      nameKey: 'post2.author.name',
       avatar: '👨‍💻',
-      role: 'Security Architect',
+      roleKey: 'post2.author.role',
     },
     publishedAt: '2024-11-10',
     readTime: 8,
-    category: 'Security',
-    tags: ['Security', 'Best Practices', 'Guide'],
+    categoryKey: 'categories.security',
+    tagKeys: ['security', 'bestPractices', 'guide'],
     coverImage: '🔒',
   },
   {
     id: '3',
     slug: 'zero-trust-architecture-explained',
-    title: 'Zero Trust Architecture Explained: Why It Matters',
-    excerpt: 'Understanding zero trust security model and how it can transform your organization\'s security posture.',
+    titleKey: 'post3.title',
+    excerptKey: 'post3.excerpt',
     content: '',
     author: {
-      name: 'David Kim',
+      nameKey: 'post3.author.name',
       avatar: '👨‍🔬',
-      role: 'Lead Engineer',
+      roleKey: 'post3.author.role',
     },
     publishedAt: '2024-11-05',
     readTime: 6,
-    category: 'Technology',
-    tags: ['Zero Trust', 'Architecture', 'Security'],
+    categoryKey: 'categories.technology',
+    tagKeys: ['zeroTrust', 'architecture', 'security'],
     coverImage: '🛡️',
   },
   {
     id: '4',
     slug: 'compliance-made-easy-gdpr-hipaa',
-    title: 'Compliance Made Easy: GDPR, HIPAA, and Beyond',
-    excerpt: 'Navigate the complex world of compliance regulations with confidence using OneSign.',
+    titleKey: 'post4.title',
+    excerptKey: 'post4.excerpt',
     content: '',
     author: {
-      name: 'Emma Williams',
+      nameKey: 'post4.author.name',
       avatar: '👩‍⚖️',
-      role: 'Compliance Officer',
+      roleKey: 'post4.author.role',
     },
     publishedAt: '2024-10-28',
     readTime: 7,
-    category: 'Compliance',
-    tags: ['GDPR', 'HIPAA', 'Compliance'],
+    categoryKey: 'categories.compliance',
+    tagKeys: ['gdpr', 'hipaa', 'compliance'],
     coverImage: '📋',
   },
   {
     id: '5',
     slug: 'api-security-authentication-tips',
-    title: 'API Security: Authentication and Authorization Tips',
-    excerpt: 'Secure your APIs with proven authentication and authorization strategies.',
+    titleKey: 'post5.title',
+    excerptKey: 'post5.excerpt',
     content: '',
     author: {
-      name: 'Alex Rodriguez',
+      nameKey: 'post5.author.name',
       avatar: '👨‍🚀',
-      role: 'API Architect',
+      roleKey: 'post5.author.role',
     },
     publishedAt: '2024-10-20',
     readTime: 10,
-    category: 'Development',
-    tags: ['API', 'Security', 'Authentication'],
+    categoryKey: 'categories.development',
+    tagKeys: ['api', 'security', 'authentication'],
     coverImage: '🔐',
   },
   {
     id: '6',
     slug: 'customer-success-story-enterprise',
-    title: 'Customer Success Story: How Enterprise X Scaled Securely',
-    excerpt: 'Learn how a Fortune 500 company transformed their IAM infrastructure with OneSign.',
+    titleKey: 'post6.title',
+    excerptKey: 'post6.excerpt',
     content: '',
     author: {
-      name: 'Jessica Lee',
+      nameKey: 'post6.author.name',
       avatar: '👩‍💼',
-      role: 'Customer Success',
+      roleKey: 'post6.author.role',
     },
     publishedAt: '2024-10-15',
     readTime: 5,
-    category: 'Case Study',
-    tags: ['Customer Story', 'Enterprise', 'Success'],
+    categoryKey: 'categories.caseStudy',
+    tagKeys: ['customerStory', 'enterprise', 'success'],
     coverImage: '🏢',
   },
 ];
 
-const categories = ['All', 'Product', 'Security', 'Technology', 'Compliance', 'Development', 'Case Study'];
+const categories = ['all', 'product', 'security', 'technology', 'compliance', 'development', 'caseStudy'];
 
 export default function BlogPage() {
+  const t = useTranslations('blogPage');
+  const locale = useLocale();
+
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
       <Header />
@@ -147,10 +151,10 @@ export default function BlogPage() {
           <div className="max-w-4xl mx-auto text-center">
             <FadeIn>
               <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
-                Blog & News
+                {t('title')}
               </h1>
               <p className="text-xl text-gray-600 dark:text-gray-300">
-                Insights, updates, and best practices from the OneSign team
+                {t('subtitle')}
               </p>
             </FadeIn>
           </div>
@@ -164,12 +168,12 @@ export default function BlogPage() {
                 <button
                   key={category}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                    category === 'All'
+                    category === 'all'
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                   }`}
                 >
-                  {category}
+                  {t(`categories.${category}`)}
                 </button>
               ))}
             </div>
@@ -192,17 +196,17 @@ export default function BlogPage() {
                       <div className="p-6">
                         {/* Category Badge */}
                         <span className="inline-block px-3 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 rounded-full mb-3">
-                          {post.category}
+                          {t(post.categoryKey)}
                         </span>
 
                         {/* Title */}
                         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
-                          {post.title}
+                          {t(post.titleKey)}
                         </h3>
 
                         {/* Excerpt */}
                         <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
-                          {post.excerpt}
+                          {t(post.excerptKey)}
                         </p>
 
                         {/* Meta */}
@@ -211,22 +215,22 @@ export default function BlogPage() {
                             <span className="text-2xl">{post.author.avatar}</span>
                             <div>
                               <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                {post.author.name}
+                                {t(post.author.nameKey)}
                               </p>
                               <p className="text-xs text-gray-500 dark:text-gray-500">
-                                {post.author.role}
+                                {t(post.author.roleKey)}
                               </p>
                             </div>
                           </div>
                           <div className="text-right">
                             <p className="text-xs text-gray-500 dark:text-gray-500">
-                              {new Date(post.publishedAt).toLocaleDateString('en-US', {
+                              {new Date(post.publishedAt).toLocaleDateString(locale, {
                                 month: 'short',
                                 day: 'numeric',
                               })}
                             </p>
                             <p className="text-xs text-gray-500 dark:text-gray-500">
-                              {post.readTime} min read
+                              {post.readTime} {t('readTime')}
                             </p>
                           </div>
                         </div>
@@ -240,7 +244,7 @@ export default function BlogPage() {
             {/* Load More */}
             <div className="text-center mt-12">
               <button className="px-8 py-3 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                Load More Articles
+                {t('loadMore')}
               </button>
             </div>
           </div>
@@ -250,19 +254,19 @@ export default function BlogPage() {
         <section className="px-4 py-16 bg-gradient-to-r from-blue-600 to-purple-600">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Stay Updated
+              {t('newsletter.title')}
             </h2>
             <p className="text-xl text-blue-100 mb-8">
-              Get the latest articles and insights delivered to your inbox
+              {t('newsletter.subtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
               <input
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t('newsletter.placeholder')}
                 className="flex-1 px-6 py-3 rounded-lg text-gray-900 dark:text-white bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-white"
               />
               <button className="px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
-                Subscribe
+                {t('newsletter.button')}
               </button>
             </div>
           </div>

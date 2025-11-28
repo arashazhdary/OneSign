@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Header } from '@/app/components/Header';
 import { Footer } from '@/app/components/Footer';
 import { ContactForm } from '@/app/components/ContactForm';
@@ -7,33 +8,34 @@ import { Card, CardContent } from '@/app/components/ui/Card';
 import { FadeIn, SlideUp } from '@/app/components/animations';
 
 export default function ContactPage() {
+  const t = useTranslations('contactPage');
   const contactMethods = [
     {
       icon: '📧',
-      title: 'Email',
-      description: 'Send us an email anytime',
-      value: 'support@onesign.com',
+      title: t('methods.email.title'),
+      description: t('methods.email.description'),
+      value: t('methods.email.value'),
       link: 'mailto:support@onesign.com',
     },
     {
       icon: '📞',
-      title: 'Phone',
-      description: 'Mon-Fri from 9am to 6pm',
-      value: '+1 (555) 123-4567',
+      title: t('methods.phone.title'),
+      description: t('methods.phone.description'),
+      value: t('methods.phone.value'),
       link: 'tel:+15551234567',
     },
     {
       icon: '💬',
-      title: 'Live Chat',
-      description: 'Available 24/7',
-      value: 'Start a conversation',
+      title: t('methods.liveChat.title'),
+      description: t('methods.liveChat.description'),
+      value: t('methods.liveChat.value'),
       link: '#',
     },
     {
       icon: '📍',
-      title: 'Office',
-      description: 'Visit our headquarters',
-      value: '123 Business St, San Francisco, CA 94105',
+      title: t('methods.office.title'),
+      description: t('methods.office.description'),
+      value: t('methods.office.value'),
       link: 'https://maps.google.com',
     },
   ];
@@ -47,10 +49,10 @@ export default function ContactPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <FadeIn>
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-              Get in Touch
+              {t('hero.title')}
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-              Have a question or need help? We're here for you. Reach out to our team and we'll get back to you as soon as possible.
+              {t('hero.subtitle')}
             </p>
           </FadeIn>
         </div>
@@ -90,10 +92,10 @@ export default function ContactPage() {
           <FadeIn>
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                Send Us a Message
+                {t('form.title')}
               </h2>
               <p className="text-lg text-gray-600 dark:text-gray-300">
-                Fill out the form below and we'll respond within 24 hours
+                {t('form.subtitle')}
               </p>
             </div>
           </FadeIn>
@@ -110,26 +112,26 @@ export default function ContactPage() {
             <FadeIn>
               <div>
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-                  Visit Our Office
+                  {t('office.title')}
                 </h2>
                 <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
-                  We'd love to meet you in person! Our headquarters is located in the heart of San Francisco. Stop by for a coffee and a demo.
+                  {t('office.description')}
                 </p>
                 <div className="space-y-4">
                   <div className="flex items-start gap-4">
                     <div className="text-2xl">🕐</div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white">Business Hours</h3>
-                      <p className="text-gray-600 dark:text-gray-300">Monday - Friday: 9:00 AM - 6:00 PM</p>
-                      <p className="text-gray-600 dark:text-gray-300">Saturday - Sunday: Closed</p>
+                      <h3 className="font-semibold text-gray-900 dark:text-white">{t('office.hours.title')}</h3>
+                      <p className="text-gray-600 dark:text-gray-300">{t('office.hours.weekdays')}</p>
+                      <p className="text-gray-600 dark:text-gray-300">{t('office.hours.weekends')}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-4">
                     <div className="text-2xl">🚇</div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white">Getting Here</h3>
+                      <h3 className="font-semibold text-gray-900 dark:text-white">{t('office.transit.title')}</h3>
                       <p className="text-gray-600 dark:text-gray-300">
-                        Easily accessible by BART, MUNI, and major bus lines. Street parking available.
+                        {t('office.transit.description')}
                       </p>
                     </div>
                   </div>
@@ -137,11 +139,14 @@ export default function ContactPage() {
               </div>
             </FadeIn>
             <SlideUp delay={0.3}>
-              <div className="bg-gray-200 dark:bg-gray-700 rounded-2xl h-96 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-6xl mb-4">🗺️</div>
-                  <p className="text-gray-600 dark:text-gray-300">Map placeholder</p>
-                </div>
+              <div className="bg-gray-200 dark:bg-gray-700 rounded-2xl h-96 overflow-hidden">
+                <iframe
+                  src="https://www.openstreetmap.org/export/embed.html?bbox=-122.4194%2C37.7749%2C-122.3894%2C37.7949&amp;layer=mapnik&amp;marker=37.7849%2C-122.4044"
+                  className="w-full h-full border-0"
+                  loading="lazy"
+                  title={t('office.map.title')}
+                  aria-label={t('office.map.ariaLabel')}
+                />
               </div>
             </SlideUp>
           </div>
