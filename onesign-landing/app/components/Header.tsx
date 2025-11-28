@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { ThemeToggle } from './ThemeToggle';
 import { Button } from './ui';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,6 +13,7 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const params = useParams();
   const currentLocale = params?.locale as string || 'en';
+  const t = useTranslations('landing');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,10 +25,10 @@ export function Header() {
   }, []);
 
   const navigation = [
-    { name: 'Features', href: '/features' },
-    { name: 'Pricing', href: '/pricing' },
-    { name: 'About', href: '/about' },
-    { name: 'Contact', href: '/contact' },
+    { name: t('nav.features'), href: '/features' },
+    { name: t('nav.solutions'), href: '/solutions' },
+    { name: t('nav.pricing'), href: '/pricing' },
+    { name: t('nav.docs'), href: '/docs' },
   ];
 
   const toggleLocale = () => {
@@ -90,7 +92,7 @@ export function Header() {
             {/* CTA Button */}
             <div className="hidden sm:block">
               <Button variant="primary" size="sm">
-                Get Started
+                {t('nav.getStarted')}
               </Button>
             </div>
 
@@ -149,7 +151,7 @@ export function Header() {
                 ))}
                 <div className="px-4 pt-2">
                   <Button variant="primary" className="w-full">
-                    Get Started
+                    {t('nav.getStarted')}
                   </Button>
                 </div>
                 <button

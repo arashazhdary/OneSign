@@ -6,86 +6,46 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/app/components/ui/Ca
 import { Button } from '@/app/components/ui';
 import { FadeIn, SlideUp } from '@/app/components/animations';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 export default function PricingPage() {
+  const t = useTranslations('landing');
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+
+  // Get features arrays from translations using raw()
+  const freeFeatures = t.raw('pricing.free.features') as string[];
+  const proFeatures = t.raw('pricing.pro.features') as string[];
+  const enterpriseFeatures = t.raw('pricing.enterprise.features') as string[];
 
   const plans = [
     {
-      name: 'Free',
-      price: { monthly: 0, yearly: 0 },
-      description: 'Perfect for individuals getting started',
-      features: [
-        '5 documents per month',
-        '1 user',
-        'Basic e-signature',
-        'Email support',
-        'Mobile app access',
-        '30-day document storage',
-      ],
+      id: 'free',
+      name: t('pricing.free.name'),
+      price: { monthly: t('pricing.free.price'), yearly: t('pricing.free.price') },
+      description: t('pricing.free.description'),
+      features: freeFeatures,
       popular: false,
-      cta: 'Start Free',
+      cta: t('pricing.cta'),
     },
     {
-      name: 'Professional',
-      price: { monthly: 29, yearly: 290 },
-      description: 'For professionals and small teams',
-      features: [
-        'Unlimited documents',
-        'Up to 5 users',
-        'Advanced e-signature',
-        'Priority email support',
-        'Mobile app access',
-        'Unlimited document storage',
-        'Custom branding',
-        'Templates library',
-        'Bulk send',
-        'Audit trail',
-      ],
+      id: 'pro',
+      name: t('pricing.pro.name'),
+      price: { monthly: t('pricing.pro.price'), yearly: t('pricing.pro.price') },
+      description: t('pricing.pro.description'),
+      features: proFeatures,
       popular: true,
-      cta: 'Start 14-day Trial',
+      cta: t('pricing.cta'),
     },
     {
-      name: 'Business',
-      price: { monthly: 79, yearly: 790 },
-      description: 'For growing businesses',
-      features: [
-        'Everything in Professional',
-        'Up to 20 users',
-        'Phone & chat support',
-        'API access',
-        'Advanced analytics',
-        'Custom workflows',
-        'Integrations',
-        'SSO (Single Sign-On)',
-        'Team management',
-        'Advanced security',
-      ],
+      id: 'enterprise',
+      name: t('pricing.enterprise.name'),
+      price: { monthly: t('pricing.enterprise.price'), yearly: t('pricing.enterprise.price') },
+      description: t('pricing.enterprise.description'),
+      features: enterpriseFeatures,
       popular: false,
-      cta: 'Start 14-day Trial',
-    },
-    {
-      name: 'Enterprise',
-      price: { monthly: 'Custom', yearly: 'Custom' },
-      description: 'For large organizations',
-      features: [
-        'Everything in Business',
-        'Unlimited users',
-        'Dedicated account manager',
-        'Custom integrations',
-        'Advanced compliance',
-        'On-premise deployment',
-        'SLA guarantee',
-        'Custom training',
-        'Priority support 24/7',
-        'Custom contracts',
-      ],
-      popular: false,
-      cta: 'Contact Sales',
+      cta: t('pricing.contact'),
     },
   ];
-
-  const savings = billingPeriod === 'yearly' ? '~17%' : null;
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
@@ -96,10 +56,10 @@ export default function PricingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <FadeIn>
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-              Simple, Transparent Pricing
+              {t('pricing.title')}
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
-              Choose the plan that fits your needs. All plans include a 14-day free trial.
+              {t('pricing.subtitle')}
             </p>
           </FadeIn>
 
@@ -114,7 +74,7 @@ export default function PricingPage() {
                     : 'text-gray-600 dark:text-gray-300'
                 }`}
               >
-                Monthly
+                {t('pricing.monthly')}
               </button>
               <button
                 onClick={() => setBillingPeriod('yearly')}
@@ -124,12 +84,12 @@ export default function PricingPage() {
                     : 'text-gray-600 dark:text-gray-300'
                 }`}
               >
-                Yearly
+                {t('pricing.yearly')}
               </button>
             </div>
-            {savings && (
+            {billingPeriod === 'yearly' && (
               <p className="mt-4 text-green-600 dark:text-green-400 font-semibold">
-                💰 Save {savings} with yearly billing
+                {t('pricing.save')}
               </p>
             )}
           </FadeIn>
@@ -139,9 +99,9 @@ export default function PricingPage() {
       {/* Pricing Cards */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {plans.map((plan, index) => (
-              <SlideUp key={plan.name} delay={index * 0.1}>
+              <SlideUp key={plan.id} delay={index * 0.1}>
                 <Card
                   className={`h-full relative ${
                     plan.popular
@@ -163,19 +123,19 @@ export default function PricingPage() {
                     </p>
                     <div className="mt-6">
                       <div className="flex items-baseline gap-2">
-                        {typeof plan.price[billingPeriod] === 'number' ? (
+                        {plan.id === 'enterprise' ? (
+                          <span className="text-4xl font-bold text-gray-900 dark:text-white">
+                            {plan.price[billingPeriod]}
+                          </span>
+                        ) : (
                           <>
                             <span className="text-4xl font-bold text-gray-900 dark:text-white">
                               ${plan.price[billingPeriod]}
                             </span>
                             <span className="text-gray-600 dark:text-gray-400">
-                              /{billingPeriod === 'monthly' ? 'month' : 'year'}
+                              {t('pricing.perUser')}
                             </span>
                           </>
-                        ) : (
-                          <span className="text-4xl font-bold text-gray-900 dark:text-white">
-                            {plan.price[billingPeriod]}
-                          </span>
                         )}
                       </div>
                     </div>
@@ -220,26 +180,30 @@ export default function PricingPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeIn>
             <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
-              Frequently Asked Questions
+              {t('faq.title')}
             </h2>
           </FadeIn>
           <div className="space-y-6">
             {[
               {
-                q: 'Can I switch plans later?',
-                a: 'Yes, you can upgrade or downgrade your plan at any time. Changes will be reflected in your next billing cycle.',
+                q: t('faq.faq1.question'),
+                a: t('faq.faq1.answer'),
               },
               {
-                q: 'What payment methods do you accept?',
-                a: 'We accept all major credit cards (Visa, MasterCard, American Express) and bank transfers for enterprise plans.',
+                q: t('faq.faq2.question'),
+                a: t('faq.faq2.answer'),
               },
               {
-                q: 'Is there a long-term contract?',
-                a: 'No, all plans are month-to-month or year-to-year. You can cancel anytime without penalty.',
+                q: t('faq.faq3.question'),
+                a: t('faq.faq3.answer'),
               },
               {
-                q: 'Do you offer refunds?',
-                a: 'Yes, we offer a 30-day money-back guarantee for all paid plans. No questions asked.',
+                q: t('faq.faq4.question'),
+                a: t('faq.faq4.answer'),
+              },
+              {
+                q: t('faq.faq5.question'),
+                a: t('faq.faq5.answer'),
               },
             ].map((faq, index) => (
               <SlideUp key={index} delay={index * 0.1}>

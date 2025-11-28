@@ -1,38 +1,37 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const t = useTranslations('landing');
 
   const footerLinks = {
     product: [
-      { name: 'Features', href: '/features' },
-      { name: 'Pricing', href: '/pricing' },
-      { name: 'Security', href: '/security' },
-      { name: 'Integrations', href: '/integrations' },
-      { name: 'API', href: '/api' },
+      { name: t('footer.features'), href: '/features' },
+      { name: t('footer.pricing'), href: '/pricing' },
+      { name: t('footer.security'), href: '/security' },
+      { name: t('footer.integrations'), href: '/integrations' },
+      { name: t('footer.changelog'), href: '/changelog' },
     ],
     company: [
-      { name: 'About Us', href: '/about' },
-      { name: 'Blog', href: '/blog' },
-      { name: 'Careers', href: '/careers' },
-      { name: 'Press', href: '/press' },
-      { name: 'Contact', href: '/contact' },
+      { name: t('footer.about'), href: '/about' },
+      { name: t('footer.blog'), href: '/blog' },
+      { name: t('footer.careers'), href: '/careers' },
+      { name: t('footer.contact'), href: '/contact' },
     ],
     resources: [
-      { name: 'Documentation', href: '/docs' },
-      { name: 'Help Center', href: '/help' },
-      { name: 'Community', href: '/community' },
-      { name: 'Webinars', href: '/webinars' },
-      { name: 'Templates', href: '/templates' },
+      { name: t('footer.documentation'), href: '/docs' },
+      { name: t('footer.apiReference'), href: '/api' },
+      { name: t('footer.guides'), href: '/guides' },
+      { name: t('footer.community'), href: '/community' },
     ],
     legal: [
-      { name: 'Privacy Policy', href: '/privacy' },
-      { name: 'Terms of Service', href: '/terms' },
-      { name: 'Cookie Policy', href: '/cookies' },
-      { name: 'GDPR', href: '/gdpr' },
-      { name: 'Compliance', href: '/compliance' },
+      { name: t('footer.privacy'), href: '/privacy' },
+      { name: t('footer.terms'), href: '/terms' },
+      { name: t('footer.security'), href: '/security' },
+      { name: t('footer.compliance'), href: '/compliance' },
     ],
   };
 
@@ -91,7 +90,7 @@ export function Footer() {
               <span className="text-2xl font-bold text-white">OneSign</span>
             </div>
             <p className="text-sm text-gray-400 mb-4">
-              Secure, fast, and legally binding electronic signatures for modern businesses.
+              {t('footer.description')}
             </p>
             {/* Social Links */}
             <div className="flex gap-4">
@@ -112,7 +111,7 @@ export function Footer() {
 
           {/* Product Links */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Product</h3>
+            <h3 className="text-white font-semibold mb-4">{t('footer.product')}</h3>
             <ul className="space-y-2">
               {footerLinks.product.map((link) => (
                 <li key={link.name}>
@@ -129,7 +128,7 @@ export function Footer() {
 
           {/* Company Links */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Company</h3>
+            <h3 className="text-white font-semibold mb-4">{t('footer.company')}</h3>
             <ul className="space-y-2">
               {footerLinks.company.map((link) => (
                 <li key={link.name}>
@@ -146,7 +145,7 @@ export function Footer() {
 
           {/* Resources Links */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Resources</h3>
+            <h3 className="text-white font-semibold mb-4">{t('footer.resources')}</h3>
             <ul className="space-y-2">
               {footerLinks.resources.map((link) => (
                 <li key={link.name}>
@@ -163,7 +162,7 @@ export function Footer() {
 
           {/* Legal Links */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Legal</h3>
+            <h3 className="text-white font-semibold mb-4">{t('footer.legal')}</h3>
             <ul className="space-y-2">
               {footerLinks.legal.map((link) => (
                 <li key={link.name}>
@@ -183,7 +182,7 @@ export function Footer() {
         <div className="pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-gray-400">
-              © {currentYear} OneSign. All rights reserved.
+              © {currentYear} OneSign. {t('footer.copyright')}
             </p>
             <div className="flex items-center gap-6 text-sm text-gray-400">
               <span className="flex items-center gap-2">

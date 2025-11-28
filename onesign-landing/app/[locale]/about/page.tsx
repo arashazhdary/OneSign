@@ -1,11 +1,13 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Header } from '@/app/components/Header';
 import { Footer } from '@/app/components/Footer';
 import { Card, CardContent } from '@/app/components/ui/Card';
 import { FadeIn, SlideUp } from '@/app/components/animations';
 
 export default function AboutPage() {
+  const t = useTranslations('landing');
   const team = [
     {
       name: 'Sarah Johnson',
