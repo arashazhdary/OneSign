@@ -20,6 +20,7 @@ interface APIKey {
 }
 
 export default function TenantApiKeysPage() {
+  const { t } = useTranslation();
   const [tenantId, setTenantIdState] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -155,8 +156,10 @@ export default function TenantApiKeysPage() {
             />
           </div>
           <div className="flex gap-4">
-            <ActionButton type="submit" fullWidth>Create</ActionButton>
-            <ActionButton type="button" variant="secondary" fullWidth onClick={() => setShowModal(false)}>
+            <button type="submit" className="flex-1">
+              <ActionButton className="w-full">Create</ActionButton>
+            </button>
+            <ActionButton variant="secondary" className="flex-1" onClick={() => setShowModal(false)}>
               Cancel
             </ActionButton>
           </div>

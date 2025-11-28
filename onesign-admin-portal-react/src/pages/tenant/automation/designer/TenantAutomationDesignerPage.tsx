@@ -12,6 +12,24 @@ interface WorkflowAction {
   color: string;
 }
 
+interface WorkflowStep {
+  id: string;
+  type: string;
+  name: string;
+  x: number;
+  y: number;
+  config: Record<string, any>;
+  connections: string[];
+}
+
+interface Workflow {
+  id?: string;
+  name: string;
+  description: string;
+  steps: WorkflowStep[];
+  isActive: boolean;
+}
+
 const AVAILABLE_ACTIONS: WorkflowAction[] = [
   { id: 'email', type: 'email', name: 'Send Email', icon: '📧', color: 'bg-blue-500' },
   { id: 'sms', type: 'sms', name: 'Send SMS', icon: '📱', color: 'bg-green-500' },
@@ -29,16 +47,16 @@ export default function TenantAutomationDesignerPage() {
   const { t } = useTranslation();
   const canvasRef = useRef<HTMLDivElement>(null);
   const [tenantId, setTenantIdState] = useState<string | null>(null);
-  const [workflow, setWorkflow] = useState<AutomationAPI.Workflow>({
+  const [workflow, setWorkflow] = useState<Workflow>({
     name: 'New Workflow',
     description: '',
     steps: [],
     isActive: false,
   });
-  const [selectedStep, setSelectedStep] = useState<AutomationAPI.WorkflowStep | null>(null);
+  const [selectedStep, setSelectedStep] = useState<WorkflowStep | null>(null);
   const [draggedAction, setDraggedAction] = useState<WorkflowAction | null>(null);
   const [connectingFrom, setConnectingFrom] = useState<string | null>(null);
-  const [workflows, setWorkflows] = useState<AutomationAPI.Workflow[]>([]);
+  const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showLoadModal, setShowLoadModal] = useState(false);
   const [testResults, setTestResults] = useState<string>('');
@@ -60,8 +78,8 @@ export default function TenantAutomationDesignerPage() {
   const loadWorkflows = async () => {
     if (!tenantId) return;
     try {
-      const data = await AutomationAPI.getWorkflowsForDesigner(tenantId);
-      setWorkflows(data.items || []);
+      const data = await AutomationAPI.getWorkflowsForDesigner();
+      setWorkflows(Array.isArray(data) ? data : data.items || []);
     } catch (error) {
       console.error('Error loading workflows:', error);
     }
@@ -83,7 +101,7 @@ export default function TenantAutomationDesignerPage() {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    const newStep: AutomationAPI.WorkflowStep = {
+    const newStep: WorkflowStep = {
       id: `step-${Date.now()}`,
       type: draggedAction.type,
       name: draggedAction.name,
@@ -101,7 +119,7 @@ export default function TenantAutomationDesignerPage() {
     setDraggedAction(null);
   };
 
-  const handleStepClick = (step: AutomationAPI.WorkflowStep) => {
+  const handleStepClick = (step: WorkflowStep) => {
     if (connectingFrom) {
       // Create connection
       setWorkflow((prev) => ({
@@ -155,7 +173,7 @@ export default function TenantAutomationDesignerPage() {
     setSuccess('');
 
     try {
-      const data = await AutomationAPI.saveWorkflow(workflow, tenantId);
+      const data = await AutomationAPI.saveWorkflow(workflow);
       setWorkflow(data);
       setSuccess('Workflow saved successfully');
       setShowSaveModal(false);
@@ -166,7 +184,7 @@ export default function TenantAutomationDesignerPage() {
     }
   };
 
-  const handleLoadWorkflow = (wf: AutomationAPI.Workflow) => {
+  const handleLoadWorkflow = (wf: Workflow) => {
     setWorkflow(wf);
     setShowLoadModal(false);
     setSelectedStep(null);
@@ -178,7 +196,7 @@ export default function TenantAutomationDesignerPage() {
     setShowTestModal(true);
 
     try {
-      const data = await AutomationAPI.testWorkflowDesigner(workflow, tenantId);
+      const data = await AutomationAPI.testWorkflowDesigner(workflow);
       setTestResults(JSON.stringify(data, null, 2));
     } catch (error: any) {
       setTestResults(`Error: ${error?.message || 'Test failed'}`);
@@ -195,7 +213,7 @@ export default function TenantAutomationDesignerPage() {
     if (!confirm('Deploy this workflow? It will become active.')) return;
 
     try {
-      const data = await AutomationAPI.deployWorkflow(workflow.id, tenantId);
+      const data = await AutomationAPI.deployWorkflow(workflow.id);
       setWorkflow(data);
       setSuccess('Workflow deployed successfully');
     } catch (error: any) {
