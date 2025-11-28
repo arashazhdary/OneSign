@@ -83,8 +83,9 @@ export default function TenantScopesPage() {
   const fetchScopes = async () => {
     if (!tenantId) return;
     try {
-      const data = await tenantService.getScopes(tenantId);
-      setScopes(data.items || data || []);
+      const data = await tenantService.getScopes();
+      // getScopes returns an array directly, not a paginated object
+      setScopes(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching scopes:', error);
     } finally {
@@ -95,8 +96,9 @@ export default function TenantScopesPage() {
   const fetchScopeGroups = async () => {
     if (!tenantId) return;
     try {
-      const data = await tenantService.getScopeGroups(tenantId);
-      setScopeGroups(data.items || data || []);
+      // getScopeGroups method does not exist on tenantService
+      // Providing empty fallback for now
+      setScopeGroups([]);
     } catch (error) {
       console.error('Error fetching scope groups:', error);
     }
@@ -131,9 +133,9 @@ export default function TenantScopesPage() {
 
     try {
       if (editingScope) {
-        await tenantService.updateScope(tenantId, editingScope.id, payload);
+        await tenantService.updateScope(editingScope.id, payload);
       } else {
-        await tenantService.createScope(tenantId, payload);
+        await tenantService.createScope(payload);
       }
       setSuccess(editingScope ? 'Scope updated successfully' : 'Scope created successfully');
       setShowCreateModal(false);
@@ -164,7 +166,7 @@ export default function TenantScopesPage() {
     setSuccess('');
 
     try {
-      await tenantService.deleteScope(tenantId, scopeId);
+      await tenantService.deleteScope(scopeId);
       setSuccess('Scope deleted successfully');
       fetchScopes();
     } catch (error: any) {
@@ -175,7 +177,9 @@ export default function TenantScopesPage() {
 
   const handleToggleScopeStatus = async (scope: Scope) => {
     try {
-      await tenantService.updateScopeStatus(tenantId, scope.id, !scope.isEnabled);
+      // updateScopeStatus method does not exist on tenantService
+      // Use updateScope with isEnabled flag instead
+      await tenantService.updateScope(scope.id, { isEnabled: !scope.isEnabled });
       setSuccess(`Scope ${scope.isEnabled ? 'disabled' : 'enabled'} successfully`);
       fetchScopes();
     } catch (error: any) {
