@@ -5,6 +5,8 @@ import { locales } from '@/i18n';
 import { ThemeProvider } from '@/app/components/ThemeProvider';
 import { ToastContainer } from '@/app/components/Toast';
 import { CookieConsent } from '@/app/components/CookieConsent';
+import { BackToTop } from '@/app/components/BackToTop';
+import { ProgressBar } from '@/app/components/ProgressBar';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -31,7 +33,9 @@ export default async function LocaleLayout({
       <body suppressHydrationWarning>
         <ThemeProvider>
           <NextIntlClientProvider messages={messages}>
+            <ProgressBar />
             {children}
+            <BackToTop />
             <ToastContainer />
             <CookieConsent />
           </NextIntlClientProvider>
