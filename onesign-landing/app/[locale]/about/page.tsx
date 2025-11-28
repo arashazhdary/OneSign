@@ -7,65 +7,53 @@ import { Card, CardContent } from '@/app/components/ui/Card';
 import { FadeIn, SlideUp } from '@/app/components/animations';
 
 export default function AboutPage() {
-  const t = useTranslations('landing');
+  const t = useTranslations('aboutPage');
   const team = [
     {
-      name: 'Sarah Johnson',
-      role: 'CEO & Co-Founder',
+      key: 'sarah',
       avatar: '👩‍💼',
-      bio: 'Former VP at DocuSign with 15+ years in digital transformation.',
     },
     {
-      name: 'Michael Chen',
-      role: 'CTO & Co-Founder',
+      key: 'michael',
       avatar: '👨‍💻',
-      bio: 'Ex-Google engineer specializing in security and scalability.',
     },
     {
-      name: 'Emily Rodriguez',
-      role: 'Head of Product',
+      key: 'emily',
       avatar: '👩‍🎨',
-      bio: 'Product leader from Dropbox focused on user experience.',
     },
     {
-      name: 'David Kumar',
-      role: 'Head of Security',
+      key: 'david',
       avatar: '👨‍🔬',
-      bio: 'Cybersecurity expert with background in financial services.',
     },
   ];
 
   const values = [
     {
+      key: 'customerFirst',
       icon: '🎯',
-      title: 'Customer First',
-      description: 'Every decision we make starts with how it benefits our customers.',
     },
     {
+      key: 'securityAlways',
       icon: '🔒',
-      title: 'Security Always',
-      description: 'We never compromise on security. Your trust is our top priority.',
     },
     {
+      key: 'innovation',
       icon: '💡',
-      title: 'Innovation',
-      description: 'We constantly push boundaries to deliver cutting-edge solutions.',
     },
     {
+      key: 'integrity',
       icon: '🤝',
-      title: 'Integrity',
-      description: "We do what's right, even when no one is watching.",
     },
   ];
 
   const milestones = [
-    { year: '2018', event: 'OneSign founded in San Francisco' },
-    { year: '2019', event: 'Reached 1,000 customers' },
-    { year: '2020', event: 'Series A funding - $10M' },
-    { year: '2021', event: 'Expanded to Europe and Asia' },
-    { year: '2022', event: '10,000+ businesses using OneSign' },
-    { year: '2023', event: 'SOC 2 Type II certification' },
-    { year: '2024', event: '50,000+ active users worldwide' },
+    { key: 'milestone2018' },
+    { key: 'milestone2019' },
+    { key: 'milestone2020' },
+    { key: 'milestone2021' },
+    { key: 'milestone2022' },
+    { key: 'milestone2023' },
+    { key: 'milestone2024' },
   ];
 
   return (
@@ -78,10 +66,10 @@ export default function AboutPage() {
           <FadeIn>
             <div className="text-center mb-12">
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
-                About OneSign
+                {t('hero.title')}
               </h1>
               <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                We're on a mission to make digital signatures simple, secure, and accessible for everyone.
+                {t('hero.subtitle')}
               </p>
             </div>
           </FadeIn>
@@ -94,16 +82,16 @@ export default function AboutPage() {
           <FadeIn>
             <div className="prose prose-lg dark:prose-invert max-w-none">
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
-                Our Story
+                {t('story.title')}
               </h2>
               <p className="text-gray-600 dark:text-gray-300 mb-4">
-                OneSign was born out of frustration with complicated, expensive e-signature solutions. In 2018, our founders Sarah and Michael were working on a project that required hundreds of signatures. The existing tools were either too complex, too expensive, or lacking in security features.
+                {t('story.paragraph1')}
               </p>
               <p className="text-gray-600 dark:text-gray-300 mb-4">
-                They decided to build something better. A platform that combined enterprise-grade security with consumer-grade simplicity. Something that small businesses could afford but that enterprises would trust.
+                {t('story.paragraph2')}
               </p>
               <p className="text-gray-600 dark:text-gray-300">
-                Today, OneSign is used by over 50,000 businesses worldwide, from solo entrepreneurs to Fortune 500 companies. We've processed millions of signatures and saved countless hours of manual work. But we're just getting started.
+                {t('story.paragraph3')}
               </p>
             </div>
           </FadeIn>
@@ -116,10 +104,10 @@ export default function AboutPage() {
           <FadeIn>
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                Our Values
+                {t('values.title')}
               </h2>
               <p className="text-lg text-gray-600 dark:text-gray-300">
-                The principles that guide everything we do
+                {t('values.subtitle')}
               </p>
             </div>
           </FadeIn>
@@ -130,10 +118,10 @@ export default function AboutPage() {
                   <CardContent className="pt-8">
                     <div className="text-5xl mb-4">{value.icon}</div>
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
-                      {value.title}
+                      {t(`values.items.${value.key}.title`)}
                     </h3>
                     <p className="text-gray-600 dark:text-gray-300">
-                      {value.description}
+                      {t(`values.items.${value.key}.description`)}
                     </p>
                   </CardContent>
                 </Card>
@@ -149,10 +137,10 @@ export default function AboutPage() {
           <FadeIn>
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                Meet Our Leadership
+                {t('team.title')}
               </h2>
               <p className="text-lg text-gray-600 dark:text-gray-300">
-                The team behind OneSign
+                {t('team.subtitle')}
               </p>
             </div>
           </FadeIn>
@@ -163,13 +151,13 @@ export default function AboutPage() {
                   <CardContent className="pt-8">
                     <div className="text-6xl mb-4">{member.avatar}</div>
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
-                      {member.name}
+                      {t(`team.members.${member.key}.name`)}
                     </h3>
                     <p className="text-blue-600 dark:text-blue-400 font-medium mb-3">
-                      {member.role}
+                      {t(`team.members.${member.key}.role`)}
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-300">
-                      {member.bio}
+                      {t(`team.members.${member.key}.bio`)}
                     </p>
                   </CardContent>
                 </Card>
@@ -185,7 +173,7 @@ export default function AboutPage() {
           <FadeIn>
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                Our Journey
+                {t('journey.title')}
               </h2>
             </div>
           </FadeIn>
@@ -195,13 +183,13 @@ export default function AboutPage() {
                 <div className="flex items-center gap-6">
                   <div className="flex-shrink-0 w-24">
                     <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                      {milestone.year}
+                      {t(`journey.milestones.${milestone.key}.year`)}
                     </span>
                   </div>
                   <div className="flex-grow">
                     <div className="bg-white dark:bg-gray-700 rounded-lg p-4 shadow-md">
                       <p className="text-gray-900 dark:text-white font-medium">
-                        {milestone.event}
+                        {t(`journey.milestones.${milestone.key}.event`)}
                       </p>
                     </div>
                   </div>
@@ -217,13 +205,13 @@ export default function AboutPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <FadeIn>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              Join Our Mission
+              {t('cta.title')}
             </h2>
             <p className="text-xl text-blue-100 mb-8">
-              We're always looking for talented people to join our team
+              {t('cta.subtitle')}
             </p>
             <button className="px-8 py-4 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors shadow-lg">
-              View Open Positions
+              {t('cta.button')}
             </button>
           </FadeIn>
         </div>

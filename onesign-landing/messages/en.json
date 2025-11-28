@@ -364,6 +364,75 @@
         }
       }
     },
+    "blogPage": {
+      "title": "Blog & News",
+      "subtitle": "Insights, updates, and best practices from the OneSign team",
+      "categories": {
+        "all": "All",
+        "product": "Product",
+        "security": "Security",
+        "technology": "Technology",
+        "compliance": "Compliance",
+        "development": "Development",
+        "caseStudy": "Case Study"
+      },
+      "loadMore": "Load More Articles",
+      "readTime": "min read",
+      "newsletter": {
+        "title": "Stay Updated",
+        "subtitle": "Get the latest articles and insights delivered to your inbox",
+        "placeholder": "Enter your email",
+        "button": "Subscribe"
+      },
+      "post1": {
+        "title": "Introducing OneSign: Next Generation Identity & Access Management",
+        "excerpt": "Discover how OneSign revolutionizes digital identity management with cutting-edge technology and unparalleled security.",
+        "author": {
+          "name": "Sarah Johnson",
+          "role": "Product Manager"
+        }
+      },
+      "post2": {
+        "title": "Security Best Practices for 2024: A Comprehensive Guide",
+        "excerpt": "Learn the latest security best practices to protect your organization from modern cyber threats.",
+        "author": {
+          "name": "Michael Chen",
+          "role": "Security Architect"
+        }
+      },
+      "post3": {
+        "title": "Zero Trust Architecture Explained: Why It Matters",
+        "excerpt": "Understanding zero trust security model and how it can transform your organization's security posture.",
+        "author": {
+          "name": "David Kim",
+          "role": "Lead Engineer"
+        }
+      },
+      "post4": {
+        "title": "Compliance Made Easy: GDPR, HIPAA, and Beyond",
+        "excerpt": "Navigate the complex world of compliance regulations with confidence using OneSign.",
+        "author": {
+          "name": "Emma Williams",
+          "role": "Compliance Officer"
+        }
+      },
+      "post5": {
+        "title": "API Security: Authentication and Authorization Tips",
+        "excerpt": "Secure your APIs with proven authentication and authorization strategies.",
+        "author": {
+          "name": "Alex Rodriguez",
+          "role": "API Architect"
+        }
+      },
+      "post6": {
+        "title": "Customer Success Story: How Enterprise X Scaled Securely",
+        "excerpt": "Learn how a Fortune 500 company transformed their IAM infrastructure with OneSign.",
+        "author": {
+          "name": "Jessica Lee",
+          "role": "Customer Success"
+        }
+      }
+    },
     "search": {
       "search": "Search",
       "placeholder": "Search pages, features, blog posts...",
@@ -624,6 +693,272 @@
       "title": "Ready to Experience These Features?",
       "subtitle": "Start your free 14-day trial today. No credit card required.",
       "button": "Start Free Trial"
+    }
+  },
+  "aboutPage": {
+    "hero": {
+      "title": "About OneSign",
+      "subtitle": "We're on a mission to make digital signatures simple, secure, and accessible for everyone."
+    },
+    "story": {
+      "title": "Our Story",
+      "paragraph1": "OneSign was born out of frustration with complicated, expensive e-signature solutions. In 2018, our founders Sarah and Michael were working on a project that required hundreds of signatures. The existing tools were either too complex, too expensive, or lacking in security features.",
+      "paragraph2": "They decided to build something better. A platform that combined enterprise-grade security with consumer-grade simplicity. Something that small businesses could afford but that enterprises would trust.",
+      "paragraph3": "Today, OneSign is used by over 50,000 businesses worldwide, from solo entrepreneurs to Fortune 500 companies. We've processed millions of signatures and saved countless hours of manual work. But we're just getting started."
+    },
+    "values": {
+      "title": "Our Values",
+      "subtitle": "The principles that guide everything we do",
+      "items": {
+        "customerFirst": {
+          "title": "Customer First",
+          "description": "Every decision we make starts with how it benefits our customers."
+        },
+        "securityAlways": {
+          "title": "Security Always",
+          "description": "We never compromise on security. Your trust is our top priority."
+        },
+        "innovation": {
+          "title": "Innovation",
+          "description": "We constantly push boundaries to deliver cutting-edge solutions."
+        },
+        "integrity": {
+          "title": "Integrity",
+          "description": "We do what's right, even when no one is watching."
+        }
+      }
+    },
+    "team": {
+      "title": "Meet Our Leadership",
+      "subtitle": "The team behind OneSign",
+      "members": {
+        "sarah": {
+          "name": "Sarah Johnson",
+          "role": "CEO & Co-Founder",
+          "bio": "Former VP at DocuSign with 15+ years in digital transformation."
+        },
+        "michael": {
+          "name": "Michael Chen",
+          "role": "CTO & Co-Founder",
+          "bio": "Ex-Google engineer specializing in security and scalability."
+        },
+        "emily": {
+          "name": "Emily Rodriguez",
+          "role": "Head of Product",
+          "bio": "Product leader from Dropbox focused on user experience."
+        },
+        "david": {
+          "name": "David Kumar",
+          "role": "Head of Security",
+          "bio": "Cybersecurity expert with background in financial services."
+        }
+      }
+    },
+    "journey": {
+      "title": "Our Journey",
+      "milestones": {
+        "milestone2018": {
+          "year": "2018",
+          "event": "OneSign founded in San Francisco"
+        },
+        "milestone2019": {
+          "year": "2019",
+          "event": "Reached 1,000 customers"
+        },
+        "milestone2020": {
+          "year": "2020",
+          "event": "Series A funding - $10M"
+        },
+        "milestone2021": {
+          "year": "2021",
+          "event": "Expanded to Europe and Asia"
+        },
+        "milestone2022": {
+          "year": "2022",
+          "event": "10,000+ businesses using OneSign"
+        },
+        "milestone2023": {
+          "year": "2023",
+          "event": "SOC 2 Type II certification"
+        },
+        "milestone2024": {
+          "year": "2024",
+          "event": "50,000+ active users worldwide"
+        }
+      }
+    },
+    "cta": {
+      "title": "Join Our Mission",
+      "subtitle": "We're always looking for talented people to join our team",
+      "button": "View Open Positions"
+    }
+  },
+  "privacyPage": {
+    "title": "Privacy Policy",
+    "lastUpdatedLabel": "Last Updated:",
+    "lastUpdatedDate": "November 28, 2024",
+    "section1": {
+      "title": "1. Information We Collect",
+      "content": "We collect information you provide directly to us, including:",
+      "items": [
+        "Name, email address, and contact information",
+        "Account credentials and profile information",
+        "Documents you upload and electronic signatures",
+        "Payment and billing information",
+        "Communications with us"
+      ]
+    },
+    "section2": {
+      "title": "2. How We Use Your Information",
+      "content": "We use the information we collect to:",
+      "items": [
+        "Provide, maintain, and improve our services",
+        "Process transactions and send related information",
+        "Send you technical notices and support messages",
+        "Respond to your comments and questions",
+        "Protect against fraudulent or illegal activity"
+      ]
+    },
+    "section3": {
+      "title": "3. Information Sharing",
+      "content": "We do not sell your personal information. We may share your information only in the following circumstances:",
+      "items": [
+        "With your consent or at your direction",
+        "With service providers who perform services on our behalf",
+        "To comply with legal obligations",
+        "To protect our rights and prevent fraud",
+        "In connection with a business transaction"
+      ]
+    },
+    "section4": {
+      "title": "4. Data Security",
+      "content": "We implement appropriate technical and organizational measures to protect your personal information, including encryption, access controls, and secure data storage. However, no security system is impenetrable."
+    },
+    "section5": {
+      "title": "5. Your Rights",
+      "content": "Depending on your location, you may have certain rights regarding your personal information:",
+      "items": [
+        "Access and receive a copy of your personal data",
+        "Correct inaccurate personal data",
+        "Request deletion of your personal data",
+        "Object to or restrict processing",
+        "Data portability",
+        "Withdraw consent"
+      ]
+    },
+    "section6": {
+      "title": "6. Cookies and Tracking",
+      "content": "We use cookies and similar tracking technologies to collect information about your browsing activities. You can control cookies through your browser settings."
+    },
+    "section7": {
+      "title": "7. International Data Transfers",
+      "content": "Your information may be transferred to and processed in countries other than your country of residence. We ensure appropriate safeguards are in place for such transfers."
+    },
+    "section8": {
+      "title": "8. Children's Privacy",
+      "content": "Our services are not directed to children under 13. We do not knowingly collect personal information from children under 13."
+    },
+    "section9": {
+      "title": "9. Changes to This Policy",
+      "content": "We may update this privacy policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the \"Last Updated\" date."
+    },
+    "section10": {
+      "title": "10. Contact Us",
+      "content": "If you have questions about this privacy policy, please contact us at:",
+      "contact": [
+        "Email: privacy@onesign.com",
+        "Address: 123 Business St, San Francisco, CA 94105",
+        "Phone: +1 (555) 123-4567"
+      ]
+    }
+  },
+  "termsPage": {
+    "title": "Terms of Service",
+    "lastUpdated": "Last Updated:",
+    "lastUpdatedDate": "November 28, 2024",
+    "acceptanceOfTerms": {
+      "title": "1. Acceptance of Terms",
+      "content": "By accessing and using OneSign (\"the Service\"), you accept and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the Service."
+    },
+    "descriptionOfService": {
+      "title": "2. Description of Service",
+      "intro": "OneSign provides electronic signature and document management services. The Service allows users to:",
+      "items": [
+        "Create and send documents for electronic signature",
+        "Sign documents electronically",
+        "Store and manage signed documents",
+        "Track document status and history"
+      ]
+    },
+    "userAccounts": {
+      "title": "3. User Accounts",
+      "intro": "To use the Service, you must:",
+      "items": [
+        "Be at least 18 years old",
+        "Provide accurate and complete registration information",
+        "Maintain the security of your account credentials",
+        "Accept responsibility for all activities under your account",
+        "Notify us immediately of any unauthorized use"
+      ]
+    },
+    "acceptableUse": {
+      "title": "4. Acceptable Use",
+      "intro": "You agree not to:",
+      "items": [
+        "Use the Service for any illegal purpose",
+        "Upload malicious code or viruses",
+        "Attempt to gain unauthorized access",
+        "Interfere with the Service's operation",
+        "Impersonate others or provide false information",
+        "Violate any applicable laws or regulations"
+      ]
+    },
+    "electronicSignatures": {
+      "title": "5. Electronic Signatures",
+      "content": "Electronic signatures created through the Service are legally binding under applicable laws, including the ESIGN Act and UETA. By using the Service, you consent to conduct transactions electronically."
+    },
+    "intellectualProperty": {
+      "title": "6. Intellectual Property",
+      "content": "The Service and its original content, features, and functionality are owned by OneSign and are protected by international copyright, trademark, and other intellectual property laws."
+    },
+    "paymentTerms": {
+      "title": "7. Payment Terms",
+      "intro": "Paid subscriptions are billed in advance on a recurring basis. You agree to:",
+      "items": [
+        "Pay all fees associated with your subscription",
+        "Provide accurate billing information",
+        "Authorize automatic renewal unless cancelled",
+        "Accept that refunds are subject to our refund policy"
+      ]
+    },
+    "termination": {
+      "title": "8. Termination",
+      "content": "We reserve the right to terminate or suspend your account at any time for violation of these terms. You may terminate your account at any time through your account settings."
+    },
+    "disclaimerOfWarranties": {
+      "title": "9. Disclaimer of Warranties",
+      "content": "THE SERVICE IS PROVIDED \"AS IS\" WITHOUT WARRANTIES OF ANY KIND. WE DO NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, ERROR-FREE, OR COMPLETELY SECURE."
+    },
+    "limitationOfLiability": {
+      "title": "10. Limitation of Liability",
+      "content": "IN NO EVENT SHALL ONESIGN BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES ARISING OUT OF OR IN CONNECTION WITH THE SERVICE."
+    },
+    "governingLaw": {
+      "title": "11. Governing Law",
+      "content": "These Terms shall be governed by the laws of the State of California, without regard to its conflict of law provisions."
+    },
+    "changesToTerms": {
+      "title": "12. Changes to Terms",
+      "content": "We reserve the right to modify these terms at any time. We will notify users of any material changes. Continued use of the Service constitutes acceptance of modified terms."
+    },
+    "contactInformation": {
+      "title": "13. Contact Information",
+      "intro": "For questions about these Terms of Service, please contact:",
+      "items": [
+        "Email: legal@onesign.com",
+        "Address: 123 Business St, San Francisco, CA 94105",
+        "Phone: +1 (555) 123-4567"
+      ]
     }
   }
 }
