@@ -52,7 +52,7 @@ export function TestimonialSubmission() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Submission failed');
+        throw new Error(data.error || t('errors.submitFailed'));
       }
 
       setSubmitted(true);

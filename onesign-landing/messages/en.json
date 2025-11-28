@@ -1,6 +1,7 @@
 {
   "common": {
     "loading": "Loading...",
+    "imageError": "Image failed to load",
     "aria": {
       "toggleLanguage": "Toggle language",
       "toggleMenu": "Toggle menu",
@@ -354,7 +355,8 @@
         "emailInvalid": "Invalid email address",
         "subjectMin": "Subject must be at least 5 characters",
         "messageMin": "Message must be at least 10 characters",
-        "consentRequired": "You must agree to the privacy policy"
+        "consentRequired": "You must agree to the privacy policy",
+        "submitFailed": "Failed to submit form"
       }
     },
     "blog": {
@@ -402,6 +404,48 @@
         "navigate": "Navigate",
         "select": "Select",
         "close": "Close"
+      },
+      "index": {
+        "home": {
+          "title": "Home - Landing Page",
+          "description": "OneSign - Modern Identity & Access Management platform"
+        },
+        "pricing": {
+          "title": "Pricing Plans",
+          "description": "Find the perfect plan for your organization"
+        },
+        "contact": {
+          "title": "Contact Us",
+          "description": "Get in touch with our team"
+        },
+        "about": {
+          "title": "About OneSign",
+          "description": "Learn about our mission and team"
+        },
+        "mfa": {
+          "title": "Multi-Factor Authentication",
+          "description": "Secure your accounts with MFA"
+        },
+        "sso": {
+          "title": "Single Sign-On (SSO)",
+          "description": "One login for all your applications"
+        },
+        "documentSigning": {
+          "title": "Document Signing",
+          "description": "Sign documents securely with electronic signatures"
+        },
+        "security": {
+          "title": "Security & Compliance",
+          "description": "Enterprise-grade security and compliance features"
+        },
+        "api": {
+          "title": "API Documentation",
+          "description": "Integrate OneSign with your applications"
+        },
+        "enterprise": {
+          "title": "Enterprise Solutions",
+          "description": "Scalable solutions for large organizations"
+        }
       }
     },
     "dashboard": {
@@ -533,6 +577,9 @@
         "title": "Thank You!",
         "message": "Your testimonial has been submitted and will be reviewed shortly.",
         "submitAnother": "Submit Another"
+      },
+      "errors": {
+        "submitFailed": "Submission failed"
       }
     }
   },

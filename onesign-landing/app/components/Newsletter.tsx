@@ -7,14 +7,14 @@ import { z } from 'zod';
 import { Button } from '@/app/components/ui';
 import { useTranslations } from 'next-intl';
 
-const newsletterSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-});
-
-type NewsletterFormData = z.infer<typeof newsletterSchema>;
-
 export function Newsletter() {
   const t = useTranslations('landing');
+
+  const newsletterSchema = z.object({
+    email: z.string().email(t('blog.newsletter.errors.invalidEmail')),
+  });
+
+  type NewsletterFormData = z.infer<typeof newsletterSchema>;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -83,7 +83,7 @@ export function Newsletter() {
                   className="w-full px-4 py-3 rounded-lg border-2 border-transparent focus:border-white focus:outline-none text-gray-900"
                 />
                 {errors.email && (
-                  <p className="mt-2 text-sm text-red-200 text-left">{t('blog.newsletter.errors.invalidEmail')}</p>
+                  <p className="mt-2 text-sm text-red-200 text-left">{errors.email.message}</p>
                 )}
               </div>
               <Button

@@ -12,94 +12,94 @@ import { useTranslations } from 'next-intl';
 
 interface SearchResult {
   id: string;
-  title: string;
-  description: string;
+  titleKey: string;
+  descriptionKey: string;
   url: string;
   category: 'page' | 'blog' | 'feature' | 'doc';
   icon: string;
 }
 
-// Mock search data
+// Search data with translation keys
 const searchIndex: SearchResult[] = [
   {
     id: '1',
-    title: 'Home - Landing Page',
-    description: 'OneSign - Modern Identity & Access Management platform',
+    titleKey: 'index.home.title',
+    descriptionKey: 'index.home.description',
     url: '/en/landing',
     category: 'page',
     icon: '🏠',
   },
   {
     id: '2',
-    title: 'Pricing Plans',
-    description: 'Find the perfect plan for your organization',
+    titleKey: 'index.pricing.title',
+    descriptionKey: 'index.pricing.description',
     url: '/en/pricing',
     category: 'page',
     icon: '💰',
   },
   {
     id: '3',
-    title: 'Features Overview',
-    description: 'Explore all features of OneSign platform',
-    url: '/en/features',
-    category: 'page',
-    icon: '✨',
-  },
-  {
-    id: '4',
-    title: 'Contact Us',
-    description: 'Get in touch with our team',
+    titleKey: 'index.contact.title',
+    descriptionKey: 'index.contact.description',
     url: '/en/contact',
     category: 'page',
     icon: '📧',
   },
   {
-    id: '5',
-    title: 'About OneSign',
-    description: 'Learn about our mission and team',
+    id: '4',
+    titleKey: 'index.about.title',
+    descriptionKey: 'index.about.description',
     url: '/en/about',
     category: 'page',
     icon: '👥',
   },
   {
-    id: '6',
-    title: 'Multi-Factor Authentication',
-    description: 'Secure your accounts with MFA',
+    id: '5',
+    titleKey: 'index.mfa.title',
+    descriptionKey: 'index.mfa.description',
     url: '/en/features#mfa',
     category: 'feature',
     icon: '🔐',
   },
   {
-    id: '7',
-    title: 'Single Sign-On (SSO)',
-    description: 'One login for all your applications',
+    id: '6',
+    titleKey: 'index.sso.title',
+    descriptionKey: 'index.sso.description',
     url: '/en/features#sso',
     category: 'feature',
     icon: '🔑',
   },
   {
+    id: '7',
+    titleKey: 'index.documentSigning.title',
+    descriptionKey: 'index.documentSigning.description',
+    url: '/en/features#signing',
+    category: 'feature',
+    icon: '✍️',
+  },
+  {
     id: '8',
-    title: 'API Documentation',
-    description: 'Integrate OneSign with your applications',
+    titleKey: 'index.security.title',
+    descriptionKey: 'index.security.description',
+    url: '/en/features#security',
+    category: 'feature',
+    icon: '🔒',
+  },
+  {
+    id: '9',
+    titleKey: 'index.api.title',
+    descriptionKey: 'index.api.description',
     url: '/docs/api',
     category: 'doc',
     icon: '📖',
   },
   {
-    id: '9',
-    title: 'Security Best Practices',
-    description: 'Learn how to secure your IAM infrastructure',
-    url: '/en/blog/security-best-practices-2024',
-    category: 'blog',
-    icon: '🔒',
-  },
-  {
     id: '10',
-    title: 'Zero Trust Architecture',
-    description: 'Understanding zero trust security model',
-    url: '/en/blog/zero-trust-architecture-explained',
-    category: 'blog',
-    icon: '🛡️',
+    titleKey: 'index.enterprise.title',
+    descriptionKey: 'index.enterprise.description',
+    url: '/en/pricing#enterprise',
+    category: 'page',
+    icon: '🏢',
   },
 ];
 
@@ -149,13 +149,13 @@ export function Search({ onClose }: SearchProps) {
     const searchQuery = query.toLowerCase();
     const filtered = searchIndex.filter(
       (item) =>
-        item.title.toLowerCase().includes(searchQuery) ||
-        item.description.toLowerCase().includes(searchQuery)
+        t(item.titleKey).toLowerCase().includes(searchQuery) ||
+        t(item.descriptionKey).toLowerCase().includes(searchQuery)
     );
 
     setResults(filtered);
     setSelectedIndex(0);
-  }, [query]);
+  }, [query, t]);
 
   // Keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -284,7 +284,7 @@ export function Search({ onClose }: SearchProps) {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <h3 className="font-semibold text-gray-900 dark:text-white truncate">
-                            {result.title}
+                            {t(result.titleKey)}
                           </h3>
                           <span
                             className={`text-xs font-medium ${getCategoryColor(
@@ -295,7 +295,7 @@ export function Search({ onClose }: SearchProps) {
                           </span>
                         </div>
                         <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-                          {result.description}
+                          {t(result.descriptionKey)}
                         </p>
                       </div>
                       {index === selectedIndex && (
