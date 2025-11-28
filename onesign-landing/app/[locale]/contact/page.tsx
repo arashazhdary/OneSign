@@ -137,11 +137,14 @@ export default function ContactPage() {
               </div>
             </FadeIn>
             <SlideUp delay={0.3}>
-              <div className="bg-gray-200 dark:bg-gray-700 rounded-2xl h-96 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-6xl mb-4">🗺️</div>
-                  <p className="text-gray-600 dark:text-gray-300">Map placeholder</p>
-                </div>
+              <div className="bg-gray-200 dark:bg-gray-700 rounded-2xl h-96 overflow-hidden">
+                <iframe
+                  src="https://www.openstreetmap.org/export/embed.html?bbox=-122.4194%2C37.7749%2C-122.3894%2C37.7949&amp;layer=mapnik&amp;marker=37.7849%2C-122.4044"
+                  className="w-full h-full border-0"
+                  loading="lazy"
+                  title="OneSign Office Location"
+                  aria-label="Map showing OneSign office location in San Francisco"
+                />
               </div>
             </SlideUp>
           </div>

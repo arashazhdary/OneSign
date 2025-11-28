@@ -71,7 +71,7 @@ export function Hero() {
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-full mb-6">
                 <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
                 <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                  Trusted by 50,000+ businesses
+                  {t('hero.trustedBy')}
                 </span>
               </div>
             </FadeIn>
