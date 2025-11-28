@@ -379,7 +379,7 @@
         "error": "Error"
       }
     },
-    "testimonials": {
+    "testimonialForm": {
       "title": "Share Your Experience",
       "form": {
         "name": "Your Name",
