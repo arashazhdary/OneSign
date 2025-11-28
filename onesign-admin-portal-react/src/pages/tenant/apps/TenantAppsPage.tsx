@@ -73,12 +73,12 @@ export default function TenantAppsPage() {
   const fetchUserScope = async (tid: string) => {
     try {
       setScopeLoading(true);
-      const scope = await getCurrentUserScope(tid);
+      const scope = await getCurrentUserScope();
       setUserScope(scope);
 
       // Auto-select first rootOrgUnitId for delegated admins
-      if (scope && !scope.isGlobalAdmin && scope.rootOrgUnitIds.length > 0) {
-        setSelectedOrgUnitId(scope.rootOrgUnitIds[0]);
+      if (scope && !(scope as any).isGlobalAdmin && (scope as any).rootOrgUnitIds && (scope as any).rootOrgUnitIds.length > 0) {
+        setSelectedOrgUnitId((scope as any).rootOrgUnitIds[0]);
       }
     } catch (err) {
       console.error('Error fetching user scope:', err);
@@ -164,18 +164,18 @@ export default function TenantAppsPage() {
   };
 
   const getFilteredOrgTree = (): OrgUnitTreeNode[] => {
-    if (!userScope || userScope.isGlobalAdmin) {
+    if (!userScope || (userScope as any).isGlobalAdmin) {
       return orgTree;
     }
     // Filter to show only allowed org units
     const allNodes = getAllNodes(orgTree);
-    return allNodes.filter(node => userScope.allowedOrgUnitIds.includes(node.id));
+    return allNodes.filter(node => (userScope as any).allowedOrgUnitIds && (userScope as any).allowedOrgUnitIds.includes(node.id));
   };
 
   const handleAssignOrgUnits = async (app: Application) => {
     setSelectedAppForOrgUnits(app);
     try {
-      const data = await applicationsService.getApplicationOrgUnits(tenantId, app.id);
+      const data = await applicationsService.getApplicationOrgUnits(app.id);
       setSelectedOrgUnitIds(data.orgUnitIds || []);
     } catch (error) {
       console.error('Error fetching application org units:', error);
@@ -189,7 +189,7 @@ export default function TenantAppsPage() {
     setSuccess('');
 
     try {
-      await applicationsService.assignOrgUnits(tenantId, selectedAppForOrgUnits.id, selectedOrgUnitIds);
+      await applicationsService.assignOrgUnits(selectedAppForOrgUnits.id, selectedOrgUnitIds);
       setSuccess(t('tenant.applicationOrgUnits.orgUnitsAssigned'));
       setShowAssignOrgUnitsModal(false);
       setSelectedAppForOrgUnits(null);
@@ -386,7 +386,7 @@ export default function TenantAppsPage() {
           }}
           className="w-full max-w-xs px-3 py-2 border rounded"
         >
-          {(!userScope || userScope.isGlobalAdmin) && <option value="">{t('common.all')}</option>}
+          {(!userScope || (userScope as any).isGlobalAdmin) && <option value="">{t('common.all')}</option>}
           {getFilteredOrgTree().map(node => (
             <option key={node.id} value={node.id}>{node.name}</option>
           ))}
