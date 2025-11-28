@@ -1,4 +1,14 @@
 {
+  "common": {
+    "loading": "Loading...",
+    "aria": {
+      "toggleLanguage": "Toggle language",
+      "toggleMenu": "Toggle menu",
+      "toggleTheme": "Toggle theme",
+      "backToTop": "Back to top",
+      "close": "Close"
+    }
+  },
   "landing": {
     "nav": {
       "features": "Features",
@@ -19,9 +29,14 @@
       "trustedBy": "Trusted by leading organizations",
       "scrollToExplore": "Scroll to explore",
       "signatureCard": {
+        "documentName": "Contract.pdf",
         "readyToSign": "Ready to sign",
         "signHere": "Sign here",
         "signDocument": "Sign Document"
+      },
+      "badges": {
+        "verified": "✓ Verified",
+        "secure": "🔒 Secure"
       }
     },
     "features": {
@@ -116,6 +131,7 @@
       "monthly": "Monthly",
       "yearly": "Yearly",
       "save": "Save 20%",
+      "mostPopular": "Most Popular",
       "perUser": "per user/month",
       "free": {
         "name": "Free",
@@ -182,14 +198,20 @@
       "subtitle": "See what our customers say about OneSign",
       "testimonial1": {
         "name": "Sarah Johnson",
+        "role": "CISO",
+        "company": "TechCorp Inc.",
         "quote": "OneSign transformed our identity management. We reduced security incidents by 80% and our IT team can now focus on strategic initiatives instead of password resets."
       },
       "testimonial2": {
         "name": "Michael Chen",
+        "role": "IT Director",
+        "company": "Finance Partners",
         "quote": "The adaptive security features are incredible. OneSign detected and prevented a sophisticated phishing attack that would have compromised our entire finance department."
       },
       "testimonial3": {
         "name": "Emma Williams",
+        "role": "CTO",
+        "company": "Healthcare Solutions",
         "quote": "Implementing OneSign was seamless. The HIPAA compliance features saved us months of work, and the support team was exceptional throughout the process."
       }
     },
@@ -364,75 +386,6 @@
         }
       }
     },
-    "blogPage": {
-      "title": "Blog & News",
-      "subtitle": "Insights, updates, and best practices from the OneSign team",
-      "categories": {
-        "all": "All",
-        "product": "Product",
-        "security": "Security",
-        "technology": "Technology",
-        "compliance": "Compliance",
-        "development": "Development",
-        "caseStudy": "Case Study"
-      },
-      "loadMore": "Load More Articles",
-      "readTime": "min read",
-      "newsletter": {
-        "title": "Stay Updated",
-        "subtitle": "Get the latest articles and insights delivered to your inbox",
-        "placeholder": "Enter your email",
-        "button": "Subscribe"
-      },
-      "post1": {
-        "title": "Introducing OneSign: Next Generation Identity & Access Management",
-        "excerpt": "Discover how OneSign revolutionizes digital identity management with cutting-edge technology and unparalleled security.",
-        "author": {
-          "name": "Sarah Johnson",
-          "role": "Product Manager"
-        }
-      },
-      "post2": {
-        "title": "Security Best Practices for 2024: A Comprehensive Guide",
-        "excerpt": "Learn the latest security best practices to protect your organization from modern cyber threats.",
-        "author": {
-          "name": "Michael Chen",
-          "role": "Security Architect"
-        }
-      },
-      "post3": {
-        "title": "Zero Trust Architecture Explained: Why It Matters",
-        "excerpt": "Understanding zero trust security model and how it can transform your organization's security posture.",
-        "author": {
-          "name": "David Kim",
-          "role": "Lead Engineer"
-        }
-      },
-      "post4": {
-        "title": "Compliance Made Easy: GDPR, HIPAA, and Beyond",
-        "excerpt": "Navigate the complex world of compliance regulations with confidence using OneSign.",
-        "author": {
-          "name": "Emma Williams",
-          "role": "Compliance Officer"
-        }
-      },
-      "post5": {
-        "title": "API Security: Authentication and Authorization Tips",
-        "excerpt": "Secure your APIs with proven authentication and authorization strategies.",
-        "author": {
-          "name": "Alex Rodriguez",
-          "role": "API Architect"
-        }
-      },
-      "post6": {
-        "title": "Customer Success Story: How Enterprise X Scaled Securely",
-        "excerpt": "Learn how a Fortune 500 company transformed their IAM infrastructure with OneSign.",
-        "author": {
-          "name": "Jessica Lee",
-          "role": "Customer Success"
-        }
-      }
-    },
     "search": {
       "search": "Search",
       "placeholder": "Search pages, features, blog posts...",
@@ -546,7 +499,13 @@
       },
       "greeting": "Hi! 👋 How can I help you today?",
       "typicalReply": "We typically reply within minutes",
-      "send": "Send"
+      "send": "Send",
+      "responses": {
+        "connecting": "Thanks for your message! I'll connect you with our team right away.",
+        "moreDetails": "Let me help you with that. Can you provide more details?",
+        "checkingDocs": "I understand. Let me check our documentation for you.",
+        "gettingAnswer": "Great question! I'll get back to you shortly with an answer."
+      }
     },
     "testimonialSubmission": {
       "title": "Share Your Experience",
@@ -574,6 +533,92 @@
         "title": "Thank You!",
         "message": "Your testimonial has been submitted and will be reviewed shortly.",
         "submitAnother": "Submit Another"
+      }
+    }
+  },
+  "blogPage": {
+    "title": "Blog & News",
+    "subtitle": "Insights, updates, and best practices from the OneSign team",
+    "categories": {
+      "all": "All",
+      "product": "Product",
+      "security": "Security",
+      "technology": "Technology",
+      "compliance": "Compliance",
+      "development": "Development",
+      "caseStudy": "Case Study"
+    },
+    "tags": {
+      "iam": "IAM",
+      "security": "Security",
+      "productLaunch": "Product Launch",
+      "bestPractices": "Best Practices",
+      "guide": "Guide",
+      "zeroTrust": "Zero Trust",
+      "architecture": "Architecture",
+      "gdpr": "GDPR",
+      "hipaa": "HIPAA",
+      "compliance": "Compliance",
+      "api": "API",
+      "authentication": "Authentication",
+      "customerStory": "Customer Story",
+      "enterprise": "Enterprise",
+      "success": "Success"
+    },
+    "loadMore": "Load More Articles",
+    "readTime": "min read",
+    "newsletter": {
+      "title": "Stay Updated",
+      "subtitle": "Get the latest articles and insights delivered to your inbox",
+      "placeholder": "Enter your email",
+      "button": "Subscribe"
+    },
+    "post1": {
+      "title": "Introducing OneSign: Next Generation Identity & Access Management",
+      "excerpt": "Discover how OneSign revolutionizes digital identity management with cutting-edge technology and unparalleled security.",
+      "author": {
+        "name": "Sarah Johnson",
+        "role": "Product Manager"
+      }
+    },
+    "post2": {
+      "title": "Security Best Practices for 2024: A Comprehensive Guide",
+      "excerpt": "Learn the latest security best practices to protect your organization from modern cyber threats.",
+      "author": {
+        "name": "Michael Chen",
+        "role": "Security Architect"
+      }
+    },
+    "post3": {
+      "title": "Zero Trust Architecture Explained: Why It Matters",
+      "excerpt": "Understanding zero trust security model and how it can transform your organization's security posture.",
+      "author": {
+        "name": "David Kim",
+        "role": "Lead Engineer"
+      }
+    },
+    "post4": {
+      "title": "Compliance Made Easy: GDPR, HIPAA, and Beyond",
+      "excerpt": "Navigate the complex world of compliance regulations with confidence using OneSign.",
+      "author": {
+        "name": "Emma Williams",
+        "role": "Compliance Officer"
+      }
+    },
+    "post5": {
+      "title": "API Security: Authentication and Authorization Tips",
+      "excerpt": "Secure your APIs with proven authentication and authorization strategies.",
+      "author": {
+        "name": "Alex Rodriguez",
+        "role": "API Architect"
+      }
+    },
+    "post6": {
+      "title": "Customer Success Story: How Enterprise X Scaled Securely",
+      "excerpt": "Learn how a Fortune 500 company transformed their IAM infrastructure with OneSign.",
+      "author": {
+        "name": "Jessica Lee",
+        "role": "Customer Success"
       }
     }
   },
@@ -616,6 +661,10 @@
       "transit": {
         "title": "Getting Here",
         "description": "Easily accessible by BART, MUNI, and major bus lines. Street parking available."
+      },
+      "map": {
+        "title": "OneSign Office Location",
+        "ariaLabel": "Map showing OneSign office location in San Francisco"
       }
     }
   },

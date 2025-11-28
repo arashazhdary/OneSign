@@ -14,6 +14,7 @@ export function Header() {
   const params = useParams();
   const currentLocale = params?.locale as string || 'en';
   const t = useTranslations('landing');
+  const tCommon = useTranslations('common');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -73,7 +74,7 @@ export function Header() {
             <button
               onClick={toggleLocale}
               className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              aria-label="Toggle language"
+              aria-label={tCommon('aria.toggleLanguage')}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -100,7 +101,7 @@ export function Header() {
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              aria-label="Toggle menu"
+              aria-label={tCommon('aria.toggleMenu')}
             >
               <svg
                 className="w-6 h-6"

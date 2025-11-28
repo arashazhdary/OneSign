@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 // Skeleton loading components
 export function Skeleton({ className = '' }: { className?: string }) {
   return (
@@ -73,11 +75,13 @@ export function Spinner({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) {
 
 // Full page loader
 export function PageLoader() {
+  const t = useTranslations('common');
+
   return (
     <div className="fixed inset-0 bg-white dark:bg-gray-900 flex items-center justify-center z-50">
       <div className="text-center">
         <Spinner size="lg" />
-        <p className="mt-4 text-gray-600 dark:text-gray-400">Loading...</p>
+        <p className="mt-4 text-gray-600 dark:text-gray-400">{t('loading')}</p>
       </div>
     </div>
   );
@@ -100,10 +104,12 @@ export function ContentLoader() {
 
 // Inline loader for buttons
 export function InlineLoader() {
+  const t = useTranslations('common');
+
   return (
     <div className="flex items-center gap-2">
       <Spinner size="sm" />
-      <span>Loading...</span>
+      <span>{t('loading')}</span>
     </div>
   );
 }

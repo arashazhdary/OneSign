@@ -5,8 +5,8 @@ import { useTranslations } from 'next-intl';
 
 interface Testimonial {
   nameKey: string;
-  role: string;
-  company: string;
+  roleKey: string;
+  companyKey: string;
   avatar: string;
   quoteKey: string;
   rating: number;
@@ -15,24 +15,24 @@ interface Testimonial {
 const testimonials: Testimonial[] = [
   {
     nameKey: 'testimonial1.name',
-    role: 'CISO',
-    company: 'TechCorp Inc.',
+    roleKey: 'testimonial1.role',
+    companyKey: 'testimonial1.company',
     avatar: '👩‍💼',
     quoteKey: 'testimonial1.quote',
     rating: 5,
   },
   {
     nameKey: 'testimonial2.name',
-    role: 'IT Director',
-    company: 'Finance Partners',
+    roleKey: 'testimonial2.role',
+    companyKey: 'testimonial2.company',
     avatar: '👨‍💼',
     quoteKey: 'testimonial2.quote',
     rating: 5,
   },
   {
     nameKey: 'testimonial3.name',
-    role: 'CTO',
-    company: 'Healthcare Solutions',
+    roleKey: 'testimonial3.role',
+    companyKey: 'testimonial3.company',
     avatar: '👩‍💻',
     quoteKey: 'testimonial3.quote',
     rating: 5,
@@ -84,7 +84,7 @@ export function Testimonials() {
                     {t(`testimonials.${testimonial.nameKey}`)}
                   </div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {testimonial.role}, {testimonial.company}
+                    {t(`testimonials.${testimonial.roleKey}`)}, {t(`testimonials.${testimonial.companyKey}`)}
                   </div>
                 </div>
               </div>

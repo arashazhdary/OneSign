@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Header } from '@/app/components/Header';
 import { Footer } from '@/app/components/Footer';
 import { Card } from '@/app/components/ui';
@@ -25,7 +25,7 @@ interface BlogPost {
   publishedAt: string;
   readTime: number;
   categoryKey: string;
-  tags: string[];
+  tagKeys: string[];
   coverImage: string;
 }
 
@@ -45,7 +45,7 @@ const blogPosts: BlogPost[] = [
     publishedAt: '2024-11-15',
     readTime: 5,
     categoryKey: 'categories.product',
-    tags: ['IAM', 'Security', 'Product Launch'],
+    tagKeys: ['iam', 'security', 'productLaunch'],
     coverImage: '🚀',
   },
   {
@@ -62,7 +62,7 @@ const blogPosts: BlogPost[] = [
     publishedAt: '2024-11-10',
     readTime: 8,
     categoryKey: 'categories.security',
-    tags: ['Security', 'Best Practices', 'Guide'],
+    tagKeys: ['security', 'bestPractices', 'guide'],
     coverImage: '🔒',
   },
   {
@@ -79,7 +79,7 @@ const blogPosts: BlogPost[] = [
     publishedAt: '2024-11-05',
     readTime: 6,
     categoryKey: 'categories.technology',
-    tags: ['Zero Trust', 'Architecture', 'Security'],
+    tagKeys: ['zeroTrust', 'architecture', 'security'],
     coverImage: '🛡️',
   },
   {
@@ -96,7 +96,7 @@ const blogPosts: BlogPost[] = [
     publishedAt: '2024-10-28',
     readTime: 7,
     categoryKey: 'categories.compliance',
-    tags: ['GDPR', 'HIPAA', 'Compliance'],
+    tagKeys: ['gdpr', 'hipaa', 'compliance'],
     coverImage: '📋',
   },
   {
@@ -113,7 +113,7 @@ const blogPosts: BlogPost[] = [
     publishedAt: '2024-10-20',
     readTime: 10,
     categoryKey: 'categories.development',
-    tags: ['API', 'Security', 'Authentication'],
+    tagKeys: ['api', 'security', 'authentication'],
     coverImage: '🔐',
   },
   {
@@ -130,7 +130,7 @@ const blogPosts: BlogPost[] = [
     publishedAt: '2024-10-15',
     readTime: 5,
     categoryKey: 'categories.caseStudy',
-    tags: ['Customer Story', 'Enterprise', 'Success'],
+    tagKeys: ['customerStory', 'enterprise', 'success'],
     coverImage: '🏢',
   },
 ];
@@ -139,6 +139,7 @@ const categories = ['all', 'product', 'security', 'technology', 'compliance', 'd
 
 export default function BlogPage() {
   const t = useTranslations('blogPage');
+  const locale = useLocale();
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
@@ -223,7 +224,7 @@ export default function BlogPage() {
                           </div>
                           <div className="text-right">
                             <p className="text-xs text-gray-500 dark:text-gray-500">
-                              {new Date(post.publishedAt).toLocaleDateString('en-US', {
+                              {new Date(post.publishedAt).toLocaleDateString(locale, {
                                 month: 'short',
                                 day: 'numeric',
                               })}

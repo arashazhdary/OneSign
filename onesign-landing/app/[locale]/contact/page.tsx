@@ -144,8 +144,8 @@ export default function ContactPage() {
                   src="https://www.openstreetmap.org/export/embed.html?bbox=-122.4194%2C37.7749%2C-122.3894%2C37.7949&amp;layer=mapnik&amp;marker=37.7849%2C-122.4044"
                   className="w-full h-full border-0"
                   loading="lazy"
-                  title="OneSign Office Location"
-                  aria-label="Map showing OneSign office location in San Francisco"
+                  title={t('office.map.title')}
+                  aria-label={t('office.map.ariaLabel')}
                 />
               </div>
             </SlideUp>

@@ -178,7 +178,7 @@ export function Hero() {
                       </div>
                       <div>
                         <div className="text-sm font-semibold text-gray-900 dark:text-white">
-                          Contract.pdf
+                          {t('hero.signatureCard.documentName')}
                         </div>
                         <div className="text-xs text-gray-500">{t('hero.signatureCard.readyToSign')}</div>
                       </div>
@@ -220,10 +220,10 @@ export function Hero() {
 
                 {/* Floating Badges */}
                 <div className="absolute -top-4 -right-4 bg-green-500 text-white px-4 py-2 rounded-full shadow-lg text-sm font-semibold">
-                  ✓ Verified
+                  {t('hero.badges.verified')}
                 </div>
                 <div className="absolute -bottom-4 -left-4 bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg text-sm font-semibold">
-                  🔒 Secure
+                  {t('hero.badges.secure')}
                 </div>
               </div>
             </div>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 /**
  * Live Chat Integration Component
@@ -18,6 +18,7 @@ interface Message {
 
 export function LiveChat() {
   const t = useTranslations('landing');
+  const locale = useLocale();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -59,10 +60,10 @@ export function LiveChat() {
     // Simulate agent response
     setTimeout(() => {
       const responses = [
-        "Thanks for your message! I'll connect you with our team right away.",
-        'Let me help you with that. Can you provide more details?',
-        "I understand. Let me check our documentation for you.",
-        "Great question! I'll get back to you shortly with an answer.",
+        t('chat.responses.connecting'),
+        t('chat.responses.moreDetails'),
+        t('chat.responses.checkingDocs'),
+        t('chat.responses.gettingAnswer'),
       ];
 
       const agentMessage: Message = {
@@ -163,7 +164,7 @@ export function LiveChat() {
                           : 'text-gray-500 dark:text-gray-500'
                       }`}
                     >
-                      {message.timestamp.toLocaleTimeString('en-US', {
+                      {message.timestamp.toLocaleTimeString(locale, {
                         hour: '2-digit',
                         minute: '2-digit',
                       })}

@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useToastStore } from '@/app/stores';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 
 export function ToastContainer() {
   const { toasts, removeToast } = useToastStore();
@@ -34,6 +35,8 @@ interface ToastProps {
 }
 
 function Toast({ id, message, type, duration = 5000, onClose }: ToastProps) {
+  const t = useTranslations('common');
+
   useEffect(() => {
     if (duration) {
       const timer = setTimeout(onClose, duration);
@@ -99,7 +102,7 @@ function Toast({ id, message, type, duration = 5000, onClose }: ToastProps) {
       <button
         onClick={onClose}
         className="flex-shrink-0 hover:opacity-70 transition-opacity"
-        aria-label="Close"
+        aria-label={t('aria.close')}
       >
         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
           <path
