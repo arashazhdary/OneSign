@@ -163,12 +163,9 @@ export default function GlobalInsightsPage() {
   };
 
   const fetchHighRiskUsers = async () => {
-    const data = await insightsApi.getGlobalHighRiskUsers({
-      page: riskPageNumber,
-      pageSize,
-    });
-    setHighRiskUsers(data.items || []);
-    setRiskTotalCount(data.totalCount || 0);
+    const data = await insightsApi.getGlobalHighRiskUsers();
+    setHighRiskUsers(data.items || data || []);
+    setRiskTotalCount(data.totalCount || (Array.isArray(data) ? data.length : 0));
   };
 
   const fetchSystemHealth = async () => {
@@ -177,8 +174,8 @@ export default function GlobalInsightsPage() {
     setHealthMetrics(healthData.services || []);
 
     // Fetch system alerts
-    const alertsData = await insightsApi.getGlobalSystemAlerts({ acknowledged: false });
-    setSystemAlerts(alertsData.items || []);
+    const alertsData = await insightsApi.getGlobalSystemAlerts();
+    setSystemAlerts(alertsData.items || alertsData || []);
   };
 
   const handleAcknowledgeAlert = async (alertId: string) => {
@@ -186,7 +183,7 @@ export default function GlobalInsightsPage() {
     setSuccess('');
 
     try {
-      await insightsApi.acknowledgeGlobalSystemAlert(alertId, 'current-user-id');
+      await insightsApi.acknowledgeGlobalSystemAlert(alertId);
       setSuccess('Alert acknowledged');
       fetchSystemHealth();
     } catch (err) {
@@ -227,7 +224,7 @@ export default function GlobalInsightsPage() {
     setError('');
     setSuccess('');
     try {
-      const blob = await insightsApi.exportGlobalTenantsOverview();
+      const blob = await insightsApi.exportGlobalTenantsOverview('xlsx');
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
