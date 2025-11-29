@@ -137,7 +137,7 @@ export default function TenantGovernanceCampaignsPage() {
       key: 'status',
       label: t('tenant.governance.status'),
       render: (campaign) => (
-        <StatusBadge status={campaign.status} color={getStatusColor(campaign.status)} />
+        <StatusBadge status={campaign.status} />
       )
     },
     {

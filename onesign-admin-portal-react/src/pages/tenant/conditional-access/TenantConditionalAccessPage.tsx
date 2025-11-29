@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { securityService } from '@/lib/api/services';
+import { securityService } from '@/lib/api/services/security.service';
 import { Helmet } from 'react-helmet-async';
 
 interface ConditionalAccessPolicy {

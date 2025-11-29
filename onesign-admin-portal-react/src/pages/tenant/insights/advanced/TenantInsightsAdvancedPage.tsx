@@ -122,7 +122,7 @@ export default function TenantInsightsAdvancedPage() {
       const { from, to } = getDateRange();
 
       // Fetch insights overview
-      const overview = (await InsightsAPI.getTenantInsightsOverview(tenantId!, from, to)) as any;
+      const overview = await InsightsAPI.getTenantInsightsOverview(tenantId!) as any;
 
       // Transform data for charts
       // User Activity Trend
@@ -397,7 +397,7 @@ export default function TenantInsightsAdvancedPage() {
       <div className="space-y-2">
         {data.map((point, index) => (
           <div key={index} className="flex items-center gap-2">
-            <span className="text-xs text-gray-500 w-20 text-right">{point.label || point.date}</span>
+            <span className="text-xs text-gray-500 w-20 text-right">{point.date}</span>
             <div className="flex-1 bg-gray-100 rounded h-6 relative">
               <div
                 className="bg-indigo-600 h-6 rounded transition-all"

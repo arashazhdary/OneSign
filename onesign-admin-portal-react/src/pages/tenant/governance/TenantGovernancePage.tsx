@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
-import { governanceService } from '@/lib/api/services';
+import { governanceService, platformService } from '@/lib/api/services';
 import { Link } from 'react-router-dom';
 
 interface GovernanceStats {
@@ -60,7 +60,7 @@ export default function TenantGovernancePage() {
     setError('');
     try {
       // Fetch policies
-      const policies = await governanceService.getPolicies(tenantId);
+      const policies = await platformService.getPolicies(tenantId);
       const activePolicies = policies.filter((p: any) => p.isActive || p.status === 'Published');
 
       // Fetch campaigns

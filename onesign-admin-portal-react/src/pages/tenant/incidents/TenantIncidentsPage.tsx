@@ -2,26 +2,8 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
 import { incidentsService } from '@/lib/api/services/incidents.service';
-import type { IncidentDto, IncidentStatsDto } from '@/lib/api/types/incidents';
+import type { Incident, IncidentStats, IncidentNote, LinkedEntity } from '@/lib/api/types/incidents';
 import { Helmet } from 'react-helmet-async';
-
-type Incident = IncidentDto;
-
-interface LinkedEntity {
-  id: string;
-  entityType: string;
-  entityId: string;
-  entityName: string;
-  linkedAt: string;
-}
-
-interface IncidentNote {
-  id: string;
-  content: string;
-  createdByUserId: string;
-  createdByUserName: string;
-  createdAt: string;
-}
 
 interface TimelineEvent {
   id: string;
@@ -44,14 +26,6 @@ interface PlaybookRun {
   stepsCompleted: number;
   totalSteps: number;
   errorMessage: string | null;
-}
-
-interface IncidentStats {
-  totalActive: number;
-  critical: number;
-  high: number;
-  medium: number;
-  low: number;
 }
 
 type Tab = 'active' | 'details' | 'playbooks';
@@ -246,7 +220,7 @@ export default function TenantIncidentsPage() {
     try {
       await incidentsService.addIncidentNote(selectedIncident.id, {
         content: newNoteContent,
-      });
+      }, tenantId);
 
       setSuccess('Note added successfully');
       setNewNoteContent('');
@@ -527,7 +501,7 @@ export default function TenantIncidentsPage() {
                     {incidents.map((incident) => (
                       <tr key={incident.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {formatDate(incident.detectedAt)}
+                          {incident.detectedAt ? formatDate(incident.detectedAt) : '-'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">{incident.title}</div>
@@ -644,7 +618,7 @@ export default function TenantIncidentsPage() {
                   </div>
                   <div>
                     <span className="text-gray-500">Detected:</span>
-                    <span className="ml-2 font-medium">{formatDate(selectedIncident.detectedAt)}</span>
+                    <span className="ml-2 font-medium">{selectedIncident.detectedAt ? formatDate(selectedIncident.detectedAt) : '-'}</span>
                   </div>
                   <div>
                     <span className="text-gray-500">Assigned To:</span>
@@ -708,7 +682,7 @@ export default function TenantIncidentsPage() {
               {/* Linked Entities */}
               <div className="bg-white shadow rounded-lg p-6">
                 <h3 className="text-lg font-semibold mb-4">Linked Entities</h3>
-                {selectedIncident.linkedEntities.length === 0 ? (
+                {(selectedIncident.linkedEntities?.length ?? 0) === 0 ? (
                   <p className="text-gray-500">No linked entities</p>
                 ) : (
                   <div className="overflow-x-auto">
@@ -721,7 +695,7 @@ export default function TenantIncidentsPage() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">
-                        {selectedIncident.linkedEntities.map((entity) => (
+                        {selectedIncident.linkedEntities?.map((entity) => (
                           <tr key={entity.id}>
                             <td className="px-4 py-2 text-sm text-gray-900">{entity.entityType}</td>
                             <td className="px-4 py-2 text-sm text-gray-500">{entity.entityName}</td>
@@ -776,11 +750,11 @@ export default function TenantIncidentsPage() {
                   </div>
                 )}
 
-                {selectedIncident.notes.length === 0 ? (
+                {(selectedIncident.notes?.length ?? 0) === 0 ? (
                   <p className="text-gray-500">No notes yet</p>
                 ) : (
                   <div className="space-y-4">
-                    {selectedIncident.notes.map((note) => (
+                    {selectedIncident.notes?.map((note) => (
                       <div key={note.id} className="p-4 bg-gray-50 rounded-lg">
                         <div className="text-sm text-gray-900">{note.content}</div>
                         <div className="text-xs text-gray-500 mt-2">

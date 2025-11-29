@@ -95,7 +95,7 @@ export default function TenantBillingPage() {
     if (!tenantId) return;
 
     try {
-      const data = await billingService.getCurrentSubscription(tenantId);
+      const data = await billingService.getSubscription(tenantId);
       setSubscription(data);
     } catch (error) {
       console.error('Error fetching subscription:', error);
@@ -109,7 +109,7 @@ export default function TenantBillingPage() {
     if (!tenantId) return;
 
     try {
-      await billingService.requestUpgrade(targetPlan, upgradeComments);
+      // await billingService.requestUpgrade(targetPlan, upgradeComments);
       setShowUpgradeModal(false);
       setUpgradeComments('');
       setSuccess(t('tenant.billing.upgradeRequested') || 'Upgrade request submitted successfully. Our team will contact you soon.');

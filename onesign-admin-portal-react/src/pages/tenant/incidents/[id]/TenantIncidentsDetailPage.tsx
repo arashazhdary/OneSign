@@ -164,7 +164,7 @@ export default function TenantIncidentsDetailPage() {
     setError('');
     setSuccess('');
     try {
-      await incidentsService.addIncidentNote(incidentId, tenantId, { content: newNoteContent });
+      await incidentsService.addIncidentNote(incidentId, { content: newNoteContent }, tenantId);
       setSuccess('Note added successfully');
       setNewNoteContent('');
       setShowAddNoteModal(false);

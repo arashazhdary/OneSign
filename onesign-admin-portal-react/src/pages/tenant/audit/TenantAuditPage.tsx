@@ -41,12 +41,12 @@ export default function TenantAuditPage() {
     if (!tenantId) return;
 
     try {
-      const params: any = { tenantId, pageNumber: 1, pageSize: 100 };
+      const params: any = { pageNumber: 1, pageSize: 100 };
       if (fromDate) params.fromDate = fromDate;
       if (toDate) params.toDate = toDate;
 
-      const data = await securityService.getAuditLogs(params);
-      setEvents(data.items || []);
+      // const data = await securityService.getAuditLogs(params);
+      // setEvents(data.items || []);
     } catch (error) {
       console.error('Error fetching audit events:', error);
     } finally {

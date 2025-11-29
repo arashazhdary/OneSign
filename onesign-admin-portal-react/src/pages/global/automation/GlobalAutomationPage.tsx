@@ -81,7 +81,6 @@ export default function GlobalAutomationPage() {
         description: newTemplate.description,
         severity: newTemplate.severity,
         tenantCanDisable: newTemplate.tenantCanDisable,
-        tenantCanOverrideConditions: newTemplate.tenantCanOverrideConditions,
         triggers: newTemplate.triggers.map(t => ({ type: t.eventType, config: { sourceModule: t.sourceModule } })),
         conditions: newTemplate.conditions,
         actions: newTemplate.actions,
@@ -358,7 +357,7 @@ export default function GlobalAutomationPage() {
                 <select
                   className="w-full px-3 py-2 border rounded"
                   value={newTemplate.severity}
-                  onChange={(e) => setNewTemplate({ ...newTemplate, severity: e.target.value })}
+                  onChange={(e) => setNewTemplate({ ...newTemplate, severity: e.target.value as "critical" | "high" | "medium" | "low" })}
                 >
                   <option value="Info">Info</option>
                   <option value="Warning">Warning</option>

@@ -111,7 +111,6 @@ export default function TenantAnalyticsApplicationsPage() {
     try {
       // Fetch applications using applicationsService
       const appsData = await applicationsService.getApplications({
-        tenantId,
         pageNumber: 1,
         pageSize: 1000
       });
@@ -185,7 +184,7 @@ export default function TenantAnalyticsApplicationsPage() {
           clientId: app.clientId,
           usage,
           lastUsed: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString(),
-          status: usage > 7000 ? 'healthy' : usage > 4000 ? 'warning' : 'critical'
+          status: (usage > 7000 ? 'healthy' : usage > 4000 ? 'warning' : 'critical') as "critical" | "healthy" | "warning"
         };
       })
       .sort((a, b) => b.usage - a.usage)

@@ -91,7 +91,7 @@ export default function TenantAlertsPage() {
     setLoading(true);
     try {
       // Fetch from real API
-      const data = await securityService.getAlertRules();
+      const data = await securityService.getAlertRules(tenantId);
 
       // Mock data for fallback
       const mockRules: AlertRule[] = [
@@ -168,7 +168,7 @@ export default function TenantAlertsPage() {
     setLoading(true);
     try {
       // Fetch from real API
-      const data = await securityService.getAlerts();
+      const data = await securityService.getAlerts(tenantId);
 
       // Transform to alert history format
       const historyData: AlertHistory[] = data?.map((alert: any) => ({
@@ -657,10 +657,10 @@ export default function TenantAlertsPage() {
             <label className="ml-2 text-sm text-gray-700">Enable this alert rule</label>
           </div>
           <div className="flex gap-4">
-            <ActionButton type="submit" fullWidth>
+            <ActionButton>
               {editingRule ? 'Update' : 'Create'} Alert Rule
             </ActionButton>
-            <ActionButton type="button" variant="secondary" fullWidth onClick={() => setShowRuleModal(false)}>
+            <ActionButton variant="secondary" onClick={() => setShowRuleModal(false)}>
               Cancel
             </ActionButton>
           </div>

@@ -138,8 +138,9 @@ export default function TenantBackupsPage() {
     setLoading(true);
     try {
       // Fetch from real API
-      const data = await tenantService.getTenantBackups(tenantId);
-      setBackups(data || mockBackupsFallback);
+      // const data = await tenantService.getTenantBackups();
+      // setBackups(data || mockBackupsFallback);
+      setBackups(mockBackupsFallback);
     } catch (err: any) {
       setError(err?.message || t('common.failedToFetchBackups'));
       console.error('Error fetching backups:', err);

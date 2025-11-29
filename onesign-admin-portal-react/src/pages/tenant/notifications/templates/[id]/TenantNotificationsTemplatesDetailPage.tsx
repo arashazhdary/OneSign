@@ -75,7 +75,7 @@ export default function TenantNotificationsTemplatesDetailPage() {
     setError('');
     try {
       // Fetch real template from API
-      const templateData = await getNotificationTemplate(templateId, tenantId);
+      const templateData = await getNotificationTemplate(templateId);
 
       if (templateData) {
         setTemplate(templateData);
@@ -91,7 +91,7 @@ export default function TenantNotificationsTemplatesDetailPage() {
 
         // Initialize test variable values
         const initialValues: Record<string, string> = {};
-        templateData.variables.forEach(v => {
+        (templateData.variables || []).forEach((v: string) => {
           initialValues[v] = '';
         });
         setTestVariableValues(initialValues);

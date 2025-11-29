@@ -103,7 +103,7 @@ export default function TenantAccessCertificationsPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await governanceService.getCampaigns(tenantId);
+      const data = await governanceService.getCampaigns();
       // Mock data structure - adapt based on actual API response
       const campaigns = (data || []).map((campaign: any) => ({
         ...campaign,
@@ -182,7 +182,7 @@ export default function TenantAccessCertificationsPage() {
     try {
       // Use governance service to create campaign
       // Adapt based on actual API structure
-      await governanceService.createCampaign(tenantId, createForm as any);
+      await governanceService.createCampaign(createForm as any);
       setSuccess('Certification campaign created successfully');
       setShowCreateModal(false);
       setCreateForm({
@@ -323,7 +323,9 @@ export default function TenantAccessCertificationsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      
+      <Helmet>
+        <title>Access Certifications</title>
+      </Helmet>
 
       {/* Header */}
       <div className="mb-8">

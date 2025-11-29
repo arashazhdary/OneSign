@@ -166,10 +166,7 @@ export default function GlobalBillingPage() {
         name: planName,
         description: planDescription,
         price: parseFloat(planPrice),
-        currency: planCurrency,
-        billingCycle: planBillingCycle,
-        maxUsers: parseInt(planMaxUsers),
-        maxApps: parseInt(planMaxApps)
+        currency: planCurrency
       });
       setSuccess(t('global.billing.planCreated'));
       setShowCreatePlanModal(false);
@@ -193,10 +190,7 @@ export default function GlobalBillingPage() {
         name: planName,
         description: planDescription,
         price: parseFloat(planPrice),
-        currency: planCurrency,
-        billingCycle: planBillingCycle,
-        maxUsers: parseInt(planMaxUsers),
-        maxApps: parseInt(planMaxApps)
+        currency: planCurrency
       });
       setSuccess(t('global.billing.planUpdated'));
       setShowEditPlanModal(false);
@@ -304,7 +298,6 @@ export default function GlobalBillingPage() {
       render: (plan) => (
         <StatusBadge
           status={plan.isActive ? 'Active' : 'Inactive'}
-          color={plan.isActive ? 'green' : 'gray'}
         />
       )
     }
@@ -323,13 +316,7 @@ export default function GlobalBillingPage() {
       key: 'status',
       label: t('global.billing.status'),
       render: (sub) => {
-        const colors: Record<string, 'green' | 'yellow' | 'red' | 'blue'> = {
-          Active: 'green',
-          Trial: 'blue',
-          Suspended: 'yellow',
-          Cancelled: 'red'
-        };
-        return <StatusBadge status={sub.status} color={colors[sub.status] || 'gray'} />;
+        return <StatusBadge status={sub.status} />;
       }
     },
     {

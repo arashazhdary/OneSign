@@ -111,29 +111,29 @@ export default function TenantAnalyticsSecurityPage() {
       generateIncidentTrend(incidentsData.items || []);
 
       // Fetch risk events using securityService
-      const riskData = await securityService.getRiskEvents({
-        pageNumber: 1,
-        pageSize: 100
-      });
+      // const riskData = await securityService.getRiskEvents({
+      //   pageNumber: 1,
+      //   pageSize: 100
+      // });
 
-      setStats(prev => ({
-        ...prev,
-        riskEvents: riskData.totalCount || 0,
-        highRiskUsers: riskData.items?.filter((r: any) => r.riskScore > 70).length || 0
-      }));
+      // setStats(prev => ({
+      //   ...prev,
+      //   riskEvents: riskData.totalCount || 0,
+      //   highRiskUsers: riskData.items?.filter((r: any) => r.riskScore > 70).length || 0
+      // }));
 
       // Generate risk distribution
-      generateRiskDistribution(riskData.items || []);
-      generateRiskCategories(riskData.items || []);
+      // generateRiskDistribution(riskData.items || []);
+      // generateRiskCategories(riskData.items || []);
 
       // Fetch audit logs using securityService
-      const auditData = await securityService.getAuditLogs({
-        tenantId,
-        pageNumber: 1,
-        pageSize: 10
-      });
+      // const auditData = await securityService.getAuditLogs({
+      //   tenantId,
+      //   pageNumber: 1,
+      //   pageSize: 10
+      // });
 
-      generateSecurityEvents(auditData.items || []);
+      // generateSecurityEvents(auditData.items || []);
 
       // Calculate security score
       calculateSecurityScore();

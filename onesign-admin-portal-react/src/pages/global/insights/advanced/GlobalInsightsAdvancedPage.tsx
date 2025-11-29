@@ -285,7 +285,7 @@ export default function GlobalInsightsAdvancedPage() {
     setSuccess('');
     setError('');
     try {
-      const blob = await insightsApi.exportGlobalTenantsOverview();
+      const blob = await insightsApi.exportGlobalTenantsOverview('xlsx');
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -345,6 +345,9 @@ export default function GlobalInsightsAdvancedPage() {
 
   return (
     <div className="p-8">
+      <Helmet>
+        <title>Global Advanced Insights</title>
+      </Helmet>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Global Advanced Insights</h1>
         <button

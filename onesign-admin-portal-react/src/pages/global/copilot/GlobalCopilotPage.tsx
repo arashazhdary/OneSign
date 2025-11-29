@@ -188,7 +188,7 @@ export default function GlobalCopilotPage() {
     setAnalyzingTenants(true);
     setError('');
     try {
-      const data = await copilotService.analyzeTenants();
+      const data = await copilotService.analyzeTenants({} as any);
       setSuccess(`Analysis completed: ${data.summary}`);
       setActiveTab('insights');
       fetchData();
@@ -304,6 +304,9 @@ export default function GlobalCopilotPage() {
 
   return (
     <div className="p-8">
+      <Helmet>
+        <title>Copilot - Global Management</title>
+      </Helmet>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Copilot - Global Management</h1>
         <button

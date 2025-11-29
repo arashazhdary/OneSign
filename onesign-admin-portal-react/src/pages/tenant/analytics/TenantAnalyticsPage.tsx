@@ -56,7 +56,7 @@ export default function TenantAnalyticsPage() {
       const from = new Date(now.setDate(now.getDate() - 30)).toISOString();
       const to = new Date().toISOString();
 
-      const data = await InsightsAPI.getTenantInsightsOverview(tenantId, from, to);
+      const data = await InsightsAPI.getTenantInsightsOverview(tenantId);
 
       setStats({
         totalUsers: data.totalUsers,

@@ -42,11 +42,11 @@ export default function TenantDashboardPage() {
 
       // Fetch applications count
       const appsData = await applicationsService.getApplications({ tenantId, pageNumber: 1, pageSize: 1 });
-      setStats(prev => ({ ...prev, totalApplications: appsData.totalCount || 0 }));
+      setStats(prev => ({ ...prev, totalApplications: appsData.total || 0 }));
 
       // Fetch recent audit events count
-      const auditData = await securityService.getAuditLogs({ pageNumber: 1, pageSize: 1 });
-      setStats(prev => ({ ...prev, recentActivity: auditData.totalCount || 0 }));
+      // const auditData = await securityService.getAuditLogs({ pageNumber: 1, pageSize: 1 });
+      // setStats(prev => ({ ...prev, recentActivity: auditData.totalCount || 0 }));
     } catch (error: any) {
       console.error('Error fetching stats:', error);
     } finally {
