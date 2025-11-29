@@ -4,7 +4,11 @@ import { useThemeStore } from '@/app/stores';
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
-export function ThemeToggle() {
+interface ThemeToggleProps {
+  isScrolled?: boolean;
+}
+
+export function ThemeToggle({ isScrolled = true }: ThemeToggleProps) {
   const { theme, setTheme } = useThemeStore();
   const [mounted, setMounted] = useState(false);
   const t = useTranslations('common');
@@ -17,10 +21,15 @@ export function ThemeToggle() {
     return null;
   }
 
+  // Dynamic styling based on scroll state for proper visibility
+  const buttonClass = isScrolled
+    ? 'p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors'
+    : 'p-2 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-colors';
+
   return (
     <button
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+      className={buttonClass}
       aria-label={t('aria.toggleTheme')}
     >
       {theme === 'dark' ? (
