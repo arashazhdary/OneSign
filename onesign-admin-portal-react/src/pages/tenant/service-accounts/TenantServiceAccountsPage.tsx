@@ -44,7 +44,7 @@ export default function TenantServiceAccountsPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await tenantService.getServiceAccounts(tenantId);
+      const data = await tenantService.getServiceAccounts();
       setServiceAccounts(data || []);
     } catch (err) {
       console.error('Error fetching service accounts:', err);
@@ -58,7 +58,7 @@ export default function TenantServiceAccountsPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      await tenantService.createServiceAccount(tenantId, form);
+      await tenantService.createServiceAccount(form);
       setSuccess('Service account created successfully');
       setShowModal(false);
       fetchServiceAccounts();
@@ -124,8 +124,8 @@ export default function TenantServiceAccountsPage() {
             />
           </div>
           <div className="flex gap-4">
-            <ActionButton fullWidth>Create</ActionButton>
-            <ActionButton variant="secondary" fullWidth onClick={() => setShowModal(false)}>
+            <ActionButton className="w-full">Create</ActionButton>
+            <ActionButton variant="secondary" className="w-full" onClick={() => setShowModal(false)}>
               Cancel
             </ActionButton>
           </div>

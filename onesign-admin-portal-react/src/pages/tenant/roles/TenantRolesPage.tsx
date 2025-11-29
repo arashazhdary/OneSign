@@ -108,7 +108,7 @@ export default function TenantRolesPage() {
     if (!tenantId) return;
     try {
       const data = await rolesService.getRoles();
-      setRoles(data.items || []);
+      setRoles((data.items || []) as any);
     } catch (error) {
       console.error('Error fetching roles:', error);
     } finally {
@@ -132,9 +132,9 @@ export default function TenantRolesPage() {
 
     try {
       if (editingRole) {
-        await rolesService.updateRole(editingRole.id, payload);
+        await rolesService.updateRole(editingRole.id, payload as any);
       } else {
-        await rolesService.createRole({ ...payload, tenantId });
+        await rolesService.createRole(payload as any);
       }
       setSuccess(editingRole ? 'Role updated successfully' : 'Role created successfully');
       setShowCreateModal(false);

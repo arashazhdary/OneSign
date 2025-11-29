@@ -97,7 +97,7 @@ export default function TenantBrandingPage() {
   const fetchBranding = async () => {
     if (!tenantId) return;
     try {
-      const data = await tenantService.getBranding(tenantId);
+      const data = await tenantService.getBranding();
       setBranding({ ...branding, ...data });
     } catch (error: any) {
       console.error('Error fetching branding:', error);
@@ -115,7 +115,7 @@ export default function TenantBrandingPage() {
     setSaving(true);
 
     try {
-      const data = await tenantService.updateBranding(tenantId, branding);
+      const data = await tenantService.updateBranding(branding);
       setBranding({ ...branding, ...data });
       setSuccess('Branding saved successfully');
     } catch (error: any) {

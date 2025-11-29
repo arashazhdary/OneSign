@@ -9,7 +9,7 @@ import DataTable, { Column } from '@/components/common/DataTable';
 import * as AccessRequestsAPI from '@/lib/api/access-requests';
 import { Helmet } from 'react-helmet-async';
 
-type AccessRequest = AccessRequestsAPI.AccessRequestDto;
+type AccessRequest = AccessRequestsAPI.AccessRequestExtendedDto;
 
 type Tab = 'pending' | 'approved' | 'rejected' | 'all';
 

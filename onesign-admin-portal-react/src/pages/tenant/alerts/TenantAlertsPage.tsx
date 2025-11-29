@@ -657,10 +657,10 @@ export default function TenantAlertsPage() {
             <label className="ml-2 text-sm text-gray-700">Enable this alert rule</label>
           </div>
           <div className="flex gap-4">
-            <ActionButton type="submit" fullWidth>
+            <ActionButton>
               {editingRule ? 'Update' : 'Create'} Alert Rule
             </ActionButton>
-            <ActionButton type="button" variant="secondary" fullWidth onClick={() => setShowRuleModal(false)}>
+            <ActionButton variant="secondary" onClick={() => setShowRuleModal(false)}>
               Cancel
             </ActionButton>
           </div>

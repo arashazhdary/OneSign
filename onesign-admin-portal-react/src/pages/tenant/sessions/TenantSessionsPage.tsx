@@ -205,7 +205,7 @@ export default function TenantSessionsPage() {
 
     try {
       // Fetch from real API
-      const data = await usersService.getAccountSessions(tenantId);
+      const data = await usersService.getAccountSessions();
       setSessions(data || mockSessionsFallback);
     } catch (error: any) {
       console.error('Error fetching sessions:', error);
@@ -222,7 +222,7 @@ export default function TenantSessionsPage() {
 
     try {
       // Fetch from real API
-      const data = await usersService.getSessionHistory(tenantId);
+      const data = await usersService.getSessionHistory();
       setHistory(data || mockHistoryFallback);
     } catch (error: any) {
       console.error('Error fetching session history:', error);
@@ -239,7 +239,7 @@ export default function TenantSessionsPage() {
     setSuccess('');
 
     try {
-      await usersService.revokeSession(tenantId, sessionId);
+      await usersService.revokeSession(sessionId);
       setSuccess('Session revoked successfully. User has been logged out.');
       fetchSessions();
     } catch (error: any) {

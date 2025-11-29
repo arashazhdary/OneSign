@@ -84,7 +84,7 @@ export default function TenantCertificatesPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this certificate?')) return;
     try {
-      await tenantService.deleteCertificate('tenant-id', id);
+      await tenantService.deleteCertificate(id);
       fetchCertificates();
     } catch (err: any) {
       setError(err.message || t('common.failedToDeleteCertificate'));

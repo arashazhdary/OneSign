@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getTenantId } from '@/lib/tenant-context';
-import { securityService } from '@/lib/api/services';
+import { securityService } from '@/lib/api/services/security.service';
 import DataTable, { Column } from '@/components/common/DataTable';
 import StatusBadge from '@/components/common/StatusBadge';
 import ActionButton from '@/components/common/ActionButton';

@@ -5,7 +5,6 @@ import DataTable, { Column } from '@/components/common/DataTable';
 import Modal from '@/components/common/Modal';
 import StatusBadge from '@/components/common/StatusBadge';
 import { globalService } from '@/lib/api/services/global.service';
-import { Helmet } from 'react-helmet-async';
 
 interface Plan {
   id: string;
@@ -107,8 +106,8 @@ export default function GlobalBillingPage() {
   const fetchPlans = async () => {
     try {
       // GET /api/global/billing/plans
-      const data = await globalService.getBillingPlans();
-      setPlans(data);
+      const data = (await globalService.getBillingPlans()) as any;
+      setPlans(Array.isArray(data) ? data : data?.plans || []);
     } catch (err) {
       console.error('Error fetching plans:', err);
     } finally {
@@ -119,8 +118,8 @@ export default function GlobalBillingPage() {
   const fetchSubscriptions = async () => {
     try {
       // GET /api/global/billing/tenants
-      const data = await globalService.getTenantsBillingStatus();
-      setSubscriptions(data);
+      const data = (await globalService.getTenantsBillingStatus()) as any;
+      setSubscriptions(Array.isArray(data) ? data : data?.subscriptions || []);
     } catch (err) {
       console.error('Error fetching subscriptions:', err);
     }
@@ -167,10 +166,7 @@ export default function GlobalBillingPage() {
         name: planName,
         description: planDescription,
         price: parseFloat(planPrice),
-        currency: planCurrency,
-        billingCycle: planBillingCycle,
-        maxUsers: parseInt(planMaxUsers),
-        maxApps: parseInt(planMaxApps)
+        currency: planCurrency
       });
       setSuccess(t('global.billing.planCreated'));
       setShowCreatePlanModal(false);
@@ -194,10 +190,7 @@ export default function GlobalBillingPage() {
         name: planName,
         description: planDescription,
         price: parseFloat(planPrice),
-        currency: planCurrency,
-        billingCycle: planBillingCycle,
-        maxUsers: parseInt(planMaxUsers),
-        maxApps: parseInt(planMaxApps)
+        currency: planCurrency
       });
       setSuccess(t('global.billing.planUpdated'));
       setShowEditPlanModal(false);
@@ -305,7 +298,6 @@ export default function GlobalBillingPage() {
       render: (plan) => (
         <StatusBadge
           status={plan.isActive ? 'Active' : 'Inactive'}
-
         />
       )
     }
@@ -324,12 +316,6 @@ export default function GlobalBillingPage() {
       key: 'status',
       label: t('global.billing.status'),
       render: (sub) => {
-        const colors: Record<string, 'green' | 'yellow' | 'red' | 'blue'> = {
-          Active: 'green',
-          Trial: 'blue',
-          Suspended: 'yellow',
-          Cancelled: 'red'
-        };
         return <StatusBadge status={sub.status} />;
       }
     },

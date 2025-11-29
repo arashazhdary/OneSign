@@ -7,7 +7,6 @@ import ActionButton from '@/components/common/ActionButton';
 import Modal from '@/components/common/Modal';
 import LoadingOverlay from '@/components/common/LoadingOverlay';
 import { tenantService } from '@/lib/api/services/tenant.service';
-import { Helmet } from 'react-helmet-async';
 
 interface APIKey {
   id: string;
@@ -45,7 +44,7 @@ export default function TenantApiKeysPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await tenantService.getApiKeys(tenantId);
+      const data = await tenantService.getApiKeys();
       setApiKeys(data || []);
     } catch (err: any) {
       console.error('Error fetching API keys:', err);
@@ -60,12 +59,12 @@ export default function TenantApiKeysPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await tenantService.createApiKey(
-        tenantId,
-        form.name,
-        [],
-        form.expiresAt || undefined
-      );
+      const expiresIn = form.expiresAt ? new Date(form.expiresAt).getTime() - Date.now() : undefined;
+      const data = await tenantService.createApiKey({
+        name: form.name,
+        scope: [],
+        expiresIn
+      });
       setSuccess(`API Key created: ${data.key}`);
       setShowModal(false);
       fetchAPIKeys();
@@ -81,7 +80,7 @@ export default function TenantApiKeysPage() {
     if (!tenantId || !confirm('Are you sure you want to revoke this API key?')) return;
     setLoading(true);
     try {
-      await tenantService.revokeApiKey(tenantId, id);
+      await tenantService.revokeApiKey(id);
       setSuccess('API key revoked successfully');
       fetchAPIKeys();
     } catch (err: any) {
@@ -97,7 +96,7 @@ export default function TenantApiKeysPage() {
     {
       key: 'isRevoked',
       label: 'Status',
-      render: (k) => <StatusBadge status={k.isRevoked ? 'Revoked' : 'Active'} variant={k.isRevoked ? 'error' : 'success'} />
+      render: (k) => <StatusBadge status={k.isRevoked ? 'Revoked' : 'Active'} />
     },
     { key: 'createdAt', label: 'Created', render: (k) => new Date(k.createdAt).toLocaleDateString() },
     { key: 'expiresAt', label: 'Expires', render: (k) => k.expiresAt ? new Date(k.expiresAt).toLocaleDateString() : 'Never' },
@@ -156,10 +155,10 @@ export default function TenantApiKeysPage() {
             />
           </div>
           <div className="flex gap-4">
-            <button type="submit" className="flex-1">
-              <ActionButton className="w-full">Create</ActionButton>
+            <button type="submit" className="flex-1 px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg font-medium transition-colors">
+              Create
             </button>
-            <ActionButton variant="secondary" className="flex-1" onClick={() => setShowModal(false)}>
+            <ActionButton className="flex-1" onClick={() => setShowModal(false)}>
               Cancel
             </ActionButton>
           </div>

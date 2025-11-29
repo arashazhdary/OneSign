@@ -38,6 +38,9 @@ export default function GlobalBackupsPage() {
   const [activeTab, setActiveTab] = useState<'backups' | 'schedules' | 'restore'>('backups');
   const [showCreate, setShowCreate] = useState(false);
   const [showSchedule, setShowSchedule] = useState(false);
+  const [backupName, setBackupName] = useState('');
+  const [backupType, setBackupType] = useState('full');
+  const [retentionDays, setRetentionDays] = useState(90);
 
   useEffect(() => {
     fetchData();
@@ -58,10 +61,17 @@ export default function GlobalBackupsPage() {
     }
   };
 
-  const handleCreateBackup = async (data: { name: string; type: string; retentionDays: number }) => {
+  const handleCreateBackup = async () => {
     try {
-      await globalService.createBackup(data);
+      await globalService.createBackup({
+        name: backupName,
+        type: backupType,
+        retentionDays
+      });
       setShowCreate(false);
+      setBackupName('');
+      setBackupType('full');
+      setRetentionDays(90);
       fetchData();
     } catch (error) {
       console.error('Failed to create backup:', error);
@@ -399,12 +409,18 @@ export default function GlobalBackupsPage() {
                 <input
                   type="text"
                   placeholder="e.g., Pre-Migration Backup"
+                  value={backupName}
+                  onChange={(e) => setBackupName(e.target.value)}
                   className="w-full border border-gray-300 rounded-lg p-2"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Backup Type</label>
-                <select className="w-full border border-gray-300 rounded-lg p-2">
+                <select
+                  value={backupType}
+                  onChange={(e) => setBackupType(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                >
                   <option value="full">Full Backup</option>
                   <option value="incremental">Incremental Backup</option>
                 </select>
@@ -413,7 +429,8 @@ export default function GlobalBackupsPage() {
                 <label className="block text-sm font-medium mb-2">Retention Days</label>
                 <input
                   type="number"
-                  defaultValue={90}
+                  value={retentionDays}
+                  onChange={(e) => setRetentionDays(Number(e.target.value))}
                   className="w-full border border-gray-300 rounded-lg p-2"
                 />
               </div>

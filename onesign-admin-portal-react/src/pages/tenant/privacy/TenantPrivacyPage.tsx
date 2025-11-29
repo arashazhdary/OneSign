@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
 import { governanceService } from '@/lib/api/services';
 import DataTable, { Column } from '@/components/common/DataTable';
 import StatusBadge from '@/components/common/StatusBadge';
 import ActionButton from '@/components/common/ActionButton';
 import Modal from '@/components/common/Modal';
-import LoadingOverlay from '@/components/common/LoadingOverlay';
-import { Helmet } from 'react-helmet-async';
 
 interface RetentionPolicy {
   category: string;
@@ -26,6 +25,7 @@ interface DataRequest {
 }
 
 export default function TenantPrivacyPage() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'retention' | 'requests'>('retention');
   const [tenantId, setTenantIdState] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -212,7 +212,7 @@ export default function TenantPrivacyPage() {
         </div>
       )}
 
-      <Modal isOpen={showRequestModal} onClose={() => setShowRequestModal(false)} title={`${t('common.create')} ${t('common.dataRequest')}`}>
+      <Modal isOpen={showRequestModal} onClose={() => setShowRequestModal(false)} title="Create Data Request">
         <form onSubmit={handleCreateRequest} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Subject ID</label>
@@ -248,8 +248,8 @@ export default function TenantPrivacyPage() {
             />
           </div>
           <div className="flex gap-4">
-            <ActionButton type="submit" fullWidth>Create</ActionButton>
-            <ActionButton type="button" variant="secondary" fullWidth onClick={() => setShowRequestModal(false)}>
+            <button type="submit" className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors">Create</button>
+            <ActionButton variant="secondary" className="flex-1" onClick={() => setShowRequestModal(false)}>
               Cancel
             </ActionButton>
           </div>

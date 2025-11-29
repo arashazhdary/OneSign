@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
 import * as InsightsAPI from '@/lib/api/insights';
 import { Link } from 'react-router-dom';
-import { useParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
 interface AnalyticsStats {
@@ -19,7 +18,6 @@ interface AnalyticsStats {
 
 export default function TenantAnalyticsPage() {
   const { t } = useTranslation();
-  const params = useParams();
   const [tenantId, setTenantIdState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -58,7 +56,7 @@ export default function TenantAnalyticsPage() {
       const from = new Date(now.setDate(now.getDate() - 30)).toISOString();
       const to = new Date().toISOString();
 
-      const data = await InsightsAPI.getTenantInsightsOverview(tenantId, from, to);
+      const data = await InsightsAPI.getTenantInsightsOverview(tenantId);
 
       setStats({
         totalUsers: data.totalUsers,
@@ -162,7 +160,7 @@ export default function TenantAnalyticsPage() {
           </p>
         </div>
         <Link
-          href="/tenant/insights"
+          to="/tenant/insights"
           className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
         >
           View Detailed Insights
@@ -233,7 +231,7 @@ export default function TenantAnalyticsPage() {
         {analyticsCards.map((card) => (
           <Link
             key={card.href}
-            href={card.href}
+            to={card.href}
             className="group bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden"
           >
             <div className={`h-2 bg-gradient-to-r ${card.color}`}></div>

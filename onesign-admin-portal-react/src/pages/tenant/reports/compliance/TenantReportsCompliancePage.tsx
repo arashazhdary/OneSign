@@ -115,7 +115,7 @@ export default function TenantReportsCompliancePage() {
       // Fetch real compliance data from API
       const [frameworks, reports] = await Promise.all([
         governanceService.getFrameworks(),
-        governanceService.getReports(tenantId)
+        governanceService.getReports()
       ]);
 
       // Map frameworks to compliance scores
@@ -357,10 +357,15 @@ export default function TenantReportsCompliancePage() {
 
     try {
       // Try to export report via API if it exists
+      // Map format: JSON → csv, Excel → excel, PDF → pdf
+      const formatMap: Record<string, 'pdf' | 'csv' | 'excel'> = {
+        'PDF': 'pdf',
+        'Excel': 'excel',
+        'JSON': 'csv'
+      };
       const blob = await governanceService.exportReport(
-        tenantId,
         reportId,
-        format.toLowerCase() as 'pdf' | 'xlsx' | 'json'
+        formatMap[format]
       );
 
       // Download the blob

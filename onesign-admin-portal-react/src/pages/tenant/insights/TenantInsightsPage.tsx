@@ -184,7 +184,11 @@ export default function TenantInsightsPage() {
 
     try {
       await InsightsAPI.createReportSubscription(tenantId, {
+        name: newReport.name,
         reportType: newReport.reportType as any,
+        frequency: newReport.frequency,
+        recipients: newReport.recipients.split(',').map(r => r.trim()).filter(Boolean),
+        isActive: newReport.isActive,
       } as any);
 
       setSuccess('Report subscription created successfully');
@@ -210,7 +214,10 @@ export default function TenantInsightsPage() {
 
     try {
       await InsightsAPI.updateReportSubscription(tenantId, editingReport.id, {
+        name: editingReport.name,
         reportType: editingReport.reportType as any,
+        frequency: editingReport.frequency,
+        recipients: editingReport.recipients,
         isActive: editingReport.isActive,
       } as any);
 
@@ -244,7 +251,10 @@ export default function TenantInsightsPage() {
 
     try {
       await InsightsAPI.updateReportSubscription(tenantId, report.id, {
+        name: report.name,
         reportType: report.reportType as any,
+        frequency: report.frequency,
+        recipients: report.recipients,
         isActive: !report.isActive,
       } as any);
 
@@ -259,7 +269,7 @@ export default function TenantInsightsPage() {
   const handleExportOverview = async () => {
     if (!tenantId) return;
     try {
-      const blob = await InsightsAPI.exportTenantInsightsOverview(tenantId);
+      const blob = await InsightsAPI.exportTenantInsightsOverview(tenantId, 'xlsx');
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -278,7 +288,7 @@ export default function TenantInsightsPage() {
   const handleExportUsers = async () => {
     if (!tenantId) return;
     try {
-      const blob = await InsightsAPI.exportUserSecurityPosture(tenantId);
+      const blob = await InsightsAPI.exportUserSecurityPosture(tenantId, 'xlsx');
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;

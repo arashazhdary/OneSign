@@ -113,7 +113,7 @@ export const incidentsService = {
   },
 
   // Add note to incident
-  addIncidentNote: async (incidentId: string, tenantId: string | undefined, data: { content: string }) => {
+  addIncidentNote: async (incidentId: string, data: { content: string }, tenantId?: string) => {
     try {
       const response = await apiClient.post(`/api/tenant/incidents/${incidentId}/notes`, data, {
         params: { tenantId }

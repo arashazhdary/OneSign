@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { tenantService } from '@/lib/api/services/tenant.service';
 import { getTenantId } from '@/lib/tenant-context';
 import Breadcrumbs from '@/components/common/Breadcrumbs';
-import { Helmet } from 'react-helmet-async';
 
 interface Scope {
   id: string;
@@ -41,7 +40,7 @@ interface DelegatedAdminDetails {
 
 export default function TenantDelegatedAdminsDetailPage() {
   const { t } = useTranslation();
-  const params = useParams();
+  const params = useParams<{ id: string }>();
   const navigate = useNavigate();
   const id = params.id as string;
   const [tenantId, setTenantIdState] = useState<string | null>(null);
@@ -78,7 +77,8 @@ export default function TenantDelegatedAdminsDetailPage() {
     try {
       setLoading(true);
       // Since there's no getDelegatedAdminById in the service, we'll fetch the list and find by ID
-      const admins = await tenantService.getDelegatedAdmins(tenantId);
+      const response = (await tenantService.getDelegatedAdmins()) as any;
+      const admins = Array.isArray(response) ? response : response?.data || [];
       const adminData = admins.find((a: any) => a.id === id);
 
       if (!adminData) {
@@ -244,7 +244,7 @@ export default function TenantDelegatedAdminsDetailPage() {
     if (!tenantId) return;
 
     try {
-      const orgUnits = await tenantService.getOrgUnits(tenantId);
+      const orgUnits = await tenantService.getOrgUnitsTree();
       setAvailableOrgUnits(orgUnits);
     } catch (err) {
       // Use mock data on error
@@ -318,7 +318,7 @@ export default function TenantDelegatedAdminsDetailPage() {
     setSuccess('');
 
     try {
-      await tenantService.deleteDelegatedAdmin(tenantId, id);
+      await tenantService.deleteDelegatedAdmin(id);
       setSuccess('Delegated admin deleted successfully');
       setTimeout(() => {
         navigate('/tenant/delegated-admins');
