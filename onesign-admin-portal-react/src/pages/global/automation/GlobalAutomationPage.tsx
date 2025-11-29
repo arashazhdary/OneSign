@@ -33,7 +33,7 @@ export default function GlobalAutomationPage() {
   const [newTemplate, setNewTemplate] = useState({
     name: '',
     description: '',
-    severity: 'Info' as 'critical' | 'high' | 'medium' | 'low',
+    severity: 'low' as 'critical' | 'high' | 'medium' | 'low',
     tenantCanDisable: true,
     tenantCanOverrideConditions: true,
     triggers: [{ eventType: EVENT_TYPES[0], sourceModule: 'Auth' }],
@@ -91,7 +91,7 @@ export default function GlobalAutomationPage() {
       setNewTemplate({
         name: '',
         description: '',
-        severity: 'Info' as 'critical' | 'high' | 'medium' | 'low',
+        severity: 'low' as 'critical' | 'high' | 'medium' | 'low',
         tenantCanDisable: true,
         tenantCanOverrideConditions: true,
         triggers: [{ eventType: EVENT_TYPES[0], sourceModule: 'Auth' }],

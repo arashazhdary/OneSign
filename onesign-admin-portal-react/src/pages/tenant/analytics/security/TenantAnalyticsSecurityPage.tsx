@@ -97,7 +97,6 @@ export default function TenantAnalyticsSecurityPage() {
     try {
       // Fetch incidents using incidentsService
       const incidentsData = await incidentsService.getIncidents({
-        tenantId,
         pageNumber: 1,
         pageSize: 100
       });
@@ -113,7 +112,6 @@ export default function TenantAnalyticsSecurityPage() {
 
       // Fetch risk events using securityService
       const riskData = await securityService.getRiskEvents({
-        tenantId,
         pageNumber: 1,
         pageSize: 100
       });

@@ -50,7 +50,6 @@ export default function TenantRiskEventsPage() {
     setError('');
     try {
       const params: any = {
-        tenantId,
         pageNumber,
         pageSize
       };
@@ -101,7 +100,7 @@ export default function TenantRiskEventsPage() {
     setError('');
     setSuccess('');
     try {
-      await securityService.createRiskEvent(tenantId, {
+      await securityService.createRiskEvent({
         userId: newEventUserId,
         eventType: newEventType,
         riskLevel: newRiskLevel,

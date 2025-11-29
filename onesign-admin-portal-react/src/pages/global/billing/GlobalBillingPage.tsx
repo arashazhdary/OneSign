@@ -304,7 +304,7 @@ export default function GlobalBillingPage() {
       render: (plan) => (
         <StatusBadge
           status={plan.isActive ? 'Active' : 'Inactive'}
-
+          color={plan.isActive ? 'green' : 'gray'}
         />
       )
     }
@@ -329,7 +329,7 @@ export default function GlobalBillingPage() {
           Suspended: 'yellow',
           Cancelled: 'red'
         };
-        return <StatusBadge status={sub.status} />;
+        return <StatusBadge status={sub.status} color={colors[sub.status] || 'gray'} />;
       }
     },
     {

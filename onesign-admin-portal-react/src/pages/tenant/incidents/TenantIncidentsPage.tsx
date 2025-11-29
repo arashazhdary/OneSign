@@ -150,7 +150,7 @@ export default function TenantIncidentsPage() {
     if (!tenantId) return;
 
     try {
-      const data = await incidentsService.getIncidentTimeline(incidentId, tenantId);
+      const data = await incidentsService.getIncidentTimeline(tenantId, incidentId);
       setTimeline(data);
     } catch (err) {
       console.error('Failed to fetch timeline:', err);
@@ -244,7 +244,7 @@ export default function TenantIncidentsPage() {
     setError('');
     setSuccess('');
     try {
-      await incidentsService.addIncidentNote(selectedIncident.id, tenantId, {
+      await incidentsService.addIncidentNote(selectedIncident.id, {
         content: newNoteContent,
       });
 

@@ -64,7 +64,7 @@ export default function TenantGovernanceCampaignsPage() {
   const fetchCampaigns = async () => {
     if (!tenantId) return;
     try {
-      const data = await governanceService.getCampaigns(tenantId);
+      const data = await governanceService.getCampaigns();
       setCampaigns(data);
     } catch (err) {
       console.error('Error fetching campaigns:', err);
@@ -80,7 +80,7 @@ export default function TenantGovernanceCampaignsPage() {
     if (!tenantId) return;
 
     try {
-      await governanceService.createCampaign(tenantId, {
+      await governanceService.createCampaign({
         name,
         description,
         targetType,

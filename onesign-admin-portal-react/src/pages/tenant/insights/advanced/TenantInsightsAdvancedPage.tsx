@@ -126,7 +126,7 @@ export default function TenantInsightsAdvancedPage() {
 
       // Transform data for charts
       // User Activity Trend
-      const userTrend = overview.signInTrend.map(item => ({
+      const userTrend = (overview as any).signInTrend.map(item => ({
         date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         value: item.count,
         secondary: item.failureCount,
@@ -134,7 +134,7 @@ export default function TenantInsightsAdvancedPage() {
       setUserActivityData(userTrend);
 
       // Login Distribution by day of week
-      const loginByDay = transformLoginDistribution(overview.signInTrend);
+      const loginByDay = transformLoginDistribution((overview as any).signInTrend);
       setLoginDistribution(loginByDay);
 
       // Security Score breakdown
