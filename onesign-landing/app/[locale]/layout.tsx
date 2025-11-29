@@ -11,6 +11,7 @@ import { ProgressBar } from '@/app/components/ProgressBar';
 import { GoogleAnalytics } from '@/app/components/GoogleAnalytics';
 import { WebVitals } from '@/app/components/WebVitals';
 import { LiveChat } from '@/app/components/LiveChat';
+import { SplashScreen } from '@/app/components/SplashScreen';
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -38,6 +39,7 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} dir={locale === 'fa' ? 'rtl' : 'ltr'} suppressHydrationWarning>
       <body suppressHydrationWarning>
+        <SplashScreen />
         <ThemeProvider>
           <NextIntlClientProvider messages={messages}>
             <Suspense fallback={null}>

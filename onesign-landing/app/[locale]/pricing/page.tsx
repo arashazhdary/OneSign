@@ -7,15 +7,28 @@ import { Button } from '@/app/components/ui';
 import { FadeIn, SlideUp } from '@/app/components/animations';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useParams } from 'next/navigation';
 
 export default function PricingPage() {
   const t = useTranslations('landing');
+  const params = useParams();
+  const currentLocale = params?.locale as string || 'en';
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+
+  // Currency symbol based on locale
+  const currencySymbol = currentLocale === 'fa' ? 'ریال' : '$';
 
   // Get features arrays from translations using raw()
   const freeFeatures = t.raw('pricing.free.features') as string[];
   const proFeatures = t.raw('pricing.pro.features') as string[];
   const enterpriseFeatures = t.raw('pricing.enterprise.features') as string[];
+
+  // Calculate yearly price with 20% discount
+  const calculateYearlyPrice = (monthlyPrice: string): string => {
+    const price = parseFloat(monthlyPrice);
+    if (isNaN(price)) return monthlyPrice;
+    return (price * 0.8).toFixed(0); // 20% discount
+  };
 
   const plans = [
     {
@@ -30,7 +43,10 @@ export default function PricingPage() {
     {
       id: 'pro',
       name: t('pricing.pro.name'),
-      price: { monthly: t('pricing.pro.price'), yearly: t('pricing.pro.price') },
+      price: {
+        monthly: t('pricing.pro.price'),
+        yearly: calculateYearlyPrice(t('pricing.pro.price'))
+      },
       description: t('pricing.pro.description'),
       features: proFeatures,
       popular: true,
@@ -52,13 +68,13 @@ export default function PricingPage() {
       <Header />
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 bg-gradient-to-b from-blue-50 to-white dark:from-gray-800 dark:to-gray-900">
+      <section className="pt-32 pb-20 bg-gradient-to-b from-blue-600 to-purple-600 dark:from-gray-800 dark:to-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <FadeIn>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
               {t('pricing.title')}
             </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
+            <p className="text-xl text-white mb-8 max-w-3xl mx-auto">
               {t('pricing.subtitle')}
             </p>
           </FadeIn>
@@ -88,7 +104,7 @@ export default function PricingPage() {
               </button>
             </div>
             {billingPeriod === 'yearly' && (
-              <p className="mt-4 text-green-600 dark:text-green-400 font-semibold">
+              <p className="mt-4 text-white font-semibold">
                 {t('pricing.save')}
               </p>
             )}
@@ -129,12 +145,28 @@ export default function PricingPage() {
                           </span>
                         ) : (
                           <>
-                            <span className="text-4xl font-bold text-gray-900 dark:text-white">
-                              ${plan.price[billingPeriod]}
-                            </span>
-                            <span className="text-gray-600 dark:text-gray-400">
-                              {t('pricing.perUser')}
-                            </span>
+                            {currentLocale === 'fa' ? (
+                              <>
+                                <span className="text-4xl font-bold text-gray-900 dark:text-white">
+                                  {plan.price[billingPeriod]}
+                                </span>
+                                <span className="text-gray-600 dark:text-gray-400">
+                                  {currencySymbol}
+                                </span>
+                                <span className="text-gray-600 dark:text-gray-400">
+                                  {t('pricing.perUser')}
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <span className="text-4xl font-bold text-gray-900 dark:text-white">
+                                  {currencySymbol}{plan.price[billingPeriod]}
+                                </span>
+                                <span className="text-gray-600 dark:text-gray-400">
+                                  {t('pricing.perUser')}
+                                </span>
+                              </>
+                            )}
                           </>
                         )}
                       </div>

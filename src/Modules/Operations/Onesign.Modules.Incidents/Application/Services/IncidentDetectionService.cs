@@ -226,13 +226,14 @@ public class IncidentDetectionService : IIncidentDetectionService
             .FirstOrDefault();
 
         // Determine which pattern is more severe
-        var primaryGroup = (ipGroups?.Count ?? 0) > (userGroups?.Count ?? 0) ? ipGroups : userGroups;
+        var ipCount = ipGroups?.Count ?? 0;
+        var userCount = userGroups?.Count ?? 0;
 
-        if (primaryGroup == null)
+        if (ipCount == 0 && userCount == 0)
             return null;
 
-        var severity = primaryGroup.Count >= 20 ? IncidentSeverity.Critical :
-                      primaryGroup.Count >= 10 ? IncidentSeverity.High : IncidentSeverity.Medium;
+        var severity = Math.Max(ipCount, userCount) >= 20 ? IncidentSeverity.Critical :
+                      Math.Max(ipCount, userCount) >= 10 ? IncidentSeverity.High : IncidentSeverity.Medium;
 
         var affectedUsers = failedLoginEvents
             .Where(e => e.ActorId.HasValue)
@@ -249,11 +250,11 @@ public class IncidentDetectionService : IIncidentDetectionService
             Id = Guid.NewGuid(),
             TenantId = tenantId,
             Title = ipGroups != null
-                ? $"Brute Force Attack from IP {ipGroups.IpAddress} - {primaryGroup.Count} Failed Attempts"
-                : $"Brute Force Attack on User Account - {primaryGroup.Count} Failed Attempts",
+                ? $"Brute Force Attack from IP {ipGroups.IpAddress} - {ipGroups.Count} Failed Attempts"
+                : $"Brute Force Attack on User Account - {userGroups?.Count ?? 0} Failed Attempts",
             Description = ipGroups != null
-                ? $"Multiple failed login attempts detected from IP address {ipGroups.IpAddress}. {primaryGroup.Count} failed attempts detected between {from:yyyy-MM-dd HH:mm} and {to:yyyy-MM-dd HH:mm}. This pattern indicates a potential brute force attack attempting to compromise user accounts."
-                : $"Multiple failed login attempts detected on user account. {primaryGroup.Count} failed attempts detected between {from:yyyy-MM-dd HH:mm} and {to:yyyy-MM-dd HH:mm}. This pattern indicates a potential brute force attack.",
+                ? $"Multiple failed login attempts detected from IP address {ipGroups.IpAddress}. {ipGroups.Count} failed attempts detected between {from:yyyy-MM-dd HH:mm} and {to:yyyy-MM-dd HH:mm}. This pattern indicates a potential brute force attack attempting to compromise user accounts."
+                : $"Multiple failed login attempts detected on user account. {userGroups?.Count ?? 0} failed attempts detected between {from:yyyy-MM-dd HH:mm} and {to:yyyy-MM-dd HH:mm}. This pattern indicates a potential brute force attack.",
             Category = IncidentCategory.BruteForceAttack,
             Severity = severity,
             Status = IncidentStatus.New,
@@ -267,7 +268,8 @@ public class IncidentDetectionService : IIncidentDetectionService
         await _incidentRepository.AddAsync(incident, ct);
 
         // Create incident events for the detected audit events
-        var incidentEvents = primaryGroup.Events.Select(ae => new IncidentEvent
+        var relevantEvents = ipCount > userCount ? ipGroups?.Events : userGroups?.Events;
+        var incidentEvents = relevantEvents?.Select(ae => new IncidentEvent
         {
             Id = Guid.NewGuid(),
             IncidentId = incident.Id,
@@ -284,13 +286,13 @@ public class IncidentDetectionService : IIncidentDetectionService
             SourceModule = "AuditModule"
         }).ToList();
 
-        if (incidentEvents.Any())
+        if (incidentEvents != null && incidentEvents.Any())
         {
             await _eventRepository.AddManyAsync(incidentEvents, ct);
         }
 
         _logger.LogWarning("Detected brute force attack in tenant {TenantId}: {Count} failed login attempts. Incident {IncidentId} created with severity {Severity}",
-            tenantId, primaryGroup.Count, incident.Id, severity);
+            tenantId, Math.Max(ipCount, userCount), incident.Id, severity);
 
         return incident;
     }

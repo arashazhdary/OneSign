@@ -1,8 +1,12 @@
 @import "tailwindcss";
+@import "./fonts/iranyekan.css";
 
 :root {
+  /* Light theme - bright background, dark text */
   --background: #ffffff;
-  --foreground: #111827;
+  --background-secondary: #f8fafc;
+  --background-tertiary: #f1f5f9;
+  --foreground: #0f172a;
   --primary: #3b82f6;
   --secondary: #8b5cf6;
   --accent: #ec4899;
@@ -10,11 +14,11 @@
   --warning: #f59e0b;
   --error: #ef4444;
   --info: #06b6d4;
-  /* Enhanced text colors for better contrast */
-  --text-primary: #111827;
-  --text-secondary: #374151;
-  --text-tertiary: #4b5563;
-  --text-muted: #6b7280;
+  /* Dark text for light theme */
+  --text-primary: #0f172a;
+  --text-secondary: #1e293b;
+  --text-tertiary: #475569;
+  --text-muted: #64748b;
 }
 
 @theme inline {
@@ -24,11 +28,17 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0f172a;
-    --foreground: #f1f5f9;
-  }
+.dark {
+  /* Dark theme - dark background, light text */
+  --background: #0f172a;
+  --background-secondary: #1e293b;
+  --background-tertiary: #334155;
+  --foreground: #f8fafc;
+  /* Light text for dark theme */
+  --text-primary: #f8fafc;
+  --text-secondary: #e2e8f0;
+  --text-tertiary: #cbd5e1;
+  --text-muted: #94a3b8;
 }
 
 body {
@@ -39,22 +49,78 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Ensure all text has proper contrast */
-p, span, div, h1, h2, h3, h4, h5, h6, label, td, th {
+/* Apply IRANYekanX font for Persian/Farsi content */
+body[dir="rtl"],
+html[lang="fa"] body,
+html[lang="fa-IR"] body {
+  font-family: 'IRANYekanX', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Ensure all text has proper contrast in both themes */
+p, span, div, h1, h2, h3, h4, h5, h6, label, td, th { 
+  text-decoration-color: inherit;
+}
+
+/* Light theme text colors */
+.text-gray-900 {
   color: var(--text-primary);
 }
 
-/* Override light gray text classes for better readability */
-.text-gray-500 {
-  color: var(--text-secondary) !important;
+.text-gray-700 {
+  color: #fdfdfd;;
 }
 
 .text-gray-600 {
-  color: var(--text-secondary) !important;
+  color: var(--text-tertiary);
 }
 
-.text-gray-400 {
-  color: var(--text-tertiary) !important;
+.text-gray-500 {
+  color: var(--text-muted);
+}
+
+/* Dark theme overrides */
+.dark .text-gray-900,
+.dark .dark\:text-white {
+  color: var(--text-primary);
+}
+
+.dark .text-gray-700,
+.dark .dark\:text-gray-300 {
+  color: var(--text-secondary);
+}
+
+.dark .text-gray-600,
+.dark .dark\:text-gray-400 {
+  color: var(--text-tertiary);
+}
+
+.dark .text-gray-500 {
+  color: var(--text-muted);
+}
+
+/* Background colors for both themes */
+.bg-white {
+  background-color: var(--background);
+}
+
+.bg-gray-50 {
+  background-color: var(--background-secondary);
+}
+
+.bg-gray-100 {
+  background-color: var(--background-tertiary);
+}
+
+.dark .dark\:bg-gray-900 {
+  background-color: var(--background);
+}
+
+.dark .dark\:bg-gray-800 {
+  background-color: var(--background-secondary);
+}
+
+.dark .dark\:bg-gray-700 {
+  background-color: var(--background-tertiary);
 }
 
 /* Custom Animations */
@@ -120,7 +186,7 @@ p, span, div, h1, h2, h3, h4, h5, h6, label, td, th {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--background-tertiary);
   border-radius: 10px;
 }
 
@@ -132,6 +198,10 @@ p, span, div, h1, h2, h3, h4, h5, h6, label, td, th {
 
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #2563eb, #7c3aed);
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: var(--background-tertiary);
 }
 
 /* Focus visible styles for accessibility */
@@ -146,6 +216,11 @@ p, span, div, h1, h2, h3, h4, h5, h6, label, td, th {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Text gradient utilities */
@@ -171,8 +246,16 @@ p, span, div, h1, h2, h3, h4, h5, h6, label, td, th {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
+.dark .card-shadow {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+
 .card-shadow-lg {
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.dark .card-shadow-lg {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
 }
 
 /* Enhanced contrast utilities */
@@ -190,24 +273,46 @@ p, span, div, h1, h2, h3, h4, h5, h6, label, td, th {
 .bg-gradient-to-br p,
 .bg-gradient-to-br span,
 .bg-gradient-to-br div:not([class*="bg-white"]):not([class*="bg-gray-100"]) {
-  color: var(--text-primary);
+
 }
 
 /* Table improvements */
 table th {
-  color: var(--text-primary) !important;
+  color: var(--text-primary);
   font-weight: 600;
 }
 
 table td {
-  color: var(--text-secondary) !important;
+  color: var(--text-secondary);
 }
 
 /* Card content improvements */
 .bg-white p,
 .bg-white span,
 .bg-white div:not([class*="text-"]) {
-  color: var(--text-primary);
+}
+
+.dark .dark\:bg-gray-900 p,
+.dark .dark\:bg-gray-900 span,
+.dark .dark\:bg-gray-900 div:not([class*="text-"]) {
+  color: inherit;
+}
+
+/* Border colors */
+.border-gray-200 {
+  border-color: #e5e7eb;
+}
+
+.dark .dark\:border-gray-700 {
+  border-color: #374151;
+}
+
+.border-gray-300 {
+  border-color: #d1d5db;
+}
+
+.dark .dark\:border-gray-600 {
+  border-color: #4b5563;
 }
 
 /* Landing Page Styles */
@@ -215,6 +320,22 @@ table td {
 /* Smooth scroll behavior */
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 64px; /* Height of fixed header */
+}
+
+/* Ensure content doesn't go under fixed header */
+body {
+  padding-top: 0;
+}
+
+/* Hero sections need extra top padding to avoid header overlap */
+section[class*="pt-32"] {
+  padding-top: 8rem !important; /* 128px */
+}
+
+/* Alternative: use this class for sections that should start below header */
+.section-with-header {
+  padding-top: 8rem; /* 128px - includes header height of 64px */
 }
 
 /* RTL Support */
@@ -447,15 +568,17 @@ html {
   .backdrop-blur-lg {
     background-color: rgba(255, 255, 255, 0.95);
   }
+
+  .dark .backdrop-blur-lg {
+    background-color: rgba(15, 23, 42, 0.95);
+  }
 }
 
 /* Dark mode support for landing page */
-@media (prefers-color-scheme: dark) {
-  .landing-dark {
-    --landing-bg: #0f172a;
-    --landing-text: #f1f5f9;
-    --landing-muted: #94a3b8;
-  }
+.dark .landing-dark {
+  --landing-bg: #0f172a;
+  --landing-text: #f1f5f9;
+  --landing-muted: #94a3b8;
 }
 
 /* Responsive improvements */

@@ -274,7 +274,7 @@ export function Search({ onClose }: SearchProps) {
                     <button
                       key={result.id}
                       onClick={() => handleSelectResult(result)}
-                      className={`w-full flex items-start gap-4 p-4 text-left transition-colors ${
+                      className={`w-full flex items-start gap-4 p-4 text-left rtl:text-right transition-colors ${
                         index === selectedIndex
                           ? 'bg-gray-100 dark:bg-gray-700'
                           : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'

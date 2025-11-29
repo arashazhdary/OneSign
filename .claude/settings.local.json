@@ -25,7 +25,20 @@
       "Bash(dotnet tool update:*)",
       "Bash(timeout 300 dotnet ef migrations add:*)",
       "Bash(python migrate-pages.py:*)",
-      "Bash(where:*)"
+      "Bash(where:*)",
+      "Bash(Select-String -Pattern \"IDataResidencyValidator\" -Context 2)",
+      "Bash(nul)",
+      "Bash(Select-String \"page.tsx\")",
+      "Bash(findstr:*)",
+      "Bash(Select-String -Pattern \"Error|error\")",
+      "Bash(Select-Object -Last 20)",
+      "Bash(npm run export:*)",
+      "Bash(Select-String -Pattern \"Error|error|successfully|Successfully|Collecting page|Generating static|Export complete\")",
+      "Bash(Select-Object -Last 30)",
+      "Bash(npm run dev:*)",
+      "Bash(netstat:*)",
+      "Bash(taskkill /F /PID 31784)",
+      "Bash(taskkill //F //PID 31784)"
     ],
     "deny": [],
     "ask": []

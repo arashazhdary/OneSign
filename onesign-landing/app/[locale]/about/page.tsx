@@ -10,20 +10,16 @@ export default function AboutPage() {
   const t = useTranslations('aboutPage');
   const team = [
     {
-      key: 'sarah',
-      avatar: '👩‍💼',
+      key: 'arash',
+      avatar: '👨‍💼',
     },
     {
-      key: 'michael',
+      key: 'hassan',
       avatar: '👨‍💻',
     },
     {
-      key: 'emily',
-      avatar: '👩‍🎨',
-    },
-    {
-      key: 'david',
-      avatar: '👨‍🔬',
+      key: 'fereshte',
+      avatar: '👩‍💼',
     },
   ];
 
@@ -61,14 +57,14 @@ export default function AboutPage() {
       <Header />
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 bg-gradient-to-b from-blue-50 to-white dark:from-gray-800 dark:to-gray-900">
+      <section className="pt-32 pb-20 bg-gradient-to-b from-blue-600 to-purple-600 dark:from-gray-800 dark:to-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeIn>
             <div className="text-center mb-12">
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
                 {t('hero.title')}
               </h1>
-              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              <p className="text-xl text-white max-w-3xl mx-auto">
                 {t('hero.subtitle')}
               </p>
             </div>
@@ -144,11 +140,11 @@ export default function AboutPage() {
               </p>
             </div>
           </FadeIn>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto justify-items-center">
             {team.map((member, index) => (
               <SlideUp key={index} delay={index * 0.1}>
-                <Card hover className="text-center">
-                  <CardContent className="pt-8">
+                <Card hover className="text-center h-full flex flex-col">
+                  <CardContent className="pt-8 flex flex-col flex-1">
                     <div className="text-6xl mb-4">{member.avatar}</div>
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
                       {t(`team.members.${member.key}.name`)}
@@ -156,7 +152,7 @@ export default function AboutPage() {
                     <p className="text-blue-600 dark:text-blue-400 font-medium mb-3">
                       {t(`team.members.${member.key}.role`)}
                     </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 flex-1">
                       {t(`team.members.${member.key}.bio`)}
                     </p>
                   </CardContent>
@@ -167,8 +163,8 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Milestones */}
-      <section className="py-20 bg-gray-50 dark:bg-gray-800">
+      {/* Milestones - Hidden for now */}
+      {/* <section className="py-20 bg-gray-50 dark:bg-gray-800">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeIn>
             <div className="text-center mb-12">
@@ -198,7 +194,7 @@ export default function AboutPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600">

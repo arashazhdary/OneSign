@@ -81,7 +81,7 @@ export function generateOrganizationSchema() {
     name: 'OneSign',
     description: 'Enterprise Identity & Access Management Platform',
     url: process.env.NEXT_PUBLIC_APP_URL,
-    logo: `${process.env.NEXT_PUBLIC_APP_URL}/onesign-logo.svg`,
+    logo: `${process.env.NEXT_PUBLIC_APP_URL}/onesign-logo.png`,
     sameAs: [
       // Add social media URLs
     ],

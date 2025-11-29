@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Onesign.Modules.Identity.Domain.Repositories;
 using Onesign.Modules.Security.Domain.Entities;
 using Onesign.Modules.Security.Domain.Enums;
 using Onesign.Modules.Security.Domain.Repositories;
@@ -254,6 +253,7 @@ public class MfaChallengeService : IMfaChallengeService
                 globalUser.Email,
                 subject,
                 body,
+                false,
                 cancellationToken);
 
             if (sent)

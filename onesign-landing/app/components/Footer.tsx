@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
 export function Footer() {
@@ -85,8 +86,15 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8 mb-8">
           {/* Logo and Description */}
           <div className="col-span-2">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="text-3xl">📝</div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="relative w-10 h-10">
+                <Image
+                  src="/onesign-logo.png"
+                  alt="OneSign Logo"
+                  fill
+                  className="object-contain"
+                />
+              </div>
               <span className="text-2xl font-bold text-white">OneSign</span>
             </div>
             <p className="text-sm text-gray-400 mb-4">

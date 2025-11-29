@@ -135,12 +135,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-20 bg-white dark:bg-gray-900">
+      {/* Testimonials Section - Hidden per user request */}
+      {/* <section className="py-20 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <Testimonials />
         </div>
-      </section>
+      </section> */}
 
       {/* FAQ Section */}
       <section className="py-20 bg-gray-50 dark:bg-gray-800">

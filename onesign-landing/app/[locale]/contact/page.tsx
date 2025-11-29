@@ -22,7 +22,7 @@ export default function ContactPage() {
       title: t('methods.phone.title'),
       description: t('methods.phone.description'),
       value: t('methods.phone.value'),
-      link: 'tel:+15551234567',
+      link: 'tel:+989129303418',
     },
     {
       icon: '💬',
@@ -36,7 +36,7 @@ export default function ContactPage() {
       title: t('methods.office.title'),
       description: t('methods.office.description'),
       value: t('methods.office.value'),
-      link: 'https://maps.google.com',
+      link: 'https://www.google.com/maps?q=35.74991294920013,51.41761160062508',
     },
   ];
 
@@ -45,13 +45,13 @@ export default function ContactPage() {
       <Header />
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 bg-gradient-to-b from-blue-50 to-white dark:from-gray-800 dark:to-gray-900">
+      <section className="pt-32 pb-20 bg-gradient-to-b from-blue-600 to-purple-600 dark:from-gray-800 dark:to-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <FadeIn>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
               {t('hero.title')}
             </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+            <p className="text-xl text-white max-w-3xl mx-auto">
               {t('hero.subtitle')}
             </p>
           </FadeIn>
@@ -141,7 +141,7 @@ export default function ContactPage() {
             <SlideUp delay={0.3}>
               <div className="bg-gray-200 dark:bg-gray-700 rounded-2xl h-96 overflow-hidden">
                 <iframe
-                  src="https://www.openstreetmap.org/export/embed.html?bbox=-122.4194%2C37.7749%2C-122.3894%2C37.7949&amp;layer=mapnik&amp;marker=37.7849%2C-122.4044"
+                  src="https://www.openstreetmap.org/export/embed.html?bbox=51.407611%2C35.739913%2C51.427611%2C35.759913&amp;layer=mapnik&amp;marker=35.74991294920013%2C51.41761160062508"
                   className="w-full h-full border-0"
                   loading="lazy"
                   title={t('office.map.title')}

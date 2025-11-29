@@ -156,7 +156,7 @@ public class DataResidencyEnforcementWorker : BackgroundService
             // 4. Create incident tickets
 
             _logger.LogWarning("Automated remediation would initiate data migration for tenant {TenantId} to primary region {RegionId}",
-                violation.TenantId, residency.PrimaryRegionId);
+                violation.TenantId, residency.DataRegionId);
 
             // Simulate remediation tracking
             await Task.CompletedTask;

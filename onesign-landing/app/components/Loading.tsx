@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 
 // Skeleton loading components
 export function Skeleton({ className = '' }: { className?: string }) {
@@ -92,8 +93,16 @@ export function ContentLoader() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
       <div className="text-center">
-        <div className="text-6xl mb-4">📝</div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+        <div className="relative w-24 h-24 mx-auto mb-6 animate-pulse">
+          <Image
+            src="/onesign-logo.png"
+            alt="OneSign Logo"
+            fill
+            className="object-contain"
+            priority
+          />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
           OneSign
         </h2>
         <Spinner size="md" />

@@ -1,6 +1,0 @@
-@Onesign.Api_HostAddress = http://localhost:5071
-
-GET {{Onesign.Api_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { ThemeToggle } from './ThemeToggle';
@@ -48,8 +49,16 @@ export function Header() {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href={`/${currentLocale}/landing`} className="flex items-center gap-2 group">
-            <div className="text-3xl transition-transform group-hover:scale-110">📝</div>
+          <Link href={`/${currentLocale}/landing`} className="flex items-center gap-3 group">
+            <div className="relative w-10 h-10 transition-transform group-hover:scale-110">
+              <Image
+                src="/onesign-logo.png"
+                alt="OneSign Logo"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
             <span className="text-2xl font-bold text-gray-900 dark:text-white">
               OneSign
             </span>
@@ -129,51 +138,108 @@ export function Header() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu Overlay */}
         <AnimatePresence>
           {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className="md:hidden overflow-hidden"
-            >
-              <div className="py-4 space-y-3 border-t border-gray-200 dark:border-gray-700">
-                {navigation.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 bg-black/50 md:hidden z-40"
+                onClick={() => setIsMobileMenuOpen(false)}
+              />
+
+              {/* Slide-in Menu */}
+              <motion.div
+                initial={{ x: currentLocale === 'fa' ? '100%' : '-100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: currentLocale === 'fa' ? '100%' : '-100%' }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className={`fixed top-0 ${currentLocale === 'fa' ? 'right-0' : 'left-0'} h-full w-80 bg-white dark:bg-gray-900 shadow-2xl md:hidden z-50 overflow-y-auto`}
+              >
+                <div className="p-6">
+                  {/* Close Button */}
+                  <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                      <div className="relative w-10 h-10">
+                        <Image
+                          src="/onesign-logo.png"
+                          alt="OneSign Logo"
+                          fill
+                          className="object-contain"
+                        />
+                      </div>
+                      <span className="text-xl font-bold text-gray-900 dark:text-white">
+                        OneSign
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      aria-label={tCommon('aria.close')}
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* Navigation Links */}
+                  <nav className="space-y-2">
+                    {navigation.map((item) => (
+                      <Link
+                        key={item.name}
+                        href={item.href}
+                        className="block px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors font-medium"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        {item.name}
+                      </Link>
+                    ))}
+                  </nav>
+
+                  {/* CTA Button */}
+                  <div className="mt-6">
+                    <Button variant="primary" className="w-full" size="lg">
+                      {t('nav.getStarted')}
+                    </Button>
+                  </div>
+
+                  {/* Language Switcher */}
+                  <button
+                    onClick={() => {
+                      toggleLocale();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="flex items-center gap-3 px-4 py-3 w-full text-left rtl:text-right text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors mt-4"
                   >
-                    {item.name}
-                  </Link>
-                ))}
-                <div className="px-4 pt-2">
-                  <Button variant="primary" className="w-full">
-                    {t('nav.getStarted')}
-                  </Button>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
+                      />
+                    </svg>
+                    <span className="font-medium">{currentLocale === 'en' ? 'فارسی' : 'English'}</span>
+                  </button>
+
+                  {/* Theme Toggle */}
+                  <div className="mt-4 px-4 py-3 flex items-center justify-between bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Theme</span>
+                    <ThemeToggle />
+                  </div>
                 </div>
-                <button
-                  onClick={() => {
-                    toggleLocale();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="flex items-center gap-2 px-4 py-2 w-full text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
-                    />
-                  </svg>
-                  <span>{currentLocale === 'en' ? 'فارسی' : 'English'}</span>
-                </button>
-              </div>
-            </motion.div>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
       </nav>

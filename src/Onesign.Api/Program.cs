@@ -334,10 +334,19 @@ static void ConfigureSecurityServices(WebApplicationBuilder builder)
     // ریپازیتوری‌های ماژول هویت
     // مدیریت کاربران و نشست‌های ورود
     // =====================================================
-    builder.Services.AddScoped<IGlobalUserRepository>(sp =>
+    builder.Services.AddScoped<Onesign.Modules.Identity.Domain.Repositories.IGlobalUserRepository>(sp =>
         new GlobalUserRepository(sp.GetRequiredService<OnesignDbContext>()));
-    builder.Services.AddScoped<ITenantUserRepository>(sp =>
+    builder.Services.AddScoped<Onesign.Modules.Identity.Domain.Repositories.ITenantUserRepository>(sp =>
         new TenantUserRepository(sp.GetRequiredService<OnesignDbContext>()));
+
+    // Adapters for Security module
+    builder.Services.AddScoped<Onesign.Modules.Security.Domain.Repositories.IGlobalUserRepository>(sp =>
+        new Onesign.Api.Adapters.GlobalUserRepositoryAdapter(
+            sp.GetRequiredService<Onesign.Modules.Identity.Domain.Repositories.IGlobalUserRepository>()));
+    builder.Services.AddScoped<Onesign.Modules.Security.Domain.Repositories.ITenantUserRepository>(sp =>
+        new Onesign.Api.Adapters.TenantUserRepositoryAdapter(
+            sp.GetRequiredService<Onesign.Modules.Identity.Domain.Repositories.ITenantUserRepository>()));
+
     builder.Services.AddScoped<IPasswordResetTokenRepository>(sp =>
         new PasswordResetTokenRepository(sp.GetRequiredService<OnesignDbContext>()));
     builder.Services.AddScoped<IUserLoginSessionRepository>(sp =>

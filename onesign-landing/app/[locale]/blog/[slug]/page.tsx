@@ -1,7 +1,3 @@
-'use client';
-
-import { use } from 'react';
-import { useLocale } from 'next-intl';
 import { Header } from '@/app/components/Header';
 import { Footer } from '@/app/components/Footer';
 import { FadeIn } from '@/app/components/animations';
@@ -15,9 +11,27 @@ interface BlogPostPageProps {
   params: Promise<{ slug: string; locale: string }>;
 }
 
-export default function BlogPostPage({ params }: BlogPostPageProps) {
-  const { slug } = use(params);
-  const locale = useLocale();
+// Generate static params for blog posts
+export async function generateStaticParams() {
+  // Mock blog post slugs
+  const slugs = [
+    'introducing-onesign-next-generation-iam',
+    'security-best-practices-2024',
+    'zero-trust-architecture-explained',
+  ];
+
+  const locales = ['en', 'fa'];
+
+  return locales.flatMap(locale =>
+    slugs.map(slug => ({
+      locale,
+      slug,
+    }))
+  );
+}
+
+export default async function BlogPostPage({ params }: BlogPostPageProps) {
+  const { slug, locale } = await params;
 
   // Mock blog post data
   const post = {
@@ -25,10 +39,10 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
     title: 'Introducing OneSign: Next Generation Identity & Access Management',
     excerpt: 'Discover how OneSign revolutionizes digital identity management with cutting-edge technology and unparalleled security.',
     author: {
-      name: 'Sarah Johnson',
+      name: 'Fereshte Jafaripour',
       avatar: '👩‍💼',
-      role: 'Product Manager',
-      bio: 'Product leader with 10+ years of experience in enterprise software and security solutions.',
+      role: 'Head of Product',
+      bio: 'Product strategist focused on delivering exceptional user experiences and innovative solutions.',
     },
     publishedAt: '2024-11-15',
     readTime: 5,

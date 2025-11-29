@@ -181,10 +181,10 @@ public class NotificationDeliveryWorker : BackgroundService
                 item.Body,
                 cancellationToken: cancellationToken);
         }
-        else if (!string.IsNullOrEmpty(item.RecipientUserId))
+        else if (item.RecipientUserId.HasValue)
         {
             await pushService.SendPushNotificationAsync(
-                item.RecipientUserId,
+                item.RecipientUserId.Value.ToString(),
                 item.Subject ?? string.Empty,
                 item.Body,
                 cancellationToken: cancellationToken);

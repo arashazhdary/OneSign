@@ -33,7 +33,7 @@ export function FAQ() {
           >
             <button
               onClick={() => toggleQuestion(index)}
-              className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              className="w-full px-6 py-4 flex items-center justify-between text-left rtl:text-right hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               <span className="font-semibold text-gray-900 dark:text-white pr-4">
                 {t(`faq.${key}.question`)}

@@ -682,8 +682,8 @@
       },
       "phone": {
         "title": "Phone",
-        "description": "Mon-Fri from 9am to 6pm",
-        "value": "+1 (555) 123-4567"
+        "description": "Sat-Wed from 9am to 6pm",
+        "value": "+98 912 930 3418"
       },
       "liveChat": {
         "title": "Live Chat",
@@ -693,7 +693,7 @@
       "office": {
         "title": "Office",
         "description": "Visit our headquarters",
-        "value": "123 Business St, San Francisco, CA 94105"
+        "value": "Tehran, Nelson Mandela Street"
       }
     },
     "form": {
@@ -702,19 +702,19 @@
     },
     "office": {
       "title": "Visit Our Office",
-      "description": "We'd love to meet you in person! Our headquarters is located in the heart of San Francisco. Stop by for a coffee and a demo.",
+      "description": "We'd love to meet you in person! Our headquarters is located in Tehran. Stop by for a coffee and a demo.",
       "hours": {
         "title": "Business Hours",
-        "weekdays": "Monday - Friday: 9:00 AM - 6:00 PM",
-        "weekends": "Saturday - Sunday: Closed"
+        "weekdays": "Saturday - Wednesday: 9:00 AM - 6:00 PM",
+        "weekends": "Thursday - Friday: Closed"
       },
       "transit": {
         "title": "Getting Here",
-        "description": "Easily accessible by BART, MUNI, and major bus lines. Street parking available."
+        "description": "Easily accessible by metro and city buses. Street parking available."
       },
       "map": {
         "title": "OneSign Office Location",
-        "ariaLabel": "Map showing OneSign office location in San Francisco"
+        "ariaLabel": "Map showing OneSign office location in Tehran"
       }
     }
   },
@@ -836,25 +836,20 @@
       "title": "Meet Our Leadership",
       "subtitle": "The team behind OneSign",
       "members": {
-        "sarah": {
-          "name": "Sarah Johnson",
+        "arash": {
+          "name": "Arash Azhdari",
           "role": "CEO & Co-Founder",
-          "bio": "Former VP at DocuSign with 15+ years in digital transformation."
+          "bio": "Experienced executive leader with extensive background in digital transformation and enterprise solutions."
         },
-        "michael": {
-          "name": "Michael Chen",
+        "hassan": {
+          "name": "Hassan Azhdari",
           "role": "CTO & Co-Founder",
-          "bio": "Ex-Google engineer specializing in security and scalability."
+          "bio": "Technology leader with deep expertise in system architecture, security, and scalable solutions."
         },
-        "emily": {
-          "name": "Emily Rodriguez",
+        "fereshte": {
+          "name": "Fereshte Jafaripour",
           "role": "Head of Product",
-          "bio": "Product leader from Dropbox focused on user experience."
-        },
-        "david": {
-          "name": "David Kumar",
-          "role": "Head of Security",
-          "bio": "Cybersecurity expert with background in financial services."
+          "bio": "Product strategist focused on delivering exceptional user experiences and innovative solutions."
         }
       }
     },
@@ -971,8 +966,8 @@
       "content": "If you have questions about this privacy policy, please contact us at:",
       "contact": [
         "Email: privacy@onesign.com",
-        "Address: 123 Business St, San Francisco, CA 94105",
-        "Phone: +1 (555) 123-4567"
+        "Address: Tehran, Nelson Mandela Street",
+        "Phone: +98 912 930 3418"
       ]
     }
   },

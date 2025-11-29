@@ -61,6 +61,7 @@ public enum AuditEventType
     LoginFailed = 125,
     DataAnonymized = 126,
     DataDeleted = 127,
-    DataExported = 128
+    DataExported = 128,
+    DataModified = 129
 }
 

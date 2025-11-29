@@ -85,7 +85,7 @@ export function Newsletter() {
                   className="w-full px-4 py-3 rounded-lg border-2 border-transparent focus:border-white focus:outline-none text-gray-900"
                 />
                 {errors.email && (
-                  <p className="mt-2 text-sm text-red-200 text-left">{errors.email.message}</p>
+                  <p className="mt-2 text-sm text-red-200 text-left rtl:text-right">{errors.email.message}</p>
                 )}
               </div>
               <Button
@@ -93,7 +93,7 @@ export function Newsletter() {
                 variant="secondary"
                 size="lg"
                 loading={isSubmitting}
-                className="bg-white text-blue-600 hover:bg-gray-100"
+                className="bg-transparent text-white border-2 border-white/50 hover:bg-white/10 hover:border-white transition-colors"
               >
                 {t('footer.subscribe')}
               </Button>

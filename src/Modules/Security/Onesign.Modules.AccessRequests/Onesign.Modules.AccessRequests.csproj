@@ -11,5 +11,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Onesign.Shared\Onesign.Shared.csproj" />
+    <ProjectReference Include="..\Onesign.Modules.PrivilegedAccess\Onesign.Modules.PrivilegedAccess.csproj" />
   </ItemGroup>
 </Project>
