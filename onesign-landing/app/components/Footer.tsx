@@ -3,36 +3,39 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import { useParams } from 'next/navigation';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
   const t = useTranslations('landing');
+  const params = useParams();
+  const currentLocale = params?.locale as string || 'en';
 
   const footerLinks = {
     product: [
-      { name: t('footer.features'), href: '/features' },
-      { name: t('footer.pricing'), href: '/pricing' },
-      { name: t('footer.security'), href: '/security' },
-      { name: t('footer.integrations'), href: '/integrations' },
-      { name: t('footer.changelog'), href: '/changelog' },
+      { name: t('footer.features'), href: `/${currentLocale}/features` },
+      { name: t('footer.pricing'), href: `/${currentLocale}/pricing` },
+      { name: t('footer.security'), href: `/${currentLocale}/security` },
+      { name: t('footer.integrations'), href: `/${currentLocale}/integrations` },
+      { name: t('footer.changelog'), href: `/${currentLocale}/changelog` },
     ],
     company: [
-      { name: t('footer.about'), href: '/about' },
-      { name: t('footer.blog'), href: '/blog' },
-      { name: t('footer.careers'), href: '/careers' },
-      { name: t('footer.contact'), href: '/contact' },
+      { name: t('footer.about'), href: `/${currentLocale}/about` },
+      { name: t('footer.blog'), href: `/${currentLocale}/blog` },
+      { name: t('footer.careers'), href: `/${currentLocale}/careers` },
+      { name: t('footer.contact'), href: `/${currentLocale}/contact` },
     ],
     resources: [
-      { name: t('footer.documentation'), href: '/docs' },
-      { name: t('footer.apiReference'), href: '/api' },
-      { name: t('footer.guides'), href: '/guides' },
-      { name: t('footer.community'), href: '/community' },
+      { name: t('footer.documentation'), href: `/${currentLocale}/docs` },
+      { name: t('footer.apiReference'), href: `/${currentLocale}/api` },
+      { name: t('footer.guides'), href: `/${currentLocale}/guides` },
+      { name: t('footer.community'), href: `/${currentLocale}/community` },
     ],
     legal: [
-      { name: t('footer.privacy'), href: '/privacy' },
-      { name: t('footer.terms'), href: '/terms' },
-      { name: t('footer.security'), href: '/security' },
-      { name: t('footer.compliance'), href: '/compliance' },
+      { name: t('footer.privacy'), href: `/${currentLocale}/privacy` },
+      { name: t('footer.terms'), href: `/${currentLocale}/terms` },
+      { name: t('footer.security'), href: `/${currentLocale}/security` },
+      { name: t('footer.compliance'), href: `/${currentLocale}/compliance` },
     ],
   };
 

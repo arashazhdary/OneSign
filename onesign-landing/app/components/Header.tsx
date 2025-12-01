@@ -27,10 +27,10 @@ export function Header() {
   }, []);
 
   const navigation = [
-    { name: t('nav.features'), href: '/features' },
-    { name: t('nav.solutions'), href: '/solutions' },
-    { name: t('nav.pricing'), href: '/pricing' },
-    { name: t('nav.docs'), href: '/docs' },
+    { name: t('nav.features'), href: `/${currentLocale}/features` },
+    { name: t('nav.solutions'), href: `/${currentLocale}/solutions` },
+    { name: t('nav.pricing'), href: `/${currentLocale}/pricing` },
+    { name: t('nav.docs'), href: `/${currentLocale}/docs` },
   ];
 
   const toggleLocale = () => {

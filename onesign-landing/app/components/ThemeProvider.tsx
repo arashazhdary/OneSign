@@ -4,7 +4,8 @@ import { useEffect } from 'react';
 import { useThemeStore } from '@/app/stores';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const theme = useThemeStore((state) => state.theme);
+  // Force dark theme - ignore user's theme preference
+  const theme = 'dark';
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -12,15 +13,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // Remove previous theme classes
     root.classList.remove('light', 'dark');
 
-    if (theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light';
-      root.classList.add(systemTheme);
-    } else {
-      root.classList.add(theme);
-    }
-  }, [theme]);
+    // Always use dark theme
+    root.classList.add(theme);
+  }, []);
 
   return <>{children}</>;
 }

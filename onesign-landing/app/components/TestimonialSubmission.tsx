@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useParams } from 'next/navigation';
 import { Button, Card } from './ui';
 
 /**
@@ -22,6 +23,8 @@ interface FormData {
 
 export function TestimonialSubmission() {
   const t = useTranslations('testimonialSubmission');
+  const params = useParams();
+  const currentLocale = params?.locale as string || 'en';
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -250,11 +253,11 @@ export function TestimonialSubmission() {
             />
             <span className="text-sm text-gray-600 dark:text-gray-400">
               {t('form.consentText')}{' '}
-              <a href="/en/terms" className="text-blue-600 dark:text-blue-400 hover:underline">
+              <a href={`/${currentLocale}/terms`} className="text-blue-600 dark:text-blue-400 hover:underline">
                 {t('form.terms')}
               </a>{' '}
               {t('form.and')}{' '}
-              <a href="/en/privacy" className="text-blue-600 dark:text-blue-400 hover:underline">
+              <a href={`/${currentLocale}/privacy`} className="text-blue-600 dark:text-blue-400 hover:underline">
                 {t('form.privacy')}
               </a>{' '}
               {t('form.required')}
