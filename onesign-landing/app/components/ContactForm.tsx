@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useParams } from 'next/navigation';
 import { Button } from '@/app/components/ui';
 
 // Create validation schema with translations
@@ -23,6 +24,8 @@ const createContactSchema = (t: (key: string) => string) =>
 
 export function ContactForm() {
   const t = useTranslations('landing.contact');
+  const params = useParams();
+  const currentLocale = params?.locale as string || 'en';
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
@@ -187,7 +190,7 @@ export function ContactForm() {
           />
           <label htmlFor="consent" className="ml-2 text-sm text-gray-700">
             {t('consent')}{' '}
-            <a href="/privacy" className="text-blue-600 hover:underline">
+            <a href={`/${currentLocale}/privacy`} className="text-blue-600 hover:underline">
               {t('privacyPolicy')}
             </a>{' '}
             {t('consentText')} {t('required')}

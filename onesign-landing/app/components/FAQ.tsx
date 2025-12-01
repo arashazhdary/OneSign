@@ -3,11 +3,14 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
+import { useParams } from 'next/navigation';
 
 const faqKeys = ['faq1', 'faq2', 'faq3', 'faq4', 'faq5'];
 
 export function FAQ() {
   const t = useTranslations('landing');
+  const params = useParams();
+  const currentLocale = params?.locale as string || 'en';
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const toggleQuestion = (index: number) => {
@@ -73,7 +76,7 @@ export function FAQ() {
           {t('faq.moreQuestions')}
         </p>
         <a
-          href="/contact"
+          href={`/${currentLocale}/contact`}
           className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
         >
           {t('faq.contactSupport')}

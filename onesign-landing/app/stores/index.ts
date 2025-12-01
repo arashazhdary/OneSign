@@ -1,17 +1,17 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-// Theme store
+// Theme store - Always dark theme
 interface ThemeState {
-  theme: 'light' | 'dark' | 'system';
-  setTheme: (theme: 'light' | 'dark' | 'system') => void;
+  theme: 'dark';
+  setTheme: (theme: 'dark') => void;
 }
 
 export const useThemeStore = create<ThemeState>()(
   persist(
     (set) => ({
       theme: 'dark',
-      setTheme: (theme) => set({ theme }),
+      setTheme: () => set({ theme: 'dark' }), // Always set to dark
     }),
     {
       name: 'theme-storage',

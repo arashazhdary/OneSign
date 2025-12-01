@@ -27,10 +27,10 @@ export function Header() {
   }, []);
 
   const navigation = [
-    { name: t('nav.features'), href: '/features' },
-    { name: t('nav.solutions'), href: '/solutions' },
-    { name: t('nav.pricing'), href: '/pricing' },
-    { name: t('nav.docs'), href: '/docs' },
+    { name: t('nav.features'), href: `/${currentLocale}/features` },
+    { name: t('nav.solutions'), href: `/${currentLocale}/solutions` },
+    { name: t('nav.pricing'), href: `/${currentLocale}/pricing` },
+    { name: t('nav.docs'), href: `/${currentLocale}/docs` },
   ];
 
   const toggleLocale = () => {
@@ -38,11 +38,24 @@ export function Header() {
     window.location.href = `/${newLocale}/landing`;
   };
 
+  // Dynamic classes based on scroll state for proper contrast
+  const headerTextClass = isScrolled
+    ? 'text-gray-900 dark:text-white'
+    : 'text-white';
+
+  const navLinkClass = isScrolled
+    ? 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'
+    : 'text-white/90 hover:text-white';
+
+  const iconButtonClass = isScrolled
+    ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+    : 'text-white hover:bg-white/20';
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? 'bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-md'
+          ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-lg border-b border-gray-200/50 dark:border-gray-700/50'
           : 'bg-transparent'
       }`}
     >
@@ -59,7 +72,7 @@ export function Header() {
                 priority
               />
             </div>
-            <span className="text-2xl font-bold text-gray-900 dark:text-white">
+            <span className={`text-2xl font-bold transition-colors duration-300 ${headerTextClass}`}>
               OneSign
             </span>
           </Link>
@@ -70,7 +83,7 @@ export function Header() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium"
+                className={`transition-colors font-medium ${navLinkClass}`}
               >
                 {item.name}
               </Link>
@@ -78,11 +91,11 @@ export function Header() {
           </div>
 
           {/* Right Side Actions */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {/* Language Switcher */}
             <button
               onClick={toggleLocale}
-              className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className={`hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${iconButtonClass}`}
               aria-label={tCommon('aria.toggleLanguage')}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,7 +110,7 @@ export function Header() {
             </button>
 
             {/* Theme Toggle */}
-            <ThemeToggle />
+            <ThemeToggle isScrolled={isScrolled} />
 
             {/* CTA Button */}
             <div className="hidden sm:block">
@@ -109,7 +122,7 @@ export function Header() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className={`md:hidden p-2 rounded-lg transition-colors ${iconButtonClass}`}
               aria-label={tCommon('aria.toggleMenu')}
             >
               <svg
@@ -148,7 +161,7 @@ export function Header() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="fixed inset-0 bg-black/50 md:hidden z-40"
+                className="fixed inset-0 bg-black/60 backdrop-blur-sm md:hidden z-40"
                 onClick={() => setIsMobileMenuOpen(false)}
               />
 
@@ -158,11 +171,11 @@ export function Header() {
                 animate={{ x: 0 }}
                 exit={{ x: currentLocale === 'fa' ? '100%' : '-100%' }}
                 transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                className={`fixed top-0 ${currentLocale === 'fa' ? 'right-0' : 'left-0'} h-full w-80 bg-white dark:bg-gray-900 shadow-2xl md:hidden z-50 overflow-y-auto`}
+                className={`fixed top-0 ${currentLocale === 'fa' ? 'right-0' : 'left-0'} h-full w-80 bg-white dark:bg-gray-900 shadow-2xl md:hidden z-50 overflow-y-auto border-r border-gray-200 dark:border-gray-700`}
               >
                 <div className="p-6">
                   {/* Close Button */}
-                  <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center justify-between mb-8 pb-4 border-b border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-3">
                       <div className="relative w-10 h-10">
                         <Image
@@ -178,7 +191,7 @@ export function Header() {
                     </div>
                     <button
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                      className="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-colors"
                       aria-label={tCommon('aria.close')}
                     >
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -193,12 +206,12 @@ export function Header() {
                   </div>
 
                   {/* Navigation Links */}
-                  <nav className="space-y-2">
+                  <nav className="space-y-1">
                     {navigation.map((item) => (
                       <Link
                         key={item.name}
                         href={item.href}
-                        className="block px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors font-medium"
+                        className="block px-4 py-3 text-gray-800 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition-colors font-medium"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         {item.name}
@@ -213,15 +226,18 @@ export function Header() {
                     </Button>
                   </div>
 
+                  {/* Divider */}
+                  <div className="my-6 border-t border-gray-200 dark:border-gray-700"></div>
+
                   {/* Language Switcher */}
                   <button
                     onClick={() => {
                       toggleLocale();
                       setIsMobileMenuOpen(false);
                     }}
-                    className="flex items-center gap-3 px-4 py-3 w-full text-left rtl:text-right text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors mt-4"
+                    className="flex items-center gap-3 px-4 py-3 w-full text-left rtl:text-right text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -233,8 +249,15 @@ export function Header() {
                   </button>
 
                   {/* Theme Toggle */}
-                  <div className="mt-4 px-4 py-3 flex items-center justify-between bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Theme</span>
+                  <div className="mt-3 px-4 py-3 flex items-center justify-between bg-gray-100 dark:bg-gray-800 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                      </svg>
+                      <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                        {tCommon('aria.toggleTheme')}
+                      </span>
+                    </div>
                     <ThemeToggle />
                   </div>
                 </div>

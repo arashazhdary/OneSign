@@ -25,7 +25,18 @@ export default function PricingPage() {
 
   // Calculate yearly price with 20% discount
   const calculateYearlyPrice = (monthlyPrice: string): string => {
-    const price = parseFloat(monthlyPrice);
+    // Clean the price string: remove Persian numbers and commas
+    let cleanPrice = monthlyPrice
+      .replace(/,/g, '') // Remove commas
+      .replace(/[۰-۹]/g, (match) => { // Convert Persian numerals to Arabic
+        const persianToArabic: { [key: string]: string } = {
+          '۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4',
+          '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9'
+        };
+        return persianToArabic[match] || match;
+      });
+
+    const price = parseFloat(cleanPrice);
     if (isNaN(price)) return monthlyPrice;
     return (price * 0.8).toFixed(0); // 20% discount
   };

@@ -2,11 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { useParams } from 'next/navigation';
 import { Button } from '@/app/components/ui';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function CookieConsent() {
   const t = useTranslations('cookie');
+  const params = useParams();
+  const currentLocale = params?.locale as string || 'en';
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -43,7 +46,7 @@ export function CookieConsent() {
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
                   {t('description')}{' '}
-                  <a href="/privacy" className="text-blue-600 hover:underline">
+                  <a href={`/${currentLocale}/privacy`} className="text-blue-600 hover:underline">
                     {t('learnMore')}
                   </a>
                 </p>

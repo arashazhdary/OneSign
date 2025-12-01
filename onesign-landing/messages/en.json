@@ -799,6 +799,121 @@
       "button": "Start Free Trial"
     }
   },
+  "solutionsPage": {
+    "hero": {
+      "title": "Integration Solutions",
+      "subtitle": "Connect any system to OneSign at any level. From enterprise applications to IoT devices, we've got you covered."
+    },
+    "byIndustry": {
+      "title": "Solutions by Industry",
+      "subtitle": "Tailored security solutions for your specific industry requirements",
+      "healthcare": {
+        "title": "Healthcare",
+        "description": "HIPAA-compliant identity management for hospitals, clinics, and healthcare providers. Secure patient data access with role-based controls.",
+        "features": ["HIPAA Compliance", "Patient Portal SSO", "Medical Device Auth", "Audit Trails"]
+      },
+      "finance": {
+        "title": "Financial Services",
+        "description": "Bank-grade security for financial institutions. PCI DSS compliance, fraud detection, and secure transaction authentication.",
+        "features": ["PCI DSS Ready", "Fraud Detection", "Transaction Auth", "Regulatory Reports"]
+      },
+      "government": {
+        "title": "Government & Public Sector",
+        "description": "Sovereign identity solutions for government agencies. Citizen authentication, employee access control, and classified data protection.",
+        "features": ["FedRAMP Ready", "Citizen Portal", "PIV/CAC Support", "Data Sovereignty"]
+      },
+      "education": {
+        "title": "Education",
+        "description": "Secure access for students, faculty, and staff. Learning management system integration and campus-wide SSO.",
+        "features": ["LMS Integration", "Student Portal", "Faculty Access", "FERPA Compliance"]
+      },
+      "retail": {
+        "title": "Retail & E-commerce",
+        "description": "Customer identity management for seamless shopping experiences. Social login, loyalty programs, and checkout security.",
+        "features": ["Social Login", "Customer 360", "Checkout Security", "Loyalty Integration"]
+      },
+      "manufacturing": {
+        "title": "Manufacturing",
+        "description": "Industrial IoT security and workforce identity management. Secure OT/IT convergence and supply chain access.",
+        "features": ["OT/IT Security", "IoT Device Auth", "Supply Chain", "Shop Floor Access"]
+      }
+    },
+    "byIntegration": {
+      "title": "Integration Methods",
+      "subtitle": "Multiple ways to connect your systems with OneSign",
+      "enterprise": {
+        "title": "Enterprise & ERP",
+        "description": "Deep integration with SAP, Oracle, Microsoft Dynamics, and other enterprise applications. Automated provisioning and unified access.",
+        "icon": "🏢"
+      },
+      "saas": {
+        "title": "SaaS & Cloud Apps",
+        "description": "One-click SSO integration with 500+ cloud applications. SCIM provisioning and just-in-time access management.",
+        "icon": "☁️"
+      },
+      "mobile": {
+        "title": "Mobile Applications",
+        "description": "Native SDKs for iOS and Android. Biometric authentication, push notifications, and offline access support.",
+        "icon": "📱"
+      },
+      "api": {
+        "title": "API-First Development",
+        "description": "RESTful APIs and GraphQL endpoints for custom integrations. Comprehensive documentation and developer tools.",
+        "icon": "🔌"
+      },
+      "legacy": {
+        "title": "Legacy Modernization",
+        "description": "Bridge legacy systems to modern identity standards. LDAP, Active Directory, and mainframe integration.",
+        "icon": "🔄"
+      },
+      "iot": {
+        "title": "IoT & Edge",
+        "description": "Lightweight protocols for IoT devices and edge computing. Certificate-based authentication and device management.",
+        "icon": "🌐"
+      }
+    },
+    "byUseCase": {
+      "title": "Use Cases",
+      "subtitle": "Real-world scenarios where OneSign excels",
+      "ciam": {
+        "title": "Customer Identity (CIAM)",
+        "description": "Deliver seamless customer experiences with social login, progressive profiling, and consent management. Build trust while respecting privacy.",
+        "benefits": ["Social Login", "Progressive Profiling", "Consent Management", "Privacy Controls"]
+      },
+      "workforce": {
+        "title": "Workforce IAM",
+        "description": "Secure your employees from day one to offboarding. Automated provisioning, self-service password reset, and adaptive MFA.",
+        "benefits": ["Auto Provisioning", "Self-Service", "Adaptive MFA", "Lifecycle Management"]
+      },
+      "b2b": {
+        "title": "B2B Partner Access",
+        "description": "Securely collaborate with partners, vendors, and contractors. Delegated administration and federated identity.",
+        "benefits": ["Federation", "Delegated Admin", "Partner Portal", "External Directory"]
+      },
+      "devops": {
+        "title": "DevOps Security",
+        "description": "Integrate security into your CI/CD pipeline. Secrets management, service accounts, and API key rotation.",
+        "benefits": ["Secrets Management", "Service Accounts", "API Key Rotation", "Pipeline Security"]
+      },
+      "ztna": {
+        "title": "Zero Trust Access",
+        "description": "Implement zero trust network access with continuous verification. Context-aware policies and micro-segmentation.",
+        "benefits": ["Continuous Auth", "Context-Aware", "Micro-Segmentation", "Risk Scoring"]
+      }
+    },
+    "cta": {
+      "title": "Ready to Get Started?",
+      "subtitle": "Our solutions team is ready to help you design the perfect integration for your needs.",
+      "button": "Contact Sales",
+      "demo": "Schedule Demo"
+    },
+    "stats": {
+      "integrations": "Pre-built Integrations",
+      "industries": "Industries Served",
+      "uptime": "Uptime SLA",
+      "support": "Support Response"
+    }
+  },
   "aboutPage": {
     "hero": {
       "title": "About OneSign",
