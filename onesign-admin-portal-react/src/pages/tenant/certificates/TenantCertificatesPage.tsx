@@ -1,7 +1,30 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { tenantService } from '@/lib/api/services/tenant.service';
+import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
+import {
+  Shield,
+  Plus,
+  RefreshCw,
+  Upload,
+  Eye,
+  Trash2,
+  AlertCircle,
+  CheckCircle,
+  TrendingUp,
+  TrendingDown,
+  Search,
+  Calendar,
+  Clock,
+  Award,
+  FileKey,
+  Lock,
+  AlertTriangle,
+  Download,
+  XCircle
+} from 'lucide-react';
+import { tenantService } from '@/lib/api/services/tenant.service';
+import Modal from '@/components/common/Modal';
 
 interface Certificate {
   id: string;
@@ -16,27 +39,93 @@ interface Certificate {
   fingerprint: string;
 }
 
+// Stat Card Component
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  subtitle?: string;
+  icon: React.ReactNode;
+  trend?: number;
+  trendLabel?: string;
+  color: 'blue' | 'green' | 'purple' | 'orange' | 'red' | 'indigo' | 'cyan' | 'yellow';
+  delay?: number;
+}
+
+const StatCard = ({ title, value, subtitle, icon, trend, trendLabel, color, delay = 0 }: StatCardProps) => {
+  const colorClasses = {
+    blue: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-200 dark:border-blue-800', glow: 'hover:shadow-blue-100 dark:hover:shadow-blue-900/20' },
+    green: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-600 dark:text-green-400', border: 'border-green-200 dark:border-green-800', glow: 'hover:shadow-green-100 dark:hover:shadow-green-900/20' },
+    purple: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-600 dark:text-purple-400', border: 'border-purple-200 dark:border-purple-800', glow: 'hover:shadow-purple-100 dark:hover:shadow-purple-900/20' },
+    orange: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-600 dark:text-orange-400', border: 'border-orange-200 dark:border-orange-800', glow: 'hover:shadow-orange-100 dark:hover:shadow-orange-900/20' },
+    red: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-600 dark:text-red-400', border: 'border-red-200 dark:border-red-800', glow: 'hover:shadow-red-100 dark:hover:shadow-red-900/20' },
+    indigo: { bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-600 dark:text-indigo-400', border: 'border-indigo-200 dark:border-indigo-800', glow: 'hover:shadow-indigo-100 dark:hover:shadow-indigo-900/20' },
+    cyan: { bg: 'bg-cyan-100 dark:bg-cyan-900/30', text: 'text-cyan-600 dark:text-cyan-400', border: 'border-cyan-200 dark:border-cyan-800', glow: 'hover:shadow-cyan-100 dark:hover:shadow-cyan-900/20' },
+    yellow: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-600 dark:text-yellow-400', border: 'border-yellow-200 dark:border-yellow-800', glow: 'hover:shadow-yellow-100 dark:hover:shadow-yellow-900/20' }
+  };
+
+  const colors = colorClasses[color];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: delay * 0.1, duration: 0.5 }}
+      className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border ${colors.border} p-6 hover:shadow-lg ${colors.glow} transition-all duration-300 cursor-default`}
+    >
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</p>
+          <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">
+            {typeof value === 'number' ? value.toLocaleString('fa-IR') : value}
+          </p>
+          {subtitle && (
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{subtitle}</p>
+          )}
+          {trend !== undefined && (
+            <div className={`flex items-center gap-1 mt-2 text-sm ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {trend >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+              <span>{Math.abs(trend)}%</span>
+              {trendLabel && <span className="text-slate-500 dark:text-slate-400">{trendLabel}</span>}
+            </div>
+          )}
+        </div>
+        <div className={`p-3 rounded-xl ${colors.bg}`}>
+          <div className={colors.text}>{icon}</div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
 export default function TenantCertificatesPage() {
   const { t } = useTranslation();
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [showUpload, setShowUpload] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [selectedCert, setSelectedCert] = useState<Certificate | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchCertificates();
   }, []);
 
-  const fetchCertificates = async () => {
-    setLoading(true);
+  const fetchCertificates = async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
+
     try {
       const data = await tenantService.getCertificates();
       const mockData: Certificate[] = [
         {
           id: '1',
-          name: 'Main SSL Certificate',
+          name: 'گواهینامه SSL اصلی',
           domain: '*.example.com',
           issuer: "Let's Encrypt Authority X3",
           expiresAt: '2025-06-15T00:00:00Z',
@@ -48,7 +137,7 @@ export default function TenantCertificatesPage() {
         },
         {
           id: '2',
-          name: 'API Certificate',
+          name: 'گواهینامه API',
           domain: 'api.example.com',
           issuer: 'DigiCert Inc',
           expiresAt: '2025-01-10T00:00:00Z',
@@ -66,37 +155,43 @@ export default function TenantCertificatesPage() {
       setCertificates([]);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
   const handleUpload = async () => {
     if (!file) return;
+
+    setSubmitting(true);
+    setError('');
     try {
       await tenantService.uploadCertificate('tenant-id', file);
       setShowUpload(false);
       setFile(null);
-      fetchCertificates();
+      setSuccess('گواهینامه با موفقیت آپلود شد');
+      fetchCertificates(true);
     } catch (err: any) {
       setError(err.message || t('common.failedToUploadCertificate'));
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this certificate?')) return;
+  const handleDelete = async () => {
+    if (!selectedCert) return;
+
+    setSubmitting(true);
+    setError('');
     try {
-      await tenantService.deleteCertificate(id);
-      fetchCertificates();
+      await tenantService.deleteCertificate(selectedCert.id);
+      setShowDeleteConfirm(false);
+      setSelectedCert(null);
+      setSuccess('گواهینامه با موفقیت حذف شد');
+      fetchCertificates(true);
     } catch (err: any) {
       setError(err.message || t('common.failedToDeleteCertificate'));
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'valid': return 'bg-green-100 text-green-800';
-      case 'expiring': return 'bg-yellow-100 text-yellow-800';
-      case 'expired': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -105,185 +200,526 @@ export default function TenantCertificatesPage() {
     return days;
   };
 
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('fa-IR');
+  };
+
+  const getStats = () => {
+    const total = certificates.length;
+    const valid = certificates.filter(c => c.status === 'valid').length;
+    const expiring = certificates.filter(c => c.status === 'expiring').length;
+    const expired = certificates.filter(c => c.status === 'expired').length;
+
+    return { total, valid, expiring, expired };
+  };
+
+  const stats = getStats();
+
+  const getStatusStyle = (status: string) => {
+    switch (status) {
+      case 'valid': return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+      case 'expiring': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
+      case 'expired': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+      default: return 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-400';
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'valid': return 'معتبر';
+      case 'expiring': return 'در حال انقضا';
+      case 'expired': return 'منقضی';
+      default: return status;
+    }
+  };
+
+  const filteredCerts = certificates.filter(cert =>
+    cert.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    cert.domain.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    cert.issuer.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">Loading certificates...</div>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-cyan-500 border-t-transparent"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Shield className="w-6 h-6 text-cyan-500" />
+            </div>
+          </div>
+          <p className="text-slate-600 dark:text-slate-400 font-medium">{t('common.loading', 'در حال بارگذاری...')}</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">SSL/TLS Certificates</h1>
-          <p className="text-gray-600 mt-1">Manage your SSL/TLS certificates</p>
+    <>
+      <Helmet>
+        <title>{t('tenant.certificates.title', 'گواهینامه‌های SSL/TLS')} | OneSign</title>
+      </Helmet>
+
+      <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-cyan-50/30 to-teal-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 min-h-screen" dir="rtl">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <motion.h1
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3"
+            >
+              <div className="p-2 bg-gradient-to-br from-cyan-500 to-teal-500 rounded-xl text-white">
+                <Shield className="w-6 h-6" />
+              </div>
+              {t('tenant.certificates.title', 'گواهینامه‌های SSL/TLS')}
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-slate-500 dark:text-slate-400 mt-1"
+            >
+              {t('tenant.certificates.subtitle', 'مدیریت گواهینامه‌های امنیتی')}
+            </motion.p>
+          </div>
+          <div className="flex gap-3">
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => fetchCertificates(true)}
+              disabled={refreshing}
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              {t('common.refresh', 'بروزرسانی')}
+            </motion.button>
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowUpload(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-xl hover:from-cyan-700 hover:to-teal-700 transition-all shadow-lg hover:shadow-xl"
+            >
+              <Upload className="w-4 h-4" />
+              {t('common.uploadCertificate', 'آپلود گواهینامه')}
+            </motion.button>
+          </div>
         </div>
-        <button
-          onClick={() => setShowUpload(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+
+        {/* Alerts */}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl flex items-center gap-2"
+          >
+            <AlertCircle className="w-5 h-5" />
+            {error}
+          </motion.div>
+        )}
+
+        {success && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-xl flex items-center gap-2"
+          >
+            <CheckCircle className="w-5 h-5" />
+            {success}
+          </motion.div>
+        )}
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard
+            title="کل گواهینامه‌ها"
+            value={stats.total}
+            icon={<Award className="w-6 h-6" />}
+            color="cyan"
+            delay={0}
+          />
+          <StatCard
+            title="گواهینامه‌های معتبر"
+            value={stats.valid}
+            icon={<CheckCircle className="w-6 h-6" />}
+            color="green"
+            delay={1}
+          />
+          <StatCard
+            title="در حال انقضا"
+            value={stats.expiring}
+            subtitle="نیاز به تمدید"
+            icon={<AlertTriangle className="w-6 h-6" />}
+            color="yellow"
+            delay={2}
+          />
+          <StatCard
+            title="منقضی شده"
+            value={stats.expired}
+            icon={<XCircle className="w-6 h-6" />}
+            color="red"
+            delay={3}
+          />
+        </div>
+
+        {/* Search Bar */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4"
         >
-          Upload Certificate
-        </button>
-      </div>
+          <div className="relative">
+            <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="جستجو در گواهینامه‌ها..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pr-10 pl-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            />
+          </div>
+        </motion.div>
 
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-          {error}
-        </div>
-      )}
-
-      {/* Certificates Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Domain</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Issuer</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expires</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {certificates.map((cert) => {
+        {/* Certificates List */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="space-y-4"
+        >
+          {filteredCerts.length > 0 ? (
+            filteredCerts.map((cert, idx) => {
               const daysLeft = getDaysUntilExpiry(cert.expiresAt);
               return (
-                <tr key={cert.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
-                    <div className="font-medium text-gray-900">{cert.name}</div>
-                    <div className="text-sm text-gray-500">{cert.type.toUpperCase()}</div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">{cert.domain}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900">{cert.issuer}</td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900">
-                      {new Date(cert.expiresAt).toLocaleDateString()}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {daysLeft > 0 ? `${daysLeft} days left` : 'Expired'}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(cert.status)}`}>
-                      {cert.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm">
-                    <button
-                      onClick={() => setSelectedCert(cert)}
-                      className="text-blue-600 hover:text-blue-800 mr-3"
-                    >
-                      Details
-                    </button>
-                    <button
-                      onClick={() => handleDelete(cert.id)}
-                      className="text-red-600 hover:text-red-800"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                <motion.div
+                  key={cert.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 hover:shadow-lg transition-all"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className={`p-2 rounded-lg ${
+                          cert.status === 'valid' ? 'bg-green-100 dark:bg-green-900/30' :
+                          cert.status === 'expiring' ? 'bg-yellow-100 dark:bg-yellow-900/30' :
+                          'bg-red-100 dark:bg-red-900/30'
+                        }`}>
+                          <FileKey className={`w-5 h-5 ${
+                            cert.status === 'valid' ? 'text-green-600 dark:text-green-400' :
+                            cert.status === 'expiring' ? 'text-yellow-600 dark:text-yellow-400' :
+                            'text-red-600 dark:text-red-400'
+                          }`} />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-slate-900 dark:text-white">
+                            {cert.name}
+                          </h3>
+                          <p className="text-sm text-slate-500 dark:text-slate-400">
+                            {cert.domain}
+                          </p>
+                        </div>
+                        <span className={`px-3 py-1 text-xs font-medium rounded-full ${getStatusStyle(cert.status)}`}>
+                          {getStatusLabel(cert.status)}
+                        </span>
+                        <span className="px-2 py-1 text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded">
+                          {cert.type.toUpperCase()}
+                        </span>
+                      </div>
 
-      {/* Upload Modal */}
-      {showUpload && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Upload Certificate</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Certificate File (.pem, .crt)
-                </label>
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                        <div className="flex items-center gap-2">
+                          <Lock className="w-4 h-4 text-slate-400" />
+                          <div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">صادرکننده</p>
+                            <p className="text-sm font-medium text-slate-900 dark:text-white">{cert.issuer}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-slate-400" />
+                          <div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">تاریخ انقضا</p>
+                            <p className="text-sm font-medium text-slate-900 dark:text-white">
+                              {formatDate(cert.expiresAt)}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-slate-400" />
+                          <div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">روزهای باقیمانده</p>
+                            <p className={`text-sm font-medium ${
+                              daysLeft > 30 ? 'text-green-600' :
+                              daysLeft > 0 ? 'text-yellow-600' :
+                              'text-red-600'
+                            }`}>
+                              {daysLeft > 0 ? `${daysLeft} روز` : 'منقضی شده'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Award className="w-4 h-4 text-slate-400" />
+                          <div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">ایجاد شده</p>
+                            <p className="text-sm font-medium text-slate-900 dark:text-white">
+                              {formatDate(cert.createdAt)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => {
+                          setSelectedCert(cert);
+                          setShowDetails(true);
+                        }}
+                        className="p-2 text-slate-500 hover:text-cyan-600 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 rounded-lg transition-all"
+                      >
+                        <Eye className="w-5 h-5" />
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => {
+                          setSelectedCert(cert);
+                          setShowDeleteConfirm(true);
+                        }}
+                        className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </motion.button>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-12 text-center"
+            >
+              <div className="w-16 h-16 bg-cyan-100 dark:bg-cyan-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Shield className="w-8 h-8 text-cyan-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                گواهینامه‌ای یافت نشد
+              </h3>
+              <p className="text-slate-500 dark:text-slate-400 mb-4">
+                هنوز هیچ گواهینامه SSL/TLS آپلود نشده است
+              </p>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowUpload(true)}
+                className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-xl hover:from-cyan-700 hover:to-teal-700 transition-all"
+              >
+                آپلود اولین گواهینامه
+              </motion.button>
+            </motion.div>
+          )}
+        </motion.div>
+
+        {/* Upload Modal */}
+        <Modal
+          isOpen={showUpload}
+          onClose={() => {
+            setShowUpload(false);
+            setFile(null);
+          }}
+          title="آپلود گواهینامه"
+          size="md"
+        >
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                فایل گواهینامه (.pem, .crt, .cer)
+              </label>
+              <div className="border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-xl p-8 text-center hover:border-cyan-400 transition-colors">
                 <input
                   type="file"
                   accept=".pem,.crt,.cer"
                   onChange={(e) => setFile(e.target.files?.[0] || null)}
-                  className="w-full border border-gray-300 rounded-lg p-2"
+                  className="hidden"
+                  id="cert-file"
                 />
-              </div>
-              <div className="flex justify-end space-x-2">
-                <button
-                  onClick={() => {
-                    setShowUpload(false);
-                    setFile(null);
-                  }}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleUpload}
-                  disabled={!file}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                >
-                  Upload
-                </button>
+                <label htmlFor="cert-file" className="cursor-pointer">
+                  <Upload className="w-12 h-12 text-slate-400 mx-auto mb-4" />
+                  <p className="text-slate-600 dark:text-slate-400">
+                    {file ? file.name : 'برای انتخاب فایل کلیک کنید'}
+                  </p>
+                  <p className="text-xs text-slate-500 mt-2">
+                    فرمت‌های پشتیبانی شده: PEM, CRT, CER
+                  </p>
+                </label>
               </div>
             </div>
-          </div>
-        </div>
-      )}
 
-      {/* Details Modal */}
-      {selectedCert && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
-            <h2 className="text-xl font-bold mb-4">Certificate Details</h2>
-            <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-500">Name</p>
-                  <p className="font-medium">{selectedCert.name}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Domain</p>
-                  <p className="font-medium">{selectedCert.domain}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Issuer</p>
-                  <p className="font-medium">{selectedCert.issuer}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Type</p>
-                  <p className="font-medium">{selectedCert.type.toUpperCase()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Serial Number</p>
-                  <p className="font-mono text-sm">{selectedCert.serialNumber}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Fingerprint</p>
-                  <p className="font-mono text-sm">{selectedCert.fingerprint}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Created</p>
-                  <p className="font-medium">{new Date(selectedCert.createdAt).toLocaleDateString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Expires</p>
-                  <p className="font-medium">{new Date(selectedCert.expiresAt).toLocaleDateString()}</p>
-                </div>
-              </div>
-            </div>
-            <div className="mt-6 flex justify-end">
+            <div className="flex gap-3 justify-end pt-4">
               <button
-                onClick={() => setSelectedCert(null)}
-                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                onClick={() => {
+                  setShowUpload(false);
+                  setFile(null);
+                }}
+                className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               >
-                Close
+                انصراف
+              </button>
+              <button
+                onClick={handleUpload}
+                disabled={!file || submitting}
+                className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-xl hover:from-cyan-700 hover:to-teal-700 transition-all disabled:opacity-50"
+              >
+                {submitting ? 'در حال آپلود...' : 'آپلود'}
               </button>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        </Modal>
+
+        {/* Details Modal */}
+        <Modal
+          isOpen={showDetails}
+          onClose={() => {
+            setShowDetails(false);
+            setSelectedCert(null);
+          }}
+          title="جزئیات گواهینامه"
+          size="lg"
+        >
+          {selectedCert && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <div className={`p-3 rounded-xl ${
+                  selectedCert.status === 'valid' ? 'bg-green-100 dark:bg-green-900/30' :
+                  selectedCert.status === 'expiring' ? 'bg-yellow-100 dark:bg-yellow-900/30' :
+                  'bg-red-100 dark:bg-red-900/30'
+                }`}>
+                  <Shield className={`w-8 h-8 ${
+                    selectedCert.status === 'valid' ? 'text-green-600 dark:text-green-400' :
+                    selectedCert.status === 'expiring' ? 'text-yellow-600 dark:text-yellow-400' :
+                    'text-red-600 dark:text-red-400'
+                  }`} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                    {selectedCert.name}
+                  </h3>
+                  <p className="text-slate-500 dark:text-slate-400">{selectedCert.domain}</p>
+                </div>
+                <span className={`px-3 py-1 text-sm font-medium rounded-full mr-auto ${getStatusStyle(selectedCert.status)}`}>
+                  {getStatusLabel(selectedCert.status)}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">نوع</p>
+                  <p className="font-medium text-slate-900 dark:text-white">{selectedCert.type.toUpperCase()}</p>
+                </div>
+                <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">صادرکننده</p>
+                  <p className="font-medium text-slate-900 dark:text-white">{selectedCert.issuer}</p>
+                </div>
+                <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">تاریخ ایجاد</p>
+                  <p className="font-medium text-slate-900 dark:text-white">{formatDate(selectedCert.createdAt)}</p>
+                </div>
+                <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">تاریخ انقضا</p>
+                  <p className="font-medium text-slate-900 dark:text-white">{formatDate(selectedCert.expiresAt)}</p>
+                </div>
+              </div>
+
+              <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">شماره سریال</p>
+                <code className="text-sm font-mono text-slate-900 dark:text-white">{selectedCert.serialNumber}</code>
+              </div>
+
+              <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">اثر انگشت</p>
+                <code className="text-sm font-mono text-slate-900 dark:text-white">{selectedCert.fingerprint}</code>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  onClick={() => {
+                    setShowDetails(false);
+                    setSelectedCert(null);
+                  }}
+                  className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+                >
+                  بستن
+                </button>
+              </div>
+            </div>
+          )}
+        </Modal>
+
+        {/* Delete Confirmation Modal */}
+        <Modal
+          isOpen={showDeleteConfirm}
+          onClose={() => {
+            setShowDeleteConfirm(false);
+            setSelectedCert(null);
+          }}
+          title="تأیید حذف گواهینامه"
+          size="sm"
+        >
+          <div className="space-y-4">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
+              <div className="flex gap-3">
+                <XCircle className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0" />
+                <div>
+                  <p className="text-red-800 dark:text-red-300 font-medium mb-1">
+                    آیا از حذف این گواهینامه مطمئن هستید؟
+                  </p>
+                  <p className="text-sm text-red-700 dark:text-red-400">
+                    این عمل غیرقابل بازگشت است و ممکن است سرویس‌های وابسته را تحت تأثیر قرار دهد.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {selectedCert && (
+              <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
+                <p className="text-sm text-slate-500 dark:text-slate-400">گواهینامه انتخاب شده:</p>
+                <p className="font-medium text-slate-900 dark:text-white">{selectedCert.name}</p>
+                <p className="text-sm text-slate-500">{selectedCert.domain}</p>
+              </div>
+            )}
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setSelectedCert(null);
+                }}
+                className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+              >
+                انصراف
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={submitting}
+                className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all disabled:opacity-50"
+              >
+                {submitting ? 'در حال حذف...' : 'حذف گواهینامه'}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      </div>
+    </>
   );
 }
