@@ -146,7 +146,7 @@ export default function TenantUsersPage() {
       setShowInviteModal(false);
       setInviteEmail('');
       setInviteIsAdmin(false);
-      setSuccess(t('tenant.users.userInvited'));
+      setSuccess(t('tenant.users.invited'));
       fetchUsers();
     } catch (error: any) {
       setError(error?.message || t('common.error'));
