@@ -3,6 +3,24 @@ import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
 import { usersService } from '@/lib/api/services';
 import { Helmet } from 'react-helmet-async';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Monitor,
+  Users,
+  AlertTriangle,
+  Search,
+  History,
+  Eye,
+  Power,
+  Smartphone,
+  Tablet,
+  MapPin,
+  Clock,
+  X,
+  Shield,
+  Globe,
+  Activity,
+} from 'lucide-react';
 
 interface UserSession {
   id: string;
@@ -37,6 +55,35 @@ interface SessionHistory {
   duration: string;
   status: 'completed' | 'forced_logout' | 'expired' | 'revoked';
 }
+
+interface StatCardProps {
+  title: string;
+  value: number | string;
+  icon: React.ReactNode;
+  color: string;
+  delay: number;
+  action?: React.ReactNode;
+}
+
+const StatCard = ({ title, value, icon, color, delay, action }: StatCardProps) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: delay * 0.1 }}
+    className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all duration-300"
+  >
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-4">
+        <div className={`p-3 rounded-xl ${color}`}>{icon}</div>
+        <div>
+          <p className="text-sm font-medium text-gray-600">{title}</p>
+          <p className="text-2xl font-bold text-gray-900">{value}</p>
+        </div>
+      </div>
+      {action && <div>{action}</div>}
+    </div>
+  </motion.div>
+);
 
 // Mock data for fallback
 const mockSessionsFallback: UserSession[] = [
@@ -171,7 +218,8 @@ const mockHistoryFallback: SessionHistory[] = [
 ];
 
 export default function TenantSessionsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language;
   const [sessions, setSessions] = useState<UserSession[]>([]);
   const [history, setHistory] = useState<SessionHistory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -204,13 +252,11 @@ export default function TenantSessionsPage() {
     if (!tenantId) return;
 
     try {
-      // Fetch from real API
       const data = await usersService.getAccountSessions();
       setSessions(data || mockSessionsFallback);
     } catch (error: any) {
       console.error('Error fetching sessions:', error);
       setError(error?.message || t('common.failedToLoadSessions'));
-      // Fallback to mock data
       setSessions(mockSessionsFallback);
     } finally {
       setLoading(false);
@@ -221,26 +267,24 @@ export default function TenantSessionsPage() {
     if (!tenantId) return;
 
     try {
-      // Fetch from real API
       const data = await usersService.getSessionHistory();
       setHistory(data || mockHistoryFallback);
     } catch (error: any) {
       console.error('Error fetching session history:', error);
-      // Fallback to mock data
       setHistory(mockHistoryFallback);
     }
   };
 
   const handleRevokeSession = async (sessionId: string) => {
     if (!tenantId) return;
-    if (!confirm('Are you sure you want to revoke this session? The user will be logged out immediately.')) return;
+    if (!confirm(t('tenant.sessions.confirmRevoke', 'Are you sure you want to revoke this session? The user will be logged out immediately.'))) return;
 
     setError('');
     setSuccess('');
 
     try {
       await usersService.revokeSession(sessionId);
-      setSuccess('Session revoked successfully. User has been logged out.');
+      setSuccess(t('tenant.sessions.revokeSuccess', 'Session revoked successfully. User has been logged out.'));
       fetchSessions();
     } catch (error: any) {
       setError(error?.message || t('common.failedToRevokeSession'));
@@ -249,14 +293,14 @@ export default function TenantSessionsPage() {
   };
 
   const handleRevokeAllUserSessions = async (userId: string) => {
-    if (!confirm('Are you sure you want to revoke ALL sessions for this user?')) return;
+    if (!confirm(t('tenant.sessions.confirmRevokeAll', 'Are you sure you want to revoke ALL sessions for this user?'))) return;
 
     setError('');
     setSuccess('');
 
     try {
       await usersService.revokeAllUserSessions(userId);
-      setSuccess('All user sessions revoked successfully');
+      setSuccess(t('tenant.sessions.revokeAllSuccess', 'All user sessions revoked successfully'));
       fetchSessions();
     } catch (error: any) {
       setError(error?.message || t('common.failedToRevokeSessions'));
@@ -264,14 +308,14 @@ export default function TenantSessionsPage() {
   };
 
   const handleRevokeSuspiciousSessions = async () => {
-    if (!confirm('Are you sure you want to revoke all suspicious sessions?')) return;
+    if (!confirm(t('tenant.sessions.confirmRevokeSuspicious', 'Are you sure you want to revoke all suspicious sessions?'))) return;
 
     setError('');
     setSuccess('');
 
     try {
       await usersService.revokeSuspiciousSessions();
-      setSuccess('All suspicious sessions revoked successfully');
+      setSuccess(t('tenant.sessions.revokeSuspiciousSuccess', 'All suspicious sessions revoked successfully'));
       fetchSessions();
     } catch (error: any) {
       setError(error?.message || t('common.failedToRevokeSuspiciousSessions'));
@@ -284,17 +328,28 @@ export default function TenantSessionsPage() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString();
+    return new Date(dateString).toLocaleString(locale === 'fa' ? 'fa-IR' : 'en-US');
   };
 
   const getStatusBadge = (status: string) => {
-    const colors = {
-      completed: 'bg-green-100 text-green-800',
-      forced_logout: 'bg-yellow-100 text-yellow-800',
-      expired: 'bg-gray-100 text-gray-800',
-      revoked: 'bg-red-100 text-red-800',
+    const styles = {
+      completed: 'bg-green-100 text-green-800 border-green-200',
+      forced_logout: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      expired: 'bg-gray-100 text-gray-800 border-gray-200',
+      revoked: 'bg-red-100 text-red-800 border-red-200',
     };
-    return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+    return styles[status as keyof typeof styles] || 'bg-gray-100 text-gray-800 border-gray-200';
+  };
+
+  const getDeviceIcon = (deviceType: string) => {
+    switch (deviceType.toLowerCase()) {
+      case 'mobile':
+        return <Smartphone className="w-4 h-4" />;
+      case 'tablet':
+        return <Tablet className="w-4 h-4" />;
+      default:
+        return <Monitor className="w-4 h-4" />;
+    }
   };
 
   const filteredSessions = sessions.filter((session) => {
@@ -313,322 +368,546 @@ export default function TenantSessionsPage() {
   const uniqueUsersCount = new Set(sessions.map(s => s.userId)).size;
 
   if (loading) {
-    return <div className="p-8">Loading sessions...</div>;
+    return (
+      <div dir={locale === 'fa' ? 'rtl' : 'ltr'} className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-8 flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex items-center gap-3 text-gray-600"
+        >
+          <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+          <span>{t('common.loading', 'Loading...')}</span>
+        </motion.div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Active Sessions Management</h1>
-        <button
+    <div dir={locale === 'fa' ? 'rtl' : 'ltr'} className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-8">
+      <Helmet>
+        <title>{t('tenant.sessions.title', 'Sessions Management')} | OneSign</title>
+      </Helmet>
+
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex justify-between items-center mb-8"
+      >
+        <div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+            {t('tenant.sessions.title', 'Active Sessions Management')}
+          </h1>
+          <p className="text-gray-600 mt-1">
+            {t('tenant.sessions.subtitle', 'Monitor and manage active user sessions')}
+          </p>
+        </div>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           onClick={() => setShowHistoryModal(true)}
-          className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+          className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl hover:shadow-lg transition-all duration-300"
         >
-          View History
-        </button>
-      </div>
+          <History className="w-5 h-5" />
+          {t('tenant.sessions.viewHistory', 'View History')}
+        </motion.button>
+      </motion.div>
 
-      {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
+      {/* Alerts */}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-2"
+          >
+            <AlertTriangle className="w-5 h-5" />
+            {error}
+            <button onClick={() => setError('')} className="ms-auto">
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
 
-      {success && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-          {success}
-        </div>
-      )}
+        {success && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl flex items-center gap-2"
+          >
+            <Shield className="w-5 h-5" />
+            {success}
+            <button onClick={() => setSuccess('')} className="ms-auto">
+              <X className="w-4 h-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-sm text-gray-600 mb-2">Active Sessions</h3>
-          <p className="text-3xl font-bold text-gray-900">{activeSessionsCount}</p>
-        </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-sm text-gray-600 mb-2">Unique Users</h3>
-          <p className="text-3xl font-bold text-gray-900">{uniqueUsersCount}</p>
-        </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-sm text-gray-600 mb-2">Suspicious Sessions</h3>
-          <div className="flex items-center justify-between">
-            <p className="text-3xl font-bold text-red-600">{suspiciousSessionsCount}</p>
-            {suspiciousSessionsCount > 0 && (
-              <button
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <StatCard
+          title={t('tenant.sessions.activeSessions', 'Active Sessions')}
+          value={activeSessionsCount}
+          icon={<Activity className="w-6 h-6 text-blue-600" />}
+          color="bg-blue-100"
+          delay={0}
+        />
+        <StatCard
+          title={t('tenant.sessions.uniqueUsers', 'Unique Users')}
+          value={uniqueUsersCount}
+          icon={<Users className="w-6 h-6 text-green-600" />}
+          color="bg-green-100"
+          delay={1}
+        />
+        <StatCard
+          title={t('tenant.sessions.suspiciousSessions', 'Suspicious Sessions')}
+          value={suspiciousSessionsCount}
+          icon={<AlertTriangle className="w-6 h-6 text-red-600" />}
+          color="bg-red-100"
+          delay={2}
+          action={
+            suspiciousSessionsCount > 0 && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={handleRevokeSuspiciousSessions}
-                className="text-sm bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+                className="text-sm bg-red-600 text-white px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors"
               >
-                Revoke All
-              </button>
-            )}
-          </div>
-        </div>
+                {t('tenant.sessions.revokeAll', 'Revoke All')}
+              </motion.button>
+            )
+          }
+        />
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-4 mb-6"
+      >
         <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
+          <div className="flex-1 relative">
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search by user name, email, or IP address..."
-              className="w-full px-4 py-2 border rounded"
+              placeholder={t('tenant.sessions.searchPlaceholder', 'Search by user name, email, or IP address...')}
+              className="w-full ps-10 pe-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="flex items-center gap-2">
-            <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={filterSuspicious}
-                onChange={(e) => setFilterSuspicious(e.target.checked)}
-                className="rounded"
-              />
-              <span className="text-sm">Show only suspicious</span>
-            </label>
-          </div>
+          <label className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+            <input
+              type="checkbox"
+              checked={filterSuspicious}
+              onChange={(e) => setFilterSuspicious(e.target.checked)}
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-700">{t('tenant.sessions.showSuspicious', 'Show only suspicious')}</span>
+          </label>
         </div>
-      </div>
+      </motion.div>
 
       {/* Sessions Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Device</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">IP Address</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Login Time</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Duration</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {filteredSessions.map((session) => (
-              <tr key={session.id} className={session.isSuspicious ? 'bg-red-50' : ''}>
-                <td className="px-6 py-4 text-sm">
-                  <div>
-                    <p className="font-medium text-gray-900">{session.userName}</p>
-                    <p className="text-gray-500 text-xs">{session.userEmail}</p>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-900">
-                  <div>
-                    <p>{session.deviceName}</p>
-                    <p className="text-gray-500 text-xs">{session.browser}</p>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-500">{session.location}</td>
-                <td className="px-6 py-4 text-sm text-gray-500 font-mono">{session.ipAddress}</td>
-                <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
-                  {formatDate(session.loginAt)}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-500">{session.duration}</td>
-                <td className="px-6 py-4 text-sm">
-                  {session.isSuspicious ? (
-                    <span className="px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium">
-                      Suspicious
-                    </span>
-                  ) : (
-                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
-                      Normal
-                    </span>
-                  )}
-                </td>
-                <td className="px-6 py-4 text-sm whitespace-nowrap">
-                  <button
-                    onClick={() => openDetailsModal(session)}
-                    className="text-indigo-600 hover:text-indigo-900 mr-3"
-                  >
-                    Details
-                  </button>
-                  <button
-                    onClick={() => handleRevokeSession(session.id)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    Revoke
-                  </button>
-                </td>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 overflow-hidden"
+      >
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+              <tr>
+                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.user', 'User')}</th>
+                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.device', 'Device')}</th>
+                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.location', 'Location')}</th>
+                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.ipAddress', 'IP Address')}</th>
+                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.loginTime', 'Login Time')}</th>
+                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.duration', 'Duration')}</th>
+                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.status', 'Status')}</th>
+                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('common.actions', 'Actions')}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-100">
+              <AnimatePresence>
+                {filteredSessions.map((session, index) => (
+                  <motion.tr
+                    key={session.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    transition={{ delay: index * 0.05 }}
+                    className={`hover:bg-gray-50 transition-colors ${session.isSuspicious ? 'bg-red-50/50' : ''}`}
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-semibold">
+                          {session.userName.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">{session.userName}</p>
+                          <p className="text-sm text-gray-500">{session.userEmail}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-gray-100 rounded-lg">
+                          {getDeviceIcon(session.deviceType)}
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-900">{session.deviceName}</p>
+                          <p className="text-xs text-gray-500">{session.browser}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <MapPin className="w-4 h-4 text-gray-400" />
+                        {session.location}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Globe className="w-4 h-4 text-gray-400" />
+                        <span className="font-mono text-sm text-gray-600">{session.ipAddress}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-gray-400" />
+                        {formatDate(session.loginAt)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{session.duration}</td>
+                    <td className="px-6 py-4">
+                      {session.isSuspicious ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium border border-red-200">
+                          <AlertTriangle className="w-3 h-3" />
+                          {t('tenant.sessions.suspicious', 'Suspicious')}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium border border-green-200">
+                          <Shield className="w-3 h-3" />
+                          {t('tenant.sessions.normal', 'Normal')}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => openDetailsModal(session)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          title={t('common.details', 'Details')}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => handleRevokeSession(session.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title={t('tenant.sessions.revoke', 'Revoke')}
+                        >
+                          <Power className="w-4 h-4" />
+                        </motion.button>
+                      </div>
+                    </td>
+                  </motion.tr>
+                ))}
+              </AnimatePresence>
+            </tbody>
+          </table>
+        </div>
 
         {filteredSessions.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            No active sessions found.
-          </div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-12"
+          >
+            <Monitor className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">{t('tenant.sessions.noSessions', 'No active sessions found.')}</p>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
 
       {/* Details Modal */}
-      {showDetailsModal && selectedSession && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">Session Details</h2>
-
-            {selectedSession.isSuspicious && (
-              <div className="mb-4 bg-red-50 border border-red-200 rounded p-4">
-                <h3 className="font-semibold text-red-800 mb-2">Suspicious Activity Detected</h3>
-                <ul className="list-disc list-inside text-sm text-red-700">
-                  {selectedSession.suspiciousReasons?.map((reason, index) => (
-                    <li key={index}>{reason}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-600">User</h3>
-                  <p className="text-sm text-gray-900">{selectedSession.userName}</p>
-                  <p className="text-xs text-gray-500">{selectedSession.userEmail}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-600">User ID</h3>
-                  <p className="text-sm text-gray-900 font-mono">{selectedSession.userId}</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-600">Device Type</h3>
-                  <p className="text-sm text-gray-900">{selectedSession.deviceType}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-600">Device Name</h3>
-                  <p className="text-sm text-gray-900">{selectedSession.deviceName}</p>
+      <AnimatePresence>
+        {showDetailsModal && selectedSession && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setShowDetailsModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            >
+              <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-t-2xl">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-white/20 rounded-xl">
+                      <Eye className="w-6 h-6" />
+                    </div>
+                    <h2 className="text-xl font-bold">{t('tenant.sessions.sessionDetails', 'Session Details')}</h2>
+                  </div>
+                  <button
+                    onClick={() => setShowDetailsModal(false)}
+                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
 
-              <div>
-                <h3 className="text-sm font-semibold text-gray-600">Browser</h3>
-                <p className="text-sm text-gray-900">{selectedSession.browser}</p>
-              </div>
+              <div className="p-6">
+                {selectedSession.isSuspicious && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4"
+                  >
+                    <div className="flex items-center gap-2 text-red-800 font-semibold mb-2">
+                      <AlertTriangle className="w-5 h-5" />
+                      {t('tenant.sessions.suspiciousDetected', 'Suspicious Activity Detected')}
+                    </div>
+                    <ul className="list-disc list-inside text-sm text-red-700 space-y-1">
+                      {selectedSession.suspiciousReasons?.map((reason, index) => (
+                        <li key={index}>{reason}</li>
+                      ))}
+                    </ul>
+                  </motion.div>
+                )}
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-600">IP Address</h3>
-                  <p className="text-sm text-gray-900 font-mono">{selectedSession.ipAddress}</p>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.user', 'User')}</h3>
+                      <p className="font-medium text-gray-900">{selectedSession.userName}</p>
+                      <p className="text-sm text-gray-500">{selectedSession.userEmail}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.userId', 'User ID')}</h3>
+                      <p className="font-mono text-sm text-gray-900 break-all">{selectedSession.userId}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.deviceType', 'Device Type')}</h3>
+                      <div className="flex items-center gap-2">
+                        {getDeviceIcon(selectedSession.deviceType)}
+                        <span className="text-gray-900">{selectedSession.deviceType}</span>
+                      </div>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.deviceName', 'Device Name')}</h3>
+                      <p className="text-gray-900">{selectedSession.deviceName}</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 rounded-xl p-4">
+                    <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.browser', 'Browser')}</h3>
+                    <p className="text-gray-900">{selectedSession.browser}</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.ipAddress', 'IP Address')}</h3>
+                      <div className="flex items-center gap-2">
+                        <Globe className="w-4 h-4 text-gray-400" />
+                        <span className="font-mono text-gray-900">{selectedSession.ipAddress}</span>
+                      </div>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.location', 'Location')}</h3>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-gray-400" />
+                        <span className="text-gray-900">{selectedSession.location}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.loginTime', 'Login Time')}</h3>
+                      <p className="text-gray-900">{formatDate(selectedSession.loginAt)}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.lastActivity', 'Last Activity')}</h3>
+                      <p className="text-gray-900">{formatDate(selectedSession.lastActivityAt)}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.duration', 'Session Duration')}</h3>
+                      <p className="text-gray-900">{selectedSession.duration}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-xl p-4">
+                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.expiresAt', 'Expires At')}</h3>
+                      <p className="text-gray-900">{formatDate(selectedSession.expiresAt)}</p>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-600">Location</h3>
-                  <p className="text-sm text-gray-900">{selectedSession.location}</p>
+
+                <div className="flex flex-wrap gap-3 mt-8 pt-6 border-t border-gray-200">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      handleRevokeSession(selectedSession.id);
+                      setShowDetailsModal(false);
+                    }}
+                    className="flex items-center gap-2 bg-red-600 text-white px-4 py-2.5 rounded-xl hover:bg-red-700 transition-colors"
+                  >
+                    <Power className="w-4 h-4" />
+                    {t('tenant.sessions.revokeSession', 'Revoke Session')}
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      handleRevokeAllUserSessions(selectedSession.userId);
+                      setShowDetailsModal(false);
+                    }}
+                    className="flex items-center gap-2 bg-yellow-600 text-white px-4 py-2.5 rounded-xl hover:bg-yellow-700 transition-colors"
+                  >
+                    <AlertTriangle className="w-4 h-4" />
+                    {t('tenant.sessions.revokeAllUserSessions', 'Revoke All User Sessions')}
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setShowDetailsModal(false)}
+                    className="flex items-center gap-2 bg-gray-200 text-gray-700 px-4 py-2.5 rounded-xl hover:bg-gray-300 transition-colors"
+                  >
+                    {t('common.close', 'Close')}
+                  </motion.button>
                 </div>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-600">Login Time</h3>
-                  <p className="text-sm text-gray-900">{formatDate(selectedSession.loginAt)}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-600">Last Activity</h3>
-                  <p className="text-sm text-gray-900">{formatDate(selectedSession.lastActivityAt)}</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-600">Session Duration</h3>
-                  <p className="text-sm text-gray-900">{selectedSession.duration}</p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-600">Expires At</h3>
-                  <p className="text-sm text-gray-900">{formatDate(selectedSession.expiresAt)}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-2 mt-6">
-              <button
-                onClick={() => {
-                  handleRevokeSession(selectedSession.id);
-                  setShowDetailsModal(false);
-                }}
-                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
-              >
-                Revoke Session
-              </button>
-              <button
-                onClick={() => {
-                  handleRevokeAllUserSessions(selectedSession.userId);
-                  setShowDetailsModal(false);
-                }}
-                className="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700"
-              >
-                Revoke All User Sessions
-              </button>
-              <button
-                onClick={() => setShowDetailsModal(false)}
-                className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* History Modal */}
-      {showHistoryModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">Session History</h2>
+      <AnimatePresence>
+        {showHistoryModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={() => setShowHistoryModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden"
+            >
+              <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-white/20 rounded-xl">
+                      <History className="w-6 h-6" />
+                    </div>
+                    <h2 className="text-xl font-bold">{t('tenant.sessions.sessionHistory', 'Session History')}</h2>
+                  </div>
+                  <button
+                    onClick={() => setShowHistoryModal(false)}
+                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
 
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Device</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Login</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Logout</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Duration</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {history.map((session) => (
-                    <tr key={session.id}>
-                      <td className="px-4 py-3 text-sm text-gray-900">{session.userName}</td>
-                      <td className="px-4 py-3 text-sm text-gray-500">{session.device}</td>
-                      <td className="px-4 py-3 text-sm text-gray-500">{session.location}</td>
-                      <td className="px-4 py-3 text-sm text-gray-500 whitespace-nowrap">
-                        {formatDate(session.loginAt)}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-500 whitespace-nowrap">
-                        {formatDate(session.logoutAt)}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-500">{session.duration}</td>
-                      <td className="px-4 py-3 text-sm">
-                        <span className={`px-2 py-1 rounded text-xs ${getStatusBadge(session.status)}`}>
-                          {session.status.replace('_', ' ')}
-                        </span>
-                      </td>
+              <div className="overflow-x-auto max-h-[calc(90vh-100px)]">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50 sticky top-0">
+                    <tr>
+                      <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.user', 'User')}</th>
+                      <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.device', 'Device')}</th>
+                      <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.location', 'Location')}</th>
+                      <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.login', 'Login')}</th>
+                      <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.logout', 'Logout')}</th>
+                      <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.duration', 'Duration')}</th>
+                      <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.status', 'Status')}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-100">
+                    {history.map((session, index) => (
+                      <motion.tr
+                        key={session.id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-gradient-to-br from-gray-400 to-gray-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                              {session.userName.charAt(0).toUpperCase()}
+                            </div>
+                            <span className="font-medium text-gray-900">{session.userName}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600">{session.device}</td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <MapPin className="w-4 h-4 text-gray-400" />
+                            {session.location}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">
+                          {formatDate(session.loginAt)}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">
+                          {formatDate(session.logoutAt)}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600">{session.duration}</td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusBadge(session.status)}`}>
+                            {session.status.replace('_', ' ')}
+                          </span>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-            <div className="mt-4">
-              <button
-                onClick={() => setShowHistoryModal(false)}
-                className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowHistoryModal(false)}
+                  className="bg-gray-200 text-gray-700 px-4 py-2 rounded-xl hover:bg-gray-300 transition-colors"
+                >
+                  {t('common.close', 'Close')}
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
