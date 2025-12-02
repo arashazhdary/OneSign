@@ -1,38 +1,38 @@
 {
   "common": {
-    "email": "ایمیل",
-    "password": "رمز عبور",
+    "email": "رایانامه",
+    "password": "گذرواژه",
     "submit": "ارسال",
-    "cancel": "لغو",
+    "cancel": "انصراف",
     "loading": "در حال بارگذاری...",
     "error": "خطا",
-    "success": "موفق"
+    "success": "موفقیت‌آمیز"
   },
   "login": {
-    "title": "ورود",
-    "emailPlaceholder": "ایمیل خود را وارد کنید",
-    "passwordPlaceholder": "رمز عبور خود را وارد کنید",
-    "forgotPassword": "رمز عبور را فراموش کرده‌اید؟",
+    "title": "ورود به سامانه",
+    "emailPlaceholder": "رایانامه خود را وارد کنید",
+    "passwordPlaceholder": "گذرواژه خود را وارد کنید",
+    "forgotPassword": "گذرواژه را فراموش کرده‌اید؟",
     "signIn": "ورود",
     "signInWithGoogle": "ورود با گوگل",
-    "invalidCredentials": "ایمیل یا رمز عبور نامعتبر است"
+    "invalidCredentials": "رایانامه یا گذرواژه نامعتبر است"
   },
   "forgotPassword": {
-    "title": "فراموشی رمز عبور",
-    "description": "ایمیل خود را وارد کنید تا لینک بازنشانی رمز عبور برای شما ارسال شود.",
-    "emailPlaceholder": "ایمیل خود را وارد کنید",
-    "sendResetLink": "ارسال لینک بازنشانی",
+    "title": "فراموشی گذرواژه",
+    "description": "رایانامه خود را وارد کنید تا پیوند بازنشانی گذرواژه برای شما ارسال شود.",
+    "emailPlaceholder": "رایانامه خود را وارد کنید",
+    "sendResetLink": "ارسال پیوند بازنشانی",
     "backToLogin": "بازگشت به صفحه ورود",
-    "resetLinkSent": "لینک بازنشانی رمز عبور به ایمیل شما ارسال شد"
+    "resetLinkSent": "پیوند بازنشانی گذرواژه به رایانامه شما ارسال شد"
   },
   "resetPassword": {
-    "title": "بازنشانی رمز عبور",
-    "description": "رمز عبور جدید خود را وارد کنید",
-    "newPassword": "رمز عبور جدید",
-    "confirmPassword": "تایید رمز عبور",
-    "resetPassword": "بازنشانی رمز عبور",
-    "passwordsDoNotMatch": "رمزهای عبور مطابقت ندارند",
-    "passwordResetSuccess": "رمز عبور با موفقیت بازنشانی شد"
+    "title": "بازنشانی گذرواژه",
+    "description": "گذرواژه جدید خود را وارد کنید",
+    "newPassword": "گذرواژه جدید",
+    "confirmPassword": "تأیید گذرواژه",
+    "resetPassword": "بازنشانی گذرواژه",
+    "passwordsDoNotMatch": "گذرواژه‌ها مطابقت ندارند",
+    "passwordResetSuccess": "گذرواژه با موفقیت بازنشانی شد"
   },
   "callback": {
     "title": "احراز هویت",
@@ -41,16 +41,16 @@
     "error": "احراز هویت ناموفق بود"
   },
   "mfa": {
-    "title": "احراز هویت دو مرحله‌ای",
-    "enterCode": "کد تایید را از",
-    "code": "کد تایید",
+    "title": "احراز هویت چندعاملی",
+    "enterCode": "کد تأیید را از",
+    "code": "کد تأیید",
     "methodTotp": "اپلیکیشن احراز هویت",
     "methodEmail": "ایمیل خود",
-    "methodSms": "تلفن خود",
+    "methodSms": "پیامک",
     "methodGeneric": "دستگاه خود",
-    "rememberDevice": "به این دستگاه برای ۳۰ روز اعتماد کن",
-    "verify": "تایید",
-    "invalidCode": "کد تایید نامعتبر است",
+    "rememberDevice": "این دستگاه را به مدت ۳۰ روز به‌خاطر بسپار",
+    "verify": "تأیید",
+    "invalidCode": "کد تأیید نامعتبر است",
     "backToLogin": "بازگشت به صفحه ورود"
   }
 }
