@@ -28,6 +28,10 @@ const AppsPage = () => {
   const [apps, setApps] = useState<App[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [selectedAppForRedirectUris, setSelectedAppForRedirectUris] = useState<App | null>(null);
+  const [showRedirectUrisModal, setShowRedirectUrisModal] = useState(false);
+  const [selectedAppForSecrets, setSelectedAppForSecrets] = useState<App | null>(null);
+  const [showSecretsModal, setShowSecretsModal] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -49,28 +53,24 @@ const AppsPage = () => {
     setLoading(true);
     try {
       const response = await applicationsService.getApplications(params);
+      // Handle both items array and data array formats
+      const appList = response?.items || response?.data || [];
 
-      if (response?.data) {
-        // Map API response to our App interface
-        const mappedApps = response.data.map((app: any) => ({
-          id: app.id,
-          name: app.name,
-          clientId: app.clientId,
-          type: app.applicationType?.toLowerCase() || 'web',
-          status: app.isEnabled ? 'active' : 'inactive',
-          createdAt: app.createdAt,
-          lastUsed: app.lastUsedAt,
-        }));
+      // Map API response to our App interface
+      const mappedApps = appList.map((app: any) => ({
+        id: app.id,
+        name: app.name,
+        clientId: app.clientId,
+        type: (app.applicationType?.toLowerCase() || 'web') as 'web' | 'mobile' | 'desktop' | 'api',
+        status: app.isEnabled ? 'active' : 'inactive',
+        createdAt: app.createdAt,
+        lastUsed: app.lastUsedAt,
+      }));
 
-        setApps(mappedApps);
-      } else {
-        // Fallback to mock data if API fails
-        setApps([]);
-      }
+      setApps(mappedApps);
     } catch (error) {
       console.error('Error fetching apps:', error);
       toast.error(t('common.error'));
-      // Fallback to empty array
       setApps([]);
     } finally {
       setLoading(false);
@@ -79,32 +79,30 @@ const AppsPage = () => {
 
   const handleView = (app: App) => {
     // TODO: Navigate to app detail page
-    toast.info(t('common.view') + ': ' + app.name);
+    toast(t('common.view') + ': ' + app.name);
   };
 
   const handleEdit = (app: App) => {
     // TODO: Open edit modal or navigate to edit page
-    toast.info(t('common.edit') + ': ' + app.name);
+    toast(t('common.edit') + ': ' + app.name);
   };
 
   const handleManageRedirectURIs = (app: App) => {
-    // TODO: Open redirect URIs management modal
     setSelectedAppForRedirectUris(app);
     setShowRedirectUrisModal(true);
   };
 
   const handleManageSecrets = (app: App) => {
-    // TODO: Open client secrets management modal
     setSelectedAppForSecrets(app);
     setShowSecretsModal(true);
   };
 
   const handleCreateApp = async () => {
     try {
-      await tenantService.createApplication({
+      await applicationsService.createApplication({
+        tenantId: '',
         name: formData.name,
-        type: formData.type,
-        description: formData.description,
+        applicationType: formData.type,
       });
       toast.success(t('apps.appCreated') || 'Application created successfully');
       setIsAddModalOpen(false);
@@ -118,7 +116,7 @@ const AppsPage = () => {
   const handleDeleteApp = async (appId: string) => {
     if (!confirm(t('apps.confirmDelete') || 'Are you sure you want to delete this application?')) return;
     try {
-      await tenantService.deleteApplication(appId);
+      await applicationsService.deleteApplication(appId);
       toast.success(t('apps.appDeleted') || 'Application deleted successfully');
       fetchApps();
     } catch (error: any) {
@@ -128,7 +126,7 @@ const AppsPage = () => {
 
   const handleRegenerateSecret = async (appId: string) => {
     try {
-      const result = await tenantService.regenerateClientSecret(appId);
+      const result = await applicationsService.regenerateSecret(null, appId);
       toast.success(t('apps.secretRegenerated') || 'Client secret regenerated');
       navigator.clipboard.writeText(result.clientSecret);
       toast.success('New secret copied to clipboard');
@@ -277,17 +275,21 @@ const AppsPage = () => {
         <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title={t('apps.addApp')}>
           <div className="space-y-4">
             <Input label={t('apps.name')} value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
-            <ActionMenu
-              label={t('apps.type')}
-              options={[
-                { value: 'web', label: t('apps.web'), icon: <Globe className="w-4 h-4" /> },
-                { value: 'mobile', label: t('apps.mobile'), icon: <Smartphone className="w-4 h-4" /> },
-                { value: 'desktop', label: t('apps.desktop'), icon: <Monitor className="w-4 h-4" /> },
-                { value: 'api', label: t('apps.api'), icon: <Code className="w-4 h-4" /> },
-              ]}
-              value={formData.type}
-              onChange={(value) => setFormData({ ...formData, type: value as 'web' | 'mobile' | 'desktop' | 'api' })}
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {t('apps.type')}
+              </label>
+              <select
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={formData.type}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value as 'web' | 'mobile' | 'desktop' | 'api' })}
+              >
+                <option value="web">{t('apps.web') || 'Web'}</option>
+                <option value="mobile">{t('apps.mobile') || 'Mobile'}</option>
+                <option value="desktop">{t('apps.desktop') || 'Desktop'}</option>
+                <option value="api">{t('apps.api') || 'API'}</option>
+              </select>
+            </div>
             <Input label={t('apps.description')} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
             <div className="flex justify-end gap-2 pt-4">
               <Button variant="ghost" onClick={() => setIsAddModalOpen(false)}>

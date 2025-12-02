@@ -69,16 +69,14 @@ export default function CompleteFirstLoginPage() {
     setLoading(true);
 
     try {
-      await authService.completeFirstLogin({
-        setupToken,
-        password,
-        confirmPassword,
-      });
+      // The setupToken is actually the tenantUserId from the invite link
+      await authService.completeFirstLogin(setupToken, password);
 
       // Show success message and redirect to login
       navigate('/login?message=Password set successfully. Please sign in.');
     } catch (err: any) {
-      setError(err.message || t('common.failedToSetPassword'));
+      const errorMessage = err.response?.data?.message || err.message || t('common.failedToSetPassword');
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

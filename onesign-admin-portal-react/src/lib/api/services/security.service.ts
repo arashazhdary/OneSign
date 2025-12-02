@@ -332,7 +332,7 @@ export const securityService = {
   /**
    * GET /api/tenant/security/alerts/rules - لیست قوانین هشدار
    */
-  getAlertRules: async (tenantId: string): Promise<any[]> => {
+  getAlertRules: async (tenantId?: string): Promise<any[]> => {
     try {
       const response = await apiClient.get('/api/tenant/security/alerts/rules');
       return response.data;
@@ -376,7 +376,7 @@ export const securityService = {
   /**
    * GET /api/tenant/security/alerts - لیست هشدارها
    */
-  getAlerts: async (tenantId: string): Promise<any[]> => {
+  getAlerts: async (tenantId?: string): Promise<any[]> => {
     try {
       const response = await apiClient.get('/api/tenant/security/alerts');
       return response.data;

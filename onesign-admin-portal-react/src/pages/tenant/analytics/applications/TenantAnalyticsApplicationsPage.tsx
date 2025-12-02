@@ -111,7 +111,7 @@ export default function TenantAnalyticsApplicationsPage() {
     try {
       // Fetch applications using applicationsService
       const appsData = await applicationsService.getApplications({
-        pageNumber: 1,
+        page: 1,
         pageSize: 1000
       });
 

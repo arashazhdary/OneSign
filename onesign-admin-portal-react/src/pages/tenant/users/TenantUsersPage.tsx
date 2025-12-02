@@ -62,8 +62,9 @@ export default function TenantUsersPage() {
       setUserScope(scope);
 
       // Auto-select first orgUnit for delegated admins
-      if (scope && scope.orgUnits && scope.orgUnits.length > 0) {
-        setSelectedOrgUnitId(scope.orgUnits[0]);
+      const orgUnitIds = scope?.allowedOrgUnitIds || scope?.rootOrgUnitIds || [];
+      if (orgUnitIds.length > 0) {
+        setSelectedOrgUnitId(orgUnitIds[0]);
       }
     } catch (err) {
       console.error('Error fetching user scope:', err);
@@ -162,7 +163,8 @@ export default function TenantUsersPage() {
 
     try {
       // updateUserStatus expects (userId, status) parameters
-      await usersService.updateUserStatus(userId, 'Inactive');
+      // Use TenantUserStatus.Suspended (3) for inactive users
+      await usersService.updateUserStatus(userId, 3);
       setSuccess(t('tenant.users.userDisabled'));
       fetchUsers();
     } catch (error: any) {

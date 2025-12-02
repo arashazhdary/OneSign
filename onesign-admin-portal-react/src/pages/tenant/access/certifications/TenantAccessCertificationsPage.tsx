@@ -243,10 +243,12 @@ export default function TenantAccessCertificationsPage() {
     try {
       // Call API with campaignId, itemId, and certification data
       if (selectedCampaign) {
-        await governanceService.certifyItem(selectedCampaign.id, itemId, {
-          decision: action,
-          comment: notes
-        });
+        await governanceService.certifyItem(
+          selectedCampaign.id,
+          itemId,
+          action === 'certify' ? 'approve' : 'revoke',
+          notes
+        );
       }
       setSuccess(`Access ${action === 'certify' ? 'certified' : 'revoked'} successfully`);
 

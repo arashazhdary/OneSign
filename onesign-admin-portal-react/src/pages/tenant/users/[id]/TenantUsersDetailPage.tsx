@@ -10,23 +10,27 @@ import { Helmet } from 'react-helmet-async';
 
 interface UserProfile {
   id: string;
-  tenantId: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  displayName: string;
-  phoneNumber: string | null;
-  profilePictureUrl: string | null;
-  status: string;
-  emailVerified: boolean;
-  phoneVerified: boolean;
-  mfaEnabled: boolean;
-  lastLoginAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-  customAttributes: Record<string, any>;
-  roles: string[];
-  groups: string[];
+  tenantId?: string;
+  userId?: string;
+  globalUserId?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  displayName?: string;
+  phoneNumber?: string | null;
+  profilePictureUrl?: string | null;
+  status?: string;
+  emailVerified?: boolean;
+  phoneVerified?: boolean;
+  mfaEnabled?: boolean;
+  lastLoginAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  customAttributes?: Record<string, any>;
+  roles?: string[];
+  groups?: string[];
+  timeZone?: string;
+  preferredLanguage?: string;
 }
 
 interface UserActivity {
@@ -60,12 +64,12 @@ interface RiskSignal {
 }
 
 interface RiskAssessment {
-  userId: string;
+  userId?: string;
   riskScore: number;
-  riskLevel: 'low' | 'medium' | 'high' | 'critical';
-  lastAssessedAt: string;
-  signals: RiskSignal[];
-  factors: Array<{
+  riskLevel: 'low' | 'medium' | 'high' | 'critical' | string;
+  lastAssessedAt?: string;
+  signals?: RiskSignal[];
+  factors?: Array<{
     factor: string;
     score: number;
     description: string;
@@ -163,11 +167,28 @@ export default function TenantUsersDetailPage() {
     setError('');
     try {
       const data = await usersService.getUserProfile(userId);
-      setProfile(data);
-      setFirstName(data.firstName || '');
-      setLastName(data.lastName || '');
-      setDisplayName(data.displayName || '');
-      setPhoneNumber(data.phoneNumber || '');
+      if (data) {
+        // Map UserProfileDto to UserProfile interface
+        const mappedProfile: UserProfile = {
+          id: data.id,
+          userId: data.userId,
+          displayName: data.displayName || '',
+          phoneNumber: data.phoneNumber || null,
+          profilePictureUrl: data.profilePictureUrl || null,
+          timeZone: data.timeZone,
+          preferredLanguage: data.preferredLanguage,
+          // Derive names from displayName if not directly available
+          firstName: data.displayName?.split(' ')[0] || '',
+          lastName: data.displayName?.split(' ').slice(1).join(' ') || '',
+          roles: [],
+          groups: [],
+        };
+        setProfile(mappedProfile);
+        setFirstName(mappedProfile.firstName || '');
+        setLastName(mappedProfile.lastName || '');
+        setDisplayName(mappedProfile.displayName || '');
+        setPhoneNumber(mappedProfile.phoneNumber || '');
+      }
     } catch (err) {
       setError(t('common.error'));
     } finally {
@@ -196,7 +217,17 @@ export default function TenantUsersDetailPage() {
   const fetchRiskAssessment = async () => {
     try {
       const data = await usersService.getUserRiskAssessment(userId);
-      setRiskAssessment(data);
+      if (data) {
+        // Map the response to RiskAssessment interface
+        setRiskAssessment({
+          userId,
+          riskScore: data.riskScore || 0,
+          riskLevel: data.riskLevel || 'low',
+          lastAssessedAt: new Date().toISOString(),
+          signals: [],
+          factors: [],
+        });
+      }
     } catch (err) {
       console.error('Failed to fetch risk assessment:', err);
     }
@@ -222,8 +253,8 @@ export default function TenantUsersDetailPage() {
 
   const fetchAuditTrail = async () => {
     try {
-      const data = await usersService.getUserAuditTrail(userId, { limit: 50 });
-      setAuditTrail(data);
+      const data = await usersService.getUserAuditTrail(userId);
+      setAuditTrail(data || []);
     } catch (err) {
       console.error('Failed to fetch audit trail:', err);
     }
@@ -235,10 +266,8 @@ export default function TenantUsersDetailPage() {
     setSuccess('');
     try {
       await usersService.updateUserProfile(userId, {
-        firstName,
-        lastName,
-        displayName,
-        phoneNumber: phoneNumber || null,
+        displayName: displayName || `${firstName} ${lastName}`.trim(),
+        phoneNumber: phoneNumber || undefined,
       });
       setSuccess('Profile updated successfully');
       setShowEditModal(false);

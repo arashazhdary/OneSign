@@ -191,12 +191,12 @@ const UsersPage = () => {
 
   const handleView = (user: User) => {
     // TODO: Navigate to user detail page
-    toast.info(t('common.view') + ': ' + user.name);
+    toast(t('common.view') + ': ' + user.name);
   };
 
   const handleManageRoles = (user: User) => {
     // TODO: Open role assignment modal
-    toast.info(t('users.manageRoles') + ': ' + user.name);
+    toast(t('users.manageRoles') + ': ' + user.name);
   };
 
   const handleToggleStatus = async (user: User) => {
@@ -391,18 +391,20 @@ const UsersPage = () => {
               leftIcon={<Mail className="w-4 h-4" />}
               placeholder="user@example.com"
             />
-            <ActionMenu
-              label={t('users.role')}
-              options={[
-                { value: 'admin', label: 'Admin', icon: <Shield className="w-4 h-4" /> },
-                { value: 'manager', label: 'Manager' },
-                { value: 'editor', label: 'Editor' },
-                { value: 'user', label: 'User' },
-                { value: 'viewer', label: 'Viewer' },
-              ]}
-              value={formData.role}
-              onChange={(value) => setFormData({ ...formData, role: value })}
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('users.role')}</label>
+              <select
+                value={formData.role}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="admin">Admin</option>
+                <option value="manager">Manager</option>
+                <option value="editor">Editor</option>
+                <option value="user">User</option>
+                <option value="viewer">Viewer</option>
+              </select>
+            </div>
             <div className="flex justify-end gap-2 pt-4">
               <Button
                 variant="ghost"
@@ -443,28 +445,32 @@ const UsersPage = () => {
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               leftIcon={<Mail className="w-4 h-4" />}
             />
-            <ActionMenu
-              label={t('users.role')}
-              options={[
-                { value: 'admin', label: 'Admin', icon: <Shield className="w-4 h-4" /> },
-                { value: 'manager', label: 'Manager' },
-                { value: 'editor', label: 'Editor' },
-                { value: 'user', label: 'User' },
-                { value: 'viewer', label: 'Viewer' },
-              ]}
-              value={formData.role}
-              onChange={(value) => setFormData({ ...formData, role: value })}
-            />
-            <ActionMenu
-              label={t('common.status')}
-              options={[
-                { value: 'active', label: t('users.active') },
-                { value: 'inactive', label: t('users.inactive') },
-                { value: 'suspended', label: t('users.suspended') },
-              ]}
-              value={formData.status}
-              onChange={(value) => setFormData({ ...formData, status: value })}
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('users.role')}</label>
+              <select
+                value={formData.role}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="admin">Admin</option>
+                <option value="manager">Manager</option>
+                <option value="editor">Editor</option>
+                <option value="user">User</option>
+                <option value="viewer">Viewer</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.status')}</label>
+              <select
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="active">{t('users.active')}</option>
+                <option value="inactive">{t('users.inactive')}</option>
+                <option value="suspended">{t('users.suspended')}</option>
+              </select>
+            </div>
             <div className="flex justify-end gap-2 pt-4">
               <Button
                 variant="ghost"

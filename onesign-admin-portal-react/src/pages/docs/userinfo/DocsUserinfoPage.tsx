@@ -17,7 +17,7 @@ export default function DocsUserinfoPage() {
 
     setLoading(true);
     try {
-      const data = await usersService.getUserInfo(accessToken);
+      const data = await usersService.getUserInfo();
       setResponse(JSON.stringify(data, null, 2));
     } catch (err: any) {
       setResponse(`Error: ${err.message}`);

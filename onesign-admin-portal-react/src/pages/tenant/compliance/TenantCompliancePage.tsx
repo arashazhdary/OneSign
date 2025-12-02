@@ -225,10 +225,10 @@ export default function TenantCompliancePage() {
     setError('');
     setSuccess('');
     try {
-      await governanceService.generateReport({
-        type: 'compliance',
+      await governanceService.generateReport('compliance', {
         frameworkId: reportFramework,
-        params: { dateFrom: reportDateFrom, dateTo: reportDateTo }
+        dateFrom: reportDateFrom,
+        dateTo: reportDateTo
       });
       setSuccess('Compliance report generated successfully');
       setShowGenerateReportModal(false);
@@ -263,7 +263,7 @@ export default function TenantCompliancePage() {
     setError('');
     setSuccess('');
     try {
-      await governanceService.resolveViolation(violationId, { resolution, notes: resolution });
+      await governanceService.resolveViolation(violationId, { action: resolution, comment: resolution });
       setSuccess('Violation resolved successfully');
       setSelectedViolation(null);
       setShowViolationModal(false);

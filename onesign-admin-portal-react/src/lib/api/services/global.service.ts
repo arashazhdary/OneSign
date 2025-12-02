@@ -1438,6 +1438,86 @@ export const globalService = {
     const response = await apiClient.post(`/api/global/integrations/${integrationId}/test`);
     return response.data;
   },
+
+  // ==================== FEATURE FLAGS ====================
+
+  /**
+   * GET /api/global/feature-flags - لیست feature flags
+   */
+  getFeatureFlags: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/global/feature-flags');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch feature flags:', error);
+      return [];
+    }
+  },
+
+  /**
+   * GET /api/global/feature-flags/{id} - دریافت یک feature flag
+   */
+  getFeatureFlag: async (flagId: string): Promise<any> => {
+    try {
+      const response = await apiClient.get(`/api/global/feature-flags/${flagId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch feature flag:', error);
+      return null;
+    }
+  },
+
+  /**
+   * POST /api/global/feature-flags - ایجاد feature flag
+   */
+  createFeatureFlag: async (data: {
+    name: string;
+    key: string;
+    description?: string;
+    enabled?: boolean;
+    targetAudience?: string;
+    targetTenants?: string[];
+    rolloutPercentage?: number;
+  }): Promise<any> => {
+    const response = await apiClient.post('/api/global/feature-flags', data);
+    return response.data;
+  },
+
+  /**
+   * PUT /api/global/feature-flags/{id} - به‌روزرسانی feature flag
+   */
+  updateFeatureFlag: async (flagId: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/global/feature-flags/${flagId}`, data);
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/feature-flags/{id}/toggle - فعال/غیرفعال کردن feature flag
+   */
+  toggleFeatureFlag: async (flagId: string, enabled: boolean): Promise<any> => {
+    const response = await apiClient.post(`/api/global/feature-flags/${flagId}/toggle`, { enabled });
+    return response.data;
+  },
+
+  /**
+   * DELETE /api/global/feature-flags/{id} - حذف feature flag
+   */
+  deleteFeatureFlag: async (flagId: string): Promise<void> => {
+    await apiClient.delete(`/api/global/feature-flags/${flagId}`);
+  },
+
+  /**
+   * GET /api/global/feature-flags/{id}/history - تاریخچه feature flag
+   */
+  getFeatureFlagHistory: async (flagId: string): Promise<any[]> => {
+    try {
+      const response = await apiClient.get(`/api/global/feature-flags/${flagId}/history`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch feature flag history:', error);
+      return [];
+    }
+  },
 };
 
 export default globalService;

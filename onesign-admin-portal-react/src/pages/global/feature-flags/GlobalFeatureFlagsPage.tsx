@@ -73,12 +73,8 @@ export default function GlobalFeatureFlagsPage() {
     setLoading(true);
     setError('');
     try {
-      // TODO: getFeatureFlags method not yet implemented in globalService
-      // const data = await globalService.getFeatureFlags();
-      // setFlags(data.flags || []);
-
-      // Fallback data for development
-      setFlags([]);
+      const data = await globalService.getFeatureFlags();
+      setFlags(data || []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
     } finally {
@@ -88,12 +84,8 @@ export default function GlobalFeatureFlagsPage() {
 
   const fetchHistory = async (flagId: string) => {
     try {
-      // TODO: getFeatureFlagHistory method not yet implemented in globalService
-      // const data = await globalService.getFeatureFlagHistory(flagId);
-      // setHistory(data.history || []);
-
-      // Fallback data for development
-      setHistory([]);
+      const data = await globalService.getFeatureFlagHistory(flagId);
+      setHistory(data || []);
       setIsHistoryModalOpen(true);
     } catch (err: any) {
       setError(err.message || t('common.failedToFetchHistory'));
@@ -105,9 +97,7 @@ export default function GlobalFeatureFlagsPage() {
     setError('');
     setSuccess('');
     try {
-      // TODO: toggleFeatureFlag method not yet implemented in globalService
-      // await globalService.toggleFeatureFlag(flag.id, newState);
-
+      await globalService.toggleFeatureFlag(flag.id, newState);
       setSuccess(`Feature flag "${flag.name}" ${newState ? 'enabled' : 'disabled'} successfully`);
       fetchFlags();
     } catch (err: any) {
@@ -151,9 +141,7 @@ export default function GlobalFeatureFlagsPage() {
         };
       }
 
-      // TODO: createFeatureFlag method not yet implemented in globalService
-      // await globalService.createFeatureFlag(payload);
-
+      await globalService.createFeatureFlag(payload);
       setSuccess('Feature flag created successfully');
       setIsCreateModalOpen(false);
       resetForm();
@@ -171,9 +159,7 @@ export default function GlobalFeatureFlagsPage() {
     setLoading(true);
     setError('');
     try {
-      // TODO: deleteFeatureFlag method not yet implemented in globalService
-      // await globalService.deleteFeatureFlag(flagId);
-
+      await globalService.deleteFeatureFlag(flagId);
       setSuccess('Feature flag deleted successfully');
       fetchFlags();
     } catch (err: any) {
