@@ -978,7 +978,7 @@ export const tenantService = {
   /**
    * GET /api/tenant/backups/schedule - تنظیمات زمانبندی پشتیبان
    */
-  getBackupSchedule: async (tenantId: string): Promise<any> => {
+  getBackupSchedule: async (tenantId?: string): Promise<any> => {
     try {
       const response = await apiClient.get('/api/tenant/backups/schedule');
       return response.data;

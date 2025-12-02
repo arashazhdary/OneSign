@@ -175,7 +175,7 @@ export default function TenantAppsPage() {
   const handleAssignOrgUnits = async (app: Application) => {
     setSelectedAppForOrgUnits(app);
     try {
-      const data = await applicationsService.getApplicationOrgUnits(app.id);
+      const data = await applicationsService.getApplicationOrgUnits(tenantId, app.id);
       setSelectedOrgUnitIds(data.orgUnitIds || []);
     } catch (error) {
       console.error('Error fetching application org units:', error);
@@ -189,7 +189,7 @@ export default function TenantAppsPage() {
     setSuccess('');
 
     try {
-      await applicationsService.assignOrgUnits(selectedAppForOrgUnits.id, selectedOrgUnitIds);
+      await applicationsService.assignOrgUnits(tenantId, selectedAppForOrgUnits.id, selectedOrgUnitIds);
       setSuccess(t('tenant.applicationOrgUnits.orgUnitsAssigned'));
       setShowAssignOrgUnitsModal(false);
       setSelectedAppForOrgUnits(null);
@@ -210,8 +210,7 @@ export default function TenantAppsPage() {
       await applicationsService.createApplication({
         tenantId,
         name: newAppName,
-        applicationType: newAppType === 'Web' ? 1 : newAppType === 'Mobile' ? 2 : 3,
-        grantType: 2, // AuthorizationCodeWithPkce
+        applicationType: newAppType,
         redirectUris: newRedirectUris.filter(uri => uri.trim() !== '')
       });
       setShowCreateModal(false);
@@ -251,8 +250,7 @@ export default function TenantAppsPage() {
     try {
       await applicationsService.updateApplication(editingApp.id, {
         name: editAppName,
-        applicationType: editAppType === 'Web' ? 1 : editAppType === 'Mobile' ? 2 : 3,
-        grantType: 2 // AuthorizationCodeWithPkce
+        applicationType: editAppType
       });
       setShowEditModal(false);
       setEditingApp(null);
@@ -295,7 +293,7 @@ export default function TenantAppsPage() {
     if (!tenantId || !selectedAppForRedirectUris) return;
 
     try {
-      await applicationsService.addRedirectUri(selectedAppForRedirectUris.id, newRedirectUri);
+      await applicationsService.addRedirectUri(tenantId, selectedAppForRedirectUris.id, newRedirectUri);
       setNewRedirectUri('');
       setSuccess(t('tenant.applications.redirectUriAdded'));
       await fetchApplications();
@@ -334,7 +332,7 @@ export default function TenantAppsPage() {
     if (!tenantId || !selectedAppForSecrets) return;
 
     try {
-      await applicationsService.addClientSecret(selectedAppForSecrets.id, newSecretDescription);
+      await applicationsService.addClientSecret(tenantId, selectedAppForSecrets.id, newSecretDescription);
       setNewSecretDescription('');
       setSuccess('Client secret added successfully');
       await fetchApplications();

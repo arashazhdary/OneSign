@@ -163,7 +163,8 @@ export default function TenantUsersPage() {
 
     try {
       // updateUserStatus expects (userId, status) parameters
-      await usersService.updateUserStatus(userId, 'Inactive');
+      // Use TenantUserStatus.Suspended (3) for inactive users
+      await usersService.updateUserStatus(userId, 3);
       setSuccess(t('tenant.users.userDisabled'));
       fetchUsers();
     } catch (error: any) {

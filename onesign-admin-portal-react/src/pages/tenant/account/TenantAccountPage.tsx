@@ -7,13 +7,18 @@ import { Helmet } from 'react-helmet-async';
 
 interface AccountProfile {
   id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
+  userId?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
+  displayName?: string;
   phoneNumber?: string;
   timezone?: string;
+  timeZone?: string;
   language?: string;
+  preferredLanguage?: string;
   avatarUrl?: string;
+  profilePictureUrl?: string;
 }
 
 interface Session {
@@ -69,12 +74,18 @@ export default function TenantAccountPage() {
   const fetchProfile = async () => {
     try {
       const data = await usersService.getAccountProfile();
-      setProfile(data);
-      setFirstName(data.firstName);
-      setLastName(data.lastName);
-      setPhoneNumber(data.phoneNumber || '');
-      setTimezone(data.timezone || 'UTC');
-      setLanguage(data.language || 'en');
+      if (data) {
+        // Cast to AccountProfile with type assertion for compatibility
+        const profileData = data as unknown as AccountProfile;
+        setProfile(profileData);
+        // Handle both naming conventions - use type assertion to access both API formats
+        const anyData = data as any;
+        setFirstName(anyData.firstName || profileData.displayName?.split(' ')[0] || '');
+        setLastName(anyData.lastName || profileData.displayName?.split(' ').slice(1).join(' ') || '');
+        setPhoneNumber(profileData.phoneNumber || '');
+        setTimezone(profileData.timeZone || anyData.timezone || 'UTC');
+        setLanguage(profileData.preferredLanguage || anyData.language || 'en');
+      }
     } catch (err: any) {
       console.error('Error fetching profile:', err);
       setError(err?.message || t('common.error'));
@@ -100,11 +111,11 @@ export default function TenantAccountPage() {
 
     try {
       await usersService.updateAccountProfile({
-        firstName,
-        lastName,
-        phone: phoneNumber,
-        timezone,
-        language
+        userId: profile?.id || profile?.userId || '',
+        displayName: `${firstName} ${lastName}`.trim(),
+        phoneNumber,
+        timeZone: timezone,
+        preferredLanguage: language
       });
       setSuccess(t('tenant.account.profileUpdated'));
       setEditMode(false);
@@ -126,11 +137,7 @@ export default function TenantAccountPage() {
     }
 
     try {
-      await usersService.changePassword({
-        currentPassword,
-        newPassword,
-        confirmPassword
-      });
+      await usersService.changePassword(currentPassword, newPassword);
       setSuccess(t('tenant.account.passwordChanged'));
       setCurrentPassword('');
       setNewPassword('');

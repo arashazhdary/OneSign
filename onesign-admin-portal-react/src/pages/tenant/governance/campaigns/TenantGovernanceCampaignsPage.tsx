@@ -83,7 +83,7 @@ export default function TenantGovernanceCampaignsPage() {
       await governanceService.createCampaign({
         name,
         description,
-        targetType,
+        type: targetType,
         startDate,
         endDate
       });

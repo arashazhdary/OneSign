@@ -107,7 +107,7 @@ export default function TenantScopesPage() {
   const fetchApplications = async () => {
     if (!tenantId) return;
     try {
-      const data = await applicationsService.getApplications({ tenantId, pageNumber: 1, pageSize: 1000 });
+      const data = await applicationsService.getApplications({ page: 1, pageSize: 1000 });
       setApplications(data.items || []);
     } catch (error) {
       console.error('Error fetching applications:', error);

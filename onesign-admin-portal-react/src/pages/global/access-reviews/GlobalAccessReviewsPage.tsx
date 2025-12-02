@@ -419,7 +419,6 @@ export default function GlobalAccessReviewsPage() {
         scope: 'Global',
         startDate: campaignStartDate,
         endDate: campaignEndDate,
-        deadline: campaignDeadline,
       });
       setSuccess('Access review campaign created successfully');
       setShowCreateCampaignModal(false);
@@ -441,10 +440,8 @@ export default function GlobalAccessReviewsPage() {
       await governanceService.certifyItem(
         selectedReviewItem.campaignId,
         selectedReviewItem.id,
-        {
-          decision: reviewDecision === 'approve' ? 'Approved' : 'Revoked',
-          comment: reviewJustification,
-        }
+        reviewDecision === 'approve' ? 'approve' : 'revoke',
+        reviewJustification
       );
       setSuccess(`Access ${reviewDecision === 'approve' ? 'approved' : 'revoked'} successfully`);
       setShowReviewModal(false);

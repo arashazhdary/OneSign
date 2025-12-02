@@ -100,8 +100,9 @@ const AppsPage = () => {
   const handleCreateApp = async () => {
     try {
       await applicationsService.createApplication({
+        tenantId: '',
         name: formData.name,
-        applicationType: formData.type === 'web' ? 1 : formData.type === 'mobile' ? 2 : formData.type === 'desktop' ? 3 : 4,
+        applicationType: formData.type,
       });
       toast.success(t('apps.appCreated') || 'Application created successfully');
       setIsAddModalOpen(false);

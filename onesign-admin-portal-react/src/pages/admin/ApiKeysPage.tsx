@@ -16,13 +16,14 @@ import { adminService } from '@/lib/api/services/admin.service';
 interface ApiKey {
   id: string;
   name: string;
-  key: string;
-  environment: 'production' | 'development' | 'staging';
-  status: 'active' | 'revoked';
-  createdBy: string;
+  key?: string;
+  apiKey?: string;
+  environment?: 'production' | 'development' | 'staging' | string;
+  status?: 'active' | 'revoked' | string;
+  createdBy?: string;
   lastUsed?: string;
   expiresAt?: string;
-  createdAt: string;
+  createdAt?: string;
 }
 
 const ApiKeysPage = () => {
