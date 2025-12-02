@@ -191,12 +191,12 @@ const UsersPage = () => {
 
   const handleView = (user: User) => {
     // TODO: Navigate to user detail page
-    toast.info(t('common.view') + ': ' + user.name);
+    toast(t('common.view') + ': ' + user.name);
   };
 
   const handleManageRoles = (user: User) => {
     // TODO: Open role assignment modal
-    toast.info(t('users.manageRoles') + ': ' + user.name);
+    toast(t('users.manageRoles') + ': ' + user.name);
   };
 
   const handleToggleStatus = async (user: User) => {

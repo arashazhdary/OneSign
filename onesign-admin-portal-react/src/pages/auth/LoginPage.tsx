@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { authService } from '@/lib/api/services';
+import { authService, LoginResponse } from '@/lib/api/services';
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -11,6 +11,26 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const handleLoginSuccess = (response: LoginResponse) => {
+    // Check if MFA is required
+    if (response.mfaRequired && response.challengeId) {
+      // Store challenge info and redirect to MFA page
+      sessionStorage.setItem('mfaChallengeId', response.challengeId);
+      sessionStorage.setItem('mfaMethodType', String(response.mfaMethodType || 0));
+      if (response.maskedDestination) {
+        sessionStorage.setItem('mfaMaskedDestination', response.maskedDestination);
+      }
+      navigate('/auth/mfa-challenge');
+      return;
+    }
+
+    // Store tokens using the helper method
+    authService.storeTokens(response);
+
+    // Redirect to dashboard
+    navigate('/dashboard');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -18,15 +38,10 @@ export default function LoginPage() {
 
     try {
       const response = await authService.signIn(email, password);
-
-      // Store tokens (you can use a more secure method)
-      localStorage.setItem('accessToken', response.token);
-      localStorage.setItem('refreshToken', response.refreshToken);
-
-      // Redirect to dashboard
-      navigate('/dashboard');
+      handleLoginSuccess(response);
     } catch (err: any) {
-      setError(err.message || t('common.failedToSignIn'));
+      const errorMessage = err.response?.data?.message || err.message || t('common.failedToSignIn');
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -44,7 +59,8 @@ export default function LoginPage() {
       // Redirect to Google OAuth
       window.location.href = authUrl;
     } catch (err: any) {
-      setError(err.message || t('common.failedToInitializeGoogleLogin'));
+      const errorMessage = err.message || t('common.failedToInitializeGoogleLogin');
+      setError(errorMessage);
       setLoading(false);
     }
   };

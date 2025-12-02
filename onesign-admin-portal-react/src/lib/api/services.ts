@@ -1146,6 +1146,59 @@ export const applicationsService = {
       throw error;
     }
   },
+
+  // Org Units Tree - for application assignment
+  getOrgUnitsTree: async (tenantId?: string): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/orgunits/tree');
+      return response.data || [];
+    } catch (error) {
+      console.error('Failed to fetch org units tree:', error);
+      return [];
+    }
+  },
+
+  // Application Org Units
+  getApplicationOrgUnits: async (tenantId: string | null, appId: string): Promise<{ orgUnitIds: string[] }> => {
+    try {
+      const response = await apiClient.get(`/api/tenant/applications/${appId}/org-units`);
+      return response.data || { orgUnitIds: [] };
+    } catch (error) {
+      console.error('Failed to fetch application org units:', error);
+      return { orgUnitIds: [] };
+    }
+  },
+
+  // Assign org units to application
+  assignOrgUnits: async (tenantId: string | null, appId: string, orgUnitIds: string[]): Promise<void> => {
+    await apiClient.put(`/api/tenant/applications/${appId}/org-units`, { orgUnitIds });
+  },
+
+  // Redirect URIs management
+  addRedirectUri: async (tenantId: string | null, appId: string, uri: string): Promise<{ id: string; uri: string }> => {
+    const response = await apiClient.post(`/api/tenant/applications/${appId}/redirect-uris`, { uri });
+    return response.data;
+  },
+
+  removeRedirectUri: async (tenantId: string | null, redirectUriId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/applications/redirect-uris/${redirectUriId}`);
+  },
+
+  // Client Secrets management
+  addClientSecret: async (tenantId: string | null, appId: string, description: string): Promise<{ secretValue: string; id: string }> => {
+    const response = await apiClient.post(`/api/tenant/applications/${appId}/secrets`, { description });
+    return response.data;
+  },
+
+  removeClientSecret: async (tenantId: string | null, secretId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/applications/secrets/${secretId}`);
+  },
+
+  // Regenerate secret
+  regenerateSecret: async (tenantId: string | null, appId: string): Promise<{ clientSecret: string }> => {
+    const response = await apiClient.post(`/api/tenant/applications/${appId}/regenerate-secret`);
+    return response.data;
+  },
 };
 
 // Security Service
@@ -1191,27 +1244,124 @@ export const securityService = {
   },
 };
 
+// User Types based on Swagger API
+export interface TenantUserDto {
+  id: string;
+  globalUserId: string;
+  email: string;
+  tenantId: string;
+  status: TenantUserStatus;
+  isAdmin: boolean;
+  firstLoginAt?: string;
+  lastLoginAt?: string;
+  createdAt: string;
+}
+
+export enum TenantUserStatus {
+  Invited = 1,
+  Active = 2,
+  Suspended = 3,
+  Deleted = 4
+}
+
+export interface InviteUserRequest {
+  email: string;
+  isAdmin: boolean;
+}
+
+export interface CurrentUserScopeDto {
+  userId: string;
+  isGlobalAdmin: boolean;
+  rootOrgUnitIds: string[];
+  allowedOrgUnitIds: string[];
+}
+
+export interface UserProfileDto {
+  id: string;
+  userId: string;
+  displayName: string;
+  phoneNumber?: string;
+  profilePictureUrl?: string;
+  timeZone?: string;
+  preferredLanguage?: string;
+  customAttributes?: Record<string, any>;
+}
+
+export interface TenantUserDtoPagedResult {
+  items: TenantUserDto[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
+  // Backward compatibility aliases
+  data?: TenantUserDto[];
+  total?: number;
+  page?: number;
+}
+
 // Users Service - Updated based on Swagger API
 export const usersService = {
-  // User management
+  /**
+   * GET /api/tenant/users - List tenant users with pagination
+   * Supports both page and pageNumber for backward compatibility
+   */
   getUsers: async (params?: {
     page?: number;
+    pageNumber?: number;
     pageSize?: number;
     search?: string;
     sort?: string;
     order?: 'asc' | 'desc';
+    orgUnitId?: string;
+    status?: TenantUserStatus | string;
+    tenantId?: string;
     filters?: Record<string, any>;
-  }) => {
+  }): Promise<TenantUserDtoPagedResult> => {
     try {
-      const response = await apiClient.get('/api/tenant/users', { params });
-      return response.data;
+      // Normalize parameters
+      const apiParams: any = {
+        pageNumber: params?.pageNumber || params?.page || 1,
+        pageSize: params?.pageSize || 10,
+        search: params?.search,
+        sort: params?.sort,
+        order: params?.order,
+        orgUnitId: params?.orgUnitId,
+      };
+      // Handle status - convert string to enum if needed
+      if (params?.status) {
+        if (typeof params.status === 'string') {
+          const statusMap: Record<string, TenantUserStatus> = {
+            'Invited': TenantUserStatus.Invited,
+            'Active': TenantUserStatus.Active,
+            'Suspended': TenantUserStatus.Suspended,
+            'Inactive': TenantUserStatus.Suspended,
+            'Deleted': TenantUserStatus.Deleted,
+          };
+          apiParams.status = statusMap[params.status] || params.status;
+        } else {
+          apiParams.status = params.status;
+        }
+      }
+
+      const response = await apiClient.get('/api/tenant/users', { params: apiParams });
+      const data = response.data || { items: [], totalCount: 0, pageNumber: 1, pageSize: 10, totalPages: 0 };
+      // Add backward compatibility fields
+      return {
+        ...data,
+        data: data.items,
+        total: data.totalCount,
+        page: data.pageNumber,
+      };
     } catch (error) {
       console.error('Failed to fetch users:', error);
-      return { data: [], total: 0, page: 1, pageSize: 10 };
+      return { items: [], totalCount: 0, pageNumber: 1, pageSize: 10, totalPages: 0, data: [], total: 0, page: 1 };
     }
   },
 
-  getUserById: async (userId: string) => {
+  /**
+   * GET /api/tenant/users/{tenantUserId} - Get user by ID
+   */
+  getUserById: async (userId: string): Promise<TenantUserDto | null> => {
     try {
       const response = await apiClient.get(`/api/tenant/users/${userId}`);
       return response.data;
@@ -1221,59 +1371,285 @@ export const usersService = {
     }
   },
 
-  createUser: async (data: any) => {
+  /**
+   * POST /api/tenant/users/invite - Invite new user
+   */
+  inviteUser: async (data: InviteUserRequest): Promise<TenantUserDto> => {
+    const response = await apiClient.post('/api/tenant/users/invite', data);
+    return response.data;
+  },
+
+  /**
+   * PATCH /api/tenant/users/{tenantUserId}/status - Update user status
+   */
+  updateUserStatus: async (userId: string, status: TenantUserStatus): Promise<void> => {
+    await apiClient.patch(`/api/tenant/users/${userId}/status`, { status });
+  },
+
+  /**
+   * GET /api/tenant/users/{tenantUserId}/org-units - Get user's org units
+   */
+  getUserOrgUnits: async (userId: string): Promise<{ primaryOrgUnitId: string; secondaryOrgUnitIds: string[] }> => {
     try {
-      const response = await apiClient.post('/api/tenant/users', data);
+      const response = await apiClient.get(`/api/tenant/users/${userId}/org-units`);
       return response.data;
     } catch (error) {
-      console.error('Failed to create user:', error);
-      throw error;
+      console.error('Failed to fetch user org units:', error);
+      return { primaryOrgUnitId: '', secondaryOrgUnitIds: [] };
     }
   },
 
-  updateUser: async (userId: string, data: any) => {
+  /**
+   * PUT /api/tenant/users/{tenantUserId}/org-units - Assign org units to user
+   * Accepts both object with primaryOrgUnitId/secondaryOrgUnitIds or array of orgUnitIds
+   */
+  updateUserOrgUnits: async (userId: string, data: { primaryOrgUnitId: string; secondaryOrgUnitIds: string[] } | string[]): Promise<void> => {
+    // Normalize data - if array is passed, use first as primary
+    let normalizedData: { primaryOrgUnitId: string; secondaryOrgUnitIds: string[] };
+    if (Array.isArray(data)) {
+      normalizedData = {
+        primaryOrgUnitId: data[0] || '',
+        secondaryOrgUnitIds: data.slice(1),
+      };
+    } else {
+      normalizedData = data;
+    }
+    await apiClient.put(`/api/tenant/users/${userId}/org-units`, normalizedData);
+  },
+
+  /**
+   * GET /api/tenant/users/current/scope - Get current user's scope
+   */
+  getCurrentUserScope: async (): Promise<CurrentUserScopeDto> => {
+    const response = await apiClient.get('/api/tenant/users/current/scope');
+    return response.data;
+  },
+
+  /**
+   * PUT /api/user/account/profile - Update current user's profile
+   */
+  updateAccountProfile: async (data: {
+    userId: string;
+    displayName?: string;
+    phoneNumber?: string;
+    timeZone?: string;
+    preferredLanguage?: string;
+  }): Promise<UserProfileDto> => {
+    const response = await apiClient.put('/api/user/account/profile', data);
+    return response.data;
+  },
+
+  /**
+   * GET /api/user/account/activities - Get current user's activities
+   */
+  getAccountActivities: async (params?: { page?: number; pageSize?: number }): Promise<any[]> => {
     try {
-      const response = await apiClient.put(`/api/tenant/users/${userId}`, data);
+      const response = await apiClient.get('/api/user/account/activities', { params });
       return response.data;
     } catch (error) {
-      console.error('Failed to update user:', error);
-      throw error;
+      console.error('Failed to fetch account activities:', error);
+      return [];
+    }
+  },
+
+  /**
+   * GET /api/tenant/adaptive-security/users/{userId}/context - Get user security context
+   */
+  getUserSecurityContext: async (userId: string): Promise<any> => {
+    try {
+      const response = await apiClient.get(`/api/tenant/adaptive-security/users/${userId}/context`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user security context:', error);
+      return null;
+    }
+  },
+
+  /**
+   * PUT /api/tenant/adaptive-security/users/{userId}/context - Update user security context
+   */
+  updateUserSecurityContext: async (userId: string, data: any): Promise<void> => {
+    await apiClient.put(`/api/tenant/adaptive-security/users/${userId}/context`, data);
+  },
+
+  /**
+   * GET /api/tenant/adaptive-security/users/{userId}/risk-score - Get user risk score
+   */
+  getUserRiskScore: async (userId: string): Promise<{ riskScore: number; riskLevel: string }> => {
+    try {
+      const response = await apiClient.get(`/api/tenant/adaptive-security/users/${userId}/risk-score`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user risk score:', error);
+      return { riskScore: 0, riskLevel: 'low' };
+    }
+  },
+
+  /**
+   * GET /api/tenant/lifecycle/users/{userId}/timeline - Get user lifecycle timeline
+   */
+  getUserLifecycle: async (userId: string): Promise<any[]> => {
+    try {
+      const response = await apiClient.get(`/api/tenant/lifecycle/users/${userId}/timeline`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user lifecycle:', error);
+      return [];
+    }
+  },
+
+  /**
+   * GET /api/tenant/insights/users/security-posture - Get users security posture list
+   */
+  getUsersSecurityPosture: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/insights/users/security-posture');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch users security posture:', error);
+      return [];
+    }
+  },
+
+  /**
+   * GET /api/connect/userinfo - Get current user info (OIDC)
+   */
+  getUserInfo: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/connect/userinfo');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user info:', error);
+      return null;
+    }
+  },
+
+  /**
+   * Export users - GET /api/tenant/insights/export/users
+   */
+  exportUsers: async (format: 'pdf' | 'excel' | 'csv' = 'csv'): Promise<Blob> => {
+    const response = await apiClient.get('/api/tenant/insights/export/users', {
+      params: { format },
+      responseType: 'blob'
+    });
+    return response.data;
+  },
+
+  // Legacy methods for backward compatibility
+  createUser: async (data: any) => {
+    return usersService.inviteUser(data);
+  },
+
+  updateUser: async (userId: string, data: any) => {
+    // For now, only status update is supported by swagger
+    if (data.status !== undefined) {
+      await usersService.updateUserStatus(userId, data.status);
     }
   },
 
   deleteUser: async (userId: string) => {
+    await usersService.updateUserStatus(userId, TenantUserStatus.Deleted);
+  },
+
+  // Additional helper methods for pages that expect these
+  getUserProfile: async (userId: string): Promise<UserProfileDto | null> => {
     try {
-      await apiClient.delete(`/api/tenant/users/${userId}`);
-      return true;
+      const user = await usersService.getUserById(userId);
+      if (!user) return null;
+      // Map TenantUserDto to UserProfileDto-like structure
+      return {
+        id: user.id,
+        userId: user.globalUserId,
+        displayName: user.email.split('@')[0],
+        phoneNumber: undefined,
+        profilePictureUrl: undefined,
+        timeZone: undefined,
+        preferredLanguage: undefined
+      };
     } catch (error) {
-      console.error('Failed to delete user:', error);
-      throw error;
+      console.error('Failed to fetch user profile:', error);
+      return null;
     }
   },
 
-  // Bulk operations
-  bulkDelete: async (userIds: string[]) => {
+  getUserRiskAssessment: async (userId: string) => {
+    return usersService.getUserRiskScore(userId);
+  },
+
+  getUserAccessPackages: async (userId: string): Promise<any[]> => {
+    // This endpoint may not exist in swagger - return empty for now
+    return [];
+  },
+
+  getUserPrivilegedSessions: async (userId: string): Promise<any[]> => {
+    // This endpoint may not exist in swagger - return empty for now
+    return [];
+  },
+
+  getUserAuditTrail: async (userId: string): Promise<any[]> => {
     try {
-      const response = await apiClient.post('/api/tenant/users/bulk-delete', { ids: userIds });
-      return response.data;
+      const response = await apiClient.get('/api/tenant/audit', {
+        params: { userId, pageSize: 50 }
+      });
+      return response.data?.items || [];
     } catch (error) {
-      console.error('Failed to bulk delete users:', error);
-      throw error;
+      console.error('Failed to fetch user audit trail:', error);
+      return [];
     }
   },
 
-  bulkUpdate: async (userIds: string[], updates: any) => {
+  updateUserProfile: async (userId: string, data: Partial<UserProfileDto>): Promise<void> => {
+    await usersService.updateAccountProfile({
+      userId,
+      displayName: data.displayName,
+      phoneNumber: data.phoneNumber,
+      timeZone: data.timeZone,
+      preferredLanguage: data.preferredLanguage
+    });
+  },
+
+  getAccountSessions: async (): Promise<any[]> => {
+    // Sessions endpoint - may not exist in swagger
     try {
-      const response = await apiClient.post('/api/tenant/users/bulk-update', { ids: userIds, updates });
-      return response.data;
+      const response = await apiClient.get('/api/tenant/sessions');
+      return response.data || [];
     } catch (error) {
-      console.error('Failed to bulk update users:', error);
-      throw error;
+      console.error('Failed to fetch account sessions:', error);
+      return [];
     }
   },
 
-  // User profile management (for current user)
-  getAccountProfile: async () => {
+  changePassword: async (currentPassword: string, newPassword: string): Promise<void> => {
+    // Password change endpoint
+    await apiClient.post('/api/user/account/change-password', {
+      currentPassword,
+      newPassword
+    });
+  },
+
+  revokeSession: async (sessionId: string): Promise<void> => {
+    await apiClient.delete(`/api/tenant/sessions/${sessionId}`);
+  },
+
+  revokeAllUserSessions: async (userId: string): Promise<void> => {
+    await apiClient.post(`/api/tenant/users/${userId}/revoke-sessions`);
+  },
+
+  revokeSuspiciousSessions: async (): Promise<void> => {
+    await apiClient.post('/api/tenant/sessions/revoke-suspicious');
+  },
+
+  getSessionHistory: async (params?: any): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/sessions/history', { params });
+      return response.data || [];
+    } catch (error) {
+      console.error('Failed to fetch session history:', error);
+      return [];
+    }
+  },
+
+  getAccountProfile: async (): Promise<UserProfileDto | null> => {
     try {
       const response = await apiClient.get('/api/user/account/profile');
       return response.data;
@@ -1283,83 +1659,13 @@ export const usersService = {
     }
   },
 
-  updateAccountProfile: async (data: {
-    userId: string;
-    displayName?: string;
-    phoneNumber?: string;
-    timeZone?: string;
-    preferredLanguage?: string;
-  }) => {
+  getUserActivities: async (userId: string, params?: any): Promise<any[]> => {
     try {
-      const response = await apiClient.put('/api/user/account/profile', data);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to update account profile:', error);
-      throw error;
-    }
-  },
-
-  // User security context
-  updateUserSecurityContext: async (data: {
-    userId: string;
-    lastLoginLocation?: string;
-    lastLoginDevice?: string;
-    trustedDevices?: string[];
-    trustedLocations?: string[];
-  }) => {
-    try {
-      const response = await apiClient.put('/api/user/account/security-context', data);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to update user security context:', error);
-      throw error;
-    }
-  },
-
-  // User activities
-  getUserActivities: async (userId: string, params?: any) => {
-    try {
-      const response = await apiClient.get(`/api/users/${userId}/activities`, { params });
-      return response.data;
+      const response = await apiClient.get(`/api/tenant/users/${userId}/activities`, { params });
+      return response.data || [];
     } catch (error) {
       console.error('Failed to fetch user activities:', error);
       return [];
-    }
-  },
-
-  // MFA methods for user
-  getUserMFAMethods: async (userId: string) => {
-    try {
-      const response = await apiClient.get(`/api/users/${userId}/mfa-methods`);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch user MFA methods:', error);
-      return [];
-    }
-  },
-
-  // User security posture
-  getUserSecurityPosture: async (userId: string) => {
-    try {
-      const response = await apiClient.get(`/api/users/${userId}/security-posture`);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch user security posture:', error);
-      return null;
-    }
-  },
-
-  // Export users
-  exportUsers: async (format: 'pdf' | 'excel' | 'csv' = 'csv', params?: any) => {
-    try {
-      const response = await apiClient.get('/api/users/export', {
-        params: { format, ...params },
-        responseType: 'blob'
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Failed to export users:', error);
-      throw error;
     }
   },
 };
@@ -1956,133 +2262,289 @@ export const governanceService = {
       throw error;
     }
   },
-};
 
-// Auth Service - Updated based on Swagger API
-export const authService = {
-  login: async (email: string, password: string) => {
+  // Campaign management
+  createCampaign: async (data: {
+    name: string;
+    description?: string;
+    type: string;
+    scope?: any;
+    startDate?: string;
+    endDate?: string;
+  }) => {
     try {
-      const response = await apiClient.post('/api/auth/login', { email, password });
+      const response = await apiClient.post('/api/tenant/governance/campaigns', data);
       return response.data;
     } catch (error) {
-      console.error('Failed to login:', error);
+      console.error('Failed to create campaign:', error);
       throw error;
     }
   },
 
-  signIn: async (credentials: { email: string; password: string }) => {
+  certifyItem: async (campaignId: string, itemId: string, decision: 'approve' | 'revoke' | 'skip', comment?: string) => {
     try {
-      const response = await apiClient.post('/api/auth/login', credentials);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to sign in:', error);
-      throw error;
-    }
-  },
-
-  logout: async () => {
-    try {
-      const response = await apiClient.post('/api/auth/logout');
-      return response.data;
-    } catch (error) {
-      console.error('Failed to logout:', error);
-      throw error;
-    }
-  },
-
-  refreshToken: async (refreshToken: string) => {
-    try {
-      const response = await apiClient.post('/api/auth/refresh', { refreshToken });
-      return response.data;
-    } catch (error) {
-      console.error('Failed to refresh token:', error);
-      throw error;
-    }
-  },
-
-  forgotPassword: async (email: string) => {
-    try {
-      const response = await apiClient.post('/api/auth/forgot-password', { email });
-      return response.data;
-    } catch (error) {
-      console.error('Failed to request password reset:', error);
-      throw error;
-    }
-  },
-
-  resetPassword: async (token: string, password: string) => {
-    try {
-      const response = await apiClient.post('/api/auth/reset-password', { token, password });
-      return response.data;
-    } catch (error) {
-      console.error('Failed to reset password:', error);
-      throw error;
-    }
-  },
-
-  verifyEmail: async (token: string) => {
-    try {
-      const response = await apiClient.post('/api/auth/verify-email', { token });
-      return response.data;
-    } catch (error) {
-      console.error('Failed to verify email:', error);
-      throw error;
-    }
-  },
-
-  getCurrentUser: async () => {
-    try {
-      const response = await apiClient.get('/api/auth/me');
-      return response.data;
-    } catch (error) {
-      console.error('Failed to get current user:', error);
-      throw error;
-    }
-  },
-
-  // MFA related endpoints
-  setupMFA: async (methodType: number) => {
-    try {
-      const response = await apiClient.post('/api/auth/mfa/setup', { methodType });
-      return response.data;
-    } catch (error) {
-      console.error('Failed to setup MFA:', error);
-      throw error;
-    }
-  },
-
-  verifyMFA: async (challengeId: string, code: string, rememberDevice: boolean = false) => {
-    try {
-      const response = await apiClient.post('/api/auth/mfa/verify', {
-        challengeId,
-        code,
-        rememberDevice
+      const response = await apiClient.post(`/api/tenant/governance/campaigns/${campaignId}/items/${itemId}/certify`, {
+        decision,
+        comment
       });
       return response.data;
     } catch (error) {
-      console.error('Failed to verify MFA:', error);
+      console.error('Failed to certify item:', error);
       throw error;
     }
   },
 
-  getMFAMethods: async () => {
+  closeCampaign: async (campaignId: string) => {
     try {
-      const response = await apiClient.get('/api/auth/mfa/methods');
+      const response = await apiClient.post(`/api/tenant/governance/campaigns/${campaignId}/close`);
       return response.data;
     } catch (error) {
-      console.error('Failed to get MFA methods:', error);
+      console.error('Failed to close campaign:', error);
       throw error;
     }
   },
 
-  removeMFAMethod: async (methodId: string) => {
+  // Compliance frameworks
+  getFrameworks: async (tenantId?: string) => {
     try {
-      const response = await apiClient.delete(`/api/auth/mfa/methods/${methodId}`);
+      const response = await apiClient.get('/api/tenant/governance/compliance/frameworks');
+      return response.data || [];
+    } catch (error) {
+      console.error('Failed to fetch frameworks:', error);
+      return [];
+    }
+  },
+
+  // Violations (tenant level)
+  getViolations: async (tenantId?: string, params?: any) => {
+    try {
+      const response = await apiClient.get('/api/tenant/governance/compliance/violations', { params });
+      return response.data || [];
+    } catch (error) {
+      console.error('Failed to fetch violations:', error);
+      return [];
+    }
+  },
+
+  resolveViolation: async (violationId: string, resolution: { action: string; comment?: string }) => {
+    try {
+      const response = await apiClient.post(`/api/tenant/governance/compliance/violations/${violationId}/resolve`, resolution);
       return response.data;
     } catch (error) {
-      console.error('Failed to remove MFA method:', error);
+      console.error('Failed to resolve violation:', error);
       throw error;
     }
+  },
+
+  // Reports
+  getReports: async (tenantId?: string, params?: any) => {
+    try {
+      const response = await apiClient.get('/api/tenant/governance/reports', { params });
+      return response.data || [];
+    } catch (error) {
+      console.error('Failed to fetch reports:', error);
+      return [];
+    }
+  },
+
+  generateReport: async (reportType: string, params?: any) => {
+    try {
+      const response = await apiClient.post('/api/tenant/governance/reports/generate', {
+        type: reportType,
+        ...params
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to generate report:', error);
+      throw error;
+    }
+  },
+
+  exportReport: async (reportId: string, format: 'pdf' | 'csv' | 'excel' = 'pdf') => {
+    try {
+      const response = await apiClient.get(`/api/tenant/governance/reports/${reportId}/export`, {
+        params: { format },
+        responseType: 'blob'
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to export report:', error);
+      throw error;
+    }
+  },
+};
+
+// Auth Types based on Swagger API
+export interface LoginRequest {
+  email: string;
+  password: string;
+  deviceFingerprint?: string;
+}
+
+export interface LoginResponse {
+  accessToken: string;
+  idToken: string;
+  tokenType: string;
+  expiresIn: number;
+  mfaRequired: boolean;
+  challengeId?: string;
+  mfaMethodType?: number;
+  maskedDestination?: string;
+}
+
+export interface CompleteFirstLoginRequest {
+  tenantUserId: string;
+  password: string;
+}
+
+export interface VerifyMfaRequest {
+  challengeId: string;
+  code: string;
+  rememberDevice: boolean;
+  deviceFingerprint?: string;
+}
+
+// Auth Service - Updated based on Swagger API
+export const authService = {
+  /**
+   * POST /api/auth/login - Login with email and password
+   * Returns LoginResponse with tokens or MFA challenge
+   */
+  login: async (email: string, password: string, deviceFingerprint?: string): Promise<LoginResponse> => {
+    const response = await apiClient.post('/api/auth/login', {
+      email,
+      password,
+      deviceFingerprint
+    });
+    return response.data;
+  },
+
+  /**
+   * Alias for login - supports both signatures for backward compatibility
+   */
+  signIn: async (emailOrCredentials: string | { email: string; password: string }, password?: string): Promise<LoginResponse> => {
+    if (typeof emailOrCredentials === 'string') {
+      return authService.login(emailOrCredentials, password || '');
+    }
+    return authService.login(emailOrCredentials.email, emailOrCredentials.password);
+  },
+
+  /**
+   * POST /api/auth/logout - Logout current user
+   */
+  logout: async () => {
+    try {
+      await apiClient.post('/api/auth/logout');
+    } catch (error) {
+      // Ignore logout errors, just clear local state
+      console.warn('Logout request failed:', error);
+    }
+    // Always clear local storage
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('idToken');
+    localStorage.removeItem('refreshToken');
+  },
+
+  /**
+   * POST /api/auth/forgot-password - Request password reset
+   */
+  forgotPassword: async (email: string) => {
+    const response = await apiClient.post('/api/auth/forgot-password', { email });
+    return response.data;
+  },
+
+  /**
+   * POST /api/auth/reset-password - Confirm password reset
+   */
+  resetPassword: async (token: string, newPassword: string) => {
+    const response = await apiClient.post('/api/auth/reset-password', {
+      token,
+      newPassword
+    });
+    return response.data;
+  },
+
+  /**
+   * POST /api/auth/google-login - Login with Google OAuth
+   */
+  googleLogin: async (idToken: string, clientId: string): Promise<LoginResponse> => {
+    const response = await apiClient.post('/api/auth/google-login', {
+      idToken,
+      clientId
+    });
+    return response.data;
+  },
+
+  /**
+   * Get Google OAuth URL for redirect - client-side implementation
+   * Note: This is a client-side helper, not a backend endpoint
+   */
+  getGoogleAuthUrl: async (redirectUri: string): Promise<{ authUrl: string }> => {
+    // Google OAuth client ID from environment
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+    if (!clientId) {
+      throw new Error('Google OAuth is not configured');
+    }
+
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+      `client_id=${encodeURIComponent(clientId)}&` +
+      `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+      `response_type=code&` +
+      `scope=${encodeURIComponent('openid email profile')}&` +
+      `access_type=offline&` +
+      `prompt=consent`;
+
+    return { authUrl };
+  },
+
+  /**
+   * POST /api/auth/complete-first-login - Complete first-time login
+   */
+  completeFirstLogin: async (tenantUserId: string, password: string) => {
+    const response = await apiClient.post('/api/auth/complete-first-login', {
+      tenantUserId,
+      password
+    });
+    return response.data;
+  },
+
+  /**
+   * POST /api/auth/mfa/verify - Verify MFA code
+   */
+  verifyMFA: async (challengeId: string, code: string, rememberDevice: boolean = false, deviceFingerprint?: string): Promise<LoginResponse> => {
+    const response = await apiClient.post('/api/auth/mfa/verify', {
+      challengeId,
+      code,
+      rememberDevice,
+      deviceFingerprint
+    });
+    return response.data;
+  },
+
+  /**
+   * Store tokens after successful login
+   */
+  storeTokens: (response: LoginResponse) => {
+    if (response.accessToken) {
+      localStorage.setItem('accessToken', response.accessToken);
+    }
+    if (response.idToken) {
+      localStorage.setItem('idToken', response.idToken);
+    }
+  },
+
+  /**
+   * Get stored access token
+   */
+  getAccessToken: (): string | null => {
+    return localStorage.getItem('accessToken');
+  },
+
+  /**
+   * Check if user is authenticated
+   */
+  isAuthenticated: (): boolean => {
+    return !!localStorage.getItem('accessToken');
   },
 };
 

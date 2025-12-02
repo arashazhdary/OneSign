@@ -192,17 +192,17 @@ const RolesPage = () => {
 
   const handleView = (role: Role) => {
     // TODO: Navigate to role detail page
-    toast.info(t('common.view') + ': ' + role.name);
+    toast(t('common.view') + ': ' + role.name);
   };
 
   const handleEditPermissions = (role: Role) => {
     // TODO: Open permissions editor modal
-    toast.info(t('roles.editPermissions') + ': ' + role.name);
+    toast(t('roles.editPermissions') + ': ' + role.name);
   };
 
   const handleManageUsers = (role: Role) => {
     // TODO: Navigate to users with this role
-    toast.info(t('roles.manageUsers') + ': ' + role.name);
+    toast(t('roles.manageUsers') + ': ' + role.name);
   };
 
   const handleEdit = (role: Role) => {
