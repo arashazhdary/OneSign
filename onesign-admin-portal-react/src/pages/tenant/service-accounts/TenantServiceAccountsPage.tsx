@@ -77,9 +77,9 @@ export default function TenantServiceAccountsPage() {
     {
       key: 'isEnabled',
       label: 'Status',
-      render: (sa) => <StatusBadge status={sa.isEnabled ? 'Enabled' : 'Disabled'} />
+      render: (_, sa) => <StatusBadge status={sa.isEnabled ? 'Enabled' : 'Disabled'} />
     },
-    { key: 'createdAt', label: 'Created', render: (sa) => new Date(sa.createdAt).toLocaleDateString() }
+    { key: 'createdAt', label: 'Created', render: (_, sa) => new Date(sa.createdAt).toLocaleDateString() }
   ];
 
   return (

@@ -144,17 +144,17 @@ export default function TenantMfaManagementPage() {
     {
       key: 'isEnabled',
       label: 'Status',
-      render: (m) => <StatusBadge status={m.isEnabled ? 'Enabled' : 'Disabled'} />
+      render: (_, m) => <StatusBadge status={m.isEnabled ? 'Enabled' : 'Disabled'} />
     },
-    { key: 'enrolledAt', label: 'Enrolled', render: (m) => new Date(m.enrolledAt).toLocaleDateString() }
+    { key: 'enrolledAt', label: 'Enrolled', render: (_, m) => new Date(m.enrolledAt).toLocaleDateString() }
   ];
 
   const deviceColumns: Column<TrustedDevice>[] = [
     { key: 'deviceName', label: 'Device Name' },
     { key: 'deviceType', label: 'Type' },
     { key: 'ipAddress', label: 'IP Address' },
-    { key: 'trustedAt', label: 'Trusted Since', render: (d) => new Date(d.trustedAt).toLocaleDateString() },
-    { key: 'lastUsedAt', label: 'Last Used', render: (d) => new Date(d.lastUsedAt).toLocaleDateString() }
+    { key: 'trustedAt', label: 'Trusted Since', render: (_, d) => new Date(d.trustedAt).toLocaleDateString() },
+    { key: 'lastUsedAt', label: 'Last Used', render: (_, d) => new Date(d.lastUsedAt).toLocaleDateString() }
   ];
 
   return (

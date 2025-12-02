@@ -151,13 +151,13 @@ builder.Services.AddScoped<IWorkflowEngine, WorkflowEngineService>();
 var app = builder.Build();
 
 // Seed database with test data in development
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+//{
     using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<OnesignDbContext>();
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     await Onesign.Api.Data.DatabaseSeeder.SeedAsync(dbContext, logger);
-}
+//}
 
 // پیکربندی میدلورها و پایپلاین درخواست
 ConfigureMiddleware(app);
@@ -216,7 +216,7 @@ static void ConfigureSharedServices(WebApplicationBuilder builder)
     {
         options.AddDefaultPolicy(policy =>
         {
-            policy.WithOrigins("http://localhost:3000", "http://localhost:3001")
+            policy.AllowAnyOrigin()
                   .AllowAnyMethod()
                   .AllowAnyHeader()
                   .AllowCredentials();
@@ -305,6 +305,13 @@ static void ConfigureSharedServices(WebApplicationBuilder builder)
     {
         builder.Services.AddScoped<Onesign.Shared.Email.IEmailService, Onesign.Shared.Email.NullEmailService>();
     }
+
+    // =====================================================
+    // سرویس SMS (اختیاری)
+    // فقط در صورت پیکربندی SMS فعال می‌شود
+    // در غیر این صورت از NullSmsService استفاده می‌شود
+    // =====================================================
+    builder.Services.AddScoped<Onesign.Shared.Sms.ISmsService, Onesign.Shared.Sms.NullSmsService>();
 
     // =====================================================
     // سرویس محلی‌سازی

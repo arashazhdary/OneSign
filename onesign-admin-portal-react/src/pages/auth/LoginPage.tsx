@@ -17,13 +17,10 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await authService.signIn({
-        email,
-        password,
-      });
+      const response = await authService.signIn(email, password);
 
       // Store tokens (you can use a more secure method)
-      localStorage.setItem('accessToken', response.accessToken);
+      localStorage.setItem('accessToken', response.token);
       localStorage.setItem('refreshToken', response.refreshToken);
 
       // Redirect to dashboard

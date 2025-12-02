@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
-import { Plus, Edit, Trash2, Mail, Shield } from 'lucide-react';
+import { Plus, Edit, Trash2, Mail, Shield, MoreVertical, Eye, UserCheck, UserX } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import Card from '@/components/common/Card';
@@ -9,7 +9,7 @@ import Button from '@/components/common/Button';
 import DataTable, { Column } from '@/components/common/DataTable';
 import Modal from '@/components/common/Modal';
 import Input from '@/components/common/Input';
-import Dropdown from '@/components/common/Dropdown';
+import { ActionMenu } from '@/components/common/Dropdown';
 import Badge from '@/components/common/Badge';
 import Avatar from '@/components/common/Avatar';
 import { tenantService, TenantUserDto } from '@/lib/api/services/tenant.service';
@@ -147,23 +147,81 @@ const UsersPage = () => {
       label: t('common.actions'),
       align: 'right',
       render: (_, user) => (
-        <div className="flex items-center justify-end gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleEdit(user)}
-            leftIcon={<Edit className="w-4 h-4" />}
-          />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleDelete(user)}
-            leftIcon={<Trash2 className="w-4 h-4 text-danger-600" />}
-          />
-        </div>
+        <ActionMenu
+          items={[
+            {
+              label: t('common.view'),
+              icon: <Eye className="w-4 h-4" />,
+              onClick: () => handleView(user),
+            },
+            {
+              label: t('common.edit'),
+              icon: <Edit className="w-4 h-4" />,
+              onClick: () => handleEdit(user),
+            },
+            {
+              label: t('users.manageRoles'),
+              icon: <Shield className="w-4 h-4" />,
+              onClick: () => handleManageRoles(user),
+            },
+            {
+              label: user.status === 'active' ? t('users.suspend') : t('users.activate'),
+              icon: user.status === 'active' ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />,
+              onClick: () => handleToggleStatus(user),
+            },
+            {
+              label: t('users.sendInvite'),
+              icon: <Mail className="w-4 h-4" />,
+              onClick: () => handleSendInvite(user),
+            },
+            {
+              type: 'divider',
+            },
+            {
+              label: t('common.delete'),
+              icon: <Trash2 className="w-4 h-4" />,
+              onClick: () => handleDelete(user),
+              variant: 'danger',
+            },
+          ]}
+        />
       ),
     },
   ];
+
+  const handleView = (user: User) => {
+    // TODO: Navigate to user detail page
+    toast.info(t('common.view') + ': ' + user.name);
+  };
+
+  const handleManageRoles = (user: User) => {
+    // TODO: Open role assignment modal
+    toast.info(t('users.manageRoles') + ': ' + user.name);
+  };
+
+  const handleToggleStatus = async (user: User) => {
+    const newStatus = user.status === 'active' ? 'suspended' : 'active';
+    const actionText = newStatus === 'active' ? t('users.activate') : t('users.suspend');
+
+    try {
+      // TODO: Call API to update user status
+      setUsers((prev) =>
+        prev.map((u) => (u.id === user.id ? { ...u, status: newStatus } : u))
+      );
+      toast.success(`${actionText}: ${user.name}`);
+    } catch (error) {
+      toast.error(t('common.error'));
+    }
+  };
+
+  const handleSendInvite = async (user: User) => {
+    try {
+      // TODO: Call API to send invite
+      toast.success(`${t('users.inviteSent')}: ${user.email}`);
+    } catch (error) {
+      toast.error(t('common.error'));
+    }
+  };
 
   const handleEdit = (user: User) => {
     setSelectedUser(user);
@@ -333,7 +391,7 @@ const UsersPage = () => {
               leftIcon={<Mail className="w-4 h-4" />}
               placeholder="user@example.com"
             />
-            <Dropdown
+            <ActionMenu
               label={t('users.role')}
               options={[
                 { value: 'admin', label: 'Admin', icon: <Shield className="w-4 h-4" /> },
@@ -385,7 +443,7 @@ const UsersPage = () => {
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               leftIcon={<Mail className="w-4 h-4" />}
             />
-            <Dropdown
+            <ActionMenu
               label={t('users.role')}
               options={[
                 { value: 'admin', label: 'Admin', icon: <Shield className="w-4 h-4" /> },
@@ -397,7 +455,7 @@ const UsersPage = () => {
               value={formData.role}
               onChange={(value) => setFormData({ ...formData, role: value })}
             />
-            <Dropdown
+            <ActionMenu
               label={t('common.status')}
               options={[
                 { value: 'active', label: t('users.active') },

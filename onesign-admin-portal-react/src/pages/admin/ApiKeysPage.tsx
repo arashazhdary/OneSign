@@ -11,6 +11,7 @@ import Modal from '@/components/common/Modal';
 import Input from '@/components/common/Input';
 import Dropdown from '@/components/common/Dropdown';
 import Badge from '@/components/common/Badge';
+import { adminService } from '@/lib/api/services/admin.service';
 
 interface ApiKey {
   id: string;
@@ -43,21 +44,11 @@ const ApiKeysPage = () => {
   const fetchApiKeys = async () => {
     setLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      const mockKeys: ApiKey[] = Array.from({ length: 10 }, (_, i) => ({
-        id: `key-${i + 1}`,
-        name: `${['Production', 'Development', 'Staging'][i % 3]} API Key ${i + 1}`,
-        key: `sk_${Math.random().toString(36).substring(2, 15)}_${Math.random().toString(36).substring(2, 15)}`,
-        environment: ['production', 'development', 'staging'][i % 3] as any,
-        status: i % 5 === 0 ? 'revoked' : 'active',
-        createdBy: 'Admin User',
-        lastUsed: i % 2 === 0 ? new Date(Date.now() - i * 3600000).toISOString() : undefined,
-        expiresAt: i % 3 === 0 ? new Date(Date.now() + 90 * 86400000).toISOString() : undefined,
-        createdAt: new Date(Date.now() - i * 86400000).toISOString(),
-      }));
-      setApiKeys(mockKeys);
+      const data = await adminService.getApiKeys();
+      setApiKeys(data || []);
     } catch (error) {
       toast.error(t('common.error'));
+      console.error('Error fetching API keys:', error);
     } finally {
       setLoading(false);
     }

@@ -120,12 +120,12 @@ export default function TenantUsersPage() {
       return orgTree;
     }
     // If user has admin role, show all org units
-    const isAdmin = (userScope as any).isAdmin || userScope.roles?.includes('admin');
+    const isAdmin = userScope.isGlobalAdmin;
     if (isAdmin) {
       return orgTree;
     }
-    // Filter to show only allowed org units from userScope.orgUnits
-    const allowedOrgUnitIds = userScope.orgUnits || [];
+    // Filter to show only allowed org units from userScope.allowedOrgUnitIds
+    const allowedOrgUnitIds = userScope.allowedOrgUnitIds || [];
     const allNodes = getAllNodes(orgTree);
     return allNodes.filter(node => allowedOrgUnitIds.includes(node.id));
   };
@@ -235,7 +235,7 @@ export default function TenantUsersPage() {
           }}
           className="w-full max-w-xs px-3 py-2 border rounded"
         >
-          {(!userScope || userScope.roles?.includes('admin')) && <option value="">{t('common.all')}</option>}
+          {(!userScope || userScope.isGlobalAdmin) && <option value="">{t('common.all')}</option>}
           {getFilteredOrgTree().map(node => (
             <option key={node.id} value={node.id}>{node.name}</option>
           ))}

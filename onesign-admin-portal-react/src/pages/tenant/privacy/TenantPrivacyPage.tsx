@@ -131,7 +131,7 @@ export default function TenantPrivacyPage() {
     {
       key: 'enabled',
       label: 'Status',
-      render: (p) => <StatusBadge status={p.enabled ? 'Enabled' : 'Disabled'} />
+      render: (_, p) => <StatusBadge status={p.enabled ? 'Enabled' : 'Disabled'} />
     }
   ];
 
@@ -141,10 +141,10 @@ export default function TenantPrivacyPage() {
     {
       key: 'status',
       label: 'Status',
-      render: (r) => <StatusBadge status={r.status} />
+      render: (_, r) => <StatusBadge status={r.status} />
     },
     { key: 'reason', label: 'Reason' },
-    { key: 'createdAt', label: 'Created', render: (r) => new Date(r.createdAt).toLocaleDateString() }
+    { key: 'createdAt', label: 'Created', render: (_, r) => new Date(r.createdAt).toLocaleDateString() }
   ];
 
   return (

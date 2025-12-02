@@ -72,7 +72,7 @@ export const applicationsService = {
   /**
    * GET /api/tenant/applications/{id} - جزئیات اپلیکیشن
    */
-  getApplicationById: async (tenantId: string, appId: string): Promise<ApplicationDto | null> => {
+  getApplicationById: async (appId: string): Promise<ApplicationDto | null> => {
     try {
       const response = await apiClient.get(`/api/tenant/applications/${appId}`);
       return response.data;

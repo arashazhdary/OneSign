@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 import toast from 'react-hot-toast';
 import { extractTenantId } from '@/lib/utils/tenant-extractor';
+import { DEFAULT_TENANT_ID } from '@/lib/constants/testIds';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7000';
 
@@ -23,26 +24,29 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
-    // Extract tenant ID from multiple sources
-    const tenantId = extractTenantId({
-      headers: config.headers as Record<string, string>,
-      url: config.url,
-      skipStore: false, // Allow fallback to store
-    });
+    // Check if this is a tenant API call
+    const isTenantApi = config.url?.startsWith('/api/tenant/');
 
-    // Add tenant ID to headers if found
-    if (tenantId && config.headers) {
-      // Only add if not already present (to allow manual override)
-      if (!config.headers['X-Tenant-Id'] && !config.headers['x-tenant-id']) {
-        config.headers['X-Tenant-Id'] = tenantId;
+    if (isTenantApi) {
+      // For tenant APIs, add tenantId as query parameter
+      const tenantId = DEFAULT_TENANT_ID;
+
+      // Ensure params object exists
+      if (!config.params) {
+        config.params = {};
+      }
+
+      // Add tenantId to params if not already present
+      if (!config.params.tenantId) {
+        config.params.tenantId = tenantId;
       }
     }
 
     // Log request in development
     if (import.meta.env.DEV) {
       console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`, {
-        tenantId: tenantId || 'not found',
-        headers: config.headers,
+        params: config.params,
+        isTenantApi,
       });
     }
 

@@ -2,9 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
 import { DEFAULT_TENANT_ID } from '@/lib/constants/testIds';
-import { usersService } from '@/lib/api/services/users.service';
-import { applicationsService } from '@/lib/api/services/applications.service';
-import { securityService } from '@/lib/api/services/security.service';
+import { usersService, applicationsService, auditService } from '@/lib/api/services';
 import { Helmet } from 'react-helmet-async';
 
 export default function TenantDashboardPage() {
@@ -37,16 +35,16 @@ export default function TenantDashboardPage() {
 
     try {
       // Fetch users count
-      const usersData = await usersService.getUsers({ pageNumber: 1, pageSize: 1 });
-      setStats(prev => ({ ...prev, totalUsers: usersData.totalCount || 0 }));
+      const usersData = await usersService.getUsers({ page: 1, pageSize: 1 });
+      setStats(prev => ({ ...prev, totalUsers: usersData.total || 0 }));
 
       // Fetch applications count
-      const appsData = await applicationsService.getApplications({ tenantId, pageNumber: 1, pageSize: 1 });
+      const appsData = await applicationsService.getApplications({ page: 1, pageSize: 1 });
       setStats(prev => ({ ...prev, totalApplications: appsData.total || 0 }));
 
       // Fetch recent audit events count
-      // const auditData = await securityService.getAuditLogs({ pageNumber: 1, pageSize: 1 });
-      // setStats(prev => ({ ...prev, recentActivity: auditData.totalCount || 0 }));
+      const auditData = await auditService.getTenantAuditLogs({ page: 1, pageSize: 1 });
+      setStats(prev => ({ ...prev, recentActivity: auditData.total || 0 }));
     } catch (error: any) {
       console.error('Error fetching stats:', error);
     } finally {

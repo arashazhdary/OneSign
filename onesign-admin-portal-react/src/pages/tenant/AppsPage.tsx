@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
-import { Plus, Edit, Trash2, Copy, RefreshCw, Globe, Smartphone, Monitor, Code } from 'lucide-react';
+import { Plus, Edit, Trash2, Copy, RefreshCw, Globe, Smartphone, Monitor, Code, MoreVertical, Eye, Settings, Key } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import Card from '@/components/common/Card';
@@ -9,9 +9,9 @@ import Button from '@/components/common/Button';
 import DataTable, { Column } from '@/components/common/DataTable';
 import Modal from '@/components/common/Modal';
 import Input from '@/components/common/Input';
-import Dropdown from '@/components/common/Dropdown';
+import { ActionMenu } from '@/components/common/Dropdown';
 import Badge from '@/components/common/Badge';
-import { tenantService } from '@/lib/api/services/tenant.service';
+import { applicationsService } from '@/lib/api/services';
 
 interface App {
   id: string;
@@ -39,17 +39,64 @@ const AppsPage = () => {
     fetchApps();
   }, []);
 
-  const fetchApps = async () => {
+  const fetchApps = async (params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    sort?: string;
+    order?: 'asc' | 'desc';
+  }) => {
     setLoading(true);
     try {
-      const response = await tenantService.getApplications();
-      setApps(response.items || []);
+      const response = await applicationsService.getApplications(params);
+
+      if (response?.data) {
+        // Map API response to our App interface
+        const mappedApps = response.data.map((app: any) => ({
+          id: app.id,
+          name: app.name,
+          clientId: app.clientId,
+          type: app.applicationType?.toLowerCase() || 'web',
+          status: app.isEnabled ? 'active' : 'inactive',
+          createdAt: app.createdAt,
+          lastUsed: app.lastUsedAt,
+        }));
+
+        setApps(mappedApps);
+      } else {
+        // Fallback to mock data if API fails
+        setApps([]);
+      }
     } catch (error) {
       console.error('Error fetching apps:', error);
       toast.error(t('common.error'));
+      // Fallback to empty array
+      setApps([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleView = (app: App) => {
+    // TODO: Navigate to app detail page
+    toast.info(t('common.view') + ': ' + app.name);
+  };
+
+  const handleEdit = (app: App) => {
+    // TODO: Open edit modal or navigate to edit page
+    toast.info(t('common.edit') + ': ' + app.name);
+  };
+
+  const handleManageRedirectURIs = (app: App) => {
+    // TODO: Open redirect URIs management modal
+    setSelectedAppForRedirectUris(app);
+    setShowRedirectUrisModal(true);
+  };
+
+  const handleManageSecrets = (app: App) => {
+    // TODO: Open client secrets management modal
+    setSelectedAppForSecrets(app);
+    setShowSecretsModal(true);
   };
 
   const handleCreateApp = async () => {
@@ -156,30 +203,52 @@ const AppsPage = () => {
       label: t('common.actions'),
       align: 'right',
       render: (_, app) => (
-        <div className="flex items-center justify-end gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            leftIcon={<Copy className="w-4 h-4" />}
-            onClick={() => {
-              navigator.clipboard.writeText(app.clientId);
-              toast.success('Client ID copied!');
-            }}
-          />
-          <Button
-            variant="ghost"
-            size="sm"
-            leftIcon={<RefreshCw className="w-4 h-4" />}
-            onClick={() => handleRegenerateSecret(app.id)}
-          />
-          <Button variant="ghost" size="sm" leftIcon={<Edit className="w-4 h-4" />} />
-          <Button
-            variant="ghost"
-            size="sm"
-            leftIcon={<Trash2 className="w-4 h-4 text-danger-600" />}
-            onClick={() => handleDeleteApp(app.id)}
-          />
-        </div>
+        <ActionMenu
+          items={[
+            {
+              label: t('common.view'),
+              icon: <Eye className="w-4 h-4" />,
+              onClick: () => handleView(app),
+            },
+            {
+              label: t('apps.copyClientId'),
+              icon: <Copy className="w-4 h-4" />,
+              onClick: () => {
+                navigator.clipboard.writeText(app.clientId);
+                toast.success(t('apps.clientIdCopied') || 'Client ID copied!');
+              },
+            },
+            {
+              label: t('apps.regenerateSecret'),
+              icon: <RefreshCw className="w-4 h-4" />,
+              onClick: () => handleRegenerateSecret(app.id),
+            },
+            {
+              label: t('apps.manageRedirectUris'),
+              icon: <Globe className="w-4 h-4" />,
+              onClick: () => handleManageRedirectURIs(app),
+            },
+            {
+              label: t('apps.manageSecrets'),
+              icon: <Key className="w-4 h-4" />,
+              onClick: () => handleManageSecrets(app),
+            },
+            {
+              label: t('common.edit'),
+              icon: <Edit className="w-4 h-4" />,
+              onClick: () => handleEdit(app),
+            },
+            {
+              type: 'divider',
+            },
+            {
+              label: t('common.delete'),
+              icon: <Trash2 className="w-4 h-4" />,
+              onClick: () => handleDeleteApp(app.id),
+              variant: 'danger',
+            },
+          ]}
+        />
       ),
     },
   ];
@@ -208,7 +277,7 @@ const AppsPage = () => {
         <Modal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} title={t('apps.addApp')}>
           <div className="space-y-4">
             <Input label={t('apps.name')} value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
-            <Dropdown
+            <ActionMenu
               label={t('apps.type')}
               options={[
                 { value: 'web', label: t('apps.web'), icon: <Globe className="w-4 h-4" /> },

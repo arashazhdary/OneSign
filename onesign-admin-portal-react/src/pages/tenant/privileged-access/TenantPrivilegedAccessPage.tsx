@@ -229,12 +229,12 @@ export default function TenantPrivilegedAccessPage() {
     { key: 'userEmail', label: 'User' },
     { key: 'resourceType', label: 'Resource Type' },
     { key: 'resourceId', label: 'Resource ID' },
-    { key: 'startedAt', label: 'Started', render: (s) => new Date(s.startedAt).toLocaleString() },
-    { key: 'expiresAt', label: 'Expires', render: (s) => new Date(s.expiresAt).toLocaleString() },
+    { key: 'startedAt', label: 'Started', render: (_, s) => new Date(s.startedAt).toLocaleString() },
+    { key: 'expiresAt', label: 'Expires', render: (_, s) => new Date(s.expiresAt).toLocaleString() },
     {
       key: 'status',
       label: 'Status',
-      render: (s) => <StatusBadge status={s.status} variant={s.status === 'Active' ? 'success' : 'error'} />
+      render: (_, s) => <StatusBadge status={s.status} variant={s.status === 'Active' ? 'success' : 'error'} />
     }
   ];
 
@@ -244,9 +244,9 @@ export default function TenantPrivilegedAccessPage() {
     {
       key: 'isActivated',
       label: 'Status',
-      render: (bg) => <StatusBadge status={bg.isActivated ? 'Activated' : 'Inactive'} variant={bg.isActivated ? 'warning' : 'default'} />
+      render: (_, bg) => <StatusBadge status={bg.isActivated ? 'Activated' : 'Inactive'} variant={bg.isActivated ? 'warning' : 'default'} />
     },
-    { key: 'lastActivatedAt', label: 'Last Activated', render: (bg) => bg.lastActivatedAt ? new Date(bg.lastActivatedAt).toLocaleString() : 'Never' }
+    { key: 'lastActivatedAt', label: 'Last Activated', render: (_, bg) => bg.lastActivatedAt ? new Date(bg.lastActivatedAt).toLocaleString() : 'Never' }
   ];
 
   const requestColumns: Column<AccessRequest>[] = [
@@ -258,9 +258,9 @@ export default function TenantPrivilegedAccessPage() {
     {
       key: 'status',
       label: 'Status',
-      render: (r) => <StatusBadge status={r.status} />
+      render: (_, r) => <StatusBadge status={r.status} />
     },
-    { key: 'createdAt', label: 'Created', render: (r) => new Date(r.createdAt).toLocaleDateString() }
+    { key: 'createdAt', label: 'Created', render: (_, r) => new Date(r.createdAt).toLocaleDateString() }
   ];
 
   const grantColumns: Column<JITGrant>[] = [

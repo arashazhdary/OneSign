@@ -223,9 +223,9 @@ export default function TenantOrgUnitsPage() {
   const canEditOrgUnit = (nodeId: string): boolean => {
     if (!userScope) return true;
     // Check if user is admin or if the org unit is in their assigned org units
-    const isAdmin = userScope.roles?.includes('admin') ?? false;
+    const isAdmin = userScope.isGlobalAdmin;
     if (isAdmin) return true;
-    return (userScope.orgUnits as any)?.includes(nodeId) ?? false;
+    return userScope.allowedOrgUnitIds?.includes(nodeId) ?? false;
   };
 
   const getFilteredTree = (): OrgUnitTreeNode[] => {
@@ -233,12 +233,12 @@ export default function TenantOrgUnitsPage() {
       return tree;
     }
     // Check if user is admin - if so, return full tree
-    const isAdmin = userScope.roles?.includes('admin') ?? false;
+    const isAdmin = userScope.isGlobalAdmin;
     if (isAdmin) {
       return tree;
     }
     // Otherwise filter by assigned org units
-    return filterTreeByAllowedOrgUnits(tree, (userScope.orgUnits as any) ?? []);
+    return filterTreeByAllowedOrgUnits(tree, userScope.allowedOrgUnitIds ?? []);
   };
 
   if (loading || scopeLoading) {
@@ -249,7 +249,7 @@ export default function TenantOrgUnitsPage() {
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">{t('tenant.orgUnits.title')}</h1>
-        {(!userScope || (userScope.roles?.includes('admin') ?? false) || (userScope.orgUnits?.length ?? 0) > 0) && (
+        {(!userScope || userScope.isGlobalAdmin || (userScope.allowedOrgUnitIds?.length ?? 0) > 0) && (
           <button
             onClick={() => {
               setNewParentId(null);

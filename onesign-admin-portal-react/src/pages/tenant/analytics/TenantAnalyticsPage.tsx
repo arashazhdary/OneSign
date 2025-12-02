@@ -56,7 +56,7 @@ export default function TenantAnalyticsPage() {
       const from = new Date(now.setDate(now.getDate() - 30)).toISOString();
       const to = new Date().toISOString();
 
-      const data = await InsightsAPI.getTenantInsightsOverview(tenantId);
+      const data = await InsightsAPI.getTenantInsightsOverview();
 
       setStats({
         totalUsers: data.totalUsers,
@@ -66,7 +66,7 @@ export default function TenantAnalyticsPage() {
         riskScore: data.riskScore,
         highRiskEvents: data.highRiskEvents,
         topApplicationsCount: data.topApplications.length,
-        avgResponseTime: Math.floor(Math.random() * 200) + 100, // Mock data
+        avgResponseTime: data.avgResponseTime || 0,
       });
 
       setTopApplications(data.topApplications.slice(0, 5));

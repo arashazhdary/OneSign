@@ -116,7 +116,11 @@ export default function TenantAppsDetailPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await applicationsService.getApplicationById(tenantId, applicationId);
+      const data = await applicationsService.getApplicationById(applicationId);
+      if (!data) {
+        setError(t('applications.notFound') || 'Application not found');
+        return;
+      }
       setApplication(data as any);
       setEditForm({
         name: data?.name || '',
@@ -133,7 +137,8 @@ export default function TenantAppsDetailPage() {
 
   const fetchRedirectURIs = async () => {
     try {
-      const app = await applicationsService.getApplicationById(tenantId, applicationId);
+      const app = await applicationsService.getApplicationById(applicationId);
+      if (!app) return;
       const uris: RedirectURI[] = (app?.redirectUris || []).map((uri: any) => ({
         id: uri.id,
         uri: uri.uri,
@@ -148,7 +153,8 @@ export default function TenantAppsDetailPage() {
 
   const fetchClientSecrets = async () => {
     try {
-      const app = await applicationsService.getApplicationById(tenantId, applicationId);
+      const app = await applicationsService.getApplicationById(applicationId);
+      if (!app) return;
       const secrets: ClientSecret[] = (app?.clientSecrets || []).map((secret: any) => ({
         id: secret.id,
         name: secret.description || 'Client Secret',

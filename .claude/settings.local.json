@@ -38,7 +38,9 @@
       "Bash(npm run dev:*)",
       "Bash(netstat:*)",
       "Bash(taskkill /F /PID 31784)",
-      "Bash(taskkill //F //PID 31784)"
+      "Bash(taskkill //F //PID 31784)",
+      "Bash(python:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []

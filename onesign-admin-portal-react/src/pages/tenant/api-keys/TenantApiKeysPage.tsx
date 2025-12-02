@@ -92,15 +92,15 @@ export default function TenantApiKeysPage() {
 
   const columns: Column<APIKey>[] = [
     { key: 'name', label: 'Name' },
-    { key: 'key', label: 'Key', render: (k) => <code className="text-xs">{k.key.substring(0, 20)}...</code> },
+    { key: 'key', label: 'Key', render: (_, k) => <code className="text-xs">{k.key.substring(0, 20)}...</code> },
     {
       key: 'isRevoked',
       label: 'Status',
-      render: (k) => <StatusBadge status={k.isRevoked ? 'Revoked' : 'Active'} />
+      render: (_, k) => <StatusBadge status={k.isRevoked ? 'Revoked' : 'Active'} />
     },
-    { key: 'createdAt', label: 'Created', render: (k) => new Date(k.createdAt).toLocaleDateString() },
-    { key: 'expiresAt', label: 'Expires', render: (k) => k.expiresAt ? new Date(k.expiresAt).toLocaleDateString() : 'Never' },
-    { key: 'lastUsedAt', label: 'Last Used', render: (k) => k.lastUsedAt ? new Date(k.lastUsedAt).toLocaleDateString() : 'Never' }
+    { key: 'createdAt', label: 'Created', render: (_, k) => new Date(k.createdAt).toLocaleDateString() },
+    { key: 'expiresAt', label: 'Expires', render: (_, k) => k.expiresAt ? new Date(k.expiresAt).toLocaleDateString() : 'Never' },
+    { key: 'lastUsedAt', label: 'Last Used', render: (_, k) => k.lastUsedAt ? new Date(k.lastUsedAt).toLocaleDateString() : 'Never' }
   ];
 
   return (

@@ -149,13 +149,13 @@ export default function TenantAccessRequestsPage() {
     {
       key: 'createdAt',
       label: 'Requested At',
-      render: (item) => formatDate(item.createdAt),
+      render: (_, item) => formatDate(item.createdAt),
       sortable: true,
     },
     {
       key: 'requesterName',
       label: 'Requested By',
-      render: (item) => (
+      render: (_, item) => (
         <div>
           <div className="font-medium">{item.requesterName || 'N/A'}</div>
           <div className="text-xs text-gray-500">{item.requesterEmail || 'N/A'}</div>
@@ -170,7 +170,7 @@ export default function TenantAccessRequestsPage() {
     {
       key: 'targetResourceName',
       label: 'Resource',
-      render: (item) => (
+      render: (_, item) => (
         <div>
           <div className="font-medium">{item.targetResourceName || item.targetResourceId}</div>
           <div className="text-xs text-gray-500">{item.requestedScopes?.join(', ') || 'N/A'}</div>
@@ -180,13 +180,13 @@ export default function TenantAccessRequestsPage() {
     {
       key: 'status',
       label: 'Status',
-      render: (item) => <StatusBadge status={item.status} />,
+      render: (_, item) => <StatusBadge status={item.status} />,
       sortable: true,
     },
     {
       key: 'reviewedAt',
       label: 'Reviewed At',
-      render: (item) => formatDate(item.reviewedAt),
+      render: (_, item) => formatDate(item.reviewedAt),
     },
   ];
 

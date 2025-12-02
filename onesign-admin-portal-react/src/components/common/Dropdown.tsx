@@ -1,8 +1,155 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check, MoreVertical } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/utils/cn';
+
+// ActionMenu component for dropdown menus
+export interface ActionMenuItem {
+  label?: string;
+  icon?: React.ReactNode;
+  onClick?: () => void;
+  disabled?: boolean;
+  type?: 'divider';
+  variant?: 'default' | 'danger';
+}
+
+export interface ActionMenuProps {
+  trigger?: React.ReactNode;
+  items: ActionMenuItem[];
+  className?: string;
+  disabled?: boolean;
+}
+
+export const ActionMenu: React.FC<ActionMenuProps> = ({
+  trigger,
+  items,
+  className,
+  disabled = false,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleItemClick = (item: ActionMenuItem) => {
+    if (item.disabled || item.type === 'divider') return;
+    item.onClick?.();
+    setIsOpen(false);
+  };
+
+  // Default trigger if none provided - Catalyst-style ellipsis button
+  const defaultTrigger = (
+    <button
+      disabled={disabled}
+      className={cn(
+        'p-1 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 dark:hover:text-slate-300',
+        'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-slate-400'
+      )}
+    >
+      <MoreVertical className="w-5 h-5" />
+    </button>
+  );
+
+  return (
+    <div className={cn('relative inline-block', className)} ref={menuRef}>
+      <div
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        className={cn('cursor-pointer', disabled && 'cursor-not-allowed')}
+        role="button"
+        tabIndex={disabled ? -1 : 0}
+        onKeyDown={(e) => {
+          if (disabled) return;
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setIsOpen(!isOpen);
+          } else if (e.key === 'Escape') {
+            setIsOpen(false);
+          }
+        }}
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
+        aria-disabled={disabled}
+      >
+        {trigger || defaultTrigger}
+      </div>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -8 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
+            className="absolute right-0 mt-1 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-50 ring-1 ring-black/5 dark:ring-white/10"
+          >
+            <div className="py-1">
+              {items.map((item, index) => {
+                if (item.type === 'divider') {
+                  return (
+                    <div
+                      key={index}
+                      className="border-t border-slate-200 dark:border-slate-700 my-1"
+                    />
+                  );
+                }
+
+                const isDanger = item.variant === 'danger';
+
+                return (
+                  <button
+                    key={index}
+                    onClick={() => handleItemClick(item)}
+                    disabled={item.disabled}
+                    className={cn(
+                      'w-full flex items-center px-3 py-2 text-sm text-left transition-colors duration-150',
+                      'hover:bg-slate-50 dark:hover:bg-slate-700/50',
+                      'focus:outline-none focus:bg-slate-50 dark:focus:bg-slate-700/50',
+                      'disabled:opacity-50 disabled:cursor-not-allowed',
+                      isDanger && 'text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50',
+                      item.disabled && 'opacity-50 cursor-not-allowed'
+                    )}
+                  >
+                    {item.icon && (
+                      <span className={cn(
+                        'mr-3 flex-shrink-0',
+                        isDanger ? 'text-red-500 dark:text-red-400' : 'text-slate-400 dark:text-slate-500'
+                      )}>
+                        {item.icon}
+                      </span>
+                    )}
+                    <span className={cn(
+                      'flex-1 truncate',
+                      isDanger ? 'text-red-900 dark:text-red-100' : 'text-slate-900 dark:text-slate-100'
+                    )}>
+                      {item.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+export interface DropdownOption {
+  value: string;
+  label: string;
+  icon?: React.ReactNode;
+  disabled?: boolean;
+}
 
 export interface DropdownOption {
   value: string;

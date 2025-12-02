@@ -103,10 +103,7 @@ export default function TenantCopilotPage() {
   const fetchConversations = async () => {
     setLoading(true);
     try {
-      // getConversations method not available in copilotService
-      // const userId = user?.id || '00000000-0000-0000-0000-000000000001';
-      // const data = await copilotService.getConversations(tenantId, userId);
-      const data: any[] = [];
+      const data = await copilotService.getConversationHistory();
       setConversations(data.map(conv => ({
         id: conv.id,
         title: conv.title || 'Untitled Conversation',

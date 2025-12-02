@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
-import { Plus, Edit, Trash2, Shield, Users, Check } from 'lucide-react';
+import { Plus, Edit, Trash2, Shield, Users, Check, MoreVertical, Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import Card from '@/components/common/Card';
@@ -9,6 +9,7 @@ import Button from '@/components/common/Button';
 import DataTable, { Column } from '@/components/common/DataTable';
 import Modal from '@/components/common/Modal';
 import Input from '@/components/common/Input';
+import { ActionMenu } from '@/components/common/Dropdown';
 import Badge from '@/components/common/Badge';
 import { tenantService } from '@/lib/api/services/tenant.service';
 
@@ -149,25 +150,60 @@ const RolesPage = () => {
       label: t('common.actions'),
       align: 'right',
       render: (_, role) => (
-        <div className="flex items-center justify-end gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleEdit(role)}
-            leftIcon={<Edit className="w-4 h-4" />}
-            disabled={role.isSystem}
-          />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleDelete(role)}
-            leftIcon={<Trash2 className="w-4 h-4 text-danger-600" />}
-            disabled={role.isSystem}
-          />
-        </div>
+        <ActionMenu disabled={role.isSystem}
+          items={[
+            {
+              label: t('common.view'),
+              icon: <Eye className="w-4 h-4" />,
+              onClick: () => handleView(role),
+            },
+            {
+              label: t('roles.editPermissions'),
+              icon: <Shield className="w-4 h-4" />,
+              onClick: () => handleEditPermissions(role),
+              disabled: role.isSystem,
+            },
+            {
+              label: t('common.edit'),
+              icon: <Edit className="w-4 h-4" />,
+              onClick: () => handleEdit(role),
+              disabled: role.isSystem,
+            },
+            {
+              label: t('roles.manageUsers'),
+              icon: <Users className="w-4 h-4" />,
+              onClick: () => handleManageUsers(role),
+            },
+            {
+              type: 'divider',
+            },
+            {
+              label: t('common.delete'),
+              icon: <Trash2 className="w-4 h-4" />,
+              onClick: () => handleDelete(role),
+              variant: 'danger',
+              disabled: role.isSystem,
+            },
+          ]}
+        />
       ),
     },
   ];
+
+  const handleView = (role: Role) => {
+    // TODO: Navigate to role detail page
+    toast.info(t('common.view') + ': ' + role.name);
+  };
+
+  const handleEditPermissions = (role: Role) => {
+    // TODO: Open permissions editor modal
+    toast.info(t('roles.editPermissions') + ': ' + role.name);
+  };
+
+  const handleManageUsers = (role: Role) => {
+    // TODO: Navigate to users with this role
+    toast.info(t('roles.manageUsers') + ': ' + role.name);
+  };
 
   const handleEdit = (role: Role) => {
     setSelectedRole(role);

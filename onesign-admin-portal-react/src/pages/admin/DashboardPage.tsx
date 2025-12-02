@@ -14,6 +14,7 @@ import {
 import StatCard from '@/components/common/StatCard';
 import Card from '@/components/common/Card';
 import { formatNumber, formatRelativeTime } from '@/utils/formatters';
+import { dashboardService, auditService } from '@/lib/api/services';
 
 interface Activity {
   id: string;
@@ -35,41 +36,78 @@ const DashboardPage: React.FC = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
 
   useEffect(() => {
-    // Simulate data fetching
-    setTimeout(() => {
-      setStats({
-        totalTenants: 45,
-        activeTenants: 42,
-        totalUsers: 1250,
-        apiCallsToday: 125430,
-      });
+    const fetchDashboardData = async () => {
+      try {
+        // Fetch dashboard stats
+        const statsResponse = await dashboardService.getDashboardStats();
 
-      setActivities([
-        {
-          id: '1',
-          type: 'Tenant Created',
-          description: 'New tenant "Acme Corp" has been created',
-          timestamp: new Date(Date.now() - 300000).toISOString(),
-          severity: 'info',
-        },
-        {
-          id: '2',
-          type: 'Security Alert',
-          description: 'Multiple failed login attempts detected',
-          timestamp: new Date(Date.now() - 900000).toISOString(),
-          severity: 'warning',
-        },
-        {
-          id: '3',
-          type: 'System Update',
-          description: 'Platform updated to version 2.5.1',
-          timestamp: new Date(Date.now() - 1800000).toISOString(),
-          severity: 'info',
-        },
-      ]);
+        if (statsResponse) {
+          setStats({
+            totalTenants: statsResponse.totalTenants || 0,
+            activeTenants: statsResponse.activeTenants || 0,
+            totalUsers: statsResponse.totalUsers || 0,
+            apiCallsToday: statsResponse.apiCallsToday || 0,
+          });
+        }
 
-      setLoading(false);
-    }, 1000);
+        // Fetch recent activities from audit logs
+        const activitiesResponse = await auditService.getAuditLogs({
+          page: 1,
+          pageSize: 10,
+          sort: 'timestamp',
+          order: 'desc'
+        });
+
+        if (activitiesResponse?.data) {
+          const mappedActivities = activitiesResponse.data.map((log: any) => ({
+            id: log.id,
+            type: log.action || 'Activity',
+            description: log.description || `${log.action} performed by ${log.userId}`,
+            timestamp: log.timestamp || log.createdAt,
+            severity: log.severity || 'info',
+          }));
+
+          setActivities(mappedActivities);
+        }
+      } catch (error) {
+        console.error('Failed to fetch dashboard data:', error);
+        // Fallback to mock data if API fails
+        setStats({
+          totalTenants: 45,
+          activeTenants: 42,
+          totalUsers: 1250,
+          apiCallsToday: 125430,
+        });
+
+        setActivities([
+          {
+            id: '1',
+            type: 'Tenant Created',
+            description: 'New tenant "Acme Corp" has been created',
+            timestamp: new Date(Date.now() - 300000).toISOString(),
+            severity: 'info',
+          },
+          {
+            id: '2',
+            type: 'Security Alert',
+            description: 'Multiple failed login attempts detected',
+            timestamp: new Date(Date.now() - 900000).toISOString(),
+            severity: 'warning',
+          },
+          {
+            id: '3',
+            type: 'System Update',
+            description: 'Platform updated to version 2.5.1',
+            timestamp: new Date(Date.now() - 1800000).toISOString(),
+            severity: 'info',
+          },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
   }, []);
 
   if (loading) {

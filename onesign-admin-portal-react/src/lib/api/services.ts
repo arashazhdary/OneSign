@@ -3,15 +3,56 @@
 
 import apiClient from '@/services/apiClient';
 
-export const platformService = {
-  // ==================== TENANT MANAGEMENT ====================
-  getTenants: async () => {
+// Tenants Service - Updated based on Swagger API and Technical Spec
+export const tenantsService = {
+  // For tenant-level operations (current tenant context)
+  getTenantUsers: async (params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    sort?: string;
+    order?: 'asc' | 'desc';
+  }) => {
     try {
-      const response = await apiClient.get('/api/tenants');
+      const response = await apiClient.get('/api/tenant/users', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch tenant users:', error);
+      return { data: [], total: 0, page: 1, pageSize: 10 };
+    }
+  },
+
+  // For global admin operations (all tenants)
+  getAllTenants: async (params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    sort?: string;
+    order?: 'asc' | 'desc';
+  }) => {
+    try {
+      const response = await apiClient.get('/api/global/tenants', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch all tenants:', error);
+      return { data: [], total: 0, page: 1, pageSize: 10 };
+    }
+  },
+
+  // Legacy method for backward compatibility
+  getTenants: async (params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    sort?: string;
+    order?: 'asc' | 'desc';
+  }) => {
+    try {
+      const response = await apiClient.get('/api/global/tenants', { params });
       return response.data;
     } catch (error) {
       console.error('Failed to fetch tenants:', error);
-      return [];
+      return { data: [], total: 0, page: 1, pageSize: 10 };
     }
   },
 
@@ -24,6 +65,155 @@ export const platformService = {
       return null;
     }
   },
+
+  createTenant: async (data: {
+    name: string;
+    domain: string;
+    plan?: string;
+    ownerId?: string;
+  }) => {
+    try {
+      const response = await apiClient.post('/api/tenants', data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to create tenant:', error);
+      throw error;
+    }
+  },
+
+  updateTenant: async (tenantId: string, data: Partial<{
+    name: string;
+    domain: string;
+    plan: string;
+    status: string;
+  }>) => {
+    try {
+      const response = await apiClient.put(`/api/tenants/${tenantId}`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to update tenant:', error);
+      throw error;
+    }
+  },
+
+  deleteTenant: async (tenantId: string) => {
+    try {
+      await apiClient.delete(`/api/tenants/${tenantId}`);
+      return true;
+    } catch (error) {
+      console.error('Failed to delete tenant:', error);
+      throw error;
+    }
+  },
+
+  // Tenant access requests
+  getAccessRequests: async (params?: {
+    tenantId?: string;
+    requesterId?: string;
+    approverId?: string;
+  }) => {
+    try {
+      const response = await apiClient.get('/api/tenant/access-requests', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch access requests:', error);
+      return [];
+    }
+  },
+
+  createAccessRequest: async (data: {
+    tenantId: string;
+    resourceType: string;
+    resourceId: string;
+    justification: string;
+    requestedAccessLevel: string;
+  }) => {
+    try {
+      const response = await apiClient.post('/api/tenant/access-requests', data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to create access request:', error);
+      throw error;
+    }
+  },
+
+  approveAccessRequest: async (requestId: string, data: {
+    decision: 'approved' | 'rejected';
+    comments?: string;
+  }) => {
+    try {
+      const response = await apiClient.post(`/api/tenant/access-requests/${requestId}/approve`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to approve access request:', error);
+      throw error;
+    }
+  },
+
+  // Tenant account profile (for current tenant user)
+  getTenantAccountProfile: async () => {
+    try {
+      const response = await apiClient.get('/api/tenant/account/profile');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch tenant account profile:', error);
+      return null;
+    }
+  },
+
+  updateTenantAccountProfile: async (data: {
+    userId: string;
+    displayName?: string;
+    phoneNumber?: string;
+    timeZone?: string;
+    preferredLanguage?: string;
+  }) => {
+    try {
+      const response = await apiClient.put('/api/tenant/account/profile', data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to update tenant account profile:', error);
+      throw error;
+    }
+  },
+
+  // Tenant lifecycle
+  upgradeTenant: async (data: {
+    targetPlanId: string;
+    comments?: string;
+  }) => {
+    try {
+      const response = await apiClient.post('/api/tenant/lifecycle/upgrade', data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to upgrade tenant:', error);
+      throw error;
+    }
+  },
+
+  suspendTenant: async (tenantId: string, reason?: string) => {
+    try {
+      const response = await apiClient.post(`/api/tenants/${tenantId}/suspend`, { reason });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to suspend tenant:', error);
+      throw error;
+    }
+  },
+
+  reactivateTenant: async (tenantId: string) => {
+    try {
+      const response = await apiClient.post(`/api/tenants/${tenantId}/reactivate`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to reactivate tenant:', error);
+      throw error;
+    }
+  },
+};
+
+// Legacy platformService for backward compatibility
+export const platformService = {
 
   // ==================== USER MANAGEMENT ====================
   getUsers: async (tenantId?: string) => {
@@ -61,14 +251,50 @@ export const platformService = {
   },
 
   // ==================== AUDIT LOGS ====================
-  getAuditLogs: async (tenantId?: string, params?: any) => {
+  getAuditLogs: async (params?: {
+    page?: number;
+    pageSize?: number;
+    startDate?: string;
+    endDate?: string;
+    userId?: string;
+    action?: string;
+    resourceType?: string;
+    resourceId?: string;
+    ipAddress?: string;
+    tenantId?: string;
+    search?: string;
+    sort?: string;
+    order?: 'asc' | 'desc';
+  }) => {
     try {
-      const url = tenantId ? `/api/tenants/${tenantId}/audit` : '/api/audit';
-      const response = await apiClient.get(url, { params });
+      const response = await apiClient.get('/api/audit', { params });
       return response.data;
     } catch (error) {
       console.error('Failed to fetch audit logs:', error);
-      return [];
+      return { data: [], total: 0, page: 1, pageSize: 10 };
+    }
+  },
+
+  getAuditLogById: async (logId: string) => {
+    try {
+      const response = await apiClient.get(`/api/audit/${logId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch audit log:', error);
+      return null;
+    }
+  },
+
+  exportAuditLogs: async (format: 'csv' | 'json' | 'xlsx' = 'csv', params?: any) => {
+    try {
+      const response = await apiClient.get('/api/audit/export', {
+        params: { format, ...params },
+        responseType: 'blob'
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to export audit logs:', error);
+      throw error;
     }
   },
 
@@ -728,21 +954,27 @@ export const platformService = {
   },
 };
 
-// Applications Service
+// Applications Service - Updated based on Swagger API and Technical Spec
 export const applicationsService = {
-  getApplications: async (params?: any) => {
+  getApplications: async (params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    sort?: string;
+    order?: 'asc' | 'desc';
+  }) => {
     try {
-      const response = await apiClient.get('/api/applications', { params });
+      const response = await apiClient.get('/api/tenant/applications', { params });
       return response.data;
     } catch (error) {
       console.error('Failed to fetch applications:', error);
-      return [];
+      return { data: [], total: 0, page: 1, pageSize: 10 };
     }
   },
 
   getApplicationById: async (appId: string) => {
     try {
-      const response = await apiClient.get(`/api/applications/${appId}`);
+      const response = await apiClient.get(`/api/tenant/applications/${appId}`);
       return response.data;
     } catch (error) {
       console.error('Failed to fetch application:', error);
@@ -750,9 +982,18 @@ export const applicationsService = {
     }
   },
 
-  createApplication: async (data: any) => {
+  createApplication: async (data: {
+    tenantId: string;
+    name: string;
+    description?: string;
+    applicationType: string;
+    redirectUris?: string[];
+    logoutUri?: string;
+    allowedScopes?: string[];
+    isEnabled?: boolean;
+  }) => {
     try {
-      const response = await apiClient.post('/api/applications', data);
+      const response = await apiClient.post('/api/tenant/applications', data);
       return response.data;
     } catch (error) {
       console.error('Failed to create application:', error);
@@ -760,9 +1001,17 @@ export const applicationsService = {
     }
   },
 
-  updateApplication: async (appId: string, data: any) => {
+  updateApplication: async (appId: string, data: Partial<{
+    name: string;
+    description: string;
+    applicationType: string;
+    redirectUris: string[];
+    logoutUri: string;
+    allowedScopes: string[];
+    isEnabled: boolean;
+  }>) => {
     try {
-      const response = await apiClient.put(`/api/applications/${appId}`, data);
+      const response = await apiClient.put(`/api/tenant/applications/${appId}`, data);
       return response.data;
     } catch (error) {
       console.error('Failed to update application:', error);
@@ -772,80 +1021,128 @@ export const applicationsService = {
 
   deleteApplication: async (appId: string) => {
     try {
-      const response = await apiClient.delete(`/api/applications/${appId}`);
-      return response.data;
+      await apiClient.delete(`/api/tenant/applications/${appId}`);
+      return true;
     } catch (error) {
       console.error('Failed to delete application:', error);
       throw error;
     }
   },
 
-  getOrgUnitsTree: async () => {
+  // Application secrets management
+  getApplicationSecrets: async (appId: string) => {
     try {
-      const response = await apiClient.get('/api/org-units/tree');
+      const response = await apiClient.get(`/api/applications/${appId}/secrets`);
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch org units tree:', error);
+      console.error('Failed to fetch application secrets:', error);
       return [];
     }
   },
 
-  getApplicationOrgUnits: async (appId: string) => {
+  createApplicationSecret: async (appId: string, data: {
+    name?: string;
+    expiresAt?: string;
+  }) => {
     try {
-      const response = await apiClient.get(`/api/applications/${appId}/org-units`);
+      const response = await apiClient.post(`/api/applications/${appId}/secrets`, data);
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch application org units:', error);
+      console.error('Failed to create application secret:', error);
+      throw error;
+    }
+  },
+
+  deleteApplicationSecret: async (appId: string, secretId: string) => {
+    try {
+      await apiClient.delete(`/api/applications/${appId}/secrets/${secretId}`);
+      return true;
+    } catch (error) {
+      console.error('Failed to delete application secret:', error);
+      throw error;
+    }
+  },
+
+  // Application permissions/roles
+  getApplicationRoles: async (appId: string) => {
+    try {
+      const response = await apiClient.get(`/api/applications/${appId}/roles`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch application roles:', error);
       return [];
     }
   },
 
-  assignOrgUnits: async (appId: string, orgUnitIds: string[]) => {
+  createApplicationRole: async (appId: string, data: {
+    name: string;
+    description?: string;
+    permissions: string[];
+  }) => {
     try {
-      const response = await apiClient.put(`/api/applications/${appId}/org-units`, { orgUnitIds });
+      const response = await apiClient.post(`/api/applications/${appId}/roles`, data);
       return response.data;
     } catch (error) {
-      console.error('Failed to assign org units:', error);
+      console.error('Failed to create application role:', error);
       throw error;
     }
   },
 
-  addRedirectUri: async (appId: string, uri: string) => {
+  updateApplicationRole: async (appId: string, roleId: string, data: Partial<{
+    name: string;
+    description: string;
+    permissions: string[];
+  }>) => {
     try {
-      const response = await apiClient.post(`/api/applications/${appId}/redirect-uris`, { uri });
+      const response = await apiClient.put(`/api/applications/${appId}/roles/${roleId}`, data);
       return response.data;
     } catch (error) {
-      console.error('Failed to add redirect URI:', error);
+      console.error('Failed to update application role:', error);
       throw error;
     }
   },
 
-  removeRedirectUri: async (appId: string, uri: string) => {
+  deleteApplicationRole: async (appId: string, roleId: string) => {
     try {
-      const response = await apiClient.delete(`/api/applications/${appId}/redirect-uris`, { data: { uri } });
-      return response.data;
+      await apiClient.delete(`/api/applications/${appId}/roles/${roleId}`);
+      return true;
     } catch (error) {
-      console.error('Failed to remove redirect URI:', error);
+      console.error('Failed to delete application role:', error);
       throw error;
     }
   },
 
-  addClientSecret: async (appId: string, name?: string) => {
+  // Application API keys
+  getApplicationApiKeys: async (appId: string) => {
     try {
-      const response = await apiClient.post(`/api/applications/${appId}/secrets`, { name });
+      const response = await apiClient.get(`/api/applications/${appId}/api-keys`);
       return response.data;
     } catch (error) {
-      console.error('Failed to add client secret:', error);
+      console.error('Failed to fetch application API keys:', error);
+      return [];
+    }
+  },
+
+  createApplicationApiKey: async (appId: string, data: {
+    name: string;
+    scopes: string[];
+    expiresAt?: string;
+  }) => {
+    try {
+      const response = await apiClient.post(`/api/applications/${appId}/api-keys`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to create application API key:', error);
       throw error;
     }
   },
 
-  removeClientSecret: async (appId: string, secretId: string) => {
+  revokeApplicationApiKey: async (appId: string, keyId: string) => {
     try {
-      const response = await apiClient.delete(`/api/applications/${appId}/secrets/${secretId}`);
-      return response.data;
+      await apiClient.delete(`/api/applications/${appId}/api-keys/${keyId}`);
+      return true;
     } catch (error) {
-      console.error('Failed to remove client secret:', error);
+      console.error('Failed to revoke application API key:', error);
       throw error;
     }
   },
@@ -894,21 +1191,29 @@ export const securityService = {
   },
 };
 
-// Users Service
+// Users Service - Updated based on Swagger API
 export const usersService = {
-  getUsers: async (params?: any) => {
+  // User management
+  getUsers: async (params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    sort?: string;
+    order?: 'asc' | 'desc';
+    filters?: Record<string, any>;
+  }) => {
     try {
-      const response = await apiClient.get('/api/users', { params });
+      const response = await apiClient.get('/api/tenant/users', { params });
       return response.data;
     } catch (error) {
       console.error('Failed to fetch users:', error);
-      return [];
+      return { data: [], total: 0, page: 1, pageSize: 10 };
     }
   },
 
   getUserById: async (userId: string) => {
     try {
-      const response = await apiClient.get(`/api/users/${userId}`);
+      const response = await apiClient.get(`/api/tenant/users/${userId}`);
       return response.data;
     } catch (error) {
       console.error('Failed to fetch user:', error);
@@ -918,7 +1223,7 @@ export const usersService = {
 
   createUser: async (data: any) => {
     try {
-      const response = await apiClient.post('/api/users', data);
+      const response = await apiClient.post('/api/tenant/users', data);
       return response.data;
     } catch (error) {
       console.error('Failed to create user:', error);
@@ -928,7 +1233,7 @@ export const usersService = {
 
   updateUser: async (userId: string, data: any) => {
     try {
-      const response = await apiClient.put(`/api/users/${userId}`, data);
+      const response = await apiClient.put(`/api/tenant/users/${userId}`, data);
       return response.data;
     } catch (error) {
       console.error('Failed to update user:', error);
@@ -938,122 +1243,77 @@ export const usersService = {
 
   deleteUser: async (userId: string) => {
     try {
-      const response = await apiClient.delete(`/api/users/${userId}`);
-      return response.data;
+      await apiClient.delete(`/api/tenant/users/${userId}`);
+      return true;
     } catch (error) {
       console.error('Failed to delete user:', error);
       throw error;
     }
   },
 
-  getUserInfo: async (accessToken: string) => {
+  // Bulk operations
+  bulkDelete: async (userIds: string[]) => {
     try {
-      const response = await apiClient.get('/api/userinfo', {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      });
+      const response = await apiClient.post('/api/tenant/users/bulk-delete', { ids: userIds });
       return response.data;
     } catch (error) {
-      console.error('Failed to delete user:', error);
+      console.error('Failed to bulk delete users:', error);
       throw error;
     }
   },
 
-  // Session management
-  getAccountSessions: async (userId?: string) => {
+  bulkUpdate: async (userIds: string[], updates: any) => {
     try {
-      const url = userId ? `/api/users/${userId}/sessions` : '/api/users/sessions';
-      const response = await apiClient.get(url);
+      const response = await apiClient.post('/api/tenant/users/bulk-update', { ids: userIds, updates });
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch sessions:', error);
-      return [];
+      console.error('Failed to bulk update users:', error);
+      throw error;
     }
   },
 
-  getSessionHistory: async (params?: any) => {
+  // User profile management (for current user)
+  getAccountProfile: async () => {
     try {
-      const response = await apiClient.get('/api/users/sessions/history', { params });
+      const response = await apiClient.get('/api/user/account/profile');
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch session history:', error);
-      return [];
-    }
-  },
-
-  revokeSession: async (sessionId: string) => {
-    const response = await apiClient.delete(`/api/users/sessions/${sessionId}`);
-    return response.data;
-  },
-
-  /**
-   * DELETE /api/users/{userId}/sessions - لغو تمام جلسات یک کاربر
-   */
-  revokeAllUserSessions: async (userId: string) => {
-    const response = await apiClient.delete(`/api/users/${userId}/sessions`);
-    return response.data;
-  },
-
-  /**
-   * POST /api/tenant/sessions/revoke-suspicious - لغو جلسات مشکوک
-   */
-  revokeSuspiciousSessions: async () => {
-    const response = await apiClient.post('/api/tenant/sessions/revoke-suspicious');
-    return response.data;
-  },
-
-  // User scope and permissions
-  getCurrentUserScope: async () => {
-    try {
-      const response = await apiClient.get('/api/users/me/scope');
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch user scope:', error);
+      console.error('Failed to fetch account profile:', error);
       return null;
     }
   },
 
-  // User invitation
-  inviteUser: async (data: any) => {
-    const response = await apiClient.post('/api/users/invite', data);
-    return response.data;
-  },
-
-  // User status
-  updateUserStatus: async (userId: string, status: string) => {
-    const response = await apiClient.patch(`/api/users/${userId}/status`, { status });
-    return response.data;
-  },
-
-  // User organizational units
-  getUserOrgUnits: async (userId: string) => {
+  updateAccountProfile: async (data: {
+    userId: string;
+    displayName?: string;
+    phoneNumber?: string;
+    timeZone?: string;
+    preferredLanguage?: string;
+  }) => {
     try {
-      const response = await apiClient.get(`/api/users/${userId}/org-units`);
+      const response = await apiClient.put('/api/user/account/profile', data);
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch user org units:', error);
-      return [];
+      console.error('Failed to update account profile:', error);
+      throw error;
     }
   },
 
-  updateUserOrgUnits: async (userId: string, orgUnitIds: string[]) => {
-    const response = await apiClient.put(`/api/users/${userId}/org-units`, { orgUnitIds });
-    return response.data;
-  },
-
-  // User profile
-  getUserProfile: async (userId: string) => {
+  // User security context
+  updateUserSecurityContext: async (data: {
+    userId: string;
+    lastLoginLocation?: string;
+    lastLoginDevice?: string;
+    trustedDevices?: string[];
+    trustedLocations?: string[];
+  }) => {
     try {
-      const response = await apiClient.get(`/api/users/${userId}/profile`);
+      const response = await apiClient.put('/api/user/account/security-context', data);
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch user profile:', error);
-      return null;
+      console.error('Failed to update user security context:', error);
+      throw error;
     }
-  },
-
-  updateUserProfile: async (userId: string, data: any) => {
-    const response = await apiClient.put(`/api/users/${userId}/profile`, data);
-    return response.data;
   },
 
   // User activities
@@ -1067,415 +1327,510 @@ export const usersService = {
     }
   },
 
-  // User lifecycle
-  getUserLifecycle: async (userId: string) => {
+  // MFA methods for user
+  getUserMFAMethods: async (userId: string) => {
     try {
-      const response = await apiClient.get(`/api/users/${userId}/lifecycle`);
+      const response = await apiClient.get(`/api/users/${userId}/mfa-methods`);
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch user lifecycle:', error);
-      return null;
-    }
-  },
-
-  // User risk assessment
-  getUserRiskAssessment: async (userId: string) => {
-    try {
-      const response = await apiClient.get(`/api/users/${userId}/risk-assessment`);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch user risk assessment:', error);
-      return null;
-    }
-  },
-
-  // User access packages
-  getUserAccessPackages: async (userId: string) => {
-    try {
-      const response = await apiClient.get(`/api/users/${userId}/access-packages`);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch user access packages:', error);
+      console.error('Failed to fetch user MFA methods:', error);
       return [];
     }
   },
 
-  // User privileged sessions
-  getUserPrivilegedSessions: async (userId: string) => {
+  // User security posture
+  getUserSecurityPosture: async (userId: string) => {
     try {
-      const response = await apiClient.get(`/api/users/${userId}/privileged-sessions`);
+      const response = await apiClient.get(`/api/users/${userId}/security-posture`);
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch user privileged sessions:', error);
-      return [];
-    }
-  },
-
-  // User audit trail
-  getUserAuditTrail: async (userId: string, params?: any) => {
-    try {
-      const response = await apiClient.get(`/api/users/${userId}/audit-trail`, { params });
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch user audit trail:', error);
-      return [];
-    }
-  },
-
-  // Account profile management (for current user)
-  getAccountProfile: async () => {
-    try {
-      const response = await apiClient.get('/api/tenant/account/profile');
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch account profile:', error);
+      console.error('Failed to fetch user security posture:', error);
       return null;
     }
   },
 
-  updateAccountProfile: async (data: {
-    firstName?: string;
-    lastName?: string;
-    displayName?: string;
-    phone?: string;
-    timezone?: string;
-    language?: string;
-    avatar?: string;
-  }) => {
+  // Export users
+  exportUsers: async (format: 'pdf' | 'excel' | 'csv' = 'csv', params?: any) => {
     try {
-      const response = await apiClient.put('/api/tenant/account/profile', data);
+      const response = await apiClient.get('/api/users/export', {
+        params: { format, ...params },
+        responseType: 'blob'
+      });
       return response.data;
     } catch (error) {
-      console.error('Failed to update account profile:', error);
-      throw error;
-    }
-  },
-
-  // Password management
-  changePassword: async (data: { currentPassword: string; newPassword: string; confirmPassword: string }) => {
-    try {
-      const response = await apiClient.post('/api/tenant/account/change-password', data);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to change password:', error);
-      throw error;
-    }
-  },
-
-  // Account security settings
-  getAccountSecuritySettings: async () => {
-    try {
-      const response = await apiClient.get('/api/tenant/account/security');
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch account security settings:', error);
-      return null;
-    }
-  },
-
-  updateAccountSecuritySettings: async (data: any) => {
-    try {
-      const response = await apiClient.put('/api/tenant/account/security', data);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to update account security settings:', error);
-      throw error;
-    }
-  },
-
-  // Account notifications preferences
-  getNotificationPreferences: async () => {
-    try {
-      const response = await apiClient.get('/api/tenant/account/notifications');
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch notification preferences:', error);
-      return null;
-    }
-  },
-
-  updateNotificationPreferences: async (data: any) => {
-    try {
-      const response = await apiClient.put('/api/tenant/account/notifications', data);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to update notification preferences:', error);
-      throw error;
-    }
-  },
-
-  // Account activity
-  getAccountActivity: async (params?: any) => {
-    try {
-      const response = await apiClient.get('/api/tenant/account/activity', { params });
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch account activity:', error);
-      return [];
-    }
-  },
-
-  // Account linked accounts (social logins)
-  getLinkedAccounts: async () => {
-    try {
-      const response = await apiClient.get('/api/tenant/account/linked-accounts');
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch linked accounts:', error);
-      return [];
-    }
-  },
-
-  linkAccount: async (provider: string, data: any) => {
-    try {
-      const response = await apiClient.post(`/api/tenant/account/linked-accounts/${provider}`, data);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to link account:', error);
-      throw error;
-    }
-  },
-
-  unlinkAccount: async (provider: string) => {
-    try {
-      const response = await apiClient.delete(`/api/tenant/account/linked-accounts/${provider}`);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to unlink account:', error);
+      console.error('Failed to export users:', error);
       throw error;
     }
   },
 };
 
-// Governance Service
-export const governanceService = {
-  // Access Reviews
-  getAccessReviews: async (params?: any) => {
-    try {
-      const response = await apiClient.get('/api/tenant/governance/reviews', { params });
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch access reviews:', error);
-      return [];
-    }
-  },
 
-  getAccessReviewById: async (reviewId: string) => {
+// Dashboard Service - Based on Swagger API
+export const dashboardService = {
+  // GET /api/dashboard/stats - آمار کلی داشبورد
+  getDashboardStats: async (params?: {
+    tenantId?: string;
+    dateRange?: string;
+  }) => {
     try {
-      const response = await apiClient.get(`/api/tenant/governance/reviews/${reviewId}`);
+      const response = await apiClient.get('/api/dashboard/stats', { params });
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch access review:', error);
+      console.error('Failed to fetch dashboard stats:', error);
       return null;
     }
   },
 
-  certifyAccessReview: async (reviewId: string, data: { decision: string; comment?: string }) => {
+  // GET /api/dashboard/charts - داده‌های نمودارها
+  getDashboardCharts: async (params?: {
+    tenantId?: string;
+    chartType?: string;
+    dateRange?: string;
+  }) => {
     try {
-      const response = await apiClient.post(`/api/tenant/governance/reviews/${reviewId}/certify`, data);
+      const response = await apiClient.get('/api/dashboard/charts', { params });
       return response.data;
     } catch (error) {
-      console.error('Failed to certify access review:', error);
-      throw error;
-    }
-  },
-
-  // Certification Campaigns
-  getCertificationCampaigns: async (params?: any) => {
-    try {
-      const response = await apiClient.get('/api/tenant/governance/campaigns', { params });
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch certification campaigns:', error);
+      console.error('Failed to fetch dashboard charts:', error);
       return [];
     }
   },
 
-  getCampaignById: async (campaignId: string) => {
+  // GET /api/dashboard/recent-activity - فعالیت‌های اخیر
+  getRecentActivity: async (params?: {
+    tenantId?: string;
+    limit?: number;
+  }) => {
     try {
-      const response = await apiClient.get(`/api/tenant/governance/campaigns/${campaignId}`);
+      const response = await apiClient.get('/api/dashboard/recent-activity', { params });
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch campaign:', error);
+      console.error('Failed to fetch recent activity:', error);
+      return [];
+    }
+  },
+
+  // GET /api/dashboard/alerts - هشدارهای داشبورد
+  getDashboardAlerts: async (params?: {
+    tenantId?: string;
+    severity?: string;
+  }) => {
+    try {
+      const response = await apiClient.get('/api/dashboard/alerts', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch dashboard alerts:', error);
+      return [];
+    }
+  },
+
+  // GET /api/dashboard/performance - معیارهای عملکرد
+  getPerformanceMetrics: async (params?: {
+    tenantId?: string;
+    metricType?: string;
+    dateRange?: string;
+  }) => {
+    try {
+      const response = await apiClient.get('/api/dashboard/performance', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch performance metrics:', error);
+      return null;
+    }
+  },
+};
+
+// Audit Service - Updated based on Swagger API and Technical Spec
+export const auditService = {
+  // Tenant-level audit logs
+  getTenantAuditLogs: async (params?: {
+    page?: number;
+    pageSize?: number;
+    startDate?: string;
+    endDate?: string;
+    userId?: string;
+    action?: string;
+    resourceType?: string;
+    resourceId?: string;
+    ipAddress?: string;
+    search?: string;
+    sort?: string;
+    order?: 'asc' | 'desc';
+  }) => {
+    try {
+      const response = await apiClient.get('/api/tenant/audit', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch tenant audit logs:', error);
+      return { data: [], total: 0, page: 1, pageSize: 10 };
+    }
+  },
+
+  getAuditLogById: async (logId: string) => {
+    try {
+      const response = await apiClient.get(`/api/tenant/audit/${logId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch audit log:', error);
       return null;
     }
   },
 
-  createCampaign: async (data: any) => {
+  exportTenantAuditLogs: async (format: 'csv' | 'json' | 'xlsx' = 'csv', params?: any) => {
     try {
-      const response = await apiClient.post('/api/tenant/governance/campaigns', data);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to create campaign:', error);
-      throw error;
-    }
-  },
-
-  updateCampaign: async (campaignId: string, data: any) => {
-    try {
-      const response = await apiClient.put(`/api/tenant/governance/campaigns/${campaignId}`, data);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to update campaign:', error);
-      throw error;
-    }
-  },
-
-  startCampaign: async (campaignId: string) => {
-    try {
-      const response = await apiClient.post(`/api/tenant/governance/campaigns/${campaignId}/start`);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to start campaign:', error);
-      throw error;
-    }
-  },
-
-  closeCampaign: async (campaignId: string) => {
-    try {
-      const response = await apiClient.post(`/api/tenant/governance/campaigns/${campaignId}/close`);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to close campaign:', error);
-      throw error;
-    }
-  },
-
-  getCampaignItems: async (campaignId: string, params?: any) => {
-    try {
-      const response = await apiClient.get(`/api/tenant/governance/campaigns/${campaignId}/items`, { params });
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch campaign items:', error);
-      return [];
-    }
-  },
-
-  certifyItem: async (campaignId: string, itemId: string, data: { decision: string; comment?: string }) => {
-    try {
-      const response = await apiClient.post(`/api/tenant/governance/campaigns/${campaignId}/items/${itemId}/certify`, data);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to certify item:', error);
-      throw error;
-    }
-  },
-
-  bulkCertify: async (campaignId: string, data: { itemIds: string[]; decision: string; comment?: string }) => {
-    try {
-      const response = await apiClient.post(`/api/tenant/governance/campaigns/${campaignId}/bulk-certify`, data);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to bulk certify items:', error);
-      throw error;
-    }
-  },
-
-  // Compliance
-  getComplianceReports: async (params?: any) => {
-    try {
-      const response = await apiClient.get('/api/tenant/governance/compliance', { params });
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch compliance reports:', error);
-      return [];
-    }
-  },
-
-  getFrameworks: async () => {
-    try {
-      const response = await apiClient.get('/api/tenant/governance/compliance/frameworks');
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch compliance frameworks:', error);
-      return [];
-    }
-  },
-
-  getFrameworkById: async (frameworkId: string) => {
-    try {
-      const response = await apiClient.get(`/api/tenant/governance/compliance/frameworks/${frameworkId}`);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch framework:', error);
-      return null;
-    }
-  },
-
-  getViolations: async (params?: any) => {
-    try {
-      const response = await apiClient.get('/api/tenant/governance/compliance/violations', { params });
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch violations:', error);
-      return [];
-    }
-  },
-
-  getViolationById: async (violationId: string) => {
-    try {
-      const response = await apiClient.get(`/api/tenant/governance/compliance/violations/${violationId}`);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch violation:', error);
-      return null;
-    }
-  },
-
-  resolveViolation: async (violationId: string, data: { resolution: string; notes?: string }) => {
-    try {
-      const response = await apiClient.post(`/api/tenant/governance/compliance/violations/${violationId}/resolve`, data);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to resolve violation:', error);
-      throw error;
-    }
-  },
-
-  // Reports
-  getReports: async (params?: any) => {
-    try {
-      const response = await apiClient.get('/api/tenant/governance/reports', { params });
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch reports:', error);
-      return [];
-    }
-  },
-
-  generateReport: async (data: { type: string; frameworkId?: string; params?: any }) => {
-    try {
-      const response = await apiClient.post('/api/tenant/governance/reports/generate', data);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to generate report:', error);
-      throw error;
-    }
-  },
-
-  exportReport: async (reportId: string, format: 'pdf' | 'csv' | 'excel' = 'pdf') => {
-    try {
-      const response = await apiClient.get(`/api/tenant/governance/reports/${reportId}/export`, {
-        params: { format },
+      const response = await apiClient.get('/api/tenant/audit/export', {
+        params: { format, ...params },
         responseType: 'blob'
       });
       return response.data;
     } catch (error) {
-      console.error('Failed to export report:', error);
+      console.error('Failed to export tenant audit logs:', error);
       throw error;
     }
   },
 
-  scheduleReport: async (data: { type: string; schedule: string; recipients: string[] }) => {
+  // Global audit logs (for platform admins)
+  getGlobalAuditLogs: async (params?: {
+    page?: number;
+    pageSize?: number;
+    startDate?: string;
+    endDate?: string;
+    userId?: string;
+    tenantId?: string;
+    action?: string;
+    resourceType?: string;
+    resourceId?: string;
+    ipAddress?: string;
+    search?: string;
+    sort?: string;
+    order?: 'asc' | 'desc';
+  }) => {
     try {
-      const response = await apiClient.post('/api/tenant/governance/reports/schedule', data);
+      const response = await apiClient.get('/api/global/audit', { params });
       return response.data;
     } catch (error) {
-      console.error('Failed to schedule report:', error);
+      console.error('Failed to fetch global audit logs:', error);
+      return { data: [], total: 0, page: 1, pageSize: 10 };
+    }
+  },
+
+  // Legacy method for backward compatibility
+  getAuditLogs: async (params?: {
+    page?: number;
+    pageSize?: number;
+    startDate?: string;
+    endDate?: string;
+    userId?: string;
+    action?: string;
+    resourceType?: string;
+    resourceId?: string;
+    ipAddress?: string;
+    tenantId?: string;
+    search?: string;
+    sort?: string;
+    order?: 'asc' | 'desc';
+  }) => {
+    try {
+      const response = await apiClient.get('/api/tenant/audit', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch audit logs:', error);
+      return { data: [], total: 0, page: 1, pageSize: 10 };
+    }
+  },
+
+  exportAuditLogs: async (format: 'csv' | 'json' | 'xlsx' = 'csv', params?: any) => {
+    try {
+      const response = await apiClient.get('/api/tenant/audit/export', {
+        params: { format, ...params },
+        responseType: 'blob'
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to export audit logs:', error);
+      throw error;
+    }
+  },
+};
+
+// MFA Service - Based on Swagger API
+export const mfaService = {
+  // Setup MFA
+  setupMFA: async (methodType: number) => {
+    try {
+      const response = await apiClient.post('/api/auth/mfa/setup', { methodType });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to setup MFA:', error);
       throw error;
     }
   },
 
+  // Verify MFA
+  verifyMFA: async (challengeId: string, code: string, rememberDevice: boolean = false, deviceFingerprint?: string) => {
+    try {
+      const response = await apiClient.post('/api/auth/mfa/verify', {
+        challengeId,
+        code,
+        rememberDevice,
+        deviceFingerprint
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to verify MFA:', error);
+      throw error;
+    }
+  },
+
+  // Get MFA methods for current user
+  getMFAMethods: async () => {
+    try {
+      const response = await apiClient.get('/api/auth/mfa/methods');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to get MFA methods:', error);
+      return [];
+    }
+  },
+
+  // Remove MFA method
+  removeMFAMethod: async (methodId: string) => {
+    try {
+      await apiClient.delete(`/api/auth/mfa/methods/${methodId}`);
+      return true;
+    } catch (error) {
+      console.error('Failed to remove MFA method:', error);
+      throw error;
+    }
+  },
+};
+
+// Roles Service - Based on Technical Specification
+export const rolesService = {
+  // GET /api/tenant/authorization/roles - لیست نقش‌ها
+  getRoles: async (params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    sort?: string;
+    order?: 'asc' | 'desc';
+  }) => {
+    try {
+      const response = await apiClient.get('/api/tenant/authorization/roles', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch roles:', error);
+      return { data: [], total: 0, page: 1, pageSize: 10 };
+    }
+  },
+
+  // GET /api/tenant/authorization/roles/{id} - دریافت نقش خاص
+  getRoleById: async (roleId: string) => {
+    try {
+      const response = await apiClient.get(`/api/tenant/authorization/roles/${roleId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch role:', error);
+      return null;
+    }
+  },
+
+  // POST /api/tenant/authorization/roles - ایجاد نقش جدید
+  createRole: async (data: {
+    name: string;
+    description?: string;
+    permissions: string[];
+    parentRoleId?: string;
+  }) => {
+    try {
+      const response = await apiClient.post('/api/tenant/authorization/roles', data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to create role:', error);
+      throw error;
+    }
+  },
+
+  // PUT /api/tenant/authorization/roles/{id} - به‌روزرسانی نقش
+  updateRole: async (roleId: string, data: Partial<{
+    name: string;
+    description: string;
+    permissions: string[];
+    parentRoleId?: string;
+  }>) => {
+    try {
+      const response = await apiClient.put(`/api/tenant/authorization/roles/${roleId}`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to update role:', error);
+      throw error;
+    }
+  },
+
+  // DELETE /api/tenant/authorization/roles/{id} - حذف نقش
+  deleteRole: async (roleId: string) => {
+    try {
+      await apiClient.delete(`/api/tenant/authorization/roles/${roleId}`);
+      return true;
+    } catch (error) {
+      console.error('Failed to delete role:', error);
+      throw error;
+    }
+  },
+
+  // GET /api/tenant/authorization/permissions - لیست مجوزها
+  getPermissions: async () => {
+    try {
+      const response = await apiClient.get('/api/tenant/authorization/permissions');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch permissions:', error);
+      return [];
+    }
+  },
+
+  // POST /api/tenant/authorization/roles/{id}/assign - تخصیص نقش به کاربر
+  assignRoleToUser: async (roleId: string, userId: string) => {
+    try {
+      const response = await apiClient.post(`/api/tenant/authorization/roles/${roleId}/assign`, { userId });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to assign role to user:', error);
+      throw error;
+    }
+  },
+
+  // DELETE /api/tenant/authorization/roles/{id}/revoke - لغو نقش از کاربر
+  revokeRoleFromUser: async (roleId: string, userId: string) => {
+    try {
+      const response = await apiClient.delete(`/api/tenant/authorization/roles/${roleId}/revoke`, { data: { userId } });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to revoke role from user:', error);
+      throw error;
+    }
+  },
+
+  // GET /api/tenant/authorization/users/{id}/roles - نقش‌های کاربر
+  getUserRoles: async (userId: string) => {
+    try {
+      const response = await apiClient.get(`/api/tenant/authorization/users/${userId}/roles`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user roles:', error);
+      return [];
+    }
+  },
+};
+
+// Workflow/Automation Service - Based on Swagger API
+export const workflowService = {
+  // GET /api/tenant/workflows - لیست workflows
+  getWorkflows: async (params?: {
+    page?: number;
+    pageSize?: number;
+    tenantId?: string;
+    status?: string;
+    search?: string;
+  }) => {
+    try {
+      const response = await apiClient.get('/api/tenant/workflows', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch workflows:', error);
+      return { data: [], total: 0, page: 1, pageSize: 10 };
+    }
+  },
+
+  // GET /api/tenant/workflows/{id} - دریافت workflow خاص
+  getWorkflowById: async (workflowId: string) => {
+    try {
+      const response = await apiClient.get(`/api/tenant/workflows/${workflowId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch workflow:', error);
+      return null;
+    }
+  },
+
+  // POST /api/tenant/workflows - ایجاد workflow جدید
+  createWorkflow: async (data: {
+    tenantId: string;
+    name: string;
+    description?: string;
+    severity?: string;
+    isEnabled?: boolean;
+    triggers: any[];
+    conditions: any[];
+    actions: any[];
+  }) => {
+    try {
+      const response = await apiClient.post('/api/tenant/workflows', data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to create workflow:', error);
+      throw error;
+    }
+  },
+
+  // PUT /api/tenant/workflows/{id} - به‌روزرسانی workflow
+  updateWorkflow: async (workflowId: string, data: Partial<{
+    name: string;
+    description: string;
+    severity: string;
+    isEnabled: boolean;
+    triggers: any[];
+    conditions: any[];
+    actions: any[];
+  }>) => {
+    try {
+      const response = await apiClient.put(`/api/tenant/workflows/${workflowId}`, data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to update workflow:', error);
+      throw error;
+    }
+  },
+
+  // DELETE /api/tenant/workflows/{id} - حذف workflow
+  deleteWorkflow: async (workflowId: string) => {
+    try {
+      await apiClient.delete(`/api/tenant/workflows/${workflowId}`);
+      return true;
+    } catch (error) {
+      console.error('Failed to delete workflow:', error);
+      throw error;
+    }
+  },
+
+  // POST /api/tenant/workflows/{id}/test - تست workflow
+  testWorkflow: async (workflowId: string, testData: any) => {
+    try {
+      const response = await apiClient.post(`/api/tenant/workflows/${workflowId}/test`, testData);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to test workflow:', error);
+      throw error;
+    }
+  },
+
+  // GET /api/tenant/workflows/{id}/executions - لیست اجرای workflow
+  getWorkflowExecutions: async (workflowId: string, params?: {
+    page?: number;
+    pageSize?: number;
+  }) => {
+    try {
+      const response = await apiClient.get(`/api/tenant/workflows/${workflowId}/executions`, { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch workflow executions:', error);
+      return { data: [], total: 0, page: 1, pageSize: 10 };
+    }
+  },
+};
+
+// Governance Service - Updated based on Swagger API
+export const governanceService = {
   // Global governance (for platform admins)
   getGlobalAccessReviews: async (params?: any) => {
     try {
@@ -1603,7 +1958,7 @@ export const governanceService = {
   },
 };
 
-// Auth Service
+// Auth Service - Updated based on Swagger API
 export const authService = {
   login: async (email: string, password: string) => {
     try {
@@ -1625,16 +1980,6 @@ export const authService = {
     }
   },
 
-  getGoogleAuthUrl: async (redirectUri: string) => {
-    try {
-      const response = await apiClient.get('/api/auth/google/url', { params: { redirectUri } });
-      return response.data;
-    } catch (error) {
-      console.error('Failed to get Google auth URL:', error);
-      throw error;
-    }
-  },
-
   logout: async () => {
     try {
       const response = await apiClient.post('/api/auth/logout');
@@ -1645,22 +1990,97 @@ export const authService = {
     }
   },
 
-  completeFirstLogin: async (data: any) => {
+  refreshToken: async (refreshToken: string) => {
     try {
-      const response = await apiClient.post('/api/auth/complete-first-login', data);
+      const response = await apiClient.post('/api/auth/refresh', { refreshToken });
       return response.data;
     } catch (error) {
-      console.error('Failed to complete first login:', error);
+      console.error('Failed to refresh token:', error);
       throw error;
     }
   },
 
-  resetPassword: async (email: string) => {
+  forgotPassword: async (email: string) => {
     try {
-      const response = await apiClient.post('/api/auth/reset-password', { email });
+      const response = await apiClient.post('/api/auth/forgot-password', { email });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to request password reset:', error);
+      throw error;
+    }
+  },
+
+  resetPassword: async (token: string, password: string) => {
+    try {
+      const response = await apiClient.post('/api/auth/reset-password', { token, password });
       return response.data;
     } catch (error) {
       console.error('Failed to reset password:', error);
+      throw error;
+    }
+  },
+
+  verifyEmail: async (token: string) => {
+    try {
+      const response = await apiClient.post('/api/auth/verify-email', { token });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to verify email:', error);
+      throw error;
+    }
+  },
+
+  getCurrentUser: async () => {
+    try {
+      const response = await apiClient.get('/api/auth/me');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to get current user:', error);
+      throw error;
+    }
+  },
+
+  // MFA related endpoints
+  setupMFA: async (methodType: number) => {
+    try {
+      const response = await apiClient.post('/api/auth/mfa/setup', { methodType });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to setup MFA:', error);
+      throw error;
+    }
+  },
+
+  verifyMFA: async (challengeId: string, code: string, rememberDevice: boolean = false) => {
+    try {
+      const response = await apiClient.post('/api/auth/mfa/verify', {
+        challengeId,
+        code,
+        rememberDevice
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to verify MFA:', error);
+      throw error;
+    }
+  },
+
+  getMFAMethods: async () => {
+    try {
+      const response = await apiClient.get('/api/auth/mfa/methods');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to get MFA methods:', error);
+      throw error;
+    }
+  },
+
+  removeMFAMethod: async (methodId: string) => {
+    try {
+      const response = await apiClient.delete(`/api/auth/mfa/methods/${methodId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to remove MFA method:', error);
       throw error;
     }
   },

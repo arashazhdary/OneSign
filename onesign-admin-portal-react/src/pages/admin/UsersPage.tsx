@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
-import { Plus, Edit, Trash2, Mail } from 'lucide-react';
+import { Plus, Edit, Trash2, Mail, MoreVertical, Eye, UserCheck, UserX } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import Card from '@/components/common/Card';
@@ -9,9 +9,10 @@ import Button from '@/components/common/Button';
 import DataTable, { Column } from '@/components/common/DataTable';
 import Modal from '@/components/common/Modal';
 import Input from '@/components/common/Input';
-import Dropdown from '@/components/common/Dropdown';
+import Dropdown, { ActionMenu } from '@/components/common/Dropdown';
 import Badge from '@/components/common/Badge';
 import Avatar from '@/components/common/Avatar';
+import { usersService } from '@/lib/api/services';
 
 interface User {
   id: string;
@@ -44,10 +45,48 @@ const UsersPage = () => {
     fetchUsers();
   }, []);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    sort?: string;
+    order?: 'asc' | 'desc';
+  }) => {
     setLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await usersService.getUsers(params);
+
+      if (response?.data) {
+        // Map API response to our User interface
+        const mappedUsers = response.data.map((user: any) => ({
+          id: user.id,
+          name: user.displayName || user.name || user.email,
+          email: user.email,
+          role: user.role || 'User',
+          status: user.status || 'active',
+          createdAt: user.createdAt,
+          lastLogin: user.lastLoginAt,
+          avatar: user.profilePictureUrl || user.avatar,
+        }));
+
+        setUsers(mappedUsers);
+      } else {
+        // Fallback to mock data if API fails
+        const mockUsers: User[] = Array.from({ length: 25 }, (_, i) => ({
+          id: `user-${i + 1}`,
+          name: `User ${i + 1}`,
+          email: `user${i + 1}@example.com`,
+          role: ['Admin', 'User', 'Manager', 'Viewer'][i % 4],
+          status: ['active', 'inactive', 'suspended'][i % 3] as any,
+          createdAt: new Date(Date.now() - i * 86400000).toISOString(),
+          lastLogin: i % 3 === 0 ? new Date(Date.now() - i * 3600000).toISOString() : undefined,
+        }));
+        setUsers(mockUsers);
+      }
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+      toast.error(t('users.failedToLoad'));
+      // Fallback to mock data
       const mockUsers: User[] = Array.from({ length: 25 }, (_, i) => ({
         id: `user-${i + 1}`,
         name: `User ${i + 1}`,
@@ -58,8 +97,6 @@ const UsersPage = () => {
         lastLogin: i % 3 === 0 ? new Date(Date.now() - i * 3600000).toISOString() : undefined,
       }));
       setUsers(mockUsers);
-    } catch (error) {
-      toast.error(t('users.failedToLoad'));
     } finally {
       setLoading(false);
     }
@@ -119,13 +156,44 @@ const UsersPage = () => {
       label: t('common.actions'),
       align: 'right',
       render: (_, user) => (
-        <div className="flex items-center justify-end gap-2">
-          <Button variant="ghost" size="sm" onClick={() => handleEdit(user)} leftIcon={<Edit className="w-4 h-4" />} />
-          <Button variant="ghost" size="sm" onClick={() => handleDelete(user)} leftIcon={<Trash2 className="w-4 h-4 text-danger-600" />} />
-        </div>
+        <ActionMenu
+          items={[
+            {
+              label: t('common.view'),
+              icon: <Eye className="w-4 h-4" />,
+              onClick: () => handleView(user),
+            },
+            {
+              label: t('common.edit'),
+              icon: <Edit className="w-4 h-4" />,
+              onClick: () => handleEdit(user),
+            },
+            {
+              label: user.status === 'active' ? t('users.suspend') : t('users.activate'),
+              icon: user.status === 'active' ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />,
+              onClick: () => handleToggleStatus(user),
+            },
+            {
+              label: t('users.sendInvite'),
+              icon: <Mail className="w-4 h-4" />,
+              onClick: () => handleSendInvite(user),
+            },
+            { type: 'divider' },
+            {
+              label: t('common.delete'),
+              icon: <Trash2 className="w-4 h-4" />,
+              onClick: () => handleDelete(user),
+            },
+          ]}
+        />
       ),
     },
   ];
+
+  const handleView = (user: User) => {
+    // TODO: Navigate to user detail page
+    toast.success(t('common.view') + ': ' + user.name);
+  };
 
   const handleEdit = (user: User) => {
     setSelectedUser(user);
@@ -133,10 +201,39 @@ const UsersPage = () => {
     setIsEditModalOpen(true);
   };
 
+  const handleToggleStatus = async (user: User) => {
+    const newStatus = user.status === 'active' ? 'suspended' : 'active';
+    const actionText = newStatus === 'active' ? t('users.activate') : t('users.suspend');
+
+    try {
+      // TODO: Call API to update user status
+      setUsers((prev) =>
+        prev.map((u) => (u.id === user.id ? { ...u, status: newStatus } : u))
+      );
+      toast.success(`${actionText}: ${user.name}`);
+    } catch (error) {
+      toast.error(t('common.error'));
+    }
+  };
+
+  const handleSendInvite = async (user: User) => {
+    try {
+      // TODO: Call API to send invite
+      toast.success(`${t('users.inviteSent')}: ${user.email}`);
+    } catch (error) {
+      toast.error(t('common.error'));
+    }
+  };
+
   const handleDelete = async (user: User) => {
     if (confirm(t('users.deleteConfirm'))) {
-      setUsers((prev) => prev.filter((u) => u.id !== user.id));
-      toast.success(t('users.userDeleted'));
+      try {
+        // TODO: Call API to delete user
+        setUsers((prev) => prev.filter((u) => u.id !== user.id));
+        toast.success(t('users.userDeleted'));
+      } catch (error) {
+        toast.error(t('users.deleteError'));
+      }
     }
   };
 

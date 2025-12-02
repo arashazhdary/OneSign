@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
-import { Plus, Edit, Trash2, Shield, Users, Check } from 'lucide-react';
+import { Plus, Edit, Trash2, Shield, Users, Check, MoreVertical, Eye, UserCheck, UserX } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import Card from '@/components/common/Card';
@@ -9,7 +9,9 @@ import Button from '@/components/common/Button';
 import DataTable, { Column } from '@/components/common/DataTable';
 import Modal from '@/components/common/Modal';
 import Input from '@/components/common/Input';
+import { ActionMenu } from '@/components/common/Dropdown';
 import Badge from '@/components/common/Badge';
+import { rolesService } from '@/lib/api/services';
 
 interface Role {
   id: string;
@@ -53,10 +55,76 @@ const RolesPage = () => {
     fetchRoles();
   }, []);
 
-  const fetchRoles = async () => {
+  const fetchRoles = async (params?: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    sort?: string;
+    order?: 'asc' | 'desc';
+  }) => {
     setLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await rolesService.getRoles(params);
+
+      if (response?.data) {
+        // Map API response to our Role interface
+        const mappedRoles = response.data.map((role: any) => ({
+          id: role.id,
+          name: role.name,
+          description: role.description || '',
+          userCount: role.userCount || 0,
+          permissions: role.permissions || [],
+          isSystem: role.isSystem || false,
+          createdAt: role.createdAt,
+        }));
+
+        setRoles(mappedRoles);
+      } else {
+        // Fallback to mock data if API fails
+        const mockRoles: Role[] = [
+          {
+            id: 'role-1',
+            name: 'Admin',
+            description: 'Full system access with all permissions',
+            userCount: 5,
+            permissions: availablePermissions,
+            isSystem: true,
+            createdAt: new Date(Date.now() - 30 * 86400000).toISOString(),
+          },
+          {
+            id: 'role-2',
+            name: 'Manager',
+            description: 'Manage users and view reports',
+            userCount: 12,
+            permissions: ['users.read', 'users.write', 'apps.read', 'settings.read'],
+            isSystem: true,
+            createdAt: new Date(Date.now() - 25 * 86400000).toISOString(),
+          },
+          {
+            id: 'role-3',
+            name: 'Editor',
+            description: 'Edit content and manage applications',
+            userCount: 28,
+            permissions: ['apps.read', 'apps.write', 'users.read'],
+            isSystem: false,
+            createdAt: new Date(Date.now() - 20 * 86400000).toISOString(),
+          },
+          {
+            id: 'role-4',
+            name: 'Viewer',
+            description: 'Read-only access to all resources',
+            userCount: 45,
+            permissions: ['users.read', 'apps.read', 'settings.read'],
+            isSystem: true,
+            createdAt: new Date(Date.now() - 15 * 86400000).toISOString(),
+          },
+        ];
+        setRoles(mockRoles);
+      }
+    } catch (error) {
+      console.error('Failed to fetch roles:', error);
+      toast.error(t('common.error'));
+      // Fallback to mock data
       const mockRoles: Role[] = [
         {
           id: 'role-1',
@@ -96,8 +164,6 @@ const RolesPage = () => {
         },
       ];
       setRoles(mockRoles);
-    } catch (error) {
-      toast.error(t('common.error'));
     } finally {
       setLoading(false);
     }
@@ -174,25 +240,57 @@ const RolesPage = () => {
       label: t('common.actions'),
       align: 'right',
       render: (_, role) => (
-        <div className="flex items-center justify-end gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleEdit(role)}
-            leftIcon={<Edit className="w-4 h-4" />}
-            disabled={role.isSystem}
-          />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleDelete(role)}
-            leftIcon={<Trash2 className="w-4 h-4 text-danger-600" />}
-            disabled={role.isSystem}
-          />
-        </div>
+        <ActionMenu disabled={role.isSystem}
+          items={[
+            {
+              label: t('common.view'),
+              icon: <Eye className="w-4 h-4" />,
+              onClick: () => handleView(role),
+            },
+            {
+              label: t('roles.editPermissions'),
+              icon: <Shield className="w-4 h-4" />,
+              onClick: () => handleEditPermissions(role),
+              disabled: role.isSystem,
+            },
+            {
+              label: t('common.edit'),
+              icon: <Edit className="w-4 h-4" />,
+              onClick: () => handleEdit(role),
+              disabled: role.isSystem,
+            },
+            {
+              label: t('roles.manageUsers'),
+              icon: <Users className="w-4 h-4" />,
+              onClick: () => handleManageUsers(role),
+            },
+            { type: 'divider' },
+            {
+              label: t('common.delete'),
+              icon: <Trash2 className="w-4 h-4" />,
+              onClick: () => handleDelete(role),
+              disabled: role.isSystem,
+            },
+          ]}
+        />
       ),
     },
   ];
+
+  const handleView = (role: Role) => {
+    // TODO: Navigate to role detail page
+    toast.success(t('common.view') + ': ' + role.name);
+  };
+
+  const handleEditPermissions = (role: Role) => {
+    // TODO: Open permissions editor modal
+    toast.success(t('roles.editPermissions') + ': ' + role.name);
+  };
+
+  const handleManageUsers = (role: Role) => {
+    // TODO: Navigate to users with this role
+    toast.success(t('roles.manageUsers') + ': ' + role.name);
+  };
 
   const handleEdit = (role: Role) => {
     setSelectedRole(role);

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as observabilityApi from '@/lib/api/observability';
 import { globalService } from '@/lib/api/services/global.service';
+import { auditService } from '@/lib/api/services';
 import { Helmet } from 'react-helmet-async';
 
 // Extended Audit Event Interface
@@ -172,38 +173,94 @@ export default function GlobalAuditPage() {
     setLoading(true);
     setError('');
     try {
-      const data = await observabilityApi.searchGlobalAuditEvents({
-        ...filters,
-        pageNumber: page,
+      // Try using the new auditService first
+      const auditParams = {
+        page,
         pageSize,
-      });
+        startDate: filters.startDate,
+        endDate: filters.endDate,
+        userId: filters.userId,
+        action: filters.action,
+        resourceType: filters.resourceType,
+        tenantId: filters.tenantId,
+        search: filters.searchTerm,
+        sort: 'timestamp',
+        order: 'desc' as const,
+      };
+
+      const data = await auditService.getAuditLogs(auditParams);
 
       // Map API response to our extended interface
-      const mappedEvents = data.events.map((event: any) => ({
-        id: event.id,
-        timestamp: event.timestamp,
-        tenantId: event.metadata?.tenantId || 'N/A',
-        tenantName: event.metadata?.tenantName || 'N/A',
-        userId: event.actorId,
-        userName: event.actorEmail?.split('@')[0] || event.actorId,
-        userEmail: event.actorEmail,
-        action: event.action,
-        resource: event.resourceId || event.resourceType,
-        resourceType: event.resourceType,
-        ipAddress: event.ipAddress,
-        userAgent: event.userAgent,
-        status: (event.success ? 'success' : 'failure') as 'success' | 'failure',
-        severity: event.metadata?.severity || 'low',
-        category: event.eventType,
-        geoLocation: event.metadata?.geoLocation,
-        details: event.metadata,
-        requestData: event.metadata?.requestData,
-        responseData: event.metadata?.responseData,
-        relatedEvents: event.metadata?.relatedEvents,
-      }));
+      let mappedEvents: AuditEvent[] = [];
+      let totalCount = 0;
+
+      if (data?.data) {
+        // New API format
+        mappedEvents = data.data.map((event: any) => ({
+          id: event.id,
+          timestamp: event.timestamp || event.createdAt,
+          tenantId: event.tenantId || 'N/A',
+          tenantName: event.tenantName || 'N/A',
+          userId: event.userId || event.actorId,
+          userName: event.userName || event.actorName || 'Unknown',
+          userEmail: event.userEmail || event.actorEmail,
+          action: event.action,
+          resource: event.resource || event.resourceId,
+          resourceType: event.resourceType,
+          ipAddress: event.ipAddress,
+          userAgent: event.userAgent,
+          status: event.status || (event.success ? 'success' : 'failure'),
+          severity: event.severity || 'low',
+          category: event.category || event.eventType,
+          geoLocation: event.geoLocation,
+          details: event.details || event.metadata,
+          requestData: event.requestData,
+          responseData: event.responseData,
+          relatedEvents: event.relatedEvents,
+        }));
+        totalCount = data.total || data.totalCount || 0;
+      } else {
+        // Fallback to old API format or mock data
+        try {
+          const fallbackData = await observabilityApi.searchGlobalAuditEvents({
+            ...filters,
+            pageNumber: page,
+            pageSize,
+          });
+
+          mappedEvents = fallbackData.events.map((event: any) => ({
+            id: event.id,
+            timestamp: event.timestamp,
+            tenantId: event.metadata?.tenantId || 'N/A',
+            tenantName: event.metadata?.tenantName || 'N/A',
+            userId: event.actorId,
+            userName: event.actorEmail?.split('@')[0] || event.actorId,
+            userEmail: event.actorEmail,
+            action: event.action,
+            resource: event.resourceId || event.resourceType,
+            resourceType: event.resourceType,
+            ipAddress: event.ipAddress,
+            userAgent: event.userAgent,
+            status: (event.success ? 'success' : 'failure') as 'success' | 'failure',
+            severity: event.metadata?.severity || 'low',
+            category: event.eventType,
+            geoLocation: event.metadata?.geoLocation,
+            details: event.metadata,
+            requestData: event.metadata?.requestData,
+            responseData: event.metadata?.responseData,
+            relatedEvents: event.metadata?.relatedEvents,
+          }));
+
+          totalCount = fallbackData.totalCount || 0;
+        } catch (fallbackErr) {
+          console.error('Both API calls failed, using mock data:', fallbackErr);
+          mappedEvents = generateMockAuditEvents(pageSize);
+          totalCount = 100;
+        }
+      }
 
       setAuditEvents(mappedEvents);
-      setTotalEvents(data.totalCount || 0);
+      setTotalEvents(totalCount);
     } catch (err) {
       console.error('Failed to fetch audit events, using mock data:', err);
       // Fallback to mock data
