@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getTenantId } from '@/lib/tenant-context';
 import { governanceService } from '@/lib/api/services/governance.service';
 import {
@@ -21,6 +22,23 @@ import {
   Radar
 } from 'recharts';
 import { Helmet } from 'react-helmet-async';
+import {
+  FileCheck,
+  FileText,
+  Calendar,
+  History,
+  LayoutDashboard,
+  Download,
+  Plus,
+  Trash2,
+  Shield,
+  AlertTriangle,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Users,
+  LucideIcon
+} from 'lucide-react';
 
 interface ComplianceScore {
   framework: string;
@@ -65,7 +83,40 @@ interface ScheduledReport {
   recipients: string[];
 }
 
-const COLORS = ['#22c55e', '#eab308', '#ef4444', '#3b82f6', '#8b5cf6'];
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+  color: string;
+  delay: number;
+}
+
+const StatCard = ({ title, value, icon, color, delay }: StatCardProps) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: delay * 0.1 }}
+    className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300"
+  >
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
+        <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+      </div>
+      <div className={`p-4 rounded-xl bg-gradient-to-br ${color}`}>
+        {icon}
+      </div>
+    </div>
+  </motion.div>
+);
+
+interface TabItem {
+  key: string;
+  label: string;
+  icon: LucideIcon;
+}
+
+const CHART_COLORS = ['#22c55e', '#eab308', '#ef4444', '#3b82f6', '#8b5cf6'];
 
 export default function TenantReportsCompliancePage() {
   const { t } = useTranslation();
@@ -96,6 +147,14 @@ export default function TenantReportsCompliancePage() {
     recipients: ''
   });
 
+  const tabs: TabItem[] = [
+    { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { key: 'predefined', label: 'Pre-defined Reports', icon: FileCheck },
+    { key: 'custom', label: 'Custom Builder', icon: FileText },
+    { key: 'scheduled', label: 'Scheduled', icon: Calendar },
+    { key: 'history', label: 'History', icon: History }
+  ];
+
   useEffect(() => {
     const contextTenantId = getTenantId();
     setTenantIdState(contextTenantId || '00000000-0000-0000-0000-000000000000');
@@ -112,13 +171,11 @@ export default function TenantReportsCompliancePage() {
 
     setLoading(true);
     try {
-      // Fetch real compliance data from API
       const [frameworks, reports] = await Promise.all([
         governanceService.getFrameworks(),
         governanceService.getReports()
       ]);
 
-      // Map frameworks to compliance scores
       if (frameworks && frameworks.length > 0) {
         const scores: ComplianceScore[] = frameworks.map((framework: any) => ({
           framework: framework.name || framework.id,
@@ -128,10 +185,9 @@ export default function TenantReportsCompliancePage() {
         }));
         setComplianceScores(scores);
       } else {
-        initializeComplianceScores(); // Fallback to mock
+        initializeComplianceScores();
       }
 
-      // Map real reports to predefined and history
       if (reports && reports.length > 0) {
         const predefined: PredefinedReport[] = reports
           .filter((r: any) => r.type === 'predefined')
@@ -158,16 +214,14 @@ export default function TenantReportsCompliancePage() {
           }));
         setReportHistory(history.length > 0 ? history : mockReportHistory());
       } else {
-        initializePredefinedReports(); // Fallback to mock
-        initializeReportHistory(); // Fallback to mock
+        initializePredefinedReports();
+        initializeReportHistory();
       }
 
-      // Initialize scheduled reports (API doesn't have this yet, use mock)
       initializeScheduledReports();
 
     } catch (error) {
       console.error('Error fetching compliance data:', error);
-      // Fallback to mock data on error
       initializeComplianceScores();
       initializePredefinedReports();
       initializeReportHistory();
@@ -177,7 +231,6 @@ export default function TenantReportsCompliancePage() {
     }
   };
 
-  // Helper functions for fallback mock data
   const mockPredefinedReports = (): PredefinedReport[] => [
     {
       id: '1',
@@ -203,151 +256,41 @@ export default function TenantReportsCompliancePage() {
 
   const initializeComplianceScores = () => {
     const scores: ComplianceScore[] = [
-      {
-        framework: 'GDPR',
-        score: 92,
-        lastAudit: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'compliant'
-      },
-      {
-        framework: 'SOC2',
-        score: 88,
-        lastAudit: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'compliant'
-      },
-      {
-        framework: 'ISO27001',
-        score: 85,
-        lastAudit: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'compliant'
-      },
-      {
-        framework: 'HIPAA',
-        score: 78,
-        lastAudit: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'warning'
-      },
-      {
-        framework: 'PCI DSS',
-        score: 95,
-        lastAudit: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'compliant'
-      }
+      { framework: 'GDPR', score: 92, lastAudit: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(), status: 'compliant' },
+      { framework: 'SOC2', score: 88, lastAudit: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(), status: 'compliant' },
+      { framework: 'ISO27001', score: 85, lastAudit: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(), status: 'compliant' },
+      { framework: 'HIPAA', score: 78, lastAudit: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), status: 'warning' },
+      { framework: 'PCI DSS', score: 95, lastAudit: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), status: 'compliant' }
     ];
-
     setComplianceScores(scores);
   };
 
   const initializePredefinedReports = () => {
     const reports: PredefinedReport[] = [
-      {
-        id: '1',
-        name: 'GDPR Compliance Report',
-        framework: 'GDPR',
-        description: 'Comprehensive report on GDPR compliance including data processing, consent management, and user rights',
-        lastGenerated: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'available'
-      },
-      {
-        id: '2',
-        name: 'SOC2 Type II Report',
-        framework: 'SOC2',
-        description: 'Security, availability, processing integrity, confidentiality, and privacy controls audit',
-        lastGenerated: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'available'
-      },
-      {
-        id: '3',
-        name: 'ISO27001 Certification Report',
-        framework: 'ISO27001',
-        description: 'Information security management system compliance and certification status',
-        lastGenerated: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'available'
-      },
-      {
-        id: '4',
-        name: 'HIPAA Security Rule Compliance',
-        framework: 'HIPAA',
-        description: 'Protected Health Information (PHI) security and privacy compliance assessment',
-        lastGenerated: null,
-        status: 'available'
-      }
+      { id: '1', name: 'GDPR Compliance Report', framework: 'GDPR', description: 'Comprehensive report on GDPR compliance including data processing, consent management, and user rights', lastGenerated: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), status: 'available' },
+      { id: '2', name: 'SOC2 Type II Report', framework: 'SOC2', description: 'Security, availability, processing integrity, confidentiality, and privacy controls audit', lastGenerated: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(), status: 'available' },
+      { id: '3', name: 'ISO27001 Certification Report', framework: 'ISO27001', description: 'Information security management system compliance and certification status', lastGenerated: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString(), status: 'available' },
+      { id: '4', name: 'HIPAA Security Rule Compliance', framework: 'HIPAA', description: 'Protected Health Information (PHI) security and privacy compliance assessment', lastGenerated: null, status: 'available' }
     ];
-
     setPredefinedReports(reports);
   };
 
   const initializeReportHistory = () => {
     const history: ReportHistory[] = [
-      {
-        id: '1',
-        name: 'GDPR Compliance Report',
-        framework: 'GDPR',
-        generatedDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-        generatedBy: 'admin@example.com',
-        format: 'PDF',
-        size: '2.4 MB'
-      },
-      {
-        id: '2',
-        name: 'SOC2 Type II Report',
-        framework: 'SOC2',
-        generatedDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-        generatedBy: 'compliance@example.com',
-        format: 'Excel',
-        size: '1.8 MB'
-      },
-      {
-        id: '3',
-        name: 'Custom Security Audit',
-        framework: 'Custom',
-        generatedDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-        generatedBy: 'security@example.com',
-        format: 'PDF',
-        size: '3.1 MB'
-      },
-      {
-        id: '4',
-        name: 'ISO27001 Certification Report',
-        framework: 'ISO27001',
-        generatedDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-        generatedBy: 'admin@example.com',
-        format: 'PDF',
-        size: '4.2 MB'
-      }
+      { id: '1', name: 'GDPR Compliance Report', framework: 'GDPR', generatedDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), generatedBy: 'admin@example.com', format: 'PDF', size: '2.4 MB' },
+      { id: '2', name: 'SOC2 Type II Report', framework: 'SOC2', generatedDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), generatedBy: 'compliance@example.com', format: 'Excel', size: '1.8 MB' },
+      { id: '3', name: 'Custom Security Audit', framework: 'Custom', generatedDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), generatedBy: 'security@example.com', format: 'PDF', size: '3.1 MB' },
+      { id: '4', name: 'ISO27001 Certification Report', framework: 'ISO27001', generatedDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(), generatedBy: 'admin@example.com', format: 'PDF', size: '4.2 MB' }
     ];
-
     setReportHistory(history);
   };
 
   const initializeScheduledReports = () => {
     const scheduled: ScheduledReport[] = [
-      {
-        id: '1',
-        name: 'Weekly Security Report',
-        framework: 'Custom',
-        frequency: 'weekly',
-        nextRun: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-        recipients: ['security@example.com', 'admin@example.com']
-      },
-      {
-        id: '2',
-        name: 'Monthly GDPR Report',
-        framework: 'GDPR',
-        frequency: 'monthly',
-        nextRun: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
-        recipients: ['compliance@example.com']
-      },
-      {
-        id: '3',
-        name: 'Quarterly SOC2 Report',
-        framework: 'SOC2',
-        frequency: 'quarterly',
-        nextRun: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString(),
-        recipients: ['audit@example.com', 'compliance@example.com']
-      }
+      { id: '1', name: 'Weekly Security Report', framework: 'Custom', frequency: 'weekly', nextRun: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), recipients: ['security@example.com', 'admin@example.com'] },
+      { id: '2', name: 'Monthly GDPR Report', framework: 'GDPR', frequency: 'monthly', nextRun: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(), recipients: ['compliance@example.com'] },
+      { id: '3', name: 'Quarterly SOC2 Report', framework: 'SOC2', frequency: 'quarterly', nextRun: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString(), recipients: ['audit@example.com', 'compliance@example.com'] }
     ];
-
     setScheduledReports(scheduled);
   };
 
@@ -356,19 +299,13 @@ export default function TenantReportsCompliancePage() {
     if (!report || !tenantId) return;
 
     try {
-      // Try to export report via API if it exists
-      // Map format: JSON → csv, Excel → excel, PDF → pdf
       const formatMap: Record<string, 'pdf' | 'csv' | 'excel'> = {
         'PDF': 'pdf',
         'Excel': 'excel',
         'JSON': 'csv'
       };
-      const blob = await governanceService.exportReport(
-        reportId,
-        formatMap[format]
-      );
+      const blob = await governanceService.exportReport(reportId, formatMap[format]);
 
-      // Download the blob
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -378,11 +315,9 @@ export default function TenantReportsCompliancePage() {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      // Refresh data after generation
       fetchComplianceData();
     } catch (error) {
       console.error('Error generating report:', error);
-      // Fallback to mock generation
       alert(`Generating ${report.name} in ${format} format...`);
 
       const data = {
@@ -467,9 +402,46 @@ export default function TenantReportsCompliancePage() {
     alert(`Downloading ${report.name}...`);
   };
 
-  if (loading) {
-    return <div className="p-8">Loading compliance reports...</div>;
-  }
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'compliant':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
+            <CheckCircle className="w-3 h-3" />
+            Compliant
+          </span>
+        );
+      case 'warning':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300">
+            <AlertTriangle className="w-3 h-3" />
+            Warning
+          </span>
+        );
+      case 'non-compliant':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300">
+            <XCircle className="w-3 h-3" />
+            Non-Compliant
+          </span>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const getFormatBadge = (format: string) => {
+    switch (format) {
+      case 'PDF':
+        return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
+      case 'Excel':
+        return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300';
+      case 'JSON':
+        return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300';
+      default:
+        return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300';
+    }
+  };
 
   const availableSections = [
     'Access Controls',
@@ -482,438 +454,639 @@ export default function TenantReportsCompliancePage() {
     'Third-Party Integrations'
   ];
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-green-50 dark:from-slate-900 dark:via-emerald-900/20 dark:to-green-900/20 p-8">
+        <div className="flex items-center justify-center h-64">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  const avgScore = complianceScores.length > 0
+    ? Math.round(complianceScores.reduce((acc, s) => acc + s.score, 0) / complianceScores.length)
+    : 0;
+  const compliantCount = complianceScores.filter(s => s.status === 'compliant').length;
+  const warningCount = complianceScores.filter(s => s.status === 'warning').length;
+
   return (
-    <div className="p-8 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Compliance Reports</h1>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-green-50 dark:from-slate-900 dark:via-emerald-900/20 dark:to-green-900/20">
+      <Helmet>
+        <title>Compliance Reports</title>
+      </Helmet>
 
-      {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
-          {[
-            { key: 'dashboard', label: 'Dashboard' },
-            { key: 'predefined', label: 'Pre-defined Reports' },
-            { key: 'custom', label: 'Custom Report Builder' },
-            { key: 'scheduled', label: 'Scheduled Reports' },
-            { key: 'history', label: 'Report History' }
-          ].map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key as any)}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === tab.key
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-      </div>
-
-      {/* Dashboard Tab */}
-      {activeTab === 'dashboard' && (
-        <div className="space-y-6">
-          {/* Compliance Scores */}
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h3 className="text-lg font-semibold mb-4">Compliance Score Dashboard</h3>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              {complianceScores.map(score => (
-                <div key={score.framework} className="p-4 border rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-semibold text-sm">{score.framework}</h4>
-                    <span className={`w-3 h-3 rounded-full ${
-                      score.status === 'compliant' ? 'bg-green-500' :
-                      score.status === 'warning' ? 'bg-yellow-500' :
-                      'bg-red-500'
-                    }`}></span>
-                  </div>
-                  <p className="text-3xl font-bold text-indigo-600 mb-1">{score.score}%</p>
-                  <p className="text-xs text-gray-500">
-                    Last audit: {new Date(score.lastAudit).toLocaleDateString()}
-                  </p>
-                </div>
-              ))}
-            </div>
+      <div className="p-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-4 mb-8"
+        >
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 shadow-lg">
+            <Shield className="w-8 h-8 text-white" />
           </div>
-
-          {/* Compliance Chart */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-4">Compliance Scores by Framework</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={complianceScores}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="framework" />
-                  <YAxis domain={[0, 100]} />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="score" name="Compliance Score (%)">
-                    {complianceScores.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={entry.score >= 90 ? '#22c55e' : entry.score >= 75 ? '#eab308' : '#ef4444'}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-4">Compliance Status Distribution</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <RadarChart data={complianceScores}>
-                  <PolarGrid />
-                  <PolarAngleAxis dataKey="framework" />
-                  <PolarRadiusAxis domain={[0, 100]} />
-                  <Radar name="Score" dataKey="score" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} />
-                  <Tooltip />
-                  <Legend />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Compliance Reports</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Generate and manage compliance reports</p>
           </div>
+        </motion.div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <StatCard
+            title="Average Score"
+            value={`${avgScore}%`}
+            icon={<Shield className="w-6 h-6 text-white" />}
+            color="from-emerald-500 to-green-600"
+            delay={0}
+          />
+          <StatCard
+            title="Frameworks"
+            value={complianceScores.length}
+            icon={<FileCheck className="w-6 h-6 text-white" />}
+            color="from-blue-500 to-indigo-600"
+            delay={1}
+          />
+          <StatCard
+            title="Compliant"
+            value={compliantCount}
+            icon={<CheckCircle className="w-6 h-6 text-white" />}
+            color="from-green-500 to-emerald-600"
+            delay={2}
+          />
+          <StatCard
+            title="Warnings"
+            value={warningCount}
+            icon={<AlertTriangle className="w-6 h-6 text-white" />}
+            color="from-yellow-500 to-amber-600"
+            delay={3}
+          />
         </div>
-      )}
 
-      {/* Pre-defined Reports Tab */}
-      {activeTab === 'predefined' && (
-        <div className="space-y-4">
-          {predefinedReports.map(report => (
-            <div key={report.id} className="bg-white p-6 rounded-lg shadow">
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3">
-                    <h3 className="text-lg font-semibold">{report.name}</h3>
-                    <span className="px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-800">
-                      {report.framework}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600 mt-2">{report.description}</p>
-                  {report.lastGenerated && (
-                    <p className="text-xs text-gray-500 mt-2">
-                      Last generated: {new Date(report.lastGenerated).toLocaleString()}
-                    </p>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => generateReport(report.id, 'PDF')}
-                    className="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700"
-                  >
-                    Export PDF
-                  </button>
-                  <button
-                    onClick={() => generateReport(report.id, 'Excel')}
-                    className="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700"
-                  >
-                    Export Excel
-                  </button>
-                  <button
-                    onClick={() => {
-                      setNewSchedule({ ...newSchedule, reportId: report.id });
-                      setShowScheduleModal(true);
-                    }}
-                    className="px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700"
-                  >
-                    Schedule
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Custom Report Builder Tab */}
-      {activeTab === 'custom' && (
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold mb-6">Build Custom Compliance Report</h3>
-
-          <div className="space-y-6">
-            {/* Report Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Report Name</label>
-              <input
-                type="text"
-                value={customReport.name}
-                onChange={(e) => setCustomReport({ ...customReport, name: e.target.value })}
-                className="w-full px-4 py-2 border rounded-lg"
-                placeholder="Enter report name"
-              />
-            </div>
-
-            {/* Framework Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Compliance Framework</label>
-              <select
-                value={customReport.framework}
-                onChange={(e) => setCustomReport({ ...customReport, framework: e.target.value })}
-                className="w-full px-4 py-2 border rounded-lg"
+        {/* Tabs */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 mb-6"
+        >
+          <nav className="flex p-2 overflow-x-auto">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key as any)}
+                className={`relative flex items-center gap-2 py-3 px-6 rounded-lg font-medium transition-all whitespace-nowrap ${
+                  activeTab === tab.key
+                    ? 'text-white'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700'
+                }`}
               >
-                <option value="GDPR">GDPR</option>
-                <option value="SOC2">SOC2</option>
-                <option value="ISO27001">ISO27001</option>
-                <option value="HIPAA">HIPAA</option>
-                <option value="Custom">Custom</option>
-              </select>
-            </div>
+                {activeTab === tab.key && (
+                  <motion.div
+                    layoutId="activeComplianceTab"
+                    className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-green-600 rounded-lg"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+                <tab.icon className="w-4 h-4 relative z-10" />
+                <span className="relative z-10">{tab.label}</span>
+              </button>
+            ))}
+          </nav>
+        </motion.div>
 
-            {/* Date Range */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-                <input
-                  type="date"
-                  value={customReport.dateRange.start}
-                  onChange={(e) => setCustomReport({
-                    ...customReport,
-                    dateRange: { ...customReport.dateRange, start: e.target.value }
-                  })}
-                  className="w-full px-4 py-2 border rounded-lg"
-                />
+        {/* Tab Content */}
+        <AnimatePresence mode="wait">
+          {activeTab === 'dashboard' && (
+            <motion.div
+              key="dashboard"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-6"
+            >
+              {/* Compliance Scores */}
+              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">Compliance Score Dashboard</h3>
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  {complianceScores.map((score, index) => (
+                    <motion.div
+                      key={score.framework}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="p-4 bg-gray-50 dark:bg-slate-700/50 rounded-xl"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="font-semibold text-sm text-gray-900 dark:text-white">{score.framework}</h4>
+                        <span className={`w-3 h-3 rounded-full ${
+                          score.status === 'compliant' ? 'bg-green-500' :
+                          score.status === 'warning' ? 'bg-yellow-500' :
+                          'bg-red-500'
+                        }`}></span>
+                      </div>
+                      <p className={`text-3xl font-bold mb-2 ${
+                        score.score >= 90 ? 'text-green-600 dark:text-green-400' :
+                        score.score >= 75 ? 'text-yellow-600 dark:text-yellow-400' :
+                        'text-red-600 dark:text-red-400'
+                      }`}>{score.score}%</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {new Date(score.lastAudit).toLocaleDateString()}
+                      </p>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
-                <input
-                  type="date"
-                  value={customReport.dateRange.end}
-                  onChange={(e) => setCustomReport({
-                    ...customReport,
-                    dateRange: { ...customReport.dateRange, end: e.target.value }
-                  })}
-                  className="w-full px-4 py-2 border rounded-lg"
-                />
-              </div>
-            </div>
 
-            {/* Sections */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Report Sections</label>
-              <div className="grid grid-cols-2 gap-3">
-                {availableSections.map(section => (
-                  <label key={section} className="flex items-center space-x-2 p-3 border rounded cursor-pointer hover:bg-gray-50">
+              {/* Charts */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Compliance Scores by Framework</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={complianceScores}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis dataKey="framework" stroke="#6b7280" />
+                      <YAxis domain={[0, 100]} stroke="#6b7280" />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                          borderRadius: '12px',
+                          border: '1px solid #e5e7eb'
+                        }}
+                      />
+                      <Legend />
+                      <Bar dataKey="score" name="Compliance Score (%)" radius={[4, 4, 0, 0]}>
+                        {complianceScores.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={entry.score >= 90 ? '#22c55e' : entry.score >= 75 ? '#eab308' : '#ef4444'}
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Compliance Status Distribution</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <RadarChart data={complianceScores}>
+                      <PolarGrid stroke="#e5e7eb" />
+                      <PolarAngleAxis dataKey="framework" stroke="#6b7280" />
+                      <PolarRadiusAxis domain={[0, 100]} stroke="#6b7280" />
+                      <Radar name="Score" dataKey="score" stroke="#10b981" fill="#10b981" fillOpacity={0.5} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                          borderRadius: '12px',
+                          border: '1px solid #e5e7eb'
+                        }}
+                      />
+                      <Legend />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'predefined' && (
+            <motion.div
+              key="predefined"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-4"
+            >
+              {predefinedReports.map((report, index) => (
+                <motion.div
+                  key={report.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6"
+                >
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{report.name}</h3>
+                        <span className="px-3 py-1 text-xs rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300">
+                          {report.framework}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{report.description}</p>
+                      {report.lastGenerated && (
+                        <p className="text-xs text-gray-500 dark:text-gray-500 mt-2 flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          Last generated: {new Date(report.lastGenerated).toLocaleString()}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => generateReport(report.id, 'PDF')}
+                        className="px-4 py-2 bg-red-500 text-white text-sm rounded-xl hover:bg-red-600 flex items-center gap-2 transition-all"
+                      >
+                        <Download className="w-4 h-4" />
+                        PDF
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => generateReport(report.id, 'Excel')}
+                        className="px-4 py-2 bg-green-500 text-white text-sm rounded-xl hover:bg-green-600 flex items-center gap-2 transition-all"
+                      >
+                        <Download className="w-4 h-4" />
+                        Excel
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => {
+                          setNewSchedule({ ...newSchedule, reportId: report.id });
+                          setShowScheduleModal(true);
+                        }}
+                        className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white text-sm rounded-xl hover:from-emerald-600 hover:to-green-700 flex items-center gap-2 transition-all"
+                      >
+                        <Calendar className="w-4 h-4" />
+                        Schedule
+                      </motion.button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+
+          {activeTab === 'custom' && (
+            <motion.div
+              key="custom"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-green-600">
+                  <FileText className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Build Custom Compliance Report</h3>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Report Name</label>
+                  <input
+                    type="text"
+                    value={customReport.name}
+                    onChange={(e) => setCustomReport({ ...customReport, name: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                    placeholder="Enter report name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Compliance Framework</label>
+                  <select
+                    value={customReport.framework}
+                    onChange={(e) => setCustomReport({ ...customReport, framework: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                  >
+                    <option value="GDPR">GDPR</option>
+                    <option value="SOC2">SOC2</option>
+                    <option value="ISO27001">ISO27001</option>
+                    <option value="HIPAA">HIPAA</option>
+                    <option value="Custom">Custom</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Start Date</label>
                     <input
-                      type="checkbox"
-                      checked={customReport.sections.includes(section)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setCustomReport({
-                            ...customReport,
-                            sections: [...customReport.sections, section]
-                          });
-                        } else {
-                          setCustomReport({
-                            ...customReport,
-                            sections: customReport.sections.filter(s => s !== section)
-                          });
+                      type="date"
+                      value={customReport.dateRange.start}
+                      onChange={(e) => setCustomReport({
+                        ...customReport,
+                        dateRange: { ...customReport.dateRange, start: e.target.value }
+                      })}
+                      className="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">End Date</label>
+                    <input
+                      type="date"
+                      value={customReport.dateRange.end}
+                      onChange={(e) => setCustomReport({
+                        ...customReport,
+                        dateRange: { ...customReport.dateRange, end: e.target.value }
+                      })}
+                      className="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Report Sections</label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {availableSections.map((section) => (
+                      <label
+                        key={section}
+                        className={`flex items-center space-x-3 p-4 border rounded-xl cursor-pointer transition-all ${
+                          customReport.sections.includes(section)
+                            ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20'
+                            : 'border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={customReport.sections.includes(section)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setCustomReport({
+                                ...customReport,
+                                sections: [...customReport.sections, section]
+                              });
+                            } else {
+                              setCustomReport({
+                                ...customReport,
+                                sections: customReport.sections.filter(s => s !== section)
+                              });
+                            }
+                          }}
+                          className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
+                        />
+                        <span className="text-sm text-gray-900 dark:text-white">{section}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Export Format</label>
+                  <div className="flex gap-4">
+                    {['PDF', 'Excel', 'JSON'].map((format) => (
+                      <label
+                        key={format}
+                        className={`flex items-center space-x-2 px-4 py-3 border rounded-xl cursor-pointer transition-all ${
+                          customReport.format === format
+                            ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20'
+                            : 'border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="format"
+                          value={format}
+                          checked={customReport.format === format}
+                          onChange={(e) => setCustomReport({ ...customReport, format: e.target.value as any })}
+                          className="w-4 h-4 text-emerald-600 focus:ring-emerald-500"
+                        />
+                        <span className="text-sm text-gray-900 dark:text-white">{format}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={generateCustomReport}
+                  className="w-full px-6 py-4 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl font-semibold hover:from-emerald-600 hover:to-green-700 flex items-center justify-center gap-2 transition-all"
+                >
+                  <FileText className="w-5 h-5" />
+                  Generate Custom Report
+                </motion.button>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'scheduled' && (
+            <motion.div
+              key="scheduled"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-4"
+            >
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowScheduleModal(true)}
+                className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl font-medium hover:from-emerald-600 hover:to-green-700 flex items-center gap-2 transition-all"
+              >
+                <Plus className="w-5 h-5" />
+                Schedule New Report
+              </motion.button>
+
+              {scheduledReports.map((report, index) => (
+                <motion.div
+                  key={report.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6"
+                >
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{report.name}</h3>
+                        <span className="px-3 py-1 text-xs rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300">
+                          {report.framework}
+                        </span>
+                        <span className="px-3 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
+                          {report.frequency}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1">
+                        <Clock className="w-4 h-4" />
+                        Next run: {new Date(report.nextRun).toLocaleString()}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1 mt-1">
+                        <Users className="w-4 h-4" />
+                        Recipients: {report.recipients.join(', ')}
+                      </p>
+                    </div>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => {
+                        if (confirm('Are you sure you want to delete this scheduled report?')) {
+                          setScheduledReports(scheduledReports.filter(r => r.id !== report.id));
                         }
                       }}
-                      className="w-4 h-4"
-                    />
-                    <span className="text-sm">{section}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Format */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Export Format</label>
-              <div className="flex gap-4">
-                {['PDF', 'Excel', 'JSON'].map(format => (
-                  <label key={format} className="flex items-center space-x-2">
-                    <input
-                      type="radio"
-                      name="format"
-                      value={format}
-                      checked={customReport.format === format}
-                      onChange={(e) => setCustomReport({ ...customReport, format: e.target.value as any })}
-                      className="w-4 h-4"
-                    />
-                    <span className="text-sm">{format}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Generate Button */}
-            <button
-              onClick={generateCustomReport}
-              className="w-full px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold"
-            >
-              Generate Custom Report
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Scheduled Reports Tab */}
-      {activeTab === 'scheduled' && (
-        <div className="space-y-4">
-          <button
-            onClick={() => setShowScheduleModal(true)}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-          >
-            + Schedule New Report
-          </button>
-
-          {scheduledReports.map(report => (
-            <div key={report.id} className="bg-white p-6 rounded-lg shadow">
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className="flex items-center gap-3">
-                    <h3 className="text-lg font-semibold">{report.name}</h3>
-                    <span className="px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-800">
-                      {report.framework}
-                    </span>
-                    <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
-                      {report.frequency}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600 mt-2">
-                    Next run: {new Date(report.nextRun).toLocaleString()}
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    Recipients: {report.recipients.join(', ')}
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    if (confirm('Are you sure you want to delete this scheduled report?')) {
-                      setScheduledReports(scheduledReports.filter(r => r.id !== report.id));
-                    }
-                  }}
-                  className="px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Report History Tab */}
-      {activeTab === 'history' && (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Report Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Framework</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Generated Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Generated By</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Format</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {reportHistory.map(report => (
-                <tr key={report.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{report.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 py-1 text-xs rounded-full bg-indigo-100 text-indigo-800">
-                      {report.framework}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(report.generatedDate).toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{report.generatedBy}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      report.format === 'PDF' ? 'bg-red-100 text-red-800' :
-                      report.format === 'Excel' ? 'bg-green-100 text-green-800' :
-                      'bg-blue-100 text-blue-800'
-                    }`}>
-                      {report.format}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{report.size}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button
-                      onClick={() => downloadHistoryReport(report)}
-                      className="text-indigo-600 hover:text-indigo-900"
+                      className="px-4 py-2 bg-red-500 text-white text-sm rounded-xl hover:bg-red-600 flex items-center gap-2 transition-all"
                     >
-                      Download
-                    </button>
-                  </td>
-                </tr>
+                      <Trash2 className="w-4 h-4" />
+                      Delete
+                    </motion.button>
+                  </div>
+                </motion.div>
               ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+            </motion.div>
+          )}
 
-      {/* Schedule Modal */}
-      {showScheduleModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-lg font-semibold mb-4">Schedule Report</h3>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Select Report</label>
-                <select
-                  value={newSchedule.reportId}
-                  onChange={(e) => setNewSchedule({ ...newSchedule, reportId: e.target.value })}
-                  className="w-full px-4 py-2 border rounded-lg"
-                >
-                  <option value="">Choose a report...</option>
-                  {predefinedReports.map(report => (
-                    <option key={report.id} value={report.id}>{report.name}</option>
-                  ))}
-                </select>
+          {activeTab === 'history' && (
+            <motion.div
+              key="history"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 overflow-hidden"
+            >
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead className="bg-gray-50 dark:bg-slate-700/50">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Report Name</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Framework</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Generated Date</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Generated By</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Format</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Size</th>
+                      <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
+                    {reportHistory.map((report, index) => (
+                      <motion.tr
+                        key={report.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="hover:bg-gray-50 dark:hover:bg-slate-700/50"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{report.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="px-3 py-1 text-xs rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300">
+                            {report.framework}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                          {new Date(report.generatedDate).toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{report.generatedBy}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-3 py-1 text-xs rounded-full ${getFormatBadge(report.format)}`}>
+                            {report.format}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{report.size}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => downloadHistoryReport(report)}
+                            className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 flex items-center gap-1 ml-auto"
+                          >
+                            <Download className="w-4 h-4" />
+                            Download
+                          </motion.button>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Frequency</label>
-                <select
-                  value={newSchedule.frequency}
-                  onChange={(e) => setNewSchedule({ ...newSchedule, frequency: e.target.value as any })}
-                  className="w-full px-4 py-2 border rounded-lg"
-                >
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly">Monthly</option>
-                  <option value="quarterly">Quarterly</option>
-                </select>
-              </div>
+        {/* Schedule Modal */}
+        <AnimatePresence>
+          {showScheduleModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+              onClick={() => setShowScheduleModal(false)}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500 to-green-600">
+                    <Calendar className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Schedule Report</h3>
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Recipients (comma-separated emails)</label>
-                <input
-                  type="text"
-                  value={newSchedule.recipients}
-                  onChange={(e) => setNewSchedule({ ...newSchedule, recipients: e.target.value })}
-                  className="w-full px-4 py-2 border rounded-lg"
-                  placeholder="email1@example.com, email2@example.com"
-                />
-              </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Report</label>
+                    <select
+                      value={newSchedule.reportId}
+                      onChange={(e) => setNewSchedule({ ...newSchedule, reportId: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                    >
+                      <option value="">Choose a report...</option>
+                      {predefinedReports.map(report => (
+                        <option key={report.id} value={report.id}>{report.name}</option>
+                      ))}
+                    </select>
+                  </div>
 
-              <div className="flex gap-2">
-                <button
-                  onClick={scheduleReport}
-                  className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-                >
-                  Schedule
-                </button>
-                <button
-                  onClick={() => setShowScheduleModal(false)}
-                  className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Frequency</label>
+                    <select
+                      value={newSchedule.frequency}
+                      onChange={(e) => setNewSchedule({ ...newSchedule, frequency: e.target.value as any })}
+                      className="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                    >
+                      <option value="weekly">Weekly</option>
+                      <option value="monthly">Monthly</option>
+                      <option value="quarterly">Quarterly</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Recipients (comma-separated emails)</label>
+                    <input
+                      type="text"
+                      value={newSchedule.recipients}
+                      onChange={(e) => setNewSchedule({ ...newSchedule, recipients: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                      placeholder="email1@example.com, email2@example.com"
+                    />
+                  </div>
+
+                  <div className="flex gap-3 mt-6">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={scheduleReport}
+                      className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-xl font-medium hover:from-emerald-600 hover:to-green-700 transition-all"
+                    >
+                      Schedule
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setShowScheduleModal(false)}
+                      className="flex-1 px-4 py-3 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-slate-600 transition-all"
+                    >
+                      Cancel
+                    </motion.button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
