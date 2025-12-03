@@ -7,6 +7,23 @@ import DataTable, { Column } from '@/components/common/DataTable';
 import Modal from '@/components/common/Modal';
 import StatusBadge from '@/components/common/StatusBadge';
 import { Helmet } from 'react-helmet-async';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  FolderKanban,
+  Plus,
+  Play,
+  Eye,
+  Target,
+  CheckCircle,
+  Clock,
+  BarChart3,
+  Filter,
+  Users,
+  UserCheck,
+  Shield,
+  AlertCircle,
+  X
+} from 'lucide-react';
 
 interface Campaign {
   id: string;
@@ -22,6 +39,33 @@ interface Campaign {
   createdBy: string;
   createdAt: string;
 }
+
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+  color: string;
+  delay: number;
+}
+
+const StatCard = ({ title, value, icon, color, delay }: StatCardProps) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: delay * 0.1 }}
+    className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300"
+  >
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
+        <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+      </div>
+      <div className={`p-4 rounded-xl bg-gradient-to-br ${color}`}>
+        {icon}
+      </div>
+    </div>
+  </motion.div>
+);
 
 export default function TenantGovernanceCampaignsPage() {
   const { t } = useTranslation();
@@ -106,19 +150,16 @@ export default function TenantGovernanceCampaignsPage() {
     setEndDate('');
   };
 
-  const getStatusColor = (status: string): 'green' | 'blue' | 'yellow' | 'red' | 'gray' => {
-    switch (status) {
-      case 'Completed':
-        return 'green';
-      case 'Active':
-      case 'InProgress':
-        return 'blue';
-      case 'Draft':
-        return 'yellow';
-      case 'Cancelled':
-        return 'red';
+  const getTargetIcon = (targetType: string) => {
+    switch (targetType) {
+      case 'Users':
+        return <Users className="w-4 h-4" />;
+      case 'Groups':
+        return <UserCheck className="w-4 h-4" />;
+      case 'Roles':
+        return <Shield className="w-4 h-4" />;
       default:
-        return 'gray';
+        return <Target className="w-4 h-4" />;
     }
   };
 
@@ -127,9 +168,14 @@ export default function TenantGovernanceCampaignsPage() {
       key: 'name',
       label: t('tenant.governance.campaignName'),
       render: (campaign) => (
-        <div>
-          <div className="font-medium">{campaign.name}</div>
-          <div className="text-xs text-gray-500">{campaign.description}</div>
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
+            <FolderKanban className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <div className="font-medium text-gray-900 dark:text-white">{campaign.name}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{campaign.description}</div>
+          </div>
         </div>
       )
     },
@@ -144,7 +190,8 @@ export default function TenantGovernanceCampaignsPage() {
       key: 'targetType',
       label: t('tenant.governance.targetType'),
       render: (campaign) => (
-        <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs font-medium">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded-lg text-xs font-medium">
+          {getTargetIcon(campaign.targetType)}
           {campaign.targetType}
         </span>
       )
@@ -153,17 +200,19 @@ export default function TenantGovernanceCampaignsPage() {
       key: 'progress',
       label: t('tenant.governance.progress'),
       render: (campaign) => (
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           <div className="flex items-center gap-2">
-            <div className="flex-1 bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-blue-600 h-2 rounded-full transition-all"
-                style={{ width: `${campaign.progress}%` }}
-              ></div>
+            <div className="flex-1 bg-gray-200 dark:bg-slate-700 rounded-full h-2">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${campaign.progress}%` }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full"
+              />
             </div>
-            <span className="text-sm text-gray-600">{campaign.progress}%</span>
+            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">{campaign.progress}%</span>
           </div>
-          <div className="text-xs text-gray-500">
+          <div className="text-xs text-gray-500 dark:text-gray-400">
             {campaign.reviewedCount} / {campaign.totalCount} reviewed
           </div>
         </div>
@@ -174,9 +223,15 @@ export default function TenantGovernanceCampaignsPage() {
       label: t('tenant.governance.dateRange'),
       render: (campaign) => (
         <div className="text-sm">
-          <div>{new Date(campaign.startDate).toLocaleDateString()}</div>
-          <div className="text-gray-500">to</div>
-          <div>{new Date(campaign.endDate).toLocaleDateString()}</div>
+          <div className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
+            <Clock className="w-3.5 h-3.5 text-gray-400" />
+            {new Date(campaign.startDate).toLocaleDateString()}
+          </div>
+          <div className="text-gray-400 dark:text-gray-500 text-xs ml-5">to</div>
+          <div className="flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
+            <Clock className="w-3.5 h-3.5 text-gray-400" />
+            {new Date(campaign.endDate).toLocaleDateString()}
+          </div>
         </div>
       )
     },
@@ -185,8 +240,8 @@ export default function TenantGovernanceCampaignsPage() {
       label: t('tenant.governance.createdBy'),
       render: (campaign) => (
         <div className="text-sm">
-          <div>{campaign.createdBy}</div>
-          <div className="text-xs text-gray-500">
+          <div className="font-medium text-gray-700 dark:text-gray-300">{campaign.createdBy}</div>
+          <div className="text-xs text-gray-500 dark:text-gray-400">
             {new Date(campaign.createdAt).toLocaleDateString()}
           </div>
         </div>
@@ -195,107 +250,184 @@ export default function TenantGovernanceCampaignsPage() {
   ];
 
   if (loading) {
-    return <div className="p-8">{t('common.loading')}</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full"
+        />
+      </div>
+    );
   }
 
+  const activeCampaigns = campaigns.filter(c => c.status === 'Active' || c.status === 'InProgress').length;
+  const completedCampaigns = campaigns.filter(c => c.status === 'Completed').length;
+  const avgProgress = campaigns.length > 0
+    ? Math.round(campaigns.reduce((sum, c) => sum + c.progress, 0) / campaigns.length)
+    : 0;
+
+  const statusFilters = ['All', 'Draft', 'Active', 'InProgress', 'Completed', 'Cancelled'];
+
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            {t('tenant.governance.campaigns')}
-          </h1>
-          <p className="text-gray-600 mt-2">{t('tenant.governance.campaignsSubtitle')}</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 p-8">
+      <Helmet>
+        <title>{t('tenant.governance.campaigns')} - OneSign</title>
+      </Helmet>
+
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex justify-between items-start mb-8"
+      >
+        <div className="flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg">
+            <FolderKanban className="w-8 h-8 text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              {t('tenant.governance.campaigns')}
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">{t('tenant.governance.campaignsSubtitle')}</p>
+          </div>
         </div>
-        <button
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           onClick={() => setShowCreateModal(true)}
-          className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all"
+          className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all font-medium"
         >
+          <Plus className="w-5 h-5" />
           {t('tenant.governance.createCampaign')}
-        </button>
-      </div>
+        </motion.button>
+      </motion.div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm text-gray-600">{t('tenant.governance.totalCampaigns')}</div>
-          <div className="text-3xl font-bold text-blue-600">{campaigns.length}</div>
-        </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm text-gray-600">{t('tenant.governance.activeCampaigns')}</div>
-          <div className="text-3xl font-bold text-green-600">
-            {campaigns.filter(c => c.status === 'Active' || c.status === 'InProgress').length}
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm text-gray-600">{t('tenant.governance.completedCampaigns')}</div>
-          <div className="text-3xl font-bold text-purple-600">
-            {campaigns.filter(c => c.status === 'Completed').length}
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm text-gray-600">{t('tenant.governance.avgProgress')}</div>
-          <div className="text-3xl font-bold text-orange-600">
-            {campaigns.length > 0
-              ? Math.round(campaigns.reduce((sum, c) => sum + c.progress, 0) / campaigns.length)
-              : 0}%
-          </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <StatCard
+          title={t('tenant.governance.totalCampaigns')}
+          value={campaigns.length}
+          icon={<FolderKanban className="w-6 h-6 text-white" />}
+          color="from-blue-500 to-blue-600"
+          delay={0}
+        />
+        <StatCard
+          title={t('tenant.governance.activeCampaigns')}
+          value={activeCampaigns}
+          icon={<Play className="w-6 h-6 text-white" />}
+          color="from-green-500 to-emerald-600"
+          delay={1}
+        />
+        <StatCard
+          title={t('tenant.governance.completedCampaigns')}
+          value={completedCampaigns}
+          icon={<CheckCircle className="w-6 h-6 text-white" />}
+          color="from-purple-500 to-purple-600"
+          delay={2}
+        />
+        <StatCard
+          title={t('tenant.governance.avgProgress')}
+          value={`${avgProgress}%`}
+          icon={<BarChart3 className="w-6 h-6 text-white" />}
+          color="from-orange-500 to-amber-600"
+          delay={3}
+        />
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-4 mb-6"
+      >
         <div className="flex items-center gap-4">
-          <label className="text-sm font-medium">{t('tenant.governance.filterByStatus')}:</label>
-          <div className="flex gap-2">
-            {['All', 'Draft', 'Active', 'InProgress', 'Completed', 'Cancelled'].map(status => (
-              <button
+          <div className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <Filter className="w-4 h-4" />
+            {t('tenant.governance.filterByStatus')}:
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            {statusFilters.map(status => (
+              <motion.button
                 key={status}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setStatusFilter(status)}
-                className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   statusFilter === status
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
+                    : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'
                 }`}
               >
                 {status}
-              </button>
+              </motion.button>
             ))}
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
+      {/* Messages */}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl flex items-center gap-2"
+          >
+            <AlertCircle className="w-5 h-5" />
+            {error}
+          </motion.div>
+        )}
 
-      {success && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-          {success}
-        </div>
-      )}
+        {success && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-xl flex items-center gap-2"
+          >
+            <CheckCircle className="w-5 h-5" />
+            {success}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Campaigns Table */}
-      <DataTable
-        data={filteredCampaigns}
-        columns={columns}
-        loading={false}
-        emptyMessage={t('tenant.governance.noCampaigns')}
-        actions={(campaign) => (
-          <div className="flex gap-2">
-            <button className="text-blue-600 hover:text-blue-800 text-sm">
-              {t('common.view')}
-            </button>
-            {campaign.status === 'Draft' && (
-              <button className="text-green-600 hover:text-green-800 text-sm">
-                {t('tenant.governance.launch')}
-              </button>
-            )}
-          </div>
-        )}
-      />
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 overflow-hidden"
+      >
+        <DataTable
+          data={filteredCampaigns}
+          columns={columns}
+          loading={false}
+          emptyMessage={t('tenant.governance.noCampaigns')}
+          actions={(campaign) => (
+            <div className="flex gap-2">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+              >
+                <Eye className="w-4 h-4" />
+              </motion.button>
+              {campaign.status === 'Draft' && (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="p-2 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
+                >
+                  <Play className="w-4 h-4" />
+                </motion.button>
+              )}
+            </div>
+          )}
+        />
+      </motion.div>
 
       {/* Create Campaign Modal */}
       <Modal
@@ -308,15 +440,15 @@ export default function TenantGovernanceCampaignsPage() {
         title={t('tenant.governance.createCampaign')}
         size="lg"
       >
-        <form onSubmit={handleCreateCampaign} className="space-y-4">
+        <form onSubmit={handleCreateCampaign} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('tenant.governance.campaignName')}
             </label>
             <input
               type="text"
               required
-              className="w-full px-3 py-2 border rounded"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Q4 2024 Access Review"
@@ -324,13 +456,13 @@ export default function TenantGovernanceCampaignsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('tenant.governance.description')}
             </label>
             <textarea
               required
               rows={3}
-              className="w-full px-3 py-2 border rounded"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Quarterly review of user access rights and permissions"
@@ -338,11 +470,11 @@ export default function TenantGovernanceCampaignsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('tenant.governance.targetType')}
             </label>
             <select
-              className="w-full px-3 py-2 border rounded"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               value={targetType}
               onChange={(e) => setTargetType(e.target.value as any)}
             >
@@ -355,25 +487,25 @@ export default function TenantGovernanceCampaignsPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 {t('tenant.governance.startDate')}
               </label>
               <input
                 type="date"
                 required
-                className="w-full px-3 py-2 border rounded"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 {t('tenant.governance.endDate')}
               </label>
               <input
                 type="date"
                 required
-                className="w-full px-3 py-2 border rounded"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
               />
@@ -381,29 +513,34 @@ export default function TenantGovernanceCampaignsPage() {
           </div>
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl flex items-center gap-2">
+              <AlertCircle className="w-5 h-5" />
               {error}
             </div>
           )}
 
           <div className="flex gap-3 justify-end pt-4">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               type="button"
               onClick={() => {
                 setShowCreateModal(false);
                 resetForm();
                 setError('');
               }}
-              className="px-4 py-2 border rounded hover:bg-gray-50"
+              className="px-6 py-3 border border-gray-300 dark:border-slate-600 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 font-medium transition-all"
             >
               {t('common.cancel')}
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:shadow-lg font-medium transition-all"
             >
               {t('common.create')}
-            </button>
+            </motion.button>
           </div>
         </form>
       </Modal>

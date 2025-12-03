@@ -6,12 +6,14 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/utils/cn';
+import { useDirection } from '@/hooks/useDirection';
 
 const TopBar: React.FC = () => {
   const { darkMode, toggleDarkMode, sidebarCollapsed } = useUIStore();
   const { user, logout } = useAuthStore();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { isRTL } = useDirection();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showLanguageMenu, setShowLanguageMenu] = useState(false);
@@ -36,11 +38,12 @@ const TopBar: React.FC = () => {
   return (
     <motion.header
       initial={false}
-      animate={{
-        paddingLeft: sidebarCollapsed ? '96px' : '296px',
-      }}
+      animate={isRTL
+        ? { paddingRight: sidebarCollapsed ? '96px' : '296px', paddingLeft: '24px' }
+        : { paddingLeft: sidebarCollapsed ? '96px' : '296px', paddingRight: '24px' }
+      }
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="fixed top-0 right-0 left-0 h-16 glass z-30 flex items-center justify-between px-6"
+      className="fixed top-0 right-0 left-0 h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 z-30 flex items-center justify-between"
     >
       <div className="flex items-center gap-4">
         <div>

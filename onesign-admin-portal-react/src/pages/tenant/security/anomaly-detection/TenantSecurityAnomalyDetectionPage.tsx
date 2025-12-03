@@ -1,14 +1,28 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
-import { securityService } from '@/lib/api/services';
 import { useAuth } from '@/app/contexts/AuthContext';
 import DataTable, { Column } from '@/components/common/DataTable';
 import StatusBadge from '@/components/common/StatusBadge';
-import ActionButton from '@/components/common/ActionButton';
 import Modal from '@/components/common/Modal';
-import LoadingOverlay from '@/components/common/LoadingOverlay';
 import { Helmet } from 'react-helmet-async';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  ShieldAlert,
+  Plus,
+  Eye,
+  Trash2,
+  Power,
+  AlertTriangle,
+  CheckCircle,
+  AlertCircle,
+  Brain,
+  Activity,
+  TrendingUp,
+  Search,
+  Settings,
+  XCircle
+} from 'lucide-react';
 
 interface ThreatDetection {
   id: string;
@@ -20,8 +34,6 @@ interface ThreatDetection {
   isEnabled: boolean;
   detectionRules: DetectionRule[];
   alertChannels: string[];
-  createdAt?: string;
-  updatedAt?: string;
 }
 
 interface DetectionRule {
@@ -43,7 +55,6 @@ interface DetectedAnomaly {
   riskScore: number;
   status: 'new' | 'investigating' | 'false_positive' | 'confirmed' | 'resolved';
   details: Record<string, any>;
-  assignedTo?: string;
   resolution?: string;
 }
 
@@ -57,6 +68,40 @@ interface MLModelConfig {
   accuracy?: number;
 }
 
+type Tab = 'detections' | 'anomalies' | 'false-positives' | 'ml-config';
+
+const tabs = [
+  { key: 'detections', label: 'Detection Rules', icon: <ShieldAlert className="w-4 h-4" /> },
+  { key: 'anomalies', label: 'Anomalies', icon: <AlertTriangle className="w-4 h-4" /> },
+  { key: 'false-positives', label: 'False Positives', icon: <XCircle className="w-4 h-4" /> },
+  { key: 'ml-config', label: 'ML Config', icon: <Brain className="w-4 h-4" /> },
+];
+
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+  color: string;
+  delay: number;
+}
+
+const StatCard = ({ title, value, icon, color, delay }: StatCardProps) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: delay * 0.1 }}
+    className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300"
+  >
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
+        <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+      </div>
+      <div className={`p-4 rounded-xl bg-gradient-to-br ${color}`}>{icon}</div>
+    </div>
+  </motion.div>
+);
+
 export default function TenantSecurityAnomalyDetectionPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -64,21 +109,19 @@ export default function TenantSecurityAnomalyDetectionPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [activeTab, setActiveTab] = useState<'detections' | 'anomalies' | 'false-positives' | 'ml-config'>('detections');
+  const [activeTab, setActiveTab] = useState<Tab>('detections');
 
   const [detections, setDetections] = useState<ThreatDetection[]>([]);
   const [anomalies, setAnomalies] = useState<DetectedAnomaly[]>([]);
   const [falsePositives, setFalsePositives] = useState<DetectedAnomaly[]>([]);
   const [mlConfig, setMlConfig] = useState<MLModelConfig[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedDetection, setSelectedDetection] = useState<ThreatDetection | null>(null);
 
   const [createForm, setCreateForm] = useState({
     name: '',
     description: '',
     detectionType: 'behavioral_anomaly',
     severity: 'medium' as const,
-    rules: [] as DetectionRule[],
   });
 
   useEffect(() => {
@@ -96,526 +139,255 @@ export default function TenantSecurityAnomalyDetectionPage() {
   }, [tenantId, activeTab]);
 
   const fetchDetections = async () => {
-    if (!tenantId) return;
     setLoading(true);
-    setError('');
     try {
-      // Mock - would call securityService.getThreatDetections in production
-      // const data = await securityService.getThreatDetections(tenantId);
-      // setDetections(data || []);
-
-      // Fallback mock data
       setDetections([
-        {
-          id: '1',
-          tenantId,
-          detectionType: 'behavioral_anomaly',
-          name: 'Unusual Login Activity',
-          description: 'Detects login attempts from unusual locations or times',
-          severity: 'high',
-          isEnabled: true,
-          detectionRules: [
-            { id: '1', condition: 'login_from_new_location', threshold: 3, timeWindow: 3600 },
-            { id: '2', condition: 'login_outside_business_hours', threshold: 5, timeWindow: 86400 },
-          ],
-          alertChannels: ['email', 'slack'],
-        },
+        { id: '1', tenantId: tenantId || '', detectionType: 'behavioral_anomaly', name: 'Unusual Login Activity', description: 'Detects login attempts from unusual locations', severity: 'high', isEnabled: true, detectionRules: [{ id: '1', condition: 'login_from_new_location', threshold: 3, timeWindow: 3600 }], alertChannels: ['email', 'slack'] },
+        { id: '2', tenantId: tenantId || '', detectionType: 'statistical_anomaly', name: 'Data Exfiltration Detection', description: 'Monitors for unusual data access patterns', severity: 'critical', isEnabled: true, detectionRules: [{ id: '2', condition: 'large_data_download', threshold: 100, timeWindow: 1800 }], alertChannels: ['email'] },
       ]);
-    } catch (err: any) {
-      console.error('Error fetching threat detections:', err);
-      setError('Failed to load threat detections');
     } finally {
       setLoading(false);
     }
   };
 
   const fetchAnomalies = async () => {
-    // Mock detected anomalies - implement actual API when available
     setAnomalies([
-      {
-        id: '1',
-        detectionId: '1',
-        detectionName: 'Unusual Login Activity',
-        userId: 'user123',
-        userName: 'John Doe',
-        timestamp: new Date().toISOString(),
-        severity: 'high',
-        description: 'Login from unusual location: Tokyo, Japan',
-        riskScore: 85,
-        status: 'new',
-        details: {
-          location: 'Tokyo, Japan',
-          ipAddress: '123.45.67.89',
-          userAgent: 'Mozilla/5.0...',
-        },
-      },
-      {
-        id: '2',
-        detectionId: '1',
-        detectionName: 'Unusual Login Activity',
-        userId: 'user456',
-        userName: 'Jane Smith',
-        timestamp: new Date(Date.now() - 3600000).toISOString(),
-        severity: 'medium',
-        description: 'Multiple failed login attempts',
-        riskScore: 65,
-        status: 'investigating',
-        details: {
-          failedAttempts: 7,
-          timeWindow: '1 hour',
-        },
-      },
+      { id: '1', detectionId: '1', detectionName: 'Unusual Login Activity', userId: 'user123', userName: 'John Doe', timestamp: new Date().toISOString(), severity: 'high', description: 'Login from unusual location: Tokyo, Japan', riskScore: 85, status: 'new', details: { location: 'Tokyo, Japan', ipAddress: '123.45.67.89' } },
+      { id: '2', detectionId: '1', detectionName: 'Unusual Login Activity', userId: 'user456', userName: 'Jane Smith', timestamp: new Date(Date.now() - 3600000).toISOString(), severity: 'medium', description: 'Multiple failed login attempts', riskScore: 65, status: 'investigating', details: { failedAttempts: 7 } },
     ]);
   };
 
   const fetchFalsePositives = async () => {
-    // Mock false positives
     setFalsePositives([
-      {
-        id: '3',
-        detectionId: '1',
-        detectionName: 'Unusual Login Activity',
-        userId: 'user789',
-        userName: 'Bob Johnson',
-        timestamp: new Date(Date.now() - 86400000).toISOString(),
-        severity: 'low',
-        description: 'Login from new device',
-        riskScore: 45,
-        status: 'false_positive',
-        details: {
-          device: 'iPhone 15 Pro',
-          reason: 'User confirmed new device purchase',
-        },
-        resolution: 'Confirmed as false positive - user purchased new device',
-      },
+      { id: '3', detectionId: '1', detectionName: 'Unusual Login Activity', userName: 'Bob Johnson', timestamp: new Date(Date.now() - 86400000).toISOString(), severity: 'low', description: 'Login from new device', riskScore: 45, status: 'false_positive', details: { device: 'iPhone 15 Pro' }, resolution: 'User confirmed new device' },
     ]);
   };
 
   const fetchMLConfig = async () => {
-    // Mock ML configuration
     setMlConfig([
-      {
-        id: '1',
-        modelType: 'behavioral',
-        isEnabled: true,
-        sensitivity: 75,
-        features: ['login_location', 'login_time', 'access_patterns', 'data_volume'],
-        lastTrained: '2024-11-15',
-        accuracy: 92.5,
-      },
-      {
-        id: '2',
-        modelType: 'statistical',
-        isEnabled: true,
-        sensitivity: 85,
-        features: ['api_usage', 'data_access', 'permission_changes'],
-        lastTrained: '2024-11-10',
-        accuracy: 88.3,
-      },
+      { id: '1', modelType: 'behavioral', isEnabled: true, sensitivity: 75, features: ['login_location', 'login_time', 'access_patterns'], lastTrained: '2024-11-15', accuracy: 92.5 },
+      { id: '2', modelType: 'statistical', isEnabled: true, sensitivity: 85, features: ['api_usage', 'data_access'], lastTrained: '2024-11-10', accuracy: 88.3 },
     ]);
   };
 
   const handleCreateDetection = async () => {
-    if (!tenantId) return;
     setLoading(true);
-    setError('');
-    setSuccess('');
     try {
-      // Mock - would call securityService.createThreatDetection in production
-      // await securityService.createThreatDetection({
-      //   tenantId,
-      //   ...createForm,
-      // });
-
       setSuccess('Detection rule created successfully');
       setShowCreateModal(false);
-      setCreateForm({
-        name: '',
-        description: '',
-        detectionType: 'behavioral_anomaly',
-        severity: 'medium',
-        rules: [],
-      });
+      setCreateForm({ name: '', description: '', detectionType: 'behavioral_anomaly', severity: 'medium' });
       fetchDetections();
-    } catch (err: any) {
-      setError('Failed to create detection rule');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleToggleDetection = async (detectionId: string, isEnabled: boolean) => {
-    if (!tenantId) return;
-    setLoading(true);
-    try {
-      // Mock - would call securityService.updateThreatDetection in production
-      // await securityService.updateThreatDetection(tenantId, detectionId, { isEnabled: !isEnabled });
-
-      setSuccess(`Detection ${!isEnabled ? 'enabled' : 'disabled'} successfully`);
-      fetchDetections();
-    } catch (err) {
-      setError('Failed to update detection');
-    } finally {
-      setLoading(false);
-    }
+  const handleToggleDetection = async (id: string, isEnabled: boolean) => {
+    setSuccess(`Detection ${!isEnabled ? 'enabled' : 'disabled'} successfully`);
+    fetchDetections();
   };
 
-  const handleDeleteDetection = async (detectionId: string) => {
-    if (!tenantId || !confirm('Are you sure you want to delete this detection rule?')) return;
-    setLoading(true);
-    try {
-      // Mock - would call securityService.deleteThreatDetection in production
-      // await securityService.deleteThreatDetection(tenantId, detectionId);
-
-      setSuccess('Detection deleted successfully');
-      fetchDetections();
-    } catch (err) {
-      setError('Failed to delete detection');
-    } finally {
-      setLoading(false);
-    }
+  const getSeverityColor = (severity: string) => {
+    const colors: Record<string, string> = {
+      critical: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300',
+      high: 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300',
+      medium: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300',
+      low: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
+    };
+    return colors[severity] || colors.medium;
   };
-
-  const handleMarkFalsePositive = async (anomalyId: string) => {
-    setLoading(true);
-    try {
-      // Implement API call to mark as false positive
-      setSuccess('Anomaly marked as false positive');
-      fetchAnomalies();
-      fetchFalsePositives();
-    } catch (err) {
-      setError('Failed to mark as false positive');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const detectionColumns: Column<ThreatDetection>[] = [
-    { key: 'name', label: 'Detection Name' },
-    { key: 'detectionType', label: 'Type' },
-    {
-      key: 'severity',
-      label: 'Severity',
-      render: (detection) => (
-        <StatusBadge
-          status={detection.severity}
-          variant={
-            detection.severity === 'critical' || detection.severity === 'high'
-              ? 'error'
-              : detection.severity === 'medium'
-              ? 'warning'
-              : 'success'
-          }
-        />
-      ),
-    },
-    {
-      key: 'isEnabled',
-      label: 'Status',
-      render: (detection) => (
-        <StatusBadge status={detection.isEnabled ? 'Enabled' : 'Disabled'} variant={detection.isEnabled ? 'success' : 'error'} />
-      ),
-    },
-    {
-      key: 'detectionRules',
-      label: 'Rules',
-      render: (detection) => detection.detectionRules.length,
-    },
-  ];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-red-50 to-orange-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 p-8">
+      <Helmet><title>Anomaly Detection - OneSign</title></Helmet>
 
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">
-          Anomaly Detection
-        </h1>
-        <p className="text-gray-700">
-          Detect and respond to unusual behavior patterns and security threats
-        </p>
-      </div>
-
-      {/* Alerts */}
-      {error && (
-        <div className="mb-4 p-4 bg-red-100 border border-red-300 text-red-800 rounded-lg">
-          {error}
-        </div>
-      )}
-      {success && (
-        <div className="mb-4 p-4 bg-green-100 border border-green-300 text-green-800 rounded-lg">
-          {success}
-        </div>
-      )}
-
-      {/* Tabs */}
-      <div className="mb-6 flex space-x-2 border-b border-gray-300">
-        <button
-          onClick={() => setActiveTab('detections')}
-          className={`px-6 py-3 font-medium transition-colors ${
-            activeTab === 'detections'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-700 hover:text-gray-900'
-          }`}
-        >
-          Detection Rules
-        </button>
-        <button
-          onClick={() => setActiveTab('anomalies')}
-          className={`px-6 py-3 font-medium transition-colors ${
-            activeTab === 'anomalies'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-600 hover:text-gray-800'
-          }`}
-        >
-          Detected Anomalies
-        </button>
-        <button
-          onClick={() => setActiveTab('false-positives')}
-          className={`px-6 py-3 font-medium transition-colors ${
-            activeTab === 'false-positives'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-600 hover:text-gray-800'
-          }`}
-        >
-          False Positives
-        </button>
-        <button
-          onClick={() => setActiveTab('ml-config')}
-          className={`px-6 py-3 font-medium transition-colors ${
-            activeTab === 'ml-config'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-600 hover:text-gray-800'
-          }`}
-        >
-          ML Configuration
-        </button>
-      </div>
-
-      {/* Detection Rules Tab */}
-      {activeTab === 'detections' && (
-        <div className="space-y-6">
-          <div className="flex justify-end">
-            <ActionButton onClick={() => setShowCreateModal(true)}>
-              Create Detection Rule
-            </ActionButton>
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-gradient-to-br from-red-500 to-orange-600 shadow-lg">
+            <ShieldAlert className="w-8 h-8 text-white" />
           </div>
-          <DataTable
-            data={detections}
-            columns={detectionColumns}
-            onRowClick={(detection) => setSelectedDetection(detection)}
-            actions={(detection) => (
-              <div className="flex gap-2">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleToggleDetection(detection.id, detection.isEnabled);
-                  }}
-                  className="text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  {detection.isEnabled ? 'Disable' : 'Enable'}
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteDetection(detection.id);
-                  }}
-                  className="text-red-600 hover:text-red-800 font-medium"
-                >
-                  Delete
-                </button>
-              </div>
-            )}
-          />
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Anomaly Detection</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">Detect and respond to security threats</p>
+          </div>
         </div>
+        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setShowCreateModal(true)} className="flex items-center gap-2 bg-gradient-to-r from-red-600 to-orange-600 text-white px-6 py-3 rounded-xl hover:shadow-lg font-medium">
+          <Plus className="w-5 h-5" />Create Rule
+        </motion.button>
+      </motion.div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <StatCard title="Active Rules" value={detections.filter(d => d.isEnabled).length} icon={<ShieldAlert className="w-6 h-6 text-white" />} color="from-red-500 to-red-600" delay={0} />
+        <StatCard title="New Anomalies" value={anomalies.filter(a => a.status === 'new').length} icon={<AlertTriangle className="w-6 h-6 text-white" />} color="from-orange-500 to-amber-600" delay={1} />
+        <StatCard title="Investigating" value={anomalies.filter(a => a.status === 'investigating').length} icon={<Search className="w-6 h-6 text-white" />} color="from-blue-500 to-blue-600" delay={2} />
+        <StatCard title="ML Models" value={mlConfig.filter(m => m.isEnabled).length} icon={<Brain className="w-6 h-6 text-white" />} color="from-purple-500 to-purple-600" delay={3} />
+      </div>
+
+      <AnimatePresence>
+        {error && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl flex items-center gap-2"><AlertCircle className="w-5 h-5" />{error}</motion.div>}
+        {success && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-xl flex items-center gap-2"><CheckCircle className="w-5 h-5" />{success}</motion.div>}
+      </AnimatePresence>
+
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl p-2 shadow-lg border border-gray-200 dark:border-slate-700">
+        <nav className="flex space-x-2">
+          {tabs.map((tab) => (
+            <button key={tab.key} onClick={() => setActiveTab(tab.key as Tab)} className={`relative flex-1 py-3 px-4 rounded-lg font-medium transition-all ${activeTab === tab.key ? 'text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700'}`}>
+              {activeTab === tab.key && <motion.div layoutId="activeAnomalyTab" className="absolute inset-0 bg-gradient-to-r from-red-500 to-orange-600 rounded-lg" transition={{ type: "spring", bounce: 0.2, duration: 0.6 }} />}
+              <span className="relative z-10 flex items-center justify-center gap-2">{tab.icon}{tab.label}</span>
+            </button>
+          ))}
+        </nav>
+      </motion.div>
+
+      {activeTab === 'detections' && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          {detections.map((detection, index) => (
+            <motion.div key={detection.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }} className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{detection.name}</h3>
+                    <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${getSeverityColor(detection.severity)}`}>{detection.severity}</span>
+                    <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${detection.isEnabled ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'}`}>
+                      {detection.isEnabled ? 'Enabled' : 'Disabled'}
+                    </span>
+                  </div>
+                  <p className="text-gray-600 dark:text-gray-400">{detection.description}</p>
+                  <div className="flex items-center gap-4 mt-3 text-sm text-gray-500 dark:text-gray-400">
+                    <span>Type: {detection.detectionType}</span>
+                    <span>Rules: {detection.detectionRules.length}</span>
+                    <span>Alerts: {detection.alertChannels.join(', ')}</span>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => handleToggleDetection(detection.id, detection.isEnabled)} className={`p-2 rounded-lg ${detection.isEnabled ? 'text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/20' : 'text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20'}`}>
+                    <Power className="w-5 h-5" />
+                  </motion.button>
+                  <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">
+                    <Trash2 className="w-5 h-5" />
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
       )}
 
-      {/* Detected Anomalies Tab */}
       {activeTab === 'anomalies' && (
-        <div className="space-y-4">
-          {anomalies.map((anomaly) => (
-            <div key={anomaly.id} className="bg-white rounded-lg shadow p-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          {anomalies.map((anomaly, index) => (
+            <motion.div key={anomaly.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }} className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-semibold">{anomaly.detectionName}</h3>
-                    <StatusBadge
-                      status={anomaly.severity}
-                      variant={anomaly.severity === 'high' || anomaly.severity === 'critical' ? 'error' : 'warning'}
-                    />
-                    <StatusBadge status={anomaly.status} />
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{anomaly.detectionName}</h3>
+                    <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${getSeverityColor(anomaly.severity)}`}>{anomaly.severity}</span>
+                    <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${anomaly.status === 'new' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'}`}>
+                      {anomaly.status}
+                    </span>
                   </div>
-                  <p className="text-gray-600 mb-3">{anomaly.description}</p>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-600">User:</span>{' '}
-                      <span className="font-medium">{anomaly.userName || 'N/A'}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Risk Score:</span>{' '}
-                      <span className={`font-medium ${anomaly.riskScore >= 70 ? 'text-red-600' : 'text-orange-600'}`}>
-                        {anomaly.riskScore}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Detected:</span>{' '}
-                      <span className="font-medium">{new Date(anomaly.timestamp).toLocaleString()}</span>
-                    </div>
+                  <p className="text-gray-600 dark:text-gray-400">{anomaly.description}</p>
+                  <div className="grid grid-cols-3 gap-4 mt-3 text-sm">
+                    <div><span className="text-gray-500 dark:text-gray-400">User:</span> <span className="font-medium text-gray-900 dark:text-white">{anomaly.userName || 'N/A'}</span></div>
+                    <div><span className="text-gray-500 dark:text-gray-400">Risk Score:</span> <span className={`font-bold ${anomaly.riskScore >= 70 ? 'text-red-600' : 'text-orange-600'}`}>{anomaly.riskScore}</span></div>
+                    <div><span className="text-gray-500 dark:text-gray-400">Time:</span> <span className="text-gray-900 dark:text-white">{new Date(anomaly.timestamp).toLocaleString()}</span></div>
                   </div>
-                  {anomaly.details && Object.keys(anomaly.details).length > 0 && (
-                    <div className="mt-3 p-3 bg-gray-50 rounded">
-                      <div className="text-sm font-medium text-gray-700 mb-1">Details:</div>
-                      <div className="text-sm text-gray-600">
-                        {Object.entries(anomaly.details).map(([key, value]) => (
-                          <div key={key}>
-                            <span className="font-medium">{key}:</span> {String(value)}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
-                <div className="ml-6 flex flex-col gap-2">
-                  <ActionButton variant="secondary" onClick={() => handleMarkFalsePositive(anomaly.id)}>
-                    Mark False Positive
-                  </ActionButton>
-                  <ActionButton>Investigate</ActionButton>
+                <div className="flex gap-2">
+                  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 text-sm font-medium">Investigate</motion.button>
+                  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-medium">False Positive</motion.button>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
 
-      {/* False Positives Tab */}
       {activeTab === 'false-positives' && (
-        <div className="space-y-4">
-          {falsePositives.map((fp) => (
-            <div key={fp.id} className="bg-white rounded-lg shadow p-6 opacity-75">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-semibold">{fp.detectionName}</h3>
-                    <StatusBadge status="False Positive" variant="info" />
-                  </div>
-                  <p className="text-gray-600 mb-2">{fp.description}</p>
-                  {fp.resolution && (
-                    <div className="p-3 bg-blue-50 rounded text-sm">
-                      <span className="font-medium text-blue-900">Resolution:</span>{' '}
-                      <span className="text-blue-800">{fp.resolution}</span>
-                    </div>
-                  )}
-                </div>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          {falsePositives.map((fp, index) => (
+            <motion.div key={fp.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }} className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6 opacity-75">
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{fp.detectionName}</h3>
+                <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300">False Positive</span>
               </div>
-            </div>
+              <p className="text-gray-600 dark:text-gray-400">{fp.description}</p>
+              {fp.resolution && (
+                <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <span className="text-sm font-medium text-blue-900 dark:text-blue-300">Resolution:</span>
+                  <span className="text-sm text-blue-800 dark:text-blue-400 ml-2">{fp.resolution}</span>
+                </div>
+              )}
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
 
-      {/* ML Configuration Tab */}
       {activeTab === 'ml-config' && (
-        <div className="space-y-4">
-          {mlConfig.map((config) => (
-            <div key={config.id} className="bg-white rounded-lg shadow p-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          {mlConfig.map((config, index) => (
+            <motion.div key={config.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }} className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h3 className="text-lg font-semibold capitalize">{config.modelType} Model</h3>
-                  <div className="mt-2 grid grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-600">Sensitivity:</span>{' '}
-                      <span className="font-medium">{config.sensitivity}%</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Accuracy:</span>{' '}
-                      <span className="font-medium text-green-600">{config.accuracy}%</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Last Trained:</span>{' '}
-                      <span className="font-medium">{config.lastTrained}</span>
-                    </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white capitalize">{config.modelType} Model</h3>
+                  <div className="grid grid-cols-3 gap-6 mt-3 text-sm">
+                    <div><span className="text-gray-500 dark:text-gray-400">Sensitivity:</span> <span className="font-medium text-gray-900 dark:text-white">{config.sensitivity}%</span></div>
+                    <div><span className="text-gray-500 dark:text-gray-400">Accuracy:</span> <span className="font-medium text-green-600">{config.accuracy}%</span></div>
+                    <div><span className="text-gray-500 dark:text-gray-400">Last Trained:</span> <span className="text-gray-900 dark:text-white">{config.lastTrained}</span></div>
                   </div>
                 </div>
-                <StatusBadge status={config.isEnabled ? 'Active' : 'Inactive'} variant={config.isEnabled ? 'success' : 'error'} />
+                <span className={`px-3 py-1.5 text-sm font-semibold rounded-full ${config.isEnabled ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'}`}>
+                  {config.isEnabled ? 'Active' : 'Inactive'}
+                </span>
               </div>
               <div>
-                <div className="text-sm font-medium text-gray-700 mb-2">Features:</div>
-                <div className="flex flex-wrap gap-2">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Features:</span>
+                <div className="flex flex-wrap gap-2 mt-2">
                   {config.features.map((feature, idx) => (
-                    <span key={idx} className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                      {feature}
-                    </span>
+                    <span key={idx} className="px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded-lg text-sm">{feature}</span>
                   ))}
                 </div>
               </div>
               <div className="mt-4 flex gap-2">
-                <ActionButton variant="secondary">Retrain Model</ActionButton>
-                <ActionButton variant="secondary">Adjust Sensitivity</ActionButton>
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-medium">Retrain</motion.button>
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-medium">Adjust Sensitivity</motion.button>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
 
-      {/* Create Detection Modal */}
-      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title={`${t('common.create')} ${t('common.detectionRule')}`}>
+      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="Create Detection Rule">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Rule Name</label>
-            <input
-              type="text"
-              value={createForm.name}
-              onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Unusual Access Pattern"
-            />
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Rule Name</label>
+            <input type="text" value={createForm.name} onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })} className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white" placeholder="Unusual Access Pattern" />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea
-              value={createForm.description}
-              onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows={3}
-            />
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+            <textarea value={createForm.description} onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })} rows={3} className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white resize-none" />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Detection Type</label>
-            <select
-              value={createForm.detectionType}
-              onChange={(e) => setCreateForm({ ...createForm, detectionType: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Detection Type</label>
+            <select value={createForm.detectionType} onChange={(e) => setCreateForm({ ...createForm, detectionType: e.target.value })} className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white">
               <option value="behavioral_anomaly">Behavioral Anomaly</option>
               <option value="statistical_anomaly">Statistical Anomaly</option>
-              <option value="ml_based">ML-Based Detection</option>
+              <option value="ml_based">ML-Based</option>
               <option value="rule_based">Rule-Based</option>
             </select>
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Severity</label>
-            <select
-              value={createForm.severity}
-              onChange={(e) => setCreateForm({ ...createForm, severity: e.target.value as any })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Severity</label>
+            <select value={createForm.severity} onChange={(e) => setCreateForm({ ...createForm, severity: e.target.value as any })} className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white">
               <option value="low">Low</option>
               <option value="medium">Medium</option>
               <option value="high">High</option>
               <option value="critical">Critical</option>
             </select>
           </div>
-
-          <div className="flex gap-3 mt-6">
-            <ActionButton onClick={handleCreateDetection} className="flex-1">
-              Create Rule
-            </ActionButton>
-            <ActionButton onClick={() => setShowCreateModal(false)} variant="secondary" className="flex-1">
-              Cancel
-            </ActionButton>
+          <div className="flex gap-3 pt-4">
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={handleCreateDetection} className="flex-1 bg-gradient-to-r from-red-600 to-orange-600 text-white px-4 py-3 rounded-xl font-medium">Create Rule</motion.button>
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setShowCreateModal(false)} className="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 px-4 py-3 rounded-xl font-medium">Cancel</motion.button>
           </div>
         </div>
       </Modal>
