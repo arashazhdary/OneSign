@@ -2,6 +2,31 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
 import { tenantService } from '@/lib/api/services/tenant.service';
+import { Helmet } from 'react-helmet-async';
+import { motion, AnimatePresence } from 'framer-motion';
+import Modal from '@/components/common/Modal';
+import {
+  Upload,
+  Download,
+  FileSpreadsheet,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  Plus,
+  RotateCcw,
+  Eye,
+  Settings2,
+  FileJson,
+  FileText,
+  Table,
+  History,
+  LayoutTemplate,
+  ArrowRight,
+  AlertCircle,
+  FileUp,
+  Loader2,
+} from 'lucide-react';
 
 interface ImportJob {
   id: string;
@@ -42,6 +67,14 @@ interface ImportTemplate {
   fieldMappings: FieldMapping[];
   downloadUrl?: string;
   createdAt: string;
+}
+
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+  color: string;
+  delay: number;
 }
 
 // Mock data for fallback
@@ -131,7 +164,34 @@ const mockTemplatesFallback: ImportTemplate[] = [
 ];
 
 const dataTypes = ['Users', 'Applications', 'Roles', 'OrgUnits', 'Policies'];
-const fileTypes = ['csv', 'json', 'xlsx'];
+
+const StatCard = ({ title, value, icon, color, delay }: StatCardProps) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: delay * 0.1 }}
+    className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300"
+  >
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
+        <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+      </div>
+      <div className={`p-4 rounded-xl bg-gradient-to-br ${color}`}>
+        {icon}
+      </div>
+    </div>
+  </motion.div>
+);
+
+const getFileTypeIcon = (fileType: string) => {
+  switch (fileType) {
+    case 'csv': return <FileText className="w-4 h-4" />;
+    case 'json': return <FileJson className="w-4 h-4" />;
+    case 'xlsx': return <Table className="w-4 h-4" />;
+    default: return <FileText className="w-4 h-4" />;
+  }
+};
 
 export default function TenantImportsPage() {
   const { t } = useTranslation();
@@ -147,6 +207,7 @@ export default function TenantImportsPage() {
   const [success, setSuccess] = useState('');
   const [tenantId, setTenantIdState] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   // Form states
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -175,13 +236,11 @@ export default function TenantImportsPage() {
     if (!tenantId) return;
 
     try {
-      // Fetch from real API
       const data = await tenantService.getImportJobs(tenantId);
       setImports(data || mockImportsFallback);
     } catch (error: any) {
       console.error('Error fetching imports:', error);
       setError(error?.message || t('common.failedToLoadData'));
-      // Fallback to mock data
       setImports(mockImportsFallback);
     } finally {
       setLoading(false);
@@ -192,12 +251,10 @@ export default function TenantImportsPage() {
     if (!tenantId) return;
 
     try {
-      // Fetch from real API
       const data = await tenantService.getImportTemplates(tenantId);
       setTemplates(data || mockTemplatesFallback);
     } catch (error: any) {
       console.error('Error fetching templates:', error);
-      // Fallback to mock data
       setTemplates(mockTemplatesFallback);
     }
   };
@@ -206,13 +263,21 @@ export default function TenantImportsPage() {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedFile(file);
-      // Parse file for preview
+      parseFilePreview(file);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      setSelectedFile(file);
       parseFilePreview(file);
     }
   };
 
   const parseFilePreview = (file: File) => {
-    // Mock preview data
     setPreviewData([
       { Email: 'user1@example.com', FirstName: 'John', LastName: 'Doe', Phone: '+1234567890' },
       { Email: 'user2@example.com', FirstName: 'Jane', LastName: 'Smith', Phone: '+0987654321' },
@@ -267,11 +332,9 @@ export default function TenantImportsPage() {
 
     try {
       setSuccess(`Downloading ${template.name}...`);
-      // If template has downloadUrl, open it
       if (template.downloadUrl) {
         window.open(template.downloadUrl, '_blank');
       } else {
-        // Generate a sample CSV template based on fieldMappings
         const headers = template.fieldMappings.map(m => m.targetField).join(',');
         const sampleRow = template.fieldMappings.map(m => `[${m.dataType}]`).join(',');
         const csvContent = `${headers}\n${sampleRow}`;
@@ -308,7 +371,6 @@ export default function TenantImportsPage() {
       setError('Please select a file first');
       return;
     }
-    // Initialize field mappings
     const headers = Object.keys(previewData[0] || {});
     setFieldMappings(
       headers.map((header) => ({
@@ -337,14 +399,24 @@ export default function TenantImportsPage() {
   };
 
   const getStatusBadge = (status: string) => {
-    const colors = {
-      pending: 'bg-gray-100 text-gray-800',
-      processing: 'bg-blue-100 text-blue-800',
-      validating: 'bg-yellow-100 text-yellow-800',
-      completed: 'bg-green-100 text-green-800',
-      failed: 'bg-red-100 text-red-800',
+    const styles = {
+      pending: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
+      processing: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+      validating: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+      completed: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+      failed: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
     };
-    return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+    return styles[status as keyof typeof styles] || styles.pending;
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed': return <CheckCircle className="w-4 h-4" />;
+      case 'failed': return <XCircle className="w-4 h-4" />;
+      case 'processing': return <Loader2 className="w-4 h-4 animate-spin" />;
+      case 'validating': return <Clock className="w-4 h-4" />;
+      default: return <Clock className="w-4 h-4" />;
+    }
   };
 
   const getProgressPercentage = (job: ImportJob) => {
@@ -352,134 +424,286 @@ export default function TenantImportsPage() {
     return Math.round((job.processedRecords / job.totalRecords) * 100);
   };
 
+  const totalRecordsImported = imports.reduce((sum, imp) => sum + imp.successfulRecords, 0);
+  const completedImports = imports.filter(i => i.status === 'completed').length;
+  const failedImports = imports.filter(i => i.status === 'failed').length;
+
   if (loading) {
-    return <div className="p-8">Loading imports...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="flex flex-col items-center gap-4"
+        >
+          <div className="w-16 h-16 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
+          <p className="text-gray-600 dark:text-gray-300">Loading imports...</p>
+        </motion.div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Data Import Management</h1>
-        <button
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 p-8">
+      <Helmet>
+        <title>Data Import - Management</title>
+      </Helmet>
+
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex justify-between items-center mb-8"
+      >
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
+            <Upload className="w-8 h-8 text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Data Import</h1>
+            <p className="text-gray-500 dark:text-gray-400">Import and manage bulk data uploads</p>
+          </div>
+        </div>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           onClick={() => setShowUploadModal(true)}
-          className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
         >
+          <FileUp className="w-5 h-5" />
           Upload File
-        </button>
+        </motion.button>
+      </motion.div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <StatCard
+          title="Total Imports"
+          value={imports.length}
+          icon={<FileSpreadsheet className="w-6 h-6 text-white" />}
+          color="from-blue-500 to-cyan-600"
+          delay={0}
+        />
+        <StatCard
+          title="Records Imported"
+          value={totalRecordsImported.toLocaleString()}
+          icon={<CheckCircle className="w-6 h-6 text-white" />}
+          color="from-green-500 to-emerald-600"
+          delay={1}
+        />
+        <StatCard
+          title="Templates"
+          value={templates.length}
+          icon={<LayoutTemplate className="w-6 h-6 text-white" />}
+          color="from-purple-500 to-indigo-600"
+          delay={2}
+        />
+        <StatCard
+          title="Failed Imports"
+          value={failedImports}
+          icon={<AlertTriangle className="w-6 h-6 text-white" />}
+          color="from-orange-500 to-red-600"
+          delay={3}
+        />
       </div>
 
-      {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-          {success}
-        </div>
-      )}
+      {/* Alerts */}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl flex items-center gap-2"
+          >
+            <XCircle className="w-5 h-5" />
+            {error}
+          </motion.div>
+        )}
+        {success && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-xl flex items-center gap-2"
+          >
+            <CheckCircle className="w-5 h-5" />
+            {success}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Import Templates */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <h2 className="text-xl font-bold mb-4">Import Templates</h2>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6 mb-6"
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+            <LayoutTemplate className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Import Templates</h2>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {templates.map((template) => (
-            <div key={template.id} className="border rounded p-4 hover:border-indigo-500">
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <h3 className="font-semibold">{template.name}</h3>
-                  <p className="text-sm text-gray-600">{template.dataType}</p>
+          {templates.map((template, index) => (
+            <motion.div
+              key={template.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              whileHover={{ scale: 1.02 }}
+              className="bg-gradient-to-br from-gray-50 to-white dark:from-slate-700 dark:to-slate-800 border border-gray-200 dark:border-slate-600 rounded-xl p-4 hover:shadow-lg transition-all duration-300"
+            >
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                    {getFileTypeIcon(template.fileType)}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">{template.name}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{template.dataType}</p>
+                  </div>
                 </div>
-                <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs">
+                <span className="px-2 py-1 bg-gray-100 dark:bg-slate-600 text-gray-700 dark:text-gray-300 rounded text-xs font-medium">
                   {template.fileType.toUpperCase()}
                 </span>
               </div>
-              <p className="text-xs text-gray-500 mb-3">{template.fieldMappings.length} fields mapped</p>
-              <button
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                {template.fieldMappings.length} fields mapped
+              </p>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => handleDownloadTemplate(template.id)}
-                className="text-sm text-indigo-600 hover:text-indigo-800"
+                className="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300"
               >
+                <Download className="w-4 h-4" />
                 Download Template
-              </button>
-            </div>
+              </motion.button>
+            </motion.div>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* Import History */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-xl font-bold">Import History</h2>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 overflow-hidden"
+      >
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700 flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+            <History className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Import History</h2>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+            <thead className="bg-gray-50 dark:bg-slate-900/50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">File Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Progress</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Records</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">File Name</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Data Type</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Progress</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Records</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {imports.map((job) => {
+            <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
+              {imports.map((job, index) => {
                 const progressPercentage = getProgressPercentage(job);
                 return (
-                  <tr key={job.id}>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{job.fileName}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{job.dataType}</td>
-                    <td className="px-6 py-4 text-sm">
-                      <span className={`px-2 py-1 rounded text-xs ${getStatusBadge(job.status)}`}>
+                  <motion.tr
+                    key={job.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                          {getFileTypeIcon(job.fileType)}
+                        </div>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">{job.fileName}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{job.dataType}</td>
+                    <td className="px-6 py-4">
+                      <span className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium w-fit ${getStatusBadge(job.status)}`}>
+                        {getStatusIcon(job.status)}
                         {job.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm">
+                    <td className="px-6 py-4">
                       <div className="w-32">
-                        <div className="flex justify-between text-xs text-gray-600 mb-1">
+                        <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
                           <span>{progressPercentage}%</span>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-indigo-600 h-2 rounded-full"
-                            style={{ width: `${progressPercentage}%` }}
+                        <div className="w-full bg-gray-200 dark:bg-slate-600 rounded-full h-2 overflow-hidden">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${progressPercentage}%` }}
+                            transition={{ duration: 0.5, ease: 'easeOut' }}
+                            className={`h-2 rounded-full ${
+                              job.status === 'failed'
+                                ? 'bg-red-500'
+                                : job.status === 'completed'
+                                ? 'bg-green-500'
+                                : 'bg-indigo-500'
+                            }`}
                           />
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      <div>
-                        <p className="text-green-600">{job.successfulRecords} success</p>
+                    <td className="px-6 py-4 text-sm">
+                      <div className="space-y-1">
+                        <p className="text-green-600 dark:text-green-400 flex items-center gap-1">
+                          <CheckCircle className="w-3 h-3" />
+                          {job.successfulRecords} success
+                        </p>
                         {job.failedRecords > 0 && (
-                          <p className="text-red-600">{job.failedRecords} failed</p>
+                          <p className="text-red-600 dark:text-red-400 flex items-center gap-1">
+                            <XCircle className="w-3 h-3" />
+                            {job.failedRecords} failed
+                          </p>
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">
                       {formatDate(job.createdAt)}
                     </td>
-                    <td className="px-6 py-4 text-sm whitespace-nowrap">
-                      {job.validationErrors.length > 0 && (
-                        <button
-                          onClick={() => openErrorsModal(job)}
-                          className="text-red-600 hover:text-red-900 mr-3"
-                        >
-                          View Errors
-                        </button>
-                      )}
-                      {job.canRollback && job.status === 'completed' && (
-                        <button
-                          onClick={() => handleRollback(job.id)}
-                          className="text-yellow-600 hover:text-yellow-900"
-                        >
-                          Rollback
-                        </button>
-                      )}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex gap-2">
+                        {job.validationErrors.length > 0 && (
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => openErrorsModal(job)}
+                            className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                            title="View Errors"
+                          >
+                            <AlertCircle className="w-4 h-4" />
+                          </motion.button>
+                        )}
+                        {job.canRollback && job.status === 'completed' && (
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => handleRollback(job.id)}
+                            className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors"
+                            title="Rollback"
+                          >
+                            <RotateCcw className="w-4 h-4" />
+                          </motion.button>
+                        )}
+                      </div>
                     </td>
-                  </tr>
+                  </motion.tr>
                 );
               })}
             </tbody>
@@ -487,271 +711,332 @@ export default function TenantImportsPage() {
         </div>
 
         {imports.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            No import history found. Upload a file to get started.
+          <div className="text-center py-12">
+            <div className="flex flex-col items-center gap-3">
+              <div className="p-4 rounded-full bg-gray-100 dark:bg-slate-700">
+                <FileSpreadsheet className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-gray-500 dark:text-gray-400">No import history found. Upload a file to get started.</p>
+            </div>
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* Upload Modal */}
-      {showUploadModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">Upload Import File</h2>
-            <form onSubmit={handleUpload}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Data Type *</label>
-                <select
-                  className="w-full px-3 py-2 border rounded"
-                  value={selectedDataType}
-                  onChange={(e) => setSelectedDataType(e.target.value)}
-                >
-                  {dataTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </div>
+      <Modal
+        isOpen={showUploadModal}
+        onClose={() => {
+          setShowUploadModal(false);
+          resetUploadForm();
+        }}
+        title="Upload Import File"
+        size="lg"
+      >
+        <form onSubmit={handleUpload} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Data Type *</label>
+            <select
+              className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              value={selectedDataType}
+              onChange={(e) => setSelectedDataType(e.target.value)}
+            >
+              {dataTypes.map((type) => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+          </div>
 
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Select Template (optional)</label>
-                <select
-                  className="w-full px-3 py-2 border rounded"
-                  value={selectedTemplate}
-                  onChange={(e) => setSelectedTemplate(e.target.value)}
-                >
-                  <option value="">No template</option>
-                  {templates
-                    .filter((t) => t.dataType === selectedDataType)
-                    .map((template) => (
-                      <option key={template.id} value={template.id}>
-                        {template.name}
-                      </option>
-                    ))}
-                </select>
-              </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Template (optional)</label>
+            <select
+              className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              value={selectedTemplate}
+              onChange={(e) => setSelectedTemplate(e.target.value)}
+            >
+              <option value="">No template</option>
+              {templates
+                .filter((t) => t.dataType === selectedDataType)
+                .map((template) => (
+                  <option key={template.id} value={template.id}>{template.name}</option>
+                ))}
+            </select>
+          </div>
 
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Upload File *</label>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".csv,.json,.xlsx"
-                  onChange={handleFileSelect}
-                  className="w-full px-3 py-2 border rounded"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">Supported formats: CSV, JSON, Excel (XLSX)</p>
-              </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Upload File *</label>
+            <div
+              className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
+                isDragging
+                  ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
+                  : 'border-gray-300 dark:border-slate-600 hover:border-indigo-400 dark:hover:border-indigo-500'
+              }`}
+              onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={handleDrop}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv,.json,.xlsx"
+                onChange={handleFileSelect}
+                className="hidden"
+                id="file-upload"
+              />
+              <label htmlFor="file-upload" className="cursor-pointer">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="p-4 rounded-full bg-indigo-100 dark:bg-indigo-900/30">
+                    <Upload className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <div>
+                    <p className="text-gray-700 dark:text-gray-300 font-medium">
+                      Drop your file here, or <span className="text-indigo-600 dark:text-indigo-400">browse</span>
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Supported formats: CSV, JSON, Excel (XLSX)
+                    </p>
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
 
-              {selectedFile && (
-                <div className="mb-4 p-3 bg-gray-50 rounded">
-                  <p className="text-sm text-gray-700">
-                    Selected: <span className="font-medium">{selectedFile.name}</span>
-                  </p>
-                  <p className="text-xs text-gray-500">
+          {selectedFile && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/30">
+                  {getFileTypeIcon(selectedFile.name.split('.').pop() || 'csv')}
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{selectedFile.name}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     Size: {(selectedFile.size / 1024).toFixed(2)} KB
                   </p>
                 </div>
-              )}
-
-              <div className="flex gap-2 mb-4">
-                <button
-                  type="button"
-                  onClick={openPreviewModal}
-                  disabled={!selectedFile}
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-                >
-                  Preview Data
-                </button>
-                <button
-                  type="button"
-                  onClick={openMappingModal}
-                  disabled={!selectedFile}
-                  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
-                >
-                  Configure Mapping
-                </button>
               </div>
+            </motion.div>
+          )}
 
-              <div className="flex gap-2">
-                <button
-                  type="submit"
-                  disabled={!selectedFile}
-                  className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
-                >
-                  Upload & Import
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowUploadModal(false);
-                    resetUploadForm();
-                  }}
-                  className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
+          <div className="flex gap-3">
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={openPreviewModal}
+              disabled={!selectedFile}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-xl hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors disabled:opacity-50"
+            >
+              <Eye className="w-4 h-4" />
+              Preview Data
+            </motion.button>
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={openMappingModal}
+              disabled={!selectedFile}
+              className="flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-xl hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors disabled:opacity-50"
+            >
+              <Settings2 className="w-4 h-4" />
+              Configure Mapping
+            </motion.button>
           </div>
-        </div>
-      )}
+
+          <div className="flex gap-3 justify-end pt-4 border-t border-gray-200 dark:border-slate-600">
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                setShowUploadModal(false);
+                resetUploadForm();
+              }}
+              className="px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+            >
+              Cancel
+            </motion.button>
+            <motion.button
+              type="submit"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              disabled={!selectedFile}
+              className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
+            >
+              Upload & Import
+            </motion.button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Preview Modal */}
-      {showPreviewModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">Data Preview (First 3 rows)</h2>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    {Object.keys(previewData[0] || {}).map((key) => (
-                      <th key={key} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                        {key}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {previewData.map((row, index) => (
-                    <tr key={index}>
-                      {Object.values(row).map((value: any, colIndex) => (
-                        <td key={colIndex} className="px-4 py-3 text-sm text-gray-900">
-                          {value}
-                        </td>
-                      ))}
-                    </tr>
+      <Modal
+        isOpen={showPreviewModal}
+        onClose={() => setShowPreviewModal(false)}
+        title="Data Preview (First 3 rows)"
+        size="xl"
+      >
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+            <thead className="bg-gray-50 dark:bg-slate-900/50">
+              <tr>
+                {Object.keys(previewData[0] || {}).map((key) => (
+                  <th key={key} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    {key}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
+              {previewData.map((row, index) => (
+                <tr key={index} className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+                  {Object.values(row).map((value: any, colIndex) => (
+                    <td key={colIndex} className="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                      {value}
+                    </td>
                   ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="mt-4">
-              <button
-                onClick={() => setShowPreviewModal(false)}
-                className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
-              >
-                Close
-              </button>
-            </div>
-          </div>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      )}
+        <div className="flex justify-end mt-4 pt-4 border-t border-gray-200 dark:border-slate-700">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setShowPreviewModal(false)}
+            className="px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+          >
+            Close
+          </motion.button>
+        </div>
+      </Modal>
 
       {/* Field Mapping Modal */}
-      {showMappingModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">Configure Field Mapping</h2>
-            <div className="space-y-3">
-              {fieldMappings.map((mapping, index) => (
-                <div key={index} className="grid grid-cols-3 gap-3 items-center">
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">Source Field</label>
-                    <input
-                      type="text"
-                      value={mapping.sourceField}
-                      disabled
-                      className="w-full px-2 py-1 border rounded bg-gray-50 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">Target Field</label>
-                    <input
-                      type="text"
-                      value={mapping.targetField}
-                      onChange={(e) => {
-                        const newMappings = [...fieldMappings];
-                        newMappings[index].targetField = e.target.value;
-                        setFieldMappings(newMappings);
-                      }}
-                      className="w-full px-2 py-1 border rounded text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="flex items-center space-x-2 mt-5">
-                      <input
-                        type="checkbox"
-                        checked={mapping.required}
-                        onChange={(e) => {
-                          const newMappings = [...fieldMappings];
-                          newMappings[index].required = e.target.checked;
-                          setFieldMappings(newMappings);
-                        }}
-                        className="rounded"
-                      />
-                      <span className="text-sm">Required</span>
-                    </label>
-                  </div>
+      <Modal
+        isOpen={showMappingModal}
+        onClose={() => setShowMappingModal(false)}
+        title="Configure Field Mapping"
+        size="lg"
+      >
+        <div className="space-y-4">
+          {fieldMappings.map((mapping, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="grid grid-cols-3 gap-4 items-center p-4 bg-gray-50 dark:bg-slate-700/50 rounded-xl"
+            >
+              <div>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Source Field</label>
+                <div className="px-3 py-2 bg-white dark:bg-slate-600 border border-gray-200 dark:border-slate-500 rounded-lg text-sm text-gray-700 dark:text-gray-300">
+                  {mapping.sourceField}
                 </div>
-              ))}
-            </div>
-            <div className="flex gap-2 mt-6">
-              <button
-                onClick={() => setShowMappingModal(false)}
-                className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-              >
-                Save Mapping
-              </button>
-              <button
-                onClick={() => setShowMappingModal(false)}
-                className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
+              </div>
+              <div className="flex items-center justify-center">
+                <ArrowRight className="w-5 h-5 text-gray-400" />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Target Field</label>
+                <input
+                  type="text"
+                  value={mapping.targetField}
+                  onChange={(e) => {
+                    const newMappings = [...fieldMappings];
+                    newMappings[index].targetField = e.target.value;
+                    setFieldMappings(newMappings);
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-slate-600 rounded-lg text-sm bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
+            </motion.div>
+          ))}
         </div>
-      )}
+        <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-gray-200 dark:border-slate-700">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setShowMappingModal(false)}
+            className="px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+          >
+            Cancel
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setShowMappingModal(false)}
+            className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+          >
+            Save Mapping
+          </motion.button>
+        </div>
+      </Modal>
 
       {/* Validation Errors Modal */}
-      {showErrorsModal && selectedImport && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">
-              Validation Errors - {selectedImport.fileName}
-            </h2>
-            <p className="text-sm text-gray-600 mb-4">
-              {selectedImport.validationErrors.length} errors found
-            </p>
+      <Modal
+        isOpen={showErrorsModal}
+        onClose={() => {
+          setShowErrorsModal(false);
+          setSelectedImport(null);
+        }}
+        title={`Validation Errors - ${selectedImport?.fileName || ''}`}
+        size="xl"
+      >
+        {selectedImport && (
+          <>
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+              <p className="text-sm text-red-700 dark:text-red-400 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4" />
+                {selectedImport.validationErrors.length} errors found in this import
+              </p>
+            </div>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                <thead className="bg-gray-50 dark:bg-slate-900/50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Row</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Field</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Value</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Error</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Row</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Field</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Value</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Error</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
                   {selectedImport.validationErrors.map((error, index) => (
-                    <tr key={index}>
-                      <td className="px-4 py-3 text-sm text-gray-900">{error.row}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900 font-mono">{error.field}</td>
-                      <td className="px-4 py-3 text-sm text-gray-500">{error.value || '(empty)'}</td>
-                      <td className="px-4 py-3 text-sm text-red-600">{error.error}</td>
-                    </tr>
+                    <motion.tr
+                      key={index}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
+                    >
+                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white font-medium">{error.row}</td>
+                      <td className="px-4 py-3 text-sm text-gray-900 dark:text-white font-mono">{error.field}</td>
+                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{error.value || '(empty)'}</td>
+                      <td className="px-4 py-3 text-sm text-red-600 dark:text-red-400">{error.error}</td>
+                    </motion.tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <div className="mt-4">
-              <button
-                onClick={() => {
-                  setShowErrorsModal(false);
-                  setSelectedImport(null);
-                }}
-                className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
-              >
-                Close
-              </button>
-            </div>
-          </div>
+          </>
+        )}
+        <div className="flex justify-end mt-4 pt-4 border-t border-gray-200 dark:border-slate-700">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => {
+              setShowErrorsModal(false);
+              setSelectedImport(null);
+            }}
+            className="px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+          >
+            Close
+          </motion.button>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }
