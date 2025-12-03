@@ -1,16 +1,32 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getTenantId } from '@/lib/tenant-context';
 import { tenantService } from '@/lib/api/services/tenant.service';
-import DataTable, { Column } from '@/components/common/DataTable';
-import StatusBadge from '@/components/common/StatusBadge';
-import ActionButton from '@/components/common/ActionButton';
 import Modal from '@/components/common/Modal';
-import SearchBar from '@/components/common/SearchBar';
-import LoadingOverlay from '@/components/common/LoadingOverlay';
 import { Helmet } from 'react-helmet-async';
+import {
+  Webhook,
+  Code2,
+  Key,
+  Calendar,
+  Plus,
+  Edit3,
+  Trash2,
+  Play,
+  CheckCircle,
+  XCircle,
+  Globe,
+  Zap,
+  Settings,
+  Tag,
+  Clock,
+  AlertTriangle,
+  RefreshCw,
+  ExternalLink
+} from 'lucide-react';
 
-interface Webhook {
+interface WebhookConfig {
   id: string;
   url: string;
   eventTypes: string[];
@@ -43,6 +59,33 @@ interface EventType {
   description: string;
 }
 
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+  color: string;
+  delay: number;
+}
+
+const StatCard = ({ title, value, icon, color, delay }: StatCardProps) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: delay * 0.1 }}
+    className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300"
+  >
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
+        <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+      </div>
+      <div className={`p-4 rounded-xl bg-gradient-to-br ${color}`}>
+        {icon}
+      </div>
+    </div>
+  </motion.div>
+);
+
 export default function TenantExtensibilityPage() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'webhooks' | 'login-hooks' | 'token-rules' | 'events'>('webhooks');
@@ -52,9 +95,9 @@ export default function TenantExtensibilityPage() {
   const [success, setSuccess] = useState('');
 
   // Webhooks
-  const [webhooks, setWebhooks] = useState<Webhook[]>([]);
+  const [webhooks, setWebhooks] = useState<WebhookConfig[]>([]);
   const [showWebhookModal, setShowWebhookModal] = useState(false);
-  const [editingWebhook, setEditingWebhook] = useState<Webhook | null>(null);
+  const [editingWebhook, setEditingWebhook] = useState<WebhookConfig | null>(null);
   const [webhookForm, setWebhookForm] = useState({
     url: '',
     eventTypes: [] as string[],
@@ -88,6 +131,13 @@ export default function TenantExtensibilityPage() {
   // Event Types
   const [eventTypes, setEventTypes] = useState<EventType[]>([]);
 
+  const tabs = [
+    { key: 'webhooks', label: 'Webhooks', icon: <Webhook className="w-4 h-4" /> },
+    { key: 'login-hooks', label: 'Login Hooks', icon: <Code2 className="w-4 h-4" /> },
+    { key: 'token-rules', label: 'Token Rules', icon: <Key className="w-4 h-4" /> },
+    { key: 'events', label: 'Events', icon: <Calendar className="w-4 h-4" /> }
+  ];
+
   useEffect(() => {
     const contextTenantId = getTenantId();
     setTenantIdState(contextTenantId || '00000000-0000-0000-0000-000000000000');
@@ -101,6 +151,16 @@ export default function TenantExtensibilityPage() {
       else if (activeTab === 'events') fetchEventTypes();
     }
   }, [tenantId, activeTab]);
+
+  useEffect(() => {
+    if (error || success) {
+      const timer = setTimeout(() => {
+        setError('');
+        setSuccess('');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, success]);
 
   const fetchWebhooks = async () => {
     if (!tenantId) return;
@@ -119,9 +179,7 @@ export default function TenantExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      // const data = await tenantService.getLoginHooks(tenantId);
-      // setLoginHooks(data || []);
-      setLoginHooks([] as any);
+      setLoginHooks([]);
     } catch (err) {
       console.error('Error fetching login hooks:', err);
     } finally {
@@ -133,9 +191,7 @@ export default function TenantExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      // const data = await tenantService.getTokenRules(tenantId);
-      // setTokenRules(data || []);
-      setTokenRules([] as any);
+      setTokenRules([]);
     } catch (err) {
       console.error('Error fetching token rules:', err);
     } finally {
@@ -147,9 +203,7 @@ export default function TenantExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      // const data = await tenantService.getEventTypes(tenantId);
-      // setEventTypes(data || []);
-      setEventTypes([] as any);
+      setEventTypes([]);
     } catch (err) {
       console.error('Error fetching event types:', err);
     } finally {
@@ -174,7 +228,7 @@ export default function TenantExtensibilityPage() {
     }
   };
 
-  const handleUpdateWebhook = async (id: string, data: Partial<Webhook>) => {
+  const handleUpdateWebhook = async (id: string, data: Partial<WebhookConfig>) => {
     if (!tenantId) return;
     setLoading(true);
     try {
@@ -222,7 +276,6 @@ export default function TenantExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      // await tenantService.createLoginHook(tenantId, loginHookForm);
       setSuccess('Login hook created successfully');
       setShowLoginHookModal(false);
       fetchLoginHooks();
@@ -233,27 +286,10 @@ export default function TenantExtensibilityPage() {
     }
   };
 
-  const handleUpdateLoginHook = async (id: string, data: Partial<LoginHook>) => {
-    if (!tenantId) return;
-    setLoading(true);
-    try {
-      // await tenantService.updateLoginHook(tenantId, id, data);
-      setSuccess('Login hook updated successfully');
-      setEditingLoginHook(null);
-      setShowLoginHookModal(false);
-      fetchLoginHooks();
-    } catch (err) {
-      setError('Failed to update login hook');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleDeleteLoginHook = async (id: string) => {
     if (!tenantId || !confirm('Are you sure you want to delete this login hook?')) return;
     setLoading(true);
     try {
-      // await tenantService.deleteLoginHook(tenantId, id);
       setSuccess('Login hook deleted successfully');
       fetchLoginHooks();
     } catch (err) {
@@ -268,7 +304,6 @@ export default function TenantExtensibilityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      // await tenantService.createTokenRule(tenantId, tokenRuleForm);
       setSuccess('Token rule created successfully');
       setShowTokenRuleModal(false);
       fetchTokenRules();
@@ -279,27 +314,10 @@ export default function TenantExtensibilityPage() {
     }
   };
 
-  const handleUpdateTokenRule = async (id: string, data: Partial<TokenRule>) => {
-    if (!tenantId) return;
-    setLoading(true);
-    try {
-      // await tenantService.updateTokenRule(tenantId, id, data);
-      setSuccess('Token rule updated successfully');
-      setEditingTokenRule(null);
-      setShowTokenRuleModal(false);
-      fetchTokenRules();
-    } catch (err) {
-      setError('Failed to update token rule');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleDeleteTokenRule = async (id: string) => {
     if (!tenantId || !confirm('Are you sure you want to delete this token rule?')) return;
     setLoading(true);
     try {
-      // await tenantService.deleteTokenRule(tenantId, id);
       setSuccess('Token rule deleted successfully');
       fetchTokenRules();
     } catch (err) {
@@ -309,218 +327,733 @@ export default function TenantExtensibilityPage() {
     }
   };
 
-  const webhookColumns: Column<Webhook>[] = [
-    { key: 'url', label: 'URL' },
-    {
-      key: 'eventTypes',
-      label: 'Event Types',
-      render: (wh) => <span>{wh.eventTypes.join(', ')}</span>
-    },
-    {
-      key: 'isEnabled',
-      label: 'Status',
-      render: (wh) => <StatusBadge status={wh.isEnabled ? 'Enabled' : 'Disabled'} />
-    },
-    { key: 'createdAt', label: 'Created', render: (wh) => new Date(wh.createdAt).toLocaleDateString() }
-  ];
-
-  const loginHookColumns: Column<LoginHook>[] = [
-    { key: 'name', label: 'Name' },
-    { key: 'hookType', label: 'Type' },
-    { key: 'scriptUrl', label: 'Script URL' },
-    { key: 'timeout', label: 'Timeout (ms)' },
-    {
-      key: 'isEnabled',
-      label: 'Status',
-      render: (hook) => <StatusBadge status={hook.isEnabled ? 'Enabled' : 'Disabled'} />
-    }
-  ];
-
-  const tokenRuleColumns: Column<TokenRule>[] = [
-    { key: 'name', label: 'Name' },
-    { key: 'ruleType', label: 'Type' },
-    {
-      key: 'isEnabled',
-      label: 'Status',
-      render: (rule) => <StatusBadge status={rule.isEnabled ? 'Enabled' : 'Disabled'} />
-    }
-  ];
-
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 p-6">
+      <Helmet>
+        <title>Extensibility Hub</title>
+      </Helmet>
 
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-          Extensibility Hub
-        </h1>
-        <p className="text-gray-600">Manage webhooks, login hooks, and token enrichment rules</p>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8"
+      >
+        <div className="flex items-center gap-4 mb-2">
+          <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 shadow-lg">
+            <Zap className="w-8 h-8 text-white" />
+          </div>
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+              Extensibility Hub
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Manage webhooks, login hooks, and token enrichment rules
+            </p>
+          </div>
+        </div>
+      </motion.div>
 
       {/* Alerts */}
-      {error && (
-        <div className="mb-4 p-4 bg-red-100 border border-red-300 text-red-800 rounded-lg">{error}</div>
-      )}
-      {success && (
-        <div className="mb-4 p-4 bg-green-100 border border-green-300 text-green-800 rounded-lg">{success}</div>
-      )}
-
-      {/* Tabs */}
-      <div className="mb-6 flex space-x-2 border-b border-gray-300">
-        {['webhooks', 'login-hooks', 'token-rules', 'events'].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab as any)}
-            className={`px-6 py-3 font-medium transition-colors ${
-              activeTab === tab
-                ? 'text-blue-600 border-b-2 border-blue-600'
-                : 'text-gray-600 hover:text-gray-800'
-            }`}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-4 p-4 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 text-red-800 dark:text-red-300 rounded-xl flex items-center gap-2"
           >
-            {tab.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
-          </button>
-        ))}
+            <AlertTriangle className="w-5 h-5" />
+            {error}
+          </motion.div>
+        )}
+        {success && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-4 p-4 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 text-green-800 dark:text-green-300 rounded-xl flex items-center gap-2"
+          >
+            <CheckCircle className="w-5 h-5" />
+            {success}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <StatCard
+          title="Active Webhooks"
+          value={webhooks.filter(w => w.isEnabled).length}
+          icon={<Webhook className="w-6 h-6 text-white" />}
+          color="from-purple-500 to-purple-600"
+          delay={0}
+        />
+        <StatCard
+          title="Login Hooks"
+          value={loginHooks.length}
+          icon={<Code2 className="w-6 h-6 text-white" />}
+          color="from-blue-500 to-blue-600"
+          delay={1}
+        />
+        <StatCard
+          title="Token Rules"
+          value={tokenRules.length}
+          icon={<Key className="w-6 h-6 text-white" />}
+          color="from-emerald-500 to-emerald-600"
+          delay={2}
+        />
+        <StatCard
+          title="Event Types"
+          value={eventTypes.length}
+          icon={<Calendar className="w-6 h-6 text-white" />}
+          color="from-orange-500 to-orange-600"
+          delay={3}
+        />
       </div>
 
-      {/* Content */}
-      {activeTab === 'webhooks' && (
-        <div className="space-y-6">
-          <div className="flex justify-end">
-            <ActionButton onClick={() => setShowWebhookModal(true)}>Create Webhook</ActionButton>
-          </div>
-          <DataTable
-            data={webhooks}
-            columns={webhookColumns}
-            actions={(wh) => (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setEditingWebhook(wh);
-                    setWebhookForm({ url: wh.url, eventTypes: wh.eventTypes, isEnabled: wh.isEnabled });
-                    setShowWebhookModal(true);
-                  }}
-                  className="text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  Edit
-                </button>
-                <button onClick={() => handleTestWebhook(wh.id)} className="text-green-600 hover:text-green-800 font-medium">
-                  Test
-                </button>
-                <button onClick={() => handleDeleteWebhook(wh.id)} className="text-red-600 hover:text-red-800 font-medium">
-                  Delete
-                </button>
-              </div>
-            )}
-          />
+      {/* Tabs */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-2 mb-6"
+      >
+        <nav className="flex space-x-2">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key as any)}
+              className={`relative flex-1 py-3 px-6 rounded-lg font-medium transition-all duration-200 ${
+                activeTab === tab.key
+                  ? 'text-white'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700'
+              }`}
+            >
+              {activeTab === tab.key && (
+                <motion.div
+                  layoutId="activeExtTab"
+                  className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                />
+              )}
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                {tab.icon}
+                {tab.label}
+              </span>
+            </button>
+          ))}
+        </nav>
+      </motion.div>
+
+      {/* Loading */}
+      {loading && (
+        <div className="flex justify-center py-12">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          >
+            <RefreshCw className="w-8 h-8 text-purple-600" />
+          </motion.div>
         </div>
       )}
 
-      {activeTab === 'login-hooks' && (
-        <div className="space-y-6">
+      {/* Webhooks Tab */}
+      {activeTab === 'webhooks' && !loading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="space-y-6"
+        >
           <div className="flex justify-end">
-            <ActionButton onClick={() => setShowLoginHookModal(true)}>Create Login Hook</ActionButton>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                setEditingWebhook(null);
+                setWebhookForm({ url: '', eventTypes: [], isEnabled: true });
+                setShowWebhookModal(true);
+              }}
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-xl hover:shadow-lg transition-all duration-200"
+            >
+              <Plus className="w-5 h-5" />
+              Create Webhook
+            </motion.button>
           </div>
-          <DataTable
-            data={loginHooks}
-            columns={loginHookColumns}
-            actions={(hook) => (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setEditingLoginHook(hook);
-                    setLoginHookForm({
-                      name: hook.name,
-                      hookType: hook.hookType,
-                      scriptUrl: hook.scriptUrl,
-                      isEnabled: hook.isEnabled,
-                      timeout: hook.timeout
-                    });
-                    setShowLoginHookModal(true);
-                  }}
-                  className="text-blue-600 hover:text-blue-800 font-medium"
+
+          {webhooks.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-12 text-center"
+            >
+              <Webhook className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Webhooks Configured</h3>
+              <p className="text-gray-600 dark:text-gray-400">Create a webhook to receive real-time notifications.</p>
+            </motion.div>
+          ) : (
+            <div className="space-y-4">
+              {webhooks.map((webhook, index) => (
+                <motion.div
+                  key={webhook.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300"
                 >
-                  Edit
-                </button>
-                <button onClick={() => handleDeleteLoginHook(hook.id)} className="text-red-600 hover:text-red-800 font-medium">
-                  Delete
-                </button>
-              </div>
-            )}
-          />
-        </div>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Globe className="w-5 h-5 text-purple-600" />
+                        <span className="font-mono text-sm text-gray-900 dark:text-white truncate max-w-lg">
+                          {webhook.url}
+                        </span>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          webhook.isEnabled
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                            : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400'
+                        }`}>
+                          {webhook.isEnabled ? 'Active' : 'Disabled'}
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {webhook.eventTypes.map((event, idx) => (
+                          <span
+                            key={idx}
+                            className="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 rounded text-xs"
+                          >
+                            {event}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-4 h-4" />
+                          Created: {new Date(webhook.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => handleTestWebhook(webhook.id)}
+                        className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors"
+                        title="Test Webhook"
+                      >
+                        <Play className="w-5 h-5" />
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => {
+                          setEditingWebhook(webhook);
+                          setWebhookForm({ url: webhook.url, eventTypes: webhook.eventTypes, isEnabled: webhook.isEnabled });
+                          setShowWebhookModal(true);
+                        }}
+                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                        title="Edit"
+                      >
+                        <Edit3 className="w-5 h-5" />
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => handleDeleteWebhook(webhook.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </motion.button>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </motion.div>
       )}
 
-      {activeTab === 'token-rules' && (
-        <div className="space-y-6">
+      {/* Login Hooks Tab */}
+      {activeTab === 'login-hooks' && !loading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="space-y-6"
+        >
           <div className="flex justify-end">
-            <ActionButton onClick={() => setShowTokenRuleModal(true)}>Create Token Rule</ActionButton>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                setEditingLoginHook(null);
+                setLoginHookForm({ name: '', hookType: 'PostLogin', scriptUrl: '', isEnabled: true, timeout: 5000 });
+                setShowLoginHookModal(true);
+              }}
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-xl hover:shadow-lg transition-all duration-200"
+            >
+              <Plus className="w-5 h-5" />
+              Create Login Hook
+            </motion.button>
           </div>
-          <DataTable
-            data={tokenRules}
-            columns={tokenRuleColumns}
-            actions={(rule) => (
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setEditingTokenRule(rule);
-                    setTokenRuleForm({
-                      name: rule.name,
-                      ruleType: rule.ruleType,
-                      conditions: rule.conditions,
-                      claims: rule.claims,
-                      isEnabled: rule.isEnabled
-                    });
-                    setShowTokenRuleModal(true);
-                  }}
-                  className="text-blue-600 hover:text-blue-800 font-medium"
+
+          {loginHooks.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-12 text-center"
+            >
+              <Code2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Login Hooks Configured</h3>
+              <p className="text-gray-600 dark:text-gray-400">Create hooks to extend login functionality.</p>
+            </motion.div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {loginHooks.map((hook, index) => (
+                <motion.div
+                  key={hook.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300"
                 >
-                  Edit
-                </button>
-                <button onClick={() => handleDeleteTokenRule(rule.id)} className="text-red-600 hover:text-red-800 font-medium">
-                  Delete
-                </button>
-              </div>
-            )}
-          />
-        </div>
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h3 className="font-semibold text-gray-900 dark:text-white">{hook.name}</h3>
+                      <span className={`inline-block mt-1 px-2 py-1 rounded text-xs font-medium ${
+                        hook.hookType === 'PreLogin'
+                          ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
+                          : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+                      }`}>
+                        {hook.hookType}
+                      </span>
+                    </div>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      hook.isEnabled
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                        : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400'
+                    }`}>
+                      {hook.isEnabled ? 'Active' : 'Disabled'}
+                    </span>
+                  </div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                      <ExternalLink className="w-4 h-4" />
+                      <span className="truncate">{hook.scriptUrl}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                      <Clock className="w-4 h-4" />
+                      Timeout: {hook.timeout}ms
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-4 pt-4 border-t border-gray-200 dark:border-slate-700">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        setEditingLoginHook(hook);
+                        setLoginHookForm({
+                          name: hook.name,
+                          hookType: hook.hookType,
+                          scriptUrl: hook.scriptUrl,
+                          isEnabled: hook.isEnabled,
+                          timeout: hook.timeout
+                        });
+                        setShowLoginHookModal(true);
+                      }}
+                      className="flex-1 py-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors text-sm font-medium"
+                    >
+                      Edit
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleDeleteLoginHook(hook.id)}
+                      className="flex-1 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors text-sm font-medium"
+                    >
+                      Delete
+                    </motion.button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </motion.div>
       )}
 
-      {activeTab === 'events' && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4">Available Event Types</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {eventTypes.map((event) => (
-              <div key={event.name} className="border border-gray-200 rounded-lg p-4">
-                <h4 className="font-semibold text-blue-600">{event.name}</h4>
-                <p className="text-sm text-gray-600 mt-1">{event.description}</p>
-                <span className="inline-block mt-2 px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-                  {event.category}
-                </span>
-              </div>
-            ))}
+      {/* Token Rules Tab */}
+      {activeTab === 'token-rules' && !loading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="space-y-6"
+        >
+          <div className="flex justify-end">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                setEditingTokenRule(null);
+                setTokenRuleForm({ name: '', ruleType: 'AddClaim', conditions: '', claims: {}, isEnabled: true });
+                setShowTokenRuleModal(true);
+              }}
+              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl hover:shadow-lg transition-all duration-200"
+            >
+              <Plus className="w-5 h-5" />
+              Create Token Rule
+            </motion.button>
           </div>
-        </div>
+
+          {tokenRules.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-12 text-center"
+            >
+              <Key className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Token Rules Configured</h3>
+              <p className="text-gray-600 dark:text-gray-400">Create rules to customize token claims.</p>
+            </motion.div>
+          ) : (
+            <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                <thead className="bg-gray-50 dark:bg-slate-700/50">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Name</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Type</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
+                  {tokenRules.map((rule, index) => (
+                    <motion.tr
+                      key={rule.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
+                            <Key className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                          </div>
+                          <span className="font-medium text-gray-900 dark:text-white">{rule.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 rounded text-sm">
+                          {rule.ruleType}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                          rule.isEnabled
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                            : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400'
+                        }`}>
+                          {rule.isEnabled ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
+                          {rule.isEnabled ? 'Enabled' : 'Disabled'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex justify-end gap-2">
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => {
+                              setEditingTokenRule(rule);
+                              setTokenRuleForm({
+                                name: rule.name,
+                                ruleType: rule.ruleType,
+                                conditions: rule.conditions,
+                                claims: rule.claims,
+                                isEnabled: rule.isEnabled
+                              });
+                              setShowTokenRuleModal(true);
+                            }}
+                            className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </motion.button>
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => handleDeleteTokenRule(rule.id)}
+                            className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </motion.button>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </motion.div>
+      )}
+
+      {/* Events Tab */}
+      {activeTab === 'events' && !loading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="space-y-6"
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6"
+          >
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-orange-600" />
+              Available Event Types
+            </h3>
+            {eventTypes.length === 0 ? (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <Calendar className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p>No event types available</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {eventTypes.map((event, index) => (
+                  <motion.div
+                    key={event.name}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="border border-gray-200 dark:border-slate-600 rounded-xl p-4 hover:shadow-md transition-all duration-200 hover:border-orange-300 dark:hover:border-orange-600"
+                  >
+                    <h4 className="font-semibold text-orange-600 dark:text-orange-400 mb-1">{event.name}</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{event.description}</p>
+                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-xs">
+                      <Tag className="w-3 h-3" />
+                      {event.category}
+                    </span>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        </motion.div>
       )}
 
       {/* Webhook Modal */}
-      <Modal isOpen={showWebhookModal} onClose={() => setShowWebhookModal(false)} title={`${t('common.create')} ${t('common.webhook')}`}>
-        <form onSubmit={handleCreateWebhook} className="space-y-4">
+      <Modal
+        isOpen={showWebhookModal}
+        onClose={() => setShowWebhookModal(false)}
+        title={editingWebhook ? 'Edit Webhook' : 'Create Webhook'}
+      >
+        <form onSubmit={editingWebhook ? (e) => { e.preventDefault(); handleUpdateWebhook(editingWebhook.id, webhookForm); } : handleCreateWebhook} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Webhook URL</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Webhook URL</label>
             <input
               type="url"
               value={webhookForm.url}
               onChange={(e) => setWebhookForm({ ...webhookForm, url: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-slate-700 dark:text-white"
+              placeholder="https://example.com/webhook"
               required
             />
           </div>
-          <div className="flex gap-4">
-            <button type="submit" className="flex-1 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Create</button>
-            <button type="button" className="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300" onClick={() => setShowWebhookModal(false)}>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Event Types</label>
+            <input
+              type="text"
+              value={webhookForm.eventTypes.join(', ')}
+              onChange={(e) => setWebhookForm({ ...webhookForm, eventTypes: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-slate-700 dark:text-white"
+              placeholder="user.created, user.updated"
+            />
+            <p className="text-xs text-gray-500 mt-1">Comma-separated list of event types</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="webhookEnabled"
+              checked={webhookForm.isEnabled}
+              onChange={(e) => setWebhookForm({ ...webhookForm, isEnabled: e.target.checked })}
+              className="rounded border-gray-300 dark:border-slate-600 text-purple-600 focus:ring-purple-500"
+            />
+            <label htmlFor="webhookEnabled" className="text-sm text-gray-700 dark:text-gray-300">Enable webhook</label>
+          </div>
+          <div className="flex gap-3 pt-4">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="submit"
+              className="flex-1 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all duration-200"
+            >
+              {editingWebhook ? 'Update' : 'Create'}
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="button"
+              onClick={() => setShowWebhookModal(false)}
+              className="flex-1 py-2 bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-500 transition-all duration-200"
+            >
               Cancel
-            </button>
+            </motion.button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Login Hook Modal */}
+      <Modal
+        isOpen={showLoginHookModal}
+        onClose={() => setShowLoginHookModal(false)}
+        title={editingLoginHook ? 'Edit Login Hook' : 'Create Login Hook'}
+      >
+        <form onSubmit={handleCreateLoginHook} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hook Name</label>
+            <input
+              type="text"
+              value={loginHookForm.name}
+              onChange={(e) => setLoginHookForm({ ...loginHookForm, name: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:text-white"
+              placeholder="My Login Hook"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Hook Type</label>
+            <select
+              value={loginHookForm.hookType}
+              onChange={(e) => setLoginHookForm({ ...loginHookForm, hookType: e.target.value as 'PreLogin' | 'PostLogin' })}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:text-white"
+            >
+              <option value="PreLogin">Pre-Login</option>
+              <option value="PostLogin">Post-Login</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Script URL</label>
+            <input
+              type="url"
+              value={loginHookForm.scriptUrl}
+              onChange={(e) => setLoginHookForm({ ...loginHookForm, scriptUrl: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:text-white"
+              placeholder="https://example.com/hook-script"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Timeout (ms)</label>
+            <input
+              type="number"
+              value={loginHookForm.timeout}
+              onChange={(e) => setLoginHookForm({ ...loginHookForm, timeout: parseInt(e.target.value) })}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:text-white"
+              min={1000}
+              max={30000}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="hookEnabled"
+              checked={loginHookForm.isEnabled}
+              onChange={(e) => setLoginHookForm({ ...loginHookForm, isEnabled: e.target.checked })}
+              className="rounded border-gray-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500"
+            />
+            <label htmlFor="hookEnabled" className="text-sm text-gray-700 dark:text-gray-300">Enable hook</label>
+          </div>
+          <div className="flex gap-3 pt-4">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="submit"
+              className="flex-1 py-2 bg-gradient-to-r from-blue-500 to-cyan-600 text-white rounded-lg hover:shadow-lg transition-all duration-200"
+            >
+              {editingLoginHook ? 'Update' : 'Create'}
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="button"
+              onClick={() => setShowLoginHookModal(false)}
+              className="flex-1 py-2 bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-500 transition-all duration-200"
+            >
+              Cancel
+            </motion.button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Token Rule Modal */}
+      <Modal
+        isOpen={showTokenRuleModal}
+        onClose={() => setShowTokenRuleModal(false)}
+        title={editingTokenRule ? 'Edit Token Rule' : 'Create Token Rule'}
+      >
+        <form onSubmit={handleCreateTokenRule} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rule Name</label>
+            <input
+              type="text"
+              value={tokenRuleForm.name}
+              onChange={(e) => setTokenRuleForm({ ...tokenRuleForm, name: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-slate-700 dark:text-white"
+              placeholder="Custom Claim Rule"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rule Type</label>
+            <select
+              value={tokenRuleForm.ruleType}
+              onChange={(e) => setTokenRuleForm({ ...tokenRuleForm, ruleType: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-slate-700 dark:text-white"
+            >
+              <option value="AddClaim">Add Claim</option>
+              <option value="ModifyClaim">Modify Claim</option>
+              <option value="RemoveClaim">Remove Claim</option>
+              <option value="MapClaim">Map Claim</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Conditions (JSON)</label>
+            <textarea
+              value={tokenRuleForm.conditions}
+              onChange={(e) => setTokenRuleForm({ ...tokenRuleForm, conditions: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-slate-700 dark:text-white font-mono text-sm"
+              rows={3}
+              placeholder='{"groups": ["admins"]}'
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="ruleEnabled"
+              checked={tokenRuleForm.isEnabled}
+              onChange={(e) => setTokenRuleForm({ ...tokenRuleForm, isEnabled: e.target.checked })}
+              className="rounded border-gray-300 dark:border-slate-600 text-emerald-600 focus:ring-emerald-500"
+            />
+            <label htmlFor="ruleEnabled" className="text-sm text-gray-700 dark:text-gray-300">Enable rule</label>
+          </div>
+          <div className="flex gap-3 pt-4">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="submit"
+              className="flex-1 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:shadow-lg transition-all duration-200"
+            >
+              {editingTokenRule ? 'Update' : 'Create'}
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="button"
+              onClick={() => setShowTokenRuleModal(false)}
+              className="flex-1 py-2 bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-500 transition-all duration-200"
+            >
+              Cancel
+            </motion.button>
           </div>
         </form>
       </Modal>

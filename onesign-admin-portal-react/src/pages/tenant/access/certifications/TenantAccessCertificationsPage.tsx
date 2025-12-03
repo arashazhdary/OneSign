@@ -1,14 +1,32 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getTenantId } from '@/lib/tenant-context';
 import { governanceService } from '@/lib/api/services';
 import { useAuth } from '@/app/contexts/AuthContext';
-import DataTable, { Column } from '@/components/common/DataTable';
-import StatusBadge from '@/components/common/StatusBadge';
-import ActionButton from '@/components/common/ActionButton';
 import Modal from '@/components/common/Modal';
-import LoadingOverlay from '@/components/common/LoadingOverlay';
 import { Helmet } from 'react-helmet-async';
+import {
+  Award,
+  Calendar,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Plus,
+  Eye,
+  AlertTriangle,
+  RefreshCw,
+  Search,
+  Users,
+  ThumbsUp,
+  ThumbsDown,
+  FileText,
+  Download,
+  BarChart3,
+  History,
+  Target,
+  TrendingUp
+} from 'lucide-react';
 
 interface CertificationCampaign {
   id: string;
@@ -62,6 +80,40 @@ interface HistoricalCertification {
   certifiers: string[];
 }
 
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+  color: string;
+  delay: number;
+  trend?: string;
+}
+
+const StatCard = ({ title, value, icon, color, delay, trend }: StatCardProps) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: delay * 0.1 }}
+    className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300"
+  >
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
+        <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+        {trend && (
+          <p className="text-sm text-green-600 dark:text-green-400 mt-1 flex items-center gap-1">
+            <TrendingUp className="w-3 h-3" />
+            {trend}
+          </p>
+        )}
+      </div>
+      <div className={`p-4 rounded-xl bg-gradient-to-br ${color}`}>
+        {icon}
+      </div>
+    </div>
+  </motion.div>
+);
+
 export default function TenantAccessCertificationsPage() {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -76,6 +128,7 @@ export default function TenantAccessCertificationsPage() {
   const [certificationItems, setCertificationItems] = useState<CertificationItem[]>([]);
   const [historicalCertifications, setHistoricalCertifications] = useState<HistoricalCertification[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [createForm, setCreateForm] = useState({
     name: '',
@@ -85,6 +138,13 @@ export default function TenantAccessCertificationsPage() {
     endDate: '',
     certifiers: [] as string[],
   });
+
+  const tabs = [
+    { key: 'campaigns', label: 'Campaigns', icon: <Target className="w-4 h-4" /> },
+    { key: 'certify', label: 'Certify Access', icon: <CheckCircle className="w-4 h-4" /> },
+    { key: 'history', label: 'History', icon: <History className="w-4 h-4" /> },
+    { key: 'reports', label: 'Reports', icon: <BarChart3 className="w-4 h-4" /> }
+  ];
 
   useEffect(() => {
     const contextTenantId = getTenantId();
@@ -98,13 +158,22 @@ export default function TenantAccessCertificationsPage() {
     }
   }, [tenantId, activeTab]);
 
+  useEffect(() => {
+    if (error || success) {
+      const timer = setTimeout(() => {
+        setError('');
+        setSuccess('');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error, success]);
+
   const fetchCampaigns = async () => {
     if (!tenantId) return;
     setLoading(true);
     setError('');
     try {
       const data = await governanceService.getCampaigns();
-      // Mock data structure - adapt based on actual API response
       const campaigns = (data || []).map((campaign: any) => ({
         ...campaign,
         type: campaign.type || 'access',
@@ -123,35 +192,13 @@ export default function TenantAccessCertificationsPage() {
     } catch (err: any) {
       console.error('Error fetching campaigns:', err);
       setError('Failed to load certification campaigns');
-      // Use mock data on error
-      setCampaigns([
-        {
-          id: '1',
-          name: 'Q4 2024 Access Certification',
-          description: 'Quarterly access certification campaign',
-          type: 'access',
-          status: 'active',
-          startDate: '2024-10-01',
-          endDate: '2024-12-31',
-          certifiers: ['manager@example.com'],
-          scope: {},
-          statistics: {
-            totalItems: 450,
-            certified: 280,
-            revoked: 25,
-            pending: 145,
-            completion: 68,
-          },
-          createdAt: '2024-09-28',
-        },
-      ]);
+      setCampaigns([]);
     } finally {
       setLoading(false);
     }
   };
 
   const fetchHistoricalCertifications = async () => {
-    // Mock historical data - implement actual API call when available
     setHistoricalCertifications([
       {
         id: '1',
@@ -180,8 +227,6 @@ export default function TenantAccessCertificationsPage() {
     setError('');
     setSuccess('');
     try {
-      // Use governance service to create campaign
-      // Adapt based on actual API structure
       await governanceService.createCampaign(createForm as any);
       setSuccess('Certification campaign created successfully');
       setShowCreateModal(false);
@@ -205,9 +250,6 @@ export default function TenantAccessCertificationsPage() {
   const handleViewCampaign = async (campaign: CertificationCampaign) => {
     setSelectedCampaign(campaign);
     setActiveTab('certify');
-
-    // Fetch certification items for this campaign
-    // Mock data - implement actual API call
     setCertificationItems([
       {
         id: '1',
@@ -241,7 +283,6 @@ export default function TenantAccessCertificationsPage() {
   const handleCertify = async (itemId: string, action: 'certify' | 'revoke', notes?: string) => {
     setLoading(true);
     try {
-      // Call API with campaignId, itemId, and certification data
       if (selectedCampaign) {
         await governanceService.certifyItem(
           selectedCampaign.id,
@@ -251,8 +292,6 @@ export default function TenantAccessCertificationsPage() {
         );
       }
       setSuccess(`Access ${action === 'certify' ? 'certified' : 'revoked'} successfully`);
-
-      // Update local state
       setCertificationItems((prev) =>
         prev.map((item) =>
           item.id === itemId
@@ -273,219 +312,385 @@ export default function TenantAccessCertificationsPage() {
     }
   };
 
-  const campaignColumns: Column<CertificationCampaign>[] = [
-    { key: 'name', label: 'Campaign Name' },
-    {
-      key: 'type',
-      label: 'Type',
-      render: (campaign) => <span className="capitalize">{campaign.type}</span>,
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      render: (campaign) => (
-        <StatusBadge
-          status={campaign.status}
-          variant={
-            campaign.status === 'completed'
-              ? 'success'
-              : campaign.status === 'active'
-              ? 'warning'
-              : campaign.status === 'archived'
-              ? 'error'
-              : 'info'
-          }
-        />
-      ),
-    },
-    {
-      key: 'endDate',
-      label: 'Due Date',
-      render: (campaign) => new Date(campaign.endDate).toLocaleDateString(),
-    },
-    {
-      key: 'statistics',
-      label: 'Progress',
-      render: (campaign) =>
-        campaign.statistics ? (
-          <div className="flex items-center gap-2">
-            <div className="w-32 bg-gray-200 rounded-full h-2">
-              <div
-                className="bg-green-600 h-2 rounded-full"
-                style={{ width: `${campaign.statistics.completion}%` }}
-              />
-            </div>
-            <span className="text-sm">{campaign.statistics.completion}%</span>
-          </div>
-        ) : (
-          '-'
-        ),
-    },
-  ];
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+      case 'active':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+      case 'archived':
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400';
+      default:
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+    }
+  };
+
+  const getRiskColor = (level: string) => {
+    switch (level) {
+      case 'high':
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+      case 'medium':
+        return 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400';
+      default:
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+    }
+  };
+
+  const totalCampaigns = campaigns.length;
+  const activeCampaigns = campaigns.filter(c => c.status === 'active').length;
+  const totalItems = campaigns.reduce((sum, c) => sum + (c.statistics?.totalItems || 0), 0);
+  const pendingItems = campaigns.reduce((sum, c) => sum + (c.statistics?.pending || 0), 0);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 p-6">
       <Helmet>
         <title>Access Certifications</title>
       </Helmet>
 
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-          Access Certifications
-        </h1>
-        <p className="text-gray-600">
-          Manage certification campaigns and attest to user access rights
-        </p>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8"
+      >
+        <div className="flex items-center gap-4 mb-2">
+          <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg">
+            <Award className="w-8 h-8 text-white" />
+          </div>
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+              Access Certifications
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Manage certification campaigns and attest to user access rights
+            </p>
+          </div>
+        </div>
+      </motion.div>
 
       {/* Alerts */}
-      {error && (
-        <div className="mb-4 p-4 bg-red-100 border border-red-300 text-red-800 rounded-lg">
-          {error}
-        </div>
-      )}
-      {success && (
-        <div className="mb-4 p-4 bg-green-100 border border-green-300 text-green-800 rounded-lg">
-          {success}
-        </div>
-      )}
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-4 p-4 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 text-red-800 dark:text-red-300 rounded-xl flex items-center gap-2"
+          >
+            <AlertTriangle className="w-5 h-5" />
+            {error}
+          </motion.div>
+        )}
+        {success && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-4 p-4 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 text-green-800 dark:text-green-300 rounded-xl flex items-center gap-2"
+          >
+            <CheckCircle className="w-5 h-5" />
+            {success}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Tabs */}
-      <div className="mb-6 flex space-x-2 border-b border-gray-300">
-        <button
-          onClick={() => setActiveTab('campaigns')}
-          className={`px-6 py-3 font-medium transition-colors ${
-            activeTab === 'campaigns'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-600 hover:text-gray-800'
-          }`}
-        >
-          Campaigns
-        </button>
-        <button
-          onClick={() => setActiveTab('certify')}
-          className={`px-6 py-3 font-medium transition-colors ${
-            activeTab === 'certify'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-600 hover:text-gray-800'
-          }`}
-        >
-          Certify Access
-        </button>
-        <button
-          onClick={() => setActiveTab('history')}
-          className={`px-6 py-3 font-medium transition-colors ${
-            activeTab === 'history'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-600 hover:text-gray-800'
-          }`}
-        >
-          History
-        </button>
-        <button
-          onClick={() => setActiveTab('reports')}
-          className={`px-6 py-3 font-medium transition-colors ${
-            activeTab === 'reports'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-600 hover:text-gray-800'
-          }`}
-        >
-          Reports
-        </button>
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <StatCard
+          title="Total Campaigns"
+          value={totalCampaigns}
+          icon={<Target className="w-6 h-6 text-white" />}
+          color="from-amber-500 to-amber-600"
+          delay={0}
+        />
+        <StatCard
+          title="Active Campaigns"
+          value={activeCampaigns}
+          icon={<Clock className="w-6 h-6 text-white" />}
+          color="from-blue-500 to-blue-600"
+          delay={1}
+        />
+        <StatCard
+          title="Total Items"
+          value={totalItems.toLocaleString()}
+          icon={<Users className="w-6 h-6 text-white" />}
+          color="from-purple-500 to-purple-600"
+          delay={2}
+        />
+        <StatCard
+          title="Pending Review"
+          value={pendingItems.toLocaleString()}
+          icon={<AlertTriangle className="w-6 h-6 text-white" />}
+          color="from-orange-500 to-orange-600"
+          delay={3}
+        />
       </div>
 
-      {/* Campaigns Tab */}
-      {activeTab === 'campaigns' && (
-        <div className="space-y-6">
-          <div className="flex justify-end">
-            <ActionButton onClick={() => setShowCreateModal(true)}>
-              Create Campaign
-            </ActionButton>
-          </div>
-          <DataTable
-            data={campaigns}
-            columns={campaignColumns}
-            onRowClick={handleViewCampaign}
-            actions={(campaign) => (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleViewCampaign(campaign);
-                }}
-                className="text-blue-600 hover:text-blue-800 font-medium"
-              >
-                View Details
-              </button>
-            )}
-          />
+      {/* Tabs */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-2 mb-6"
+      >
+        <nav className="flex space-x-2">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key as any)}
+              className={`relative flex-1 py-3 px-6 rounded-lg font-medium transition-all duration-200 ${
+                activeTab === tab.key
+                  ? 'text-white'
+                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700'
+              }`}
+            >
+              {activeTab === tab.key && (
+                <motion.div
+                  layoutId="activeCertTab"
+                  className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                />
+              )}
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                {tab.icon}
+                {tab.label}
+              </span>
+            </button>
+          ))}
+        </nav>
+      </motion.div>
+
+      {/* Loading */}
+      {loading && (
+        <div className="flex justify-center py-12">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          >
+            <RefreshCw className="w-8 h-8 text-amber-600" />
+          </motion.div>
         </div>
+      )}
+
+      {/* Campaigns Tab */}
+      {activeTab === 'campaigns' && !loading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="space-y-6"
+        >
+          <div className="flex items-center justify-between">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search campaigns..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-amber-500 dark:bg-slate-700 dark:text-white"
+              />
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setShowCreateModal(true)}
+              className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl hover:shadow-lg transition-all duration-200"
+            >
+              <Plus className="w-5 h-5" />
+              Create Campaign
+            </motion.button>
+          </div>
+
+          {campaigns.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-12 text-center"
+            >
+              <Award className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Certification Campaigns</h3>
+              <p className="text-gray-600 dark:text-gray-400">Create a campaign to start certifying user access.</p>
+            </motion.div>
+          ) : (
+            <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 overflow-hidden">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                <thead className="bg-gray-50 dark:bg-slate-700/50">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Campaign Name</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Type</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Due Date</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Progress</th>
+                    <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
+                  {campaigns.filter(c => !searchQuery || c.name.toLowerCase().includes(searchQuery.toLowerCase())).map((campaign, index) => (
+                    <motion.tr
+                      key={campaign.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer"
+                      onClick={() => handleViewCampaign(campaign)}
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+                            <Award className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                          </div>
+                          <div>
+                            <span className="font-medium text-gray-900 dark:text-white">{campaign.name}</span>
+                            {campaign.description && (
+                              <p className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-xs">{campaign.description}</p>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 rounded text-sm capitalize">
+                          {campaign.type}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(campaign.status)}`}>
+                          {campaign.status === 'completed' && <CheckCircle className="w-3 h-3" />}
+                          {campaign.status === 'active' && <Clock className="w-3 h-3" />}
+                          {campaign.status === 'archived' && <XCircle className="w-3 h-3" />}
+                          {campaign.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4" />
+                          {new Date(campaign.endDate).toLocaleDateString()}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        {campaign.statistics ? (
+                          <div className="flex items-center gap-3">
+                            <div className="w-32 bg-gray-200 dark:bg-slate-600 rounded-full h-2 overflow-hidden">
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${campaign.statistics.completion}%` }}
+                                transition={{ duration: 0.5, delay: index * 0.1 }}
+                                className="h-full bg-gradient-to-r from-amber-500 to-orange-600"
+                              />
+                            </div>
+                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{campaign.statistics.completion}%</span>
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewCampaign(campaign);
+                          }}
+                          className="p-2 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg transition-colors"
+                          title="View Details"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </motion.button>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </motion.div>
       )}
 
       {/* Certify Tab */}
-      {activeTab === 'certify' && (
-        <div className="space-y-6">
-          {selectedCampaign && (
+      {activeTab === 'certify' && !loading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="space-y-6"
+        >
+          {selectedCampaign ? (
             <>
-              <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-2xl font-bold mb-2">{selectedCampaign.name}</h2>
-                <p className="text-gray-600 mb-4">{selectedCampaign.description}</p>
+              {/* Campaign Summary */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{selectedCampaign.name}</h2>
+                    <p className="text-gray-600 dark:text-gray-400 mt-1">{selectedCampaign.description}</p>
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedCampaign.status)}`}>
+                    {selectedCampaign.status}
+                  </span>
+                </div>
                 <div className="grid grid-cols-4 gap-4">
-                  <div>
-                    <div className="text-sm text-gray-600">Total Items</div>
-                    <div className="text-2xl font-bold">{selectedCampaign.statistics?.totalItems || 0}</div>
+                  <div className="text-center p-4 bg-gray-50 dark:bg-slate-700/50 rounded-xl">
+                    <div className="text-3xl font-bold text-gray-900 dark:text-white">{selectedCampaign.statistics?.totalItems || 0}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Total Items</div>
                   </div>
-                  <div>
-                    <div className="text-sm text-gray-600">Certified</div>
-                    <div className="text-2xl font-bold text-green-600">{selectedCampaign.statistics?.certified || 0}</div>
+                  <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
+                    <div className="text-3xl font-bold text-green-600 dark:text-green-400">{selectedCampaign.statistics?.certified || 0}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Certified</div>
                   </div>
-                  <div>
-                    <div className="text-sm text-gray-600">Revoked</div>
-                    <div className="text-2xl font-bold text-red-600">{selectedCampaign.statistics?.revoked || 0}</div>
+                  <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-xl">
+                    <div className="text-3xl font-bold text-red-600 dark:text-red-400">{selectedCampaign.statistics?.revoked || 0}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Revoked</div>
                   </div>
-                  <div>
-                    <div className="text-sm text-gray-600">Pending</div>
-                    <div className="text-2xl font-bold text-orange-600">{selectedCampaign.statistics?.pending || 0}</div>
+                  <div className="text-center p-4 bg-orange-50 dark:bg-orange-900/20 rounded-xl">
+                    <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">{selectedCampaign.statistics?.pending || 0}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Pending</div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="space-y-3">
-                {certificationItems.map((item) => (
-                  <div key={item.id} className="bg-white rounded-lg shadow p-6">
+              {/* Certification Items */}
+              <div className="space-y-4">
+                {certificationItems.map((item, index) => (
+                  <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6"
+                  >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-semibold">{item.userName}</h3>
-                          <StatusBadge
-                            status={item.riskLevel}
-                            variant={
-                              item.riskLevel === 'high'
-                                ? 'error'
-                                : item.riskLevel === 'medium'
-                                ? 'warning'
-                                : 'success'
-                            }
-                          />
+                          <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                            <Users className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{item.userName}</h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{item.userEmail}</p>
+                          </div>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRiskColor(item.riskLevel)}`}>
+                            {item.riskLevel} risk
+                          </span>
                         </div>
-                        <div className="text-sm text-gray-600">{item.userEmail}</div>
-                        <div className="mt-3 grid grid-cols-3 gap-4 text-sm">
+                        <div className="grid grid-cols-3 gap-4 mt-4 text-sm">
                           <div>
-                            <span className="text-gray-600">Access:</span>{' '}
-                            <span className="font-medium">{item.accessType}</span>
+                            <span className="text-gray-600 dark:text-gray-400">Access Type:</span>
+                            <span className="ml-1 font-medium text-gray-900 dark:text-white">{item.accessType}</span>
                           </div>
                           <div>
-                            <span className="text-gray-600">Resource:</span>{' '}
-                            <span className="font-medium">{item.resourceName}</span>
+                            <span className="text-gray-600 dark:text-gray-400">Resource:</span>
+                            <span className="ml-1 font-medium text-gray-900 dark:text-white">{item.resourceName}</span>
                           </div>
                           <div>
-                            <span className="text-gray-600">Granted:</span>{' '}
-                            <span className="font-medium">{new Date(item.grantedDate).toLocaleDateString()}</span>
+                            <span className="text-gray-600 dark:text-gray-400">Granted:</span>
+                            <span className="ml-1 font-medium text-gray-900 dark:text-white">{new Date(item.grantedDate).toLocaleDateString()}</span>
                           </div>
                           {item.lastUsed && (
                             <div>
-                              <span className="text-gray-600">Last Used:</span>{' '}
-                              <span className="font-medium">{new Date(item.lastUsed).toLocaleDateString()}</span>
+                              <span className="text-gray-600 dark:text-gray-400">Last Used:</span>
+                              <span className="ml-1 font-medium text-gray-900 dark:text-white">{new Date(item.lastUsed).toLocaleDateString()}</span>
                             </div>
                           )}
                         </div>
@@ -493,118 +698,218 @@ export default function TenantAccessCertificationsPage() {
                       <div className="ml-6">
                         {item.status === 'pending' ? (
                           <div className="flex gap-2">
-                            <button
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
                               onClick={() => handleCertify(item.id, 'certify')}
-                              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 font-medium"
+                              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
                             >
+                              <ThumbsUp className="w-4 h-4" />
                               Certify
-                            </button>
-                            <button
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
                               onClick={() => handleCertify(item.id, 'revoke')}
-                              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-medium"
+                              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
                             >
+                              <ThumbsDown className="w-4 h-4" />
                               Revoke
-                            </button>
+                            </motion.button>
                           </div>
                         ) : (
-                          <StatusBadge
-                            status={item.status}
-                            variant={item.status === 'certified' ? 'success' : 'error'}
-                          />
+                          <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${
+                            item.status === 'certified'
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                              : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                          }`}>
+                            {item.status === 'certified' ? <ThumbsUp className="w-4 h-4" /> : <ThumbsDown className="w-4 h-4" />}
+                            {item.status}
+                          </span>
                         )}
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-12 text-center"
+            >
+              <Target className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Select a Campaign</h3>
+              <p className="text-gray-600 dark:text-gray-400">Choose a campaign from the Campaigns tab to start certifying access.</p>
+            </motion.div>
           )}
-          {!selectedCampaign && (
-            <div className="text-center py-12 text-gray-500">
-              <p>Select a campaign from the Campaigns tab to start certifying access</p>
-            </div>
-          )}
-        </div>
+        </motion.div>
       )}
 
       {/* History Tab */}
-      {activeTab === 'history' && (
-        <div className="space-y-4">
-          {historicalCertifications.map((cert) => (
-            <div key={cert.id} className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold">{cert.campaignName}</h3>
-                  <div className="text-sm text-gray-600 mt-1">
-                    Completed on {new Date(cert.completedAt).toLocaleDateString()}
+      {activeTab === 'history' && !loading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="space-y-4"
+        >
+          {historicalCertifications.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-12 text-center"
+            >
+              <History className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Historical Records</h3>
+              <p className="text-gray-600 dark:text-gray-400">Completed certifications will appear here.</p>
+            </motion.div>
+          ) : (
+            historicalCertifications.map((cert, index) => (
+              <motion.div
+                key={cert.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                        <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{cert.campaignName}</h3>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-3">
+                      <Calendar className="w-4 h-4" />
+                      Completed on {new Date(cert.completedAt).toLocaleDateString()}
+                    </div>
+                    <div className="flex gap-6 text-sm">
+                      <div>
+                        <span className="text-gray-600 dark:text-gray-400">Total:</span>
+                        <span className="ml-1 font-medium text-gray-900 dark:text-white">{cert.totalItems}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-600 dark:text-gray-400">Certified:</span>
+                        <span className="ml-1 font-medium text-green-600 dark:text-green-400">{cert.certifiedCount}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-600 dark:text-gray-400">Revoked:</span>
+                        <span className="ml-1 font-medium text-red-600 dark:text-red-400">{cert.revokedCount}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex gap-4 mt-3 text-sm">
-                    <div>
-                      <span className="text-gray-600">Total:</span>{' '}
-                      <span className="font-medium">{cert.totalItems}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Certified:</span>{' '}
-                      <span className="font-medium text-green-600">{cert.certifiedCount}</span>
-                    </div>
-                    <div>
-                      <span className="text-gray-600">Revoked:</span>{' '}
-                      <span className="font-medium text-red-600">{cert.revokedCount}</span>
-                    </div>
-                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download Report
+                  </motion.button>
                 </div>
-                <ActionButton variant="secondary">Download Report</ActionButton>
-              </div>
-            </div>
-          ))}
-        </div>
+              </motion.div>
+            ))
+          )}
+        </motion.div>
       )}
 
       {/* Reports Tab */}
-      {activeTab === 'reports' && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold mb-4">Compliance Reports</h2>
-          <p className="text-gray-600 mb-6">
-            Generate compliance reports for audits and regulatory requirements
-          </p>
-          <div className="space-y-3">
-            <ActionButton>Generate Certification Summary Report</ActionButton>
-            <ActionButton variant="secondary">Export All Certifications (CSV)</ActionButton>
-            <ActionButton variant="secondary">Download Compliance Attestation</ActionButton>
-          </div>
-        </div>
+      {activeTab === 'reports' && !loading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="space-y-6"
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+                <BarChart3 className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              </div>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Compliance Reports</h2>
+            </div>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Generate compliance reports for audits and regulatory requirements.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <motion.button
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex items-center gap-3 p-4 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl hover:shadow-lg transition-all duration-200"
+              >
+                <FileText className="w-6 h-6" />
+                <div className="text-left">
+                  <div className="font-medium">Certification Summary</div>
+                  <div className="text-xs opacity-80">Overview of all certifications</div>
+                </div>
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex items-center gap-3 p-4 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-xl hover:shadow-lg transition-all duration-200"
+              >
+                <Download className="w-6 h-6" />
+                <div className="text-left">
+                  <div className="font-medium">Export All (CSV)</div>
+                  <div className="text-xs opacity-80">Download certification data</div>
+                </div>
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex items-center gap-3 p-4 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-xl hover:shadow-lg transition-all duration-200"
+              >
+                <Award className="w-6 h-6" />
+                <div className="text-left">
+                  <div className="font-medium">Compliance Attestation</div>
+                  <div className="text-xs opacity-80">Official compliance document</div>
+                </div>
+              </motion.button>
+            </div>
+          </motion.div>
+        </motion.div>
       )}
 
       {/* Create Campaign Modal */}
-      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title={`${t('common.create')} ${t('common.certificationCampaign')}`}>
+      <Modal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        title="Create Certification Campaign"
+      >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Campaign Name</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Campaign Name</label>
             <input
               type="text"
               value={createForm.name}
               onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 dark:bg-slate-700 dark:text-white"
               placeholder="Q4 2024 Access Certification"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
             <textarea
               value={createForm.description}
               onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 dark:bg-slate-700 dark:text-white"
               rows={3}
+              placeholder="Quarterly access certification campaign..."
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Certification Type</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Certification Type</label>
             <select
               value={createForm.type}
               onChange={(e) => setCreateForm({ ...createForm, type: e.target.value as any })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 dark:bg-slate-700 dark:text-white"
             >
               <option value="access">Access Certification</option>
               <option value="entitlement">Entitlement Certification</option>
@@ -615,32 +920,42 @@ export default function TenantAccessCertificationsPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
               <input
                 type="date"
                 value={createForm.startDate}
                 onChange={(e) => setCreateForm({ ...createForm, startDate: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 dark:bg-slate-700 dark:text-white"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
               <input
                 type="date"
                 value={createForm.endDate}
                 onChange={(e) => setCreateForm({ ...createForm, endDate: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-amber-500 dark:bg-slate-700 dark:text-white"
               />
             </div>
           </div>
 
-          <div className="flex gap-3 mt-6">
-            <ActionButton onClick={handleCreateCampaign} className="flex-1">
+          <div className="flex gap-3 pt-4">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleCreateCampaign}
+              className="flex-1 py-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-lg hover:shadow-lg transition-all duration-200"
+            >
               Create Campaign
-            </ActionButton>
-            <ActionButton onClick={() => setShowCreateModal(false)} variant="secondary" className="flex-1">
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setShowCreateModal(false)}
+              className="flex-1 py-2 bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-500 transition-all duration-200"
+            >
               Cancel
-            </ActionButton>
+            </motion.button>
           </div>
         </div>
       </Modal>
