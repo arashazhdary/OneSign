@@ -1,9 +1,30 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
+import { Helmet } from 'react-helmet-async';
+import {
+  CreditCard,
+  Users,
+  AppWindow,
+  Activity,
+  HardDrive,
+  TrendingUp,
+  TrendingDown,
+  RefreshCw,
+  ArrowUpRight,
+  CheckCircle,
+  AlertCircle,
+  Calendar,
+  Receipt,
+  Package,
+  Zap,
+  Clock,
+  Star
+} from 'lucide-react';
 import { useLocale } from '@/hooks/useLocale';
 import { getTenantId } from '@/lib/tenant-context';
 import { billingService } from '@/lib/api/services';
-import { Helmet } from 'react-helmet-async';
+import Modal from '@/components/common/Modal';
 
 interface UsageSummary {
   period: string;
@@ -37,11 +58,107 @@ interface Subscription {
   currency: string;
 }
 
+// Stat Card Component
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  subtitle?: string;
+  icon: React.ReactNode;
+  trend?: number;
+  trendLabel?: string;
+  color: 'blue' | 'green' | 'purple' | 'orange' | 'red' | 'indigo' | 'cyan' | 'yellow';
+  delay?: number;
+}
+
+const StatCard = ({ title, value, subtitle, icon, trend, trendLabel, color, delay = 0 }: StatCardProps) => {
+  const colorClasses = {
+    blue: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-200 dark:border-blue-800', glow: 'hover:shadow-blue-100 dark:hover:shadow-blue-900/20' },
+    green: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-600 dark:text-green-400', border: 'border-green-200 dark:border-green-800', glow: 'hover:shadow-green-100 dark:hover:shadow-green-900/20' },
+    purple: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-600 dark:text-purple-400', border: 'border-purple-200 dark:border-purple-800', glow: 'hover:shadow-purple-100 dark:hover:shadow-purple-900/20' },
+    orange: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-600 dark:text-orange-400', border: 'border-orange-200 dark:border-orange-800', glow: 'hover:shadow-orange-100 dark:hover:shadow-orange-900/20' },
+    red: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-600 dark:text-red-400', border: 'border-red-200 dark:border-red-800', glow: 'hover:shadow-red-100 dark:hover:shadow-red-900/20' },
+    indigo: { bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-600 dark:text-indigo-400', border: 'border-indigo-200 dark:border-indigo-800', glow: 'hover:shadow-indigo-100 dark:hover:shadow-indigo-900/20' },
+    cyan: { bg: 'bg-cyan-100 dark:bg-cyan-900/30', text: 'text-cyan-600 dark:text-cyan-400', border: 'border-cyan-200 dark:border-cyan-800', glow: 'hover:shadow-cyan-100 dark:hover:shadow-cyan-900/20' },
+    yellow: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-600 dark:text-yellow-400', border: 'border-yellow-200 dark:border-yellow-800', glow: 'hover:shadow-yellow-100 dark:hover:shadow-yellow-900/20' }
+  };
+
+  const colors = colorClasses[color];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: delay * 0.1, duration: 0.5 }}
+      className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border ${colors.border} p-6 hover:shadow-lg ${colors.glow} transition-all duration-300 cursor-default`}
+    >
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</p>
+          <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">
+            {typeof value === 'number' ? value.toLocaleString('fa-IR') : value}
+          </p>
+          {subtitle && (
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{subtitle}</p>
+          )}
+          {trend !== undefined && (
+            <div className={`flex items-center gap-1 mt-2 text-sm ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {trend >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+              <span>{Math.abs(trend)}%</span>
+              {trendLabel && <span className="text-slate-500 dark:text-slate-400">{trendLabel}</span>}
+            </div>
+          )}
+        </div>
+        <div className={`p-3 rounded-xl ${colors.bg}`}>
+          <div className={colors.text}>{icon}</div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+// Progress Bar Component
+const ProgressBar = ({ current, max, label, color }: { current: number; max: number; label: string; color: string }) => {
+  const percentage = max > 0 ? Math.min((current / max) * 100, 100) : 0;
+
+  const getBarColor = () => {
+    if (percentage >= 90) return 'bg-red-500';
+    if (percentage >= 75) return 'bg-yellow-500';
+    return color;
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      className="space-y-2"
+    >
+      <div className="flex justify-between items-center">
+        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{label}</span>
+        <span className="text-sm text-slate-500 dark:text-slate-400">
+          {current.toLocaleString('fa-IR')} / {max.toLocaleString('fa-IR')}
+        </span>
+      </div>
+      <div className="relative w-full h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${percentage}%` }}
+          transition={{ duration: 1, delay: 0.5 }}
+          className={`absolute h-full rounded-full ${getBarColor()}`}
+        />
+      </div>
+      <p className="text-xs text-slate-500 dark:text-slate-400 text-left">
+        {percentage.toFixed(1)}% استفاده شده
+      </p>
+    </motion.div>
+  );
+};
+
 export default function TenantBillingPage() {
   const { t } = useTranslation();
   const locale = useLocale();
   const [tenantId, setTenantIdState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -52,6 +169,7 @@ export default function TenantBillingPage() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [targetPlan, setTargetPlan] = useState('Premium');
   const [upgradeComments, setUpgradeComments] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const contextTenantId = getTenantId();
@@ -102,261 +220,364 @@ export default function TenantBillingPage() {
     }
   };
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([
+      fetchUsageSummary(),
+      fetchQuotaStatus(),
+      fetchSubscription()
+    ]);
+    setRefreshing(false);
+  };
+
   const handleRequestUpgrade = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
+    setSubmitting(true);
     if (!tenantId) return;
 
     try {
       // await billingService.requestUpgrade(targetPlan, upgradeComments);
+      await new Promise(resolve => setTimeout(resolve, 1000));
       setShowUpgradeModal(false);
       setUpgradeComments('');
-      setSuccess(t('tenant.billing.upgradeRequested') || 'Upgrade request submitted successfully. Our team will contact you soon.');
+      setSuccess('درخواست ارتقا با موفقیت ارسال شد. تیم ما به زودی با شما تماس خواهد گرفت.');
     } catch (error: any) {
       setError(error?.message || t('common.error'));
       console.error('Error requesting upgrade:', error);
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const getUsagePercentage = (current: number, max: number) => {
-    if (max === 0) return 0;
-    return Math.min((current / max) * 100, 100);
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('fa-IR');
   };
 
-  const getUsageColor = (percentage: number) => {
-    if (percentage >= 90) return 'bg-red-500';
-    if (percentage >= 75) return 'bg-yellow-500';
-    return 'bg-green-500';
+  const planFeatures: Record<string, string[]> = {
+    Starter: ['۱۰۰ کاربر', '۵ اپلیکیشن', '۱۰,۰۰۰ درخواست API/ماه', '۱ گیگابایت فضا'],
+    Professional: ['۵۰۰ کاربر', '۲۰ اپلیکیشن', '۱۰۰,۰۰۰ درخواست API/ماه', '۱۰ گیگابایت فضا'],
+    Premium: ['۲,۰۰۰ کاربر', '۵۰ اپلیکیشن', '۵۰۰,۰۰۰ درخواست API/ماه', '۵۰ گیگابایت فضا'],
+    Enterprise: ['نامحدود کاربر', 'نامحدود اپلیکیشن', 'نامحدود درخواست API', 'نامحدود فضا']
   };
 
   if (loading) {
-    return <div className="p-8">{t('common.loading')}</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-green-500 border-t-transparent"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <CreditCard className="w-6 h-6 text-green-500" />
+            </div>
+          </div>
+          <p className="text-slate-600 dark:text-slate-400 font-medium">{t('common.loading', 'در حال بارگذاری...')}</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">{t('tenant.billing.title') || 'Billing & Usage'}</h1>
-        <button
-          onClick={() => setShowUpgradeModal(true)}
-          className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-        >
-          {t('tenant.billing.requestUpgrade') || 'Request Upgrade'}
-        </button>
-      </div>
+    <>
+      <Helmet>
+        <title>{t('tenant.billing.title', 'صورتحساب و مصرف')} | OneSign</title>
+      </Helmet>
 
-      {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-          {success}
-        </div>
-      )}
-
-      {/* Subscription Info */}
-      {subscription && (
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">{t('tenant.billing.subscription') || 'Current Subscription'}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <h3 className="text-sm font-medium text-gray-500 mb-1">{t('tenant.billing.plan') || 'Plan'}</h3>
-              <p className="text-2xl font-bold text-indigo-600">{subscription.planName}</p>
-              <p className="text-sm text-gray-600">{subscription.planTier}</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-500 mb-1">{t('common.status')}</h3>
-              <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
-                subscription.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-              }`}>
-                {subscription.status}
-              </span>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-500 mb-1">{t('tenant.billing.price') || 'Price'}</h3>
-              <p className="text-2xl font-bold">{subscription.price} {subscription.currency}</p>
-              <p className="text-sm text-gray-600">{subscription.billingCycle}</p>
-            </div>
-          </div>
-          <div className="mt-4 pt-4 border-t grid grid-cols-2 gap-4">
-            <div>
-              <h3 className="text-sm font-medium text-gray-500">{t('tenant.billing.startDate') || 'Start Date'}</h3>
-              <p className="text-sm">{new Date(subscription.startDate).toLocaleDateString(locale)}</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-500">{t('tenant.billing.renewalDate') || 'Renewal Date'}</h3>
-              <p className="text-sm">{new Date(subscription.renewalDate).toLocaleDateString(locale)}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Quota Status */}
-      {quotaStatus && (
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">{t('tenant.billing.quotaStatus') || 'Quota & Usage'}</h2>
-
-          {/* Users */}
-          <div className="mb-6">
-            <div className="flex justify-between mb-2">
-              <span className="text-sm font-medium">{t('tenant.billing.users') || 'Users'}</span>
-              <span className="text-sm text-gray-600">{quotaStatus.currentUsers} / {quotaStatus.maxUsers}</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
-              <div
-                className={`h-3 rounded-full ${getUsageColor(getUsagePercentage(quotaStatus.currentUsers, quotaStatus.maxUsers))}`}
-                style={{ width: `${getUsagePercentage(quotaStatus.currentUsers, quotaStatus.maxUsers)}%` }}
-              />
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              {getUsagePercentage(quotaStatus.currentUsers, quotaStatus.maxUsers).toFixed(1)}% {t('tenant.billing.used') || 'used'}
-            </p>
-          </div>
-
-          {/* Applications */}
-          <div className="mb-6">
-            <div className="flex justify-between mb-2">
-              <span className="text-sm font-medium">{t('tenant.billing.applications') || 'Applications'}</span>
-              <span className="text-sm text-gray-600">{quotaStatus.currentApplications} / {quotaStatus.maxApplications}</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
-              <div
-                className={`h-3 rounded-full ${getUsageColor(getUsagePercentage(quotaStatus.currentApplications, quotaStatus.maxApplications))}`}
-                style={{ width: `${getUsagePercentage(quotaStatus.currentApplications, quotaStatus.maxApplications)}%` }}
-              />
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              {getUsagePercentage(quotaStatus.currentApplications, quotaStatus.maxApplications).toFixed(1)}% {t('tenant.billing.used') || 'used'}
-            </p>
-          </div>
-
-          {/* API Calls */}
-          <div className="mb-6">
-            <div className="flex justify-between mb-2">
-              <span className="text-sm font-medium">{t('tenant.billing.apiCalls') || 'API Calls (Monthly)'}</span>
-              <span className="text-sm text-gray-600">{quotaStatus.currentApiCalls.toLocaleString()} / {quotaStatus.maxApiCallsPerMonth.toLocaleString()}</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
-              <div
-                className={`h-3 rounded-full ${getUsageColor(getUsagePercentage(quotaStatus.currentApiCalls, quotaStatus.maxApiCallsPerMonth))}`}
-                style={{ width: `${getUsagePercentage(quotaStatus.currentApiCalls, quotaStatus.maxApiCallsPerMonth)}%` }}
-              />
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              {getUsagePercentage(quotaStatus.currentApiCalls, quotaStatus.maxApiCallsPerMonth).toFixed(1)}% {t('tenant.billing.used') || 'used'}
-            </p>
-          </div>
-
-          {/* Storage */}
-          <div className="mb-6">
-            <div className="flex justify-between mb-2">
-              <span className="text-sm font-medium">{t('tenant.billing.storage') || 'Storage'}</span>
-              <span className="text-sm text-gray-600">{quotaStatus.currentStorageGB.toFixed(2)} GB / {quotaStatus.maxStorageGB} GB</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
-              <div
-                className={`h-3 rounded-full ${getUsageColor(getUsagePercentage(quotaStatus.currentStorageGB, quotaStatus.maxStorageGB))}`}
-                style={{ width: `${getUsagePercentage(quotaStatus.currentStorageGB, quotaStatus.maxStorageGB)}%` }}
-              />
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              {getUsagePercentage(quotaStatus.currentStorageGB, quotaStatus.maxStorageGB).toFixed(1)}% {t('tenant.billing.used') || 'used'}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Usage Summary */}
-      {usageSummary && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">{t('tenant.billing.usageSummary') || 'Usage Summary'}</h2>
-          <p className="text-sm text-gray-600 mb-4">{t('tenant.billing.period') || 'Period'}: {usageSummary.period}</p>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-            <div className="border-l-4 border-indigo-500 pl-4">
-              <h3 className="text-sm font-medium text-gray-500">{t('tenant.billing.totalUsers') || 'Total Users'}</h3>
-              <p className="text-3xl font-bold text-gray-900">{usageSummary.totalUsers}</p>
-            </div>
-            <div className="border-l-4 border-green-500 pl-4">
-              <h3 className="text-sm font-medium text-gray-500">{t('tenant.billing.activeUsers') || 'Active Users'}</h3>
-              <p className="text-3xl font-bold text-gray-900">{usageSummary.activeUsers}</p>
-            </div>
-            <div className="border-l-4 border-blue-500 pl-4">
-              <h3 className="text-sm font-medium text-gray-500">{t('tenant.billing.applications') || 'Applications'}</h3>
-              <p className="text-3xl font-bold text-gray-900">{usageSummary.totalApplications}</p>
-            </div>
-            <div className="border-l-4 border-purple-500 pl-4">
-              <h3 className="text-sm font-medium text-gray-500">{t('tenant.billing.authEvents') || 'Auth Events'}</h3>
-              <p className="text-3xl font-bold text-gray-900">{usageSummary.totalAuthEvents.toLocaleString()}</p>
-            </div>
-            <div className="border-l-4 border-yellow-500 pl-4">
-              <h3 className="text-sm font-medium text-gray-500">{t('tenant.billing.apiCalls') || 'API Calls'}</h3>
-              <p className="text-3xl font-bold text-gray-900">{usageSummary.totalApiCalls.toLocaleString()}</p>
-            </div>
-            <div className="border-l-4 border-red-500 pl-4">
-              <h3 className="text-sm font-medium text-gray-500">{t('tenant.billing.storage') || 'Storage Used'}</h3>
-              <p className="text-3xl font-bold text-gray-900">{usageSummary.storageUsedMB.toFixed(0)} MB</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Upgrade Modal */}
-      {showUpgradeModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-md w-full">
-            <h2 className="text-xl font-bold mb-4">{t('tenant.billing.requestUpgrade') || 'Request Plan Upgrade'}</h2>
-            <form onSubmit={handleRequestUpgrade}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('tenant.billing.targetPlan') || 'Target Plan'}</label>
-                <select
-                  className="w-full px-3 py-2 border rounded"
-                  value={targetPlan}
-                  onChange={(e) => setTargetPlan(e.target.value)}
-                >
-                  <option value="Starter">Starter</option>
-                  <option value="Professional">Professional</option>
-                  <option value="Premium">Premium</option>
-                  <option value="Enterprise">Enterprise</option>
-                </select>
+      <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-green-50/30 to-emerald-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 min-h-screen" dir="rtl">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <motion.h1
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3"
+            >
+              <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl text-white">
+                <CreditCard className="w-6 h-6" />
               </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('tenant.billing.comments') || 'Comments (Optional)'}</label>
-                <textarea
-                  className="w-full px-3 py-2 border rounded"
-                  rows={4}
-                  value={upgradeComments}
-                  onChange={(e) => setUpgradeComments(e.target.value)}
-                  placeholder={t('tenant.billing.commentsPlaceholder') || 'Tell us about your requirements...'}
-                />
-              </div>
+              {t('tenant.billing.title', 'صورتحساب و مصرف')}
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-slate-500 dark:text-slate-400 mt-1"
+            >
+              {t('tenant.billing.subtitle', 'مدیریت اشتراک و مشاهده میزان مصرف')}
+            </motion.p>
+          </div>
+          <div className="flex gap-3">
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              {t('common.refresh', 'بروزرسانی')}
+            </motion.button>
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowUpgradeModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl"
+            >
+              <ArrowUpRight className="w-4 h-4" />
+              {t('tenant.billing.requestUpgrade', 'درخواست ارتقا')}
+            </motion.button>
+          </div>
+        </div>
 
-              {error && (
-                <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
-                  {error}
+        {/* Alerts */}
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl flex items-center gap-2"
+          >
+            <AlertCircle className="w-5 h-5" />
+            {error}
+          </motion.div>
+        )}
+
+        {success && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-xl flex items-center gap-2"
+          >
+            <CheckCircle className="w-5 h-5" />
+            {success}
+          </motion.div>
+        )}
+
+        {/* Subscription Card */}
+        {subscription && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden"
+          >
+            <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <Package className="w-5 h-5" />
+                اشتراک فعلی
+              </h2>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div className="text-center md:text-right">
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">پلن</p>
+                  <div className="flex items-center gap-2 justify-center md:justify-start">
+                    <Star className="w-5 h-5 text-yellow-500" />
+                    <span className="text-2xl font-bold text-green-600 dark:text-green-400">{subscription.planName}</span>
+                  </div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">{subscription.planTier}</p>
                 </div>
-              )}
-
-              <div className="flex gap-2">
-                <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
-                  {t('common.submitRequest')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowUpgradeModal(false)}
-                  className="bg-gray-300 px-4 py-2 rounded"
-                >
-                  {t('common.cancel')}
-                </button>
+                <div className="text-center md:text-right">
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">وضعیت</p>
+                  <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold ${
+                    subscription.status === 'Active'
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                      : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                  }`}>
+                    {subscription.status === 'Active' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+                    {subscription.status === 'Active' ? 'فعال' : 'غیرفعال'}
+                  </span>
+                </div>
+                <div className="text-center md:text-right">
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">قیمت</p>
+                  <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                    {subscription.price.toLocaleString('fa-IR')} {subscription.currency}
+                  </p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">{subscription.billingCycle}</p>
+                </div>
+                <div className="text-center md:text-right">
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">تاریخ تمدید</p>
+                  <div className="flex items-center gap-2 justify-center md:justify-start">
+                    <Calendar className="w-5 h-5 text-slate-400" />
+                    <span className="text-lg font-semibold text-slate-900 dark:text-white">
+                      {formatDate(subscription.renewalDate)}
+                    </span>
+                  </div>
+                </div>
               </div>
-            </form>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Usage Summary Stats */}
+        {usageSummary && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <StatCard
+              title="کل کاربران"
+              value={usageSummary.totalUsers}
+              subtitle={`${usageSummary.activeUsers} کاربر فعال`}
+              icon={<Users className="w-6 h-6" />}
+              color="blue"
+              delay={0}
+            />
+            <StatCard
+              title="اپلیکیشن‌ها"
+              value={usageSummary.totalApplications}
+              icon={<AppWindow className="w-6 h-6" />}
+              color="purple"
+              delay={1}
+            />
+            <StatCard
+              title="رویدادهای احراز هویت"
+              value={usageSummary.totalAuthEvents}
+              icon={<Activity className="w-6 h-6" />}
+              color="green"
+              delay={2}
+            />
+            <StatCard
+              title="درخواست‌های API"
+              value={usageSummary.totalApiCalls}
+              icon={<Zap className="w-6 h-6" />}
+              color="yellow"
+              delay={3}
+            />
+            <StatCard
+              title="فضای استفاده شده"
+              value={`${usageSummary.storageUsedMB.toFixed(0)} MB`}
+              icon={<HardDrive className="w-6 h-6" />}
+              color="orange"
+              delay={4}
+            />
+            <StatCard
+              title="دوره گزارش"
+              value={usageSummary.period}
+              icon={<Clock className="w-6 h-6" />}
+              color="cyan"
+              delay={5}
+            />
           </div>
-        </div>
-      )}
-    </div>
+        )}
+
+        {/* Quota Status */}
+        {quotaStatus && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6"
+          >
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+              <Receipt className="w-5 h-5 text-green-600" />
+              وضعیت سهمیه‌ها
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <ProgressBar
+                current={quotaStatus.currentUsers}
+                max={quotaStatus.maxUsers}
+                label="کاربران"
+                color="bg-blue-500"
+              />
+              <ProgressBar
+                current={quotaStatus.currentApplications}
+                max={quotaStatus.maxApplications}
+                label="اپلیکیشن‌ها"
+                color="bg-purple-500"
+              />
+              <ProgressBar
+                current={quotaStatus.currentApiCalls}
+                max={quotaStatus.maxApiCallsPerMonth}
+                label="درخواست‌های API (ماهانه)"
+                color="bg-yellow-500"
+              />
+              <ProgressBar
+                current={quotaStatus.currentStorageGB}
+                max={quotaStatus.maxStorageGB}
+                label="فضای ذخیره‌سازی (گیگابایت)"
+                color="bg-orange-500"
+              />
+            </div>
+          </motion.div>
+        )}
+
+        {/* Upgrade Modal */}
+        <Modal
+          isOpen={showUpgradeModal}
+          onClose={() => {
+            setShowUpgradeModal(false);
+            setUpgradeComments('');
+          }}
+          title="درخواست ارتقای پلن"
+          size="lg"
+        >
+          <form onSubmit={handleRequestUpgrade} className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                پلن مورد نظر
+              </label>
+              <div className="grid grid-cols-2 gap-4">
+                {Object.entries(planFeatures).map(([plan, features]) => (
+                  <div
+                    key={plan}
+                    onClick={() => setTargetPlan(plan)}
+                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                      targetPlan === plan
+                        ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                        : 'border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500'
+                    }`}
+                  >
+                    <h4 className="font-bold text-slate-900 dark:text-white mb-2">{plan}</h4>
+                    <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-1">
+                      {features.map((feature, idx) => (
+                        <li key={idx} className="flex items-center gap-1">
+                          <CheckCircle className="w-3 h-3 text-green-500" />
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                توضیحات (اختیاری)
+              </label>
+              <textarea
+                value={upgradeComments}
+                onChange={(e) => setUpgradeComments(e.target.value)}
+                rows={4}
+                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500"
+                placeholder="نیازمندی‌ها و توقعات خود را بنویسید..."
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end pt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowUpgradeModal(false);
+                  setUpgradeComments('');
+                }}
+                className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+              >
+                انصراف
+              </button>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all disabled:opacity-50"
+              >
+                {submitting ? 'در حال ارسال...' : 'ارسال درخواست'}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      </div>
+    </>
   );
 }

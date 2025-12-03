@@ -1,7 +1,87 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
+import { Helmet } from 'react-helmet-async';
+import {
+  Database,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  Download,
+  Upload,
+  Trash2,
+  RefreshCw,
+  Plus,
+  Calendar,
+  HardDrive,
+  Settings,
+  Shield,
+  Play,
+  TrendingUp,
+  TrendingDown,
+  Search
+} from 'lucide-react';
 import { tenantService } from '@/lib/api/services/tenant.service';
 import { useTenantStore } from '@/stores/tenantStore';
+import Modal from '@/components/common/Modal';
+
+// Stat Card Component
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  subtitle?: string;
+  icon: React.ReactNode;
+  trend?: number;
+  trendLabel?: string;
+  color: 'blue' | 'green' | 'purple' | 'orange' | 'red' | 'indigo' | 'cyan' | 'yellow';
+  delay?: number;
+}
+
+const StatCard = ({ title, value, subtitle, icon, trend, trendLabel, color, delay = 0 }: StatCardProps) => {
+  const colorClasses = {
+    blue: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-200 dark:border-blue-800', glow: 'hover:shadow-blue-100 dark:hover:shadow-blue-900/20' },
+    green: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-600 dark:text-green-400', border: 'border-green-200 dark:border-green-800', glow: 'hover:shadow-green-100 dark:hover:shadow-green-900/20' },
+    purple: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-600 dark:text-purple-400', border: 'border-purple-200 dark:border-purple-800', glow: 'hover:shadow-purple-100 dark:hover:shadow-purple-900/20' },
+    orange: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-600 dark:text-orange-400', border: 'border-orange-200 dark:border-orange-800', glow: 'hover:shadow-orange-100 dark:hover:shadow-orange-900/20' },
+    red: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-600 dark:text-red-400', border: 'border-red-200 dark:border-red-800', glow: 'hover:shadow-red-100 dark:hover:shadow-red-900/20' },
+    indigo: { bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-600 dark:text-indigo-400', border: 'border-indigo-200 dark:border-indigo-800', glow: 'hover:shadow-indigo-100 dark:hover:shadow-indigo-900/20' },
+    cyan: { bg: 'bg-cyan-100 dark:bg-cyan-900/30', text: 'text-cyan-600 dark:text-cyan-400', border: 'border-cyan-200 dark:border-cyan-800', glow: 'hover:shadow-cyan-100 dark:hover:shadow-cyan-900/20' },
+    yellow: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-600 dark:text-yellow-400', border: 'border-yellow-200 dark:border-yellow-800', glow: 'hover:shadow-yellow-100 dark:hover:shadow-yellow-900/20' }
+  };
+
+  const colors = colorClasses[color];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: delay * 0.1, duration: 0.5 }}
+      className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border ${colors.border} p-6 hover:shadow-lg ${colors.glow} transition-all duration-300 cursor-default`}
+    >
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</p>
+          <p className="text-3xl font-bold text-slate-900 dark:text-white mt-2">
+            {typeof value === 'number' ? value.toLocaleString('fa-IR') : value}
+          </p>
+          {subtitle && (
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{subtitle}</p>
+          )}
+          {trend !== undefined && (
+            <div className={`flex items-center gap-1 mt-2 text-sm ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {trend >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+              <span>{Math.abs(trend)}%</span>
+              {trendLabel && <span className="text-slate-500 dark:text-slate-400">{trendLabel}</span>}
+            </div>
+          )}
+        </div>
+        <div className={`p-3 rounded-xl ${colors.bg}`}>
+          <div className={colors.text}>{icon}</div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
 
 // Types
 interface Backup {
