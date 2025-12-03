@@ -43,7 +43,6 @@ import {
   Clipboard,
   CreditCard,
   Scale,
-  BookOpen,
   Layers,
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
@@ -218,14 +217,14 @@ const TenantSidebar: React.FC = () => {
       animate={{ width: sidebarCollapsed ? '80px' : '280px' }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
       className={cn(
-        "fixed top-0 h-screen bg-white dark:bg-slate-900 z-40 flex flex-col",
-        isRTL 
-          ? "right-0 border-l border-slate-200 dark:border-slate-800"
-          : "left-0 border-r border-slate-200 dark:border-slate-800"
+        "fixed top-0 h-screen bg-slate-900 z-40 flex flex-col",
+        isRTL
+          ? "right-0 border-l border-slate-700"
+          : "left-0 border-r border-slate-700"
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex items-center justify-between p-4 border-b border-slate-700">
         <AnimatePresence mode="wait">
           {!sidebarCollapsed && (
             <motion.div
@@ -234,33 +233,46 @@ const TenantSidebar: React.FC = () => {
               exit={{ opacity: 0, x: -20 }}
               className="flex items-center gap-3"
             >
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold text-lg">OS</span>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-blue-600">OneSign</h1>
-                <p className="text-xs text-slate-500">Tenant Portal</p>
+                <h1 className="text-xl font-bold text-blue-400">OneSign</h1>
+                <p className="text-xs text-slate-400">{t('sidebar.tenantPortal', 'Tenant Portal')}</p>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
         <button
           onClick={toggleSidebar}
-          className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+          className="p-2 rounded-lg hover:bg-slate-800 text-slate-400"
         >
-          {sidebarCollapsed 
+          {sidebarCollapsed
             ? (isRTL ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />)
             : (isRTL ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />)
           }
         </button>
       </div>
 
+      {/* Go to Global Admin */}
+      {!sidebarCollapsed && (
+        <div className="px-4 py-3 border-b border-slate-700">
+          <Link
+            to="/global/platform"
+            className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors"
+          >
+            <Globe className="w-4 h-4" />
+            {t('sidebar.goToGlobalAdmin', 'Global Admin')}
+          </Link>
+        </div>
+      )}
+
       {/* Search */}
       {!sidebarCollapsed && (
         <div className="p-4">
           <div className="relative">
             <Search className={cn(
-              "absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400",
+              "absolute top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500",
               isRTL ? "right-3" : "left-3"
             )} />
             <input
@@ -269,7 +281,7 @@ const TenantSidebar: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={cn(
-                "w-full py-2 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500",
+                "w-full py-2 rounded-lg bg-slate-800 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500",
                 isRTL ? "pr-10 pl-4" : "pl-10 pr-4"
               )}
             />
@@ -284,7 +296,7 @@ const TenantSidebar: React.FC = () => {
             {!sidebarCollapsed && (
               <button
                 onClick={() => toggleGroup(group.id)}
-                className="flex items-center justify-between w-full px-3 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider hover:text-slate-700"
+                className="flex items-center justify-between w-full px-3 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider hover:text-slate-300"
               >
                 {group.label}
                 <ChevronDown
@@ -313,13 +325,13 @@ const TenantSidebar: React.FC = () => {
                         className={cn(
                           'flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200',
                           active
-                            ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
-                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800',
+                            ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg'
+                            : 'text-slate-300 hover:bg-slate-800',
                           sidebarCollapsed && 'justify-center'
                         )}
                         title={sidebarCollapsed ? item.label : undefined}
                       >
-                        <Icon className={cn('w-5 h-5 flex-shrink-0', active ? 'text-white' : 'text-slate-500')} />
+                        <Icon className={cn('w-5 h-5 flex-shrink-0', active ? 'text-white' : 'text-slate-400')} />
                         {!sidebarCollapsed && (
                           <span className="font-medium text-sm truncate">{item.label}</span>
                         )}
@@ -336,34 +348,21 @@ const TenantSidebar: React.FC = () => {
             </AnimatePresence>
           </div>
         ))}
-
-        {/* Global Admin Link */}
-        {!sidebarCollapsed && (
-          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
-            <Link
-              to="/global/platform"
-              className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-100 rounded-lg"
-            >
-              <Globe className="w-5 h-5" />
-              <span className="text-sm font-medium">Global Admin</span>
-            </Link>
-          </div>
-        )}
       </nav>
 
       {/* User Profile */}
       {user && (
-        <div className="p-4 border-t border-slate-200 dark:border-slate-800">
+        <div className="p-4 border-t border-slate-700">
           <div className={cn('flex items-center', sidebarCollapsed ? 'justify-center' : 'gap-3')}>
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-cyan-500 flex items-center justify-center">
               <span className="text-white font-semibold text-sm">
                 {user.name?.split(' ').map((n) => n[0]).join('').toUpperCase() || 'U'}
               </span>
             </div>
             {!sidebarCollapsed && (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{user.name}</p>
-                <p className="text-xs text-slate-500 truncate">{user.role}</p>
+                <p className="text-sm font-semibold text-white truncate">{user.name}</p>
+                <p className="text-xs text-slate-400 truncate">{user.role}</p>
               </div>
             )}
           </div>
