@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
 import {
   Database,
@@ -19,7 +19,10 @@ import {
   Play,
   TrendingUp,
   TrendingDown,
-  Search
+  Search,
+  RotateCcw,
+  ShieldCheck,
+  XCircle
 } from 'lucide-react';
 import { tenantService } from '@/lib/api/services/tenant.service';
 import { useTenantStore } from '@/stores/tenantStore';
@@ -123,7 +126,7 @@ const mockScheduleFallback: BackupSchedule = {
 const mockBackupsFallback: Backup[] = [
   {
     id: '1',
-    name: 'Pre-migration backup',
+    name: 'پشتیبان‌گیری پیش از مهاجرت',
     type: 'Pre-Migration',
     status: 'Verified',
     size: 2048000,
@@ -137,12 +140,12 @@ const mockBackupsFallback: Backup[] = [
   },
   {
     id: '2',
-    name: 'Daily backup - 2024-01-15',
+    name: 'پشتیبان‌گیری روزانه - ۱۴۰۳/۰۹/۲۴',
     type: 'Scheduled',
     status: 'Completed',
     size: 1843200,
     createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
-    createdBy: 'system',
+    createdBy: 'سیستم',
     expiresAt: new Date(Date.now() + 86400000 * 27).toISOString(),
     includesUsers: true,
     includesApps: true,
@@ -150,7 +153,7 @@ const mockBackupsFallback: Backup[] = [
   },
   {
     id: '3',
-    name: 'Manual backup before config change',
+    name: 'پشتیبان‌گیری قبل از تغییرات',
     type: 'Manual',
     status: 'Completed',
     size: 1920000,
@@ -162,12 +165,12 @@ const mockBackupsFallback: Backup[] = [
   },
   {
     id: '4',
-    name: 'Daily backup - 2024-01-16',
+    name: 'پشتیبان‌گیری روزانه - ۱۴۰۳/۰۹/۲۵',
     type: 'Scheduled',
     status: 'In Progress',
     size: 0,
     createdAt: new Date().toISOString(),
-    createdBy: 'system',
+    createdBy: 'سیستم',
     includesUsers: true,
     includesApps: true,
     includesSettings: true,
@@ -179,7 +182,9 @@ export default function TenantBackupsPage() {
   const { currentTenant } = useTenantStore();
   const tenantId = currentTenant?.id || '00000000-0000-0000-0000-000000000000';
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -207,26 +212,33 @@ export default function TenantBackupsPage() {
 
   useEffect(() => {
     if (tenantId) {
-      fetchBackups();
-      fetchSchedule();
+      fetchData();
     }
   }, [tenantId]);
+
+  const fetchData = async (isRefresh = false) => {
+    if (!tenantId) return;
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
+
+    try {
+      await Promise.all([fetchBackups(), fetchSchedule()]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   const fetchBackups = async () => {
     if (!tenantId) return;
 
-    setLoading(true);
     try {
-      // Fetch from real API
       const data = await tenantService.getBackups();
       setBackups(data || mockBackupsFallback);
     } catch (err: any) {
       setError(err?.message || t('common.failedToFetchBackups'));
       console.error('Error fetching backups:', err);
-      // Fallback to mock data
       setBackups(mockBackupsFallback);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -234,7 +246,6 @@ export default function TenantBackupsPage() {
     if (!tenantId) return;
 
     try {
-      // Fetch from real API
       const data = await tenantService.getBackupSchedule();
       const scheduleData = data || mockScheduleFallback;
 
@@ -245,7 +256,6 @@ export default function TenantBackupsPage() {
       setScheduleEnabled(scheduleData.enabled);
     } catch (err: any) {
       console.error('Error fetching schedule:', err);
-      // Fallback to mock data
       setSchedule(mockScheduleFallback);
       setScheduleFrequency(mockScheduleFallback.frequency);
       setScheduleTime(mockScheduleFallback.time);
@@ -254,610 +264,880 @@ export default function TenantBackupsPage() {
     }
   };
 
-  const handleCreateBackup = async () => {
+  const handleCreateBackup = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!tenantId || !backupName) {
-      setError('Please provide a backup name');
+      setError('لطفاً نام پشتیبان را وارد کنید');
       return;
     }
 
-    setLoading(true);
+    setSubmitting(true);
     setError('');
     setSuccess('');
 
     try {
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      setSuccess('Backup created successfully');
+      setSuccess('پشتیبان‌گیری با موفقیت ایجاد شد');
       setShowCreateModal(false);
       setBackupName('');
       fetchBackups();
     } catch (err) {
-      setError('Failed to create backup');
+      setError('خطا در ایجاد پشتیبان');
       console.error('Error creating backup:', err);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   const handleRestoreBackup = async () => {
     if (!tenantId || !selectedBackup) return;
 
-    setLoading(true);
+    setSubmitting(true);
     setError('');
     setSuccess('');
 
     try {
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      setSuccess('Backup restored successfully');
+      setSuccess('پشتیبان با موفقیت بازیابی شد');
       setShowRestoreModal(false);
       setSelectedBackup(null);
     } catch (err) {
-      setError('Failed to restore backup');
+      setError('خطا در بازیابی پشتیبان');
       console.error('Error restoring backup:', err);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   const handleVerifyBackup = async (backup: Backup) => {
     if (!tenantId) return;
 
-    setLoading(true);
+    setSubmitting(true);
     setError('');
     setSuccess('');
 
     try {
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      setSuccess('Backup verified successfully');
+      setSuccess('پشتیبان با موفقیت تأیید شد');
       fetchBackups();
     } catch (err) {
-      setError('Failed to verify backup');
+      setError('خطا در تأیید پشتیبان');
       console.error('Error verifying backup:', err);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   const handleDeleteBackup = async () => {
     if (!tenantId || !selectedBackup) return;
 
-    setLoading(true);
+    setSubmitting(true);
     setError('');
     setSuccess('');
 
     try {
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      setSuccess('Backup deleted successfully');
+      setSuccess('پشتیبان با موفقیت حذف شد');
       setShowDeleteConfirm(false);
       setSelectedBackup(null);
       fetchBackups();
     } catch (err) {
-      setError('Failed to delete backup');
+      setError('خطا در حذف پشتیبان');
       console.error('Error deleting backup:', err);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
-  const handleUpdateSchedule = async () => {
+  const handleUpdateSchedule = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!tenantId) return;
 
-    setLoading(true);
+    setSubmitting(true);
     setError('');
     setSuccess('');
 
     try {
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      setSuccess('Backup schedule updated successfully');
+      setSuccess('زمان‌بندی پشتیبان‌گیری با موفقیت بروزرسانی شد');
       setShowScheduleModal(false);
       fetchSchedule();
     } catch (err) {
-      setError('Failed to update schedule');
+      setError('خطا در بروزرسانی زمان‌بندی');
       console.error('Error updating schedule:', err);
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   const handleDownloadBackup = (backup: Backup) => {
-    // Simulate download
     const link = document.createElement('a');
     link.href = '#';
     link.download = `${backup.name}.backup`;
     link.click();
-    setSuccess('Backup download started');
+    setSuccess('دانلود پشتیبان شروع شد');
+    setTimeout(() => setSuccess(''), 3000);
   };
 
   const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return '۰ بایت';
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ['بایت', 'کیلوبایت', 'مگابایت', 'گیگابایت'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('fa-IR');
+  };
+
+  const formatDateTime = (dateString: string) => {
+    return new Date(dateString).toLocaleString('fa-IR');
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Completed':
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
       case 'Verified':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
       case 'In Progress':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
       case 'Failed':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-400';
     }
   };
 
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'Completed':
+        return <CheckCircle className="w-4 h-4" />;
+      case 'Verified':
+        return <ShieldCheck className="w-4 h-4" />;
+      case 'In Progress':
+        return <RefreshCw className="w-4 h-4 animate-spin" />;
+      case 'Failed':
+        return <XCircle className="w-4 h-4" />;
+      default:
+        return null;
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'Completed':
+        return 'تکمیل شده';
+      case 'Verified':
+        return 'تأیید شده';
+      case 'In Progress':
+        return 'در حال انجام';
+      case 'Failed':
+        return 'ناموفق';
+      default:
+        return status;
+    }
+  };
+
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case 'Manual':
+        return 'دستی';
+      case 'Scheduled':
+        return 'زمان‌بندی شده';
+      case 'Pre-Migration':
+        return 'پیش از مهاجرت';
+      default:
+        return type;
+    }
+  };
+
+  const getFrequencyLabel = (frequency: string) => {
+    switch (frequency) {
+      case 'Daily':
+        return 'روزانه';
+      case 'Weekly':
+        return 'هفتگی';
+      case 'Monthly':
+        return 'ماهانه';
+      default:
+        return frequency;
+    }
+  };
+
+  // Stats
+  const stats = {
+    total: backups.length,
+    completed: backups.filter(b => b.status === 'Completed' || b.status === 'Verified').length,
+    inProgress: backups.filter(b => b.status === 'In Progress').length,
+    totalSize: backups.reduce((acc, b) => acc + b.size, 0),
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Database className="w-6 h-6 text-blue-500" />
+            </div>
+          </div>
+          <p className="text-slate-600 dark:text-slate-400 font-medium">{t('common.loading', 'در حال بارگذاری...')}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-8 min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Header */}
-      <div className="mb-8">
+    <>
+      <Helmet>
+        <title>{t('tenant.backups.title', 'مدیریت پشتیبان‌ها')} | OneSign</title>
+      </Helmet>
+
+      <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 min-h-screen" dir="rtl">
+        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Backup Management
-            </h1>
-            <p className="text-gray-600 mt-2">
-              Create, manage, and restore tenant data backups
-            </p>
-          </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl font-semibold"
-          >
-            Create Manual Backup
-          </button>
-        </div>
-      </div>
-
-      {/* Success/Error Messages */}
-      {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-lg shadow-sm">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-6 py-4 rounded-lg shadow-sm">
-          {success}
-        </div>
-      )}
-
-      {/* Backup Schedule Card */}
-      {schedule && (
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6 mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">Backup Schedule</h2>
-            <button
-              onClick={() => setShowScheduleModal(true)}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+            <motion.h1
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3"
             >
-              Configure Schedule
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Frequency</label>
-              <p className="text-lg font-semibold text-gray-900">{schedule.frequency}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Time</label>
-              <p className="text-lg font-semibold text-gray-900">{schedule.time}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Retention</label>
-              <p className="text-lg font-semibold text-gray-900">{schedule.retention} days</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-500 mb-1">Status</label>
-              <span
-                className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${
-                  schedule.enabled
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-gray-100 text-gray-800'
-                }`}
-              >
-                {schedule.enabled ? 'Enabled' : 'Disabled'}
-              </span>
-            </div>
-          </div>
-
-          <div className="mt-4 pt-4 border-t flex items-center justify-between text-sm">
-            <div>
-              <span className="text-gray-500">Next run:</span>
-              <span className="ml-2 font-medium text-gray-900">
-                {new Date(schedule.nextRun).toLocaleString()}
-              </span>
-            </div>
-            {schedule.lastRun && (
-              <div>
-                <span className="text-gray-500">Last run:</span>
-                <span className="ml-2 font-medium text-gray-900">
-                  {new Date(schedule.lastRun).toLocaleString()}
-                </span>
+              <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl text-white">
+                <Database className="w-6 h-6" />
               </div>
-            )}
+              {t('tenant.backups.title', 'مدیریت پشتیبان‌ها')}
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-slate-500 dark:text-slate-400 mt-1"
+            >
+              {t('tenant.backups.subtitle', 'ایجاد، مدیریت و بازیابی پشتیبان‌های داده')}
+            </motion.p>
+          </div>
+          <div className="flex gap-3">
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => fetchData(true)}
+              disabled={refreshing}
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+            >
+              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+              {t('common.refresh', 'بروزرسانی')}
+            </motion.button>
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowCreateModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl"
+            >
+              <Plus className="w-4 h-4" />
+              {t('tenant.backups.createBackup', 'ایجاد پشتیبان')}
+            </motion.button>
           </div>
         </div>
-      )}
 
-      {/* Backups List */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
-          <h2 className="text-xl font-bold text-white">Backups</h2>
-          <p className="text-blue-100 text-sm mt-1">{backups.length} backups available</p>
+        {/* Alerts */}
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl flex items-center gap-2"
+            >
+              <AlertCircle className="w-5 h-5" />
+              {error}
+            </motion.div>
+          )}
+
+          {success && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-xl flex items-center gap-2"
+            >
+              <CheckCircle className="w-5 h-5" />
+              {success}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard
+            title="کل پشتیبان‌ها"
+            value={stats.total}
+            icon={<Database className="w-6 h-6" />}
+            color="blue"
+            delay={0}
+          />
+          <StatCard
+            title="پشتیبان‌های تکمیل شده"
+            value={stats.completed}
+            icon={<CheckCircle className="w-6 h-6" />}
+            color="green"
+            delay={1}
+          />
+          <StatCard
+            title="در حال انجام"
+            value={stats.inProgress}
+            icon={<RefreshCw className="w-6 h-6" />}
+            color="yellow"
+            delay={2}
+          />
+          <StatCard
+            title="حجم کل"
+            value={formatBytes(stats.totalSize)}
+            icon={<HardDrive className="w-6 h-6" />}
+            color="purple"
+            delay={3}
+          />
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Type
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Size
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Created
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {backups.length > 0 ? (
-                backups.map((backup) => (
-                  <tr key={backup.id} className="hover:bg-gray-50 transition-colors duration-150">
-                    <td className="px-6 py-4">
-                      <div>
-                        <div className="text-sm font-semibold text-gray-900">{backup.name}</div>
-                        <div className="text-xs text-gray-500">by {backup.createdBy}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-900">{backup.type}</span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(backup.status)}`}>
-                        {backup.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatBytes(backup.size)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{new Date(backup.createdAt).toLocaleDateString()}</div>
-                      <div className="text-xs text-gray-500">{new Date(backup.createdAt).toLocaleTimeString()}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <div className="flex items-center gap-2">
-                        {backup.status === 'Completed' && (
-                          <>
-                            <button
-                              onClick={() => {
-                                setSelectedBackup(backup);
-                                setShowRestoreModal(true);
-                              }}
-                              className="text-blue-600 hover:text-blue-800 font-medium"
-                            >
-                              Restore
-                            </button>
-                            <span className="text-gray-300">|</span>
-                            <button
-                              onClick={() => handleDownloadBackup(backup)}
-                              className="text-green-600 hover:text-green-800 font-medium"
-                            >
-                              Download
-                            </button>
-                            <span className="text-gray-300">|</span>
-                            {!backup.verifiedAt && (
-                              <>
-                                <button
-                                  onClick={() => handleVerifyBackup(backup)}
-                                  className="text-purple-600 hover:text-purple-800 font-medium"
-                                >
-                                  Verify
-                                </button>
-                                <span className="text-gray-300">|</span>
-                              </>
-                            )}
-                            <button
-                              onClick={() => {
-                                setSelectedBackup(backup);
-                                setShowDeleteConfirm(true);
-                              }}
-                              className="text-red-600 hover:text-red-800 font-medium"
-                            >
-                              Delete
-                            </button>
-                          </>
-                        )}
-                        {backup.status === 'In Progress' && (
-                          <span className="text-gray-500">Processing...</span>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
-                    {loading ? (
-                      <div>Loading backups...</div>
-                    ) : (
-                      <div>
-                        <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                        </svg>
-                        <p>No backups available</p>
-                        <p className="text-sm mt-2">Create your first backup to get started</p>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Create Backup Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full shadow-2xl">
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 rounded-t-xl">
-              <h2 className="text-xl font-bold text-white">Create Manual Backup</h2>
-            </div>
-
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Backup Name</label>
-                <input
-                  type="text"
-                  value={backupName}
-                  onChange={(e) => setBackupName(e.target.value)}
-                  placeholder="Enter backup name"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Include in Backup</label>
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={includeUsers}
-                      onChange={(e) => setIncludeUsers(e.target.checked)}
-                      className="rounded"
-                    />
-                    <span className="text-sm text-gray-700">Users</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={includeApps}
-                      onChange={(e) => setIncludeApps(e.target.checked)}
-                      className="rounded"
-                    />
-                    <span className="text-sm text-gray-700">Applications</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={includeSettings}
-                      onChange={(e) => setIncludeSettings(e.target.checked)}
-                      className="rounded"
-                    />
-                    <span className="text-sm text-gray-700">Settings</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gray-50 px-6 py-4 flex justify-end gap-2 border-t rounded-b-xl">
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+        {/* Backup Schedule Card */}
+        {schedule && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden"
+          >
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-blue-600" />
+                زمان‌بندی پشتیبان‌گیری
+              </h2>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowScheduleModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-all"
               >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreateBackup}
-                disabled={loading || !backupName}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
-              >
-                {loading ? 'Creating...' : 'Create Backup'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Restore Backup Modal */}
-      {showRestoreModal && selectedBackup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full shadow-2xl">
-            <div className="bg-gradient-to-r from-orange-600 to-red-600 px-6 py-4 rounded-t-xl">
-              <h2 className="text-xl font-bold text-white">Restore Backup</h2>
+                <Settings className="w-4 h-4" />
+                تنظیمات
+              </motion.button>
             </div>
 
             <div className="p-6">
-              <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg mb-4">
-                <p className="text-sm text-yellow-800">
-                  <strong>Warning:</strong> Restoring this backup will replace all current data. This action cannot be undone.
-                </p>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">تناوب</p>
+                  <p className="text-lg font-semibold text-slate-900 dark:text-white">{getFrequencyLabel(schedule.frequency)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">زمان</p>
+                  <p className="text-lg font-semibold text-slate-900 dark:text-white">{schedule.time}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">نگهداری</p>
+                  <p className="text-lg font-semibold text-slate-900 dark:text-white">{schedule.retention} روز</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">وضعیت</p>
+                  <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${
+                    schedule.enabled
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                      : 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-400'
+                  }`}>
+                    {schedule.enabled ? 'فعال' : 'غیرفعال'}
+                  </span>
+                </div>
               </div>
 
-              <div className="space-y-2">
+              <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-6 text-sm">
                 <div>
-                  <span className="text-sm text-gray-500">Backup Name:</span>
-                  <p className="font-semibold text-gray-900">{selectedBackup.name}</p>
+                  <span className="text-slate-500 dark:text-slate-400">اجرای بعدی:</span>
+                  <span className="mr-2 font-medium text-slate-900 dark:text-white">
+                    {formatDateTime(schedule.nextRun)}
+                  </span>
                 </div>
-                <div>
-                  <span className="text-sm text-gray-500">Created:</span>
-                  <p className="text-gray-900">{new Date(selectedBackup.createdAt).toLocaleString()}</p>
+                {schedule.lastRun && (
+                  <div>
+                    <span className="text-slate-500 dark:text-slate-400">آخرین اجرا:</span>
+                    <span className="mr-2 font-medium text-slate-900 dark:text-white">
+                      {formatDateTime(schedule.lastRun)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Backups List */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="space-y-4"
+        >
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <HardDrive className="w-5 h-5 text-blue-600" />
+            لیست پشتیبان‌ها
+          </h2>
+
+          {backups.length > 0 ? (
+            backups.map((backup, idx) => (
+              <motion.div
+                key={backup.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 hover:shadow-lg transition-all"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className={`p-2 rounded-lg ${
+                        backup.status === 'Completed' || backup.status === 'Verified'
+                          ? 'bg-green-100 dark:bg-green-900/30'
+                          : backup.status === 'In Progress'
+                          ? 'bg-yellow-100 dark:bg-yellow-900/30'
+                          : 'bg-red-100 dark:bg-red-900/30'
+                      }`}>
+                        <Database className={`w-5 h-5 ${
+                          backup.status === 'Completed' || backup.status === 'Verified'
+                            ? 'text-green-600 dark:text-green-400'
+                            : backup.status === 'In Progress'
+                            ? 'text-yellow-600 dark:text-yellow-400'
+                            : 'text-red-600 dark:text-red-400'
+                        }`} />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-slate-900 dark:text-white">
+                          {backup.name}
+                        </h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                          توسط {backup.createdBy}
+                        </p>
+                      </div>
+                      <span className={`flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full ${getStatusColor(backup.status)}`}>
+                        {getStatusIcon(backup.status)}
+                        {getStatusLabel(backup.status)}
+                      </span>
+                      <span className="px-3 py-1 text-xs font-medium rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300">
+                        {getTypeLabel(backup.type)}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+                      <div className="flex items-center gap-2">
+                        <HardDrive className="w-4 h-4 text-slate-400" />
+                        <div>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">حجم</p>
+                          <p className="text-sm font-medium text-slate-900 dark:text-white">
+                            {formatBytes(backup.size)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-slate-400" />
+                        <div>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">ایجاد شده</p>
+                          <p className="text-sm font-medium text-slate-900 dark:text-white">
+                            {formatDate(backup.createdAt)}
+                          </p>
+                        </div>
+                      </div>
+                      {backup.expiresAt && (
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-slate-400" />
+                          <div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">انقضا</p>
+                            <p className="text-sm font-medium text-slate-900 dark:text-white">
+                              {formatDate(backup.expiresAt)}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2">
+                        <Shield className="w-4 h-4 text-slate-400" />
+                        <div>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">شامل</p>
+                          <p className="text-sm font-medium text-slate-900 dark:text-white">
+                            {[
+                              backup.includesUsers && 'کاربران',
+                              backup.includesApps && 'اپ‌ها',
+                              backup.includesSettings && 'تنظیمات',
+                            ].filter(Boolean).join('، ')}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {(backup.status === 'Completed' || backup.status === 'Verified') && (
+                    <div className="flex items-center gap-2">
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => {
+                          setSelectedBackup(backup);
+                          setShowRestoreModal(true);
+                        }}
+                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all"
+                        title="بازیابی"
+                      >
+                        <RotateCcw className="w-5 h-5" />
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => handleDownloadBackup(backup)}
+                        className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-all"
+                        title="دانلود"
+                      >
+                        <Download className="w-5 h-5" />
+                      </motion.button>
+                      {!backup.verifiedAt && (
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => handleVerifyBackup(backup)}
+                          className="p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-lg transition-all"
+                          title="تأیید"
+                        >
+                          <ShieldCheck className="w-5 h-5" />
+                        </motion.button>
+                      )}
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => {
+                          setSelectedBackup(backup);
+                          setShowDeleteConfirm(true);
+                        }}
+                        className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all"
+                        title="حذف"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </motion.button>
+                    </div>
+                  )}
+
+                  {backup.status === 'In Progress' && (
+                    <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      در حال پردازش...
+                    </div>
+                  )}
                 </div>
+              </motion.div>
+            ))
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-12 text-center"
+            >
+              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Database className="w-8 h-8 text-blue-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                پشتیبانی یافت نشد
+              </h3>
+              <p className="text-slate-500 dark:text-slate-400 mb-4">
+                هنوز هیچ پشتیبانی ایجاد نشده است
+              </p>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowCreateModal(true)}
+                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all"
+              >
+                ایجاد اولین پشتیبان
+              </motion.button>
+            </motion.div>
+          )}
+        </motion.div>
+
+        {/* Create Backup Modal */}
+        <Modal
+          isOpen={showCreateModal}
+          onClose={() => {
+            setShowCreateModal(false);
+            setBackupName('');
+          }}
+          title="ایجاد پشتیبان دستی"
+          size="md"
+        >
+          <form onSubmit={handleCreateBackup} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                نام پشتیبان <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={backupName}
+                onChange={(e) => setBackupName(e.target.value)}
+                placeholder="یک نام توصیفی برای پشتیبان وارد کنید"
+                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                محتویات پشتیبان
+              </label>
+              <div className="space-y-3">
+                <label className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-all">
+                  <input
+                    type="checkbox"
+                    checked={includeUsers}
+                    onChange={(e) => setIncludeUsers(e.target.checked)}
+                    className="rounded text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-slate-700 dark:text-slate-300">کاربران</span>
+                </label>
+                <label className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-all">
+                  <input
+                    type="checkbox"
+                    checked={includeApps}
+                    onChange={(e) => setIncludeApps(e.target.checked)}
+                    className="rounded text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-slate-700 dark:text-slate-300">اپلیکیشن‌ها</span>
+                </label>
+                <label className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-all">
+                  <input
+                    type="checkbox"
+                    checked={includeSettings}
+                    onChange={(e) => setIncludeSettings(e.target.checked)}
+                    className="rounded text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-slate-700 dark:text-slate-300">تنظیمات</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="flex gap-3 justify-end pt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCreateModal(false);
+                  setBackupName('');
+                }}
+                className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-slate-700 dark:text-slate-300"
+              >
+                انصراف
+              </button>
+              <button
+                type="submit"
+                disabled={submitting || !backupName}
+                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50"
+              >
+                {submitting ? 'در حال ایجاد...' : 'ایجاد پشتیبان'}
+              </button>
+            </div>
+          </form>
+        </Modal>
+
+        {/* Restore Backup Modal */}
+        <Modal
+          isOpen={showRestoreModal}
+          onClose={() => {
+            setShowRestoreModal(false);
+            setSelectedBackup(null);
+          }}
+          title="بازیابی پشتیبان"
+          size="md"
+        >
+          <div className="space-y-4">
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4">
+              <div className="flex gap-3">
+                <AlertCircle className="w-6 h-6 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
                 <div>
-                  <span className="text-sm text-gray-500">Size:</span>
-                  <p className="text-gray-900">{formatBytes(selectedBackup.size)}</p>
+                  <p className="font-medium text-yellow-800 dark:text-yellow-300 mb-1">هشدار</p>
+                  <p className="text-sm text-yellow-700 dark:text-yellow-400">
+                    بازیابی این پشتیبان تمام داده‌های فعلی را جایگزین می‌کند. این عمل غیرقابل بازگشت است.
+                  </p>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gray-50 px-6 py-4 flex justify-end gap-2 border-t rounded-b-xl">
+            {selectedBackup && (
+              <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4 space-y-3">
+                <div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">نام پشتیبان</p>
+                  <p className="font-semibold text-slate-900 dark:text-white">{selectedBackup.name}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">تاریخ ایجاد</p>
+                  <p className="text-slate-900 dark:text-white">{formatDateTime(selectedBackup.createdAt)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">حجم</p>
+                  <p className="text-slate-900 dark:text-white">{formatBytes(selectedBackup.size)}</p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-3 justify-end pt-4">
               <button
                 onClick={() => {
                   setShowRestoreModal(false);
                   setSelectedBackup(null);
                 }}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+                className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-slate-700 dark:text-slate-300"
               >
-                Cancel
+                انصراف
               </button>
               <button
                 onClick={handleRestoreBackup}
-                disabled={loading}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+                disabled={submitting}
+                className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all disabled:opacity-50"
               >
-                {loading ? 'Restoring...' : 'Restore Backup'}
+                {submitting ? 'در حال بازیابی...' : 'بازیابی پشتیبان'}
               </button>
             </div>
           </div>
-        </div>
-      )}
+        </Modal>
 
-      {/* Schedule Configuration Modal */}
-      {showScheduleModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full shadow-2xl">
-            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4 rounded-t-xl">
-              <h2 className="text-xl font-bold text-white">Configure Backup Schedule</h2>
+        {/* Schedule Configuration Modal */}
+        <Modal
+          isOpen={showScheduleModal}
+          onClose={() => setShowScheduleModal(false)}
+          title="تنظیمات زمان‌بندی پشتیبان‌گیری"
+          size="md"
+        >
+          <form onSubmit={handleUpdateSchedule} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                تناوب
+              </label>
+              <select
+                value={scheduleFrequency}
+                onChange={(e) => setScheduleFrequency(e.target.value as any)}
+                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="Daily">روزانه</option>
+                <option value="Weekly">هفتگی</option>
+                <option value="Monthly">ماهانه</option>
+              </select>
             </div>
 
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Frequency</label>
-                <select
-                  value={scheduleFrequency}
-                  onChange={(e) => setScheduleFrequency(e.target.value as any)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                >
-                  <option value="Daily">Daily</option>
-                  <option value="Weekly">Weekly</option>
-                  <option value="Monthly">Monthly</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Time</label>
-                <input
-                  type="time"
-                  value={scheduleTime}
-                  onChange={(e) => setScheduleTime(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Retention (days)</label>
-                <input
-                  type="number"
-                  value={scheduleRetention}
-                  onChange={(e) => setScheduleRetention(parseInt(e.target.value))}
-                  min="1"
-                  max="365"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                />
-              </div>
-
-              <div>
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={scheduleEnabled}
-                    onChange={(e) => setScheduleEnabled(e.target.checked)}
-                    className="rounded"
-                  />
-                  <span className="text-sm text-gray-700">Enable automated backups</span>
-                </label>
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                زمان اجرا
+              </label>
+              <input
+                type="time"
+                value={scheduleTime}
+                onChange={(e) => setScheduleTime(e.target.value)}
+                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+              />
             </div>
 
-            <div className="bg-gray-50 px-6 py-4 flex justify-end gap-2 border-t rounded-b-xl">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                مدت نگهداری (روز)
+              </label>
+              <input
+                type="number"
+                value={scheduleRetention}
+                onChange={(e) => setScheduleRetention(parseInt(e.target.value))}
+                min="1"
+                max="365"
+                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-all">
+                <input
+                  type="checkbox"
+                  checked={scheduleEnabled}
+                  onChange={(e) => setScheduleEnabled(e.target.checked)}
+                  className="rounded text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-sm text-slate-700 dark:text-slate-300">فعال‌سازی پشتیبان‌گیری خودکار</span>
+              </label>
+            </div>
+
+            <div className="flex gap-3 justify-end pt-4">
               <button
+                type="button"
                 onClick={() => setShowScheduleModal(false)}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+                className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-slate-700 dark:text-slate-300"
               >
-                Cancel
+                انصراف
               </button>
               <button
-                onClick={handleUpdateSchedule}
-                disabled={loading}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                type="submit"
+                disabled={submitting}
+                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50"
               >
-                {loading ? 'Saving...' : 'Save Schedule'}
+                {submitting ? 'در حال ذخیره...' : 'ذخیره تنظیمات'}
               </button>
             </div>
-          </div>
-        </div>
-      )}
+          </form>
+        </Modal>
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && selectedBackup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-md w-full shadow-2xl">
-            <div className="bg-gradient-to-r from-red-600 to-pink-600 px-6 py-4 rounded-t-xl">
-              <h2 className="text-xl font-bold text-white">Delete Backup</h2>
+        {/* Delete Confirmation Modal */}
+        <Modal
+          isOpen={showDeleteConfirm}
+          onClose={() => {
+            setShowDeleteConfirm(false);
+            setSelectedBackup(null);
+          }}
+          title="حذف پشتیبان"
+          size="sm"
+        >
+          <div className="space-y-4">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
+              <div className="flex gap-3">
+                <XCircle className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0" />
+                <div>
+                  <p className="font-medium text-red-800 dark:text-red-300 mb-1">
+                    آیا از حذف این پشتیبان مطمئن هستید؟
+                  </p>
+                  <p className="text-sm text-red-700 dark:text-red-400">
+                    این عمل غیرقابل بازگشت است.
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <div className="p-6">
-              <p className="text-gray-700 mb-4">
-                Are you sure you want to delete the backup "{selectedBackup.name}"? This action cannot be undone.
-              </p>
-            </div>
+            {selectedBackup && (
+              <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
+                <p className="text-sm text-slate-500 dark:text-slate-400">پشتیبان انتخاب شده:</p>
+                <p className="font-medium text-slate-900 dark:text-white">{selectedBackup.name}</p>
+              </div>
+            )}
 
-            <div className="bg-gray-50 px-6 py-4 flex justify-end gap-2 border-t rounded-b-xl">
+            <div className="flex gap-3 justify-end">
               <button
                 onClick={() => {
                   setShowDeleteConfirm(false);
                   setSelectedBackup(null);
                 }}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+                className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-slate-700 dark:text-slate-300"
               >
-                Cancel
+                انصراف
               </button>
               <button
                 onClick={handleDeleteBackup}
-                disabled={loading}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+                disabled={submitting}
+                className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all disabled:opacity-50"
               >
-                {loading ? 'Deleting...' : 'Delete Backup'}
+                {submitting ? 'در حال حذف...' : 'حذف پشتیبان'}
               </button>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        </Modal>
+      </div>
+    </>
   );
 }
