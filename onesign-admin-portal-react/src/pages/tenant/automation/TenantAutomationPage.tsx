@@ -8,8 +8,34 @@ import {
   EVENT_TYPES,
   ACTION_TYPES,
 } from '@/lib/api/automation';
+import { Helmet } from 'react-helmet-async';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Workflow,
+  Plus,
+  RefreshCw,
+  Play,
+  Pause,
+  Trash2,
+  Eye,
+  Copy,
+  History,
+  Zap,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  Clock,
+  Settings,
+  FileText,
+  Activity,
+  X,
+  ChevronRight,
+  ChevronLeft,
+  ToggleLeft,
+  ToggleRight
+} from 'lucide-react';
+import Modal from '@/components/common/Modal';
 
-// Define missing types
 interface AutomationExecutionDto {
   id: string;
   workflowId: string;
@@ -28,7 +54,6 @@ interface AvailableTrigger {
   description: string;
   samplePayload: string;
 }
-import { Helmet } from 'react-helmet-async';
 
 interface WorkflowExecution {
   id: string;
@@ -60,6 +85,32 @@ interface ExecutionDetail {
   }[];
 }
 
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ElementType;
+  color: string;
+  delay?: number;
+}
+
+const StatCard = ({ title, value, icon: Icon, color, delay = 0 }: StatCardProps) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: delay * 0.1 }}
+    className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 hover:shadow-lg transition-all"
+  >
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-slate-600 dark:text-slate-400">{title}</p>
+        <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{value}</p>
+      </div>
+      <div className={`p-3 rounded-xl ${color}`}>
+        <Icon className="w-6 h-6 text-white" />
+      </div>
+    </div>
+  </motion.div>
+);
 
 type Tab = 'workflows' | 'executionHistory' | 'templates' | 'triggers';
 
@@ -93,6 +144,13 @@ export default function TenantAutomationPage() {
     conditions: [] as { expressionType: string; expression: string; order: number }[],
     actions: [{ actionType: ACTION_TYPES[0], order: 0, configJson: '{}', isCritical: false }],
   });
+
+  const tabs = [
+    { id: 'workflows', label: t('automation.tabs.workflows'), icon: Workflow },
+    { id: 'executionHistory', label: 'Execution History', icon: History },
+    { id: 'templates', label: t('automation.tabs.templates'), icon: FileText },
+    { id: 'triggers', label: 'Available Triggers', icon: Zap },
+  ];
 
   useEffect(() => {
     const contextTenantId = getTenantId();
@@ -246,521 +304,827 @@ export default function TenantAutomationPage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusStyles = (status: string) => {
     const statusLower = status.toLowerCase();
-    if (statusLower === 'succeeded' || statusLower === 'success') return 'bg-green-100 text-green-800';
-    if (statusLower === 'failed' || statusLower === 'failure') return 'bg-red-100 text-red-800';
-    if (statusLower === 'running' || statusLower === 'inprogress') return 'bg-blue-100 text-blue-800';
-    if (statusLower === 'skipped') return 'bg-gray-100 text-gray-800';
-    return 'bg-yellow-100 text-yellow-800';
+    if (statusLower === 'succeeded' || statusLower === 'success')
+      return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400';
+    if (statusLower === 'failed' || statusLower === 'failure')
+      return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+    if (statusLower === 'running' || statusLower === 'inprogress')
+      return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
+    if (statusLower === 'skipped')
+      return 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300';
+    return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400';
   };
 
-  const getSeverityColor = (severity: string) => {
+  const getStatusIcon = (status: string) => {
+    const statusLower = status.toLowerCase();
+    if (statusLower === 'succeeded' || statusLower === 'success') return <CheckCircle className="w-4 h-4" />;
+    if (statusLower === 'failed' || statusLower === 'failure') return <XCircle className="w-4 h-4" />;
+    if (statusLower === 'running' || statusLower === 'inprogress') return <Activity className="w-4 h-4" />;
+    return <Clock className="w-4 h-4" />;
+  };
+
+  const getSeverityStyles = (severity: string) => {
     switch (severity) {
-      case 'Critical': return 'bg-red-100 text-red-800';
-      case 'Warning': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-blue-100 text-blue-800';
+      case 'Critical': return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+      case 'Warning': return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400';
+      default: return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
     }
   };
 
+  // Calculate stats
+  const totalWorkflows = workflows.length;
+  const activeWorkflows = workflows.filter(w => w.isEnabled).length;
+  const successfulExecutions = executions.filter(e => e.status.toLowerCase() === 'succeeded' || e.status.toLowerCase() === 'success').length;
+  const failedExecutions = executions.filter(e => e.status.toLowerCase() === 'failed' || e.status.toLowerCase() === 'failure').length;
+
   if (loading && !workflows.length && !executions.length && !templates.length) {
-    return <div className="p-8">{t('common.loading')}</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 p-8">
+        <div className="flex items-center justify-center h-64">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          >
+            <Workflow className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+          </motion.div>
+          <span className="ml-3 text-slate-600 dark:text-slate-400">{t('common.loading')}</span>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">{t('automation.title')}</h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+      <Helmet>
+        <title>Automation - OneSign</title>
+      </Helmet>
+
+      <div className="p-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8"
+        >
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg">
+              <Workflow className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+                {t('automation.title')}
+              </h1>
+              <p className="text-slate-600 dark:text-slate-400 mt-1">
+                Automate workflows and event-driven actions
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={fetchData}
+              className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </motion.button>
+            {activeTab === 'workflows' && (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowCreateModal(true)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-500/25"
+              >
+                <Plus className="w-4 h-4" />
+                {t('automation.createWorkflow')}
+              </motion.button>
+            )}
+          </div>
+        </motion.div>
+
+        {/* Alerts */}
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl flex items-center gap-3"
+            >
+              <XCircle className="w-5 h-5 flex-shrink-0" />
+              {error}
+              <button onClick={() => setError('')} className="ml-auto">
+                <X className="w-4 h-4" />
+              </button>
+            </motion.div>
+          )}
+
+          {success && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-6 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 px-4 py-3 rounded-xl flex items-center gap-3"
+            >
+              <CheckCircle className="w-5 h-5 flex-shrink-0" />
+              {success}
+              <button onClick={() => setSuccess('')} className="ml-auto">
+                <X className="w-4 h-4" />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatCard
+            title="Total Workflows"
+            value={totalWorkflows}
+            icon={Workflow}
+            color="bg-gradient-to-br from-indigo-500 to-purple-600"
+            delay={0}
+          />
+          <StatCard
+            title="Active Workflows"
+            value={activeWorkflows}
+            icon={Activity}
+            color="bg-gradient-to-br from-emerald-500 to-teal-600"
+            delay={1}
+          />
+          <StatCard
+            title="Successful Runs"
+            value={successfulExecutions}
+            icon={CheckCircle}
+            color="bg-gradient-to-br from-green-500 to-emerald-600"
+            delay={2}
+          />
+          <StatCard
+            title="Failed Runs"
+            value={failedExecutions}
+            icon={XCircle}
+            color="bg-gradient-to-br from-red-500 to-rose-600"
+            delay={3}
+          />
+        </div>
+
+        {/* Tabs */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="mb-8"
+        >
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-1.5 inline-flex gap-1 overflow-x-auto">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as Tab)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        {/* Workflows Tab */}
         {activeTab === 'workflows' && (
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden"
           >
-            {t('automation.createWorkflow')}
-          </button>
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <Workflow className="w-5 h-5 text-indigo-500" />
+                Automation Workflows
+              </h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                <thead className="bg-slate-50 dark:bg-slate-900/50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">{t('automation.name')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">{t('automation.triggers')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">{t('automation.severity')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">{t('automation.status')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">{t('automation.actions')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                  {workflows.map((workflow, index) => (
+                    <motion.tr
+                      key={workflow.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+                            <Workflow className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-slate-900 dark:text-white">{workflow.name}</p>
+                            {workflow.description && (
+                              <p className="text-xs text-slate-500 dark:text-slate-400">{workflow.description}</p>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <Zap className="w-4 h-4 text-amber-500" />
+                          <span className="text-sm text-slate-600 dark:text-slate-400">
+                            {workflow.triggers.map(t => t.type).join(', ')}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium ${getSeverityStyles(workflow.severity)}`}>
+                          <AlertTriangle className="w-3 h-3" />
+                          {workflow.severity}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <button
+                          onClick={() => handleToggleWorkflow(workflow)}
+                          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                            workflow.isEnabled
+                              ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/50'
+                              : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600'
+                          }`}
+                        >
+                          {workflow.isEnabled ? (
+                            <>
+                              <ToggleRight className="w-4 h-4" />
+                              {t('automation.enabled')}
+                            </>
+                          ) : (
+                            <>
+                              <ToggleLeft className="w-4 h-4" />
+                              {t('automation.disabled')}
+                            </>
+                          )}
+                        </button>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-1">
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => handleTestWorkflow(workflow.id)}
+                            className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-colors"
+                            title="Test Workflow"
+                          >
+                            <Play className="w-4 h-4" />
+                          </motion.button>
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => {
+                              setSelectedWorkflowId(workflow.id);
+                              fetchWorkflowExecutions(workflow.id);
+                            }}
+                            className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                            title="View Executions"
+                          >
+                            <History className="w-4 h-4" />
+                          </motion.button>
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => handleCreateTemplate(workflow)}
+                            className="p-2 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
+                            title="Save as Template"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </motion.button>
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => handleDeleteWorkflow(workflow.id)}
+                            className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </motion.button>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {workflows.length === 0 && (
+              <div className="text-center py-12">
+                <div className="p-4 bg-slate-100 dark:bg-slate-700 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                  <Workflow className="w-8 h-8 text-slate-400" />
+                </div>
+                <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
+                  {t('automation.noWorkflows')}
+                </h3>
+                <p className="text-slate-600 dark:text-slate-400 mb-4">
+                  Create your first automation workflow to get started
+                </p>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowCreateModal(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  {t('automation.createWorkflow')}
+                </motion.button>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* Execution History Tab */}
+        {activeTab === 'executionHistory' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden"
+          >
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <History className="w-5 h-5 text-indigo-500" />
+                Execution History
+              </h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                <thead className="bg-slate-50 dark:bg-slate-900/50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">{t('automation.workflow')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">{t('automation.eventType')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">{t('automation.startedAt')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">{t('automation.status')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">{t('automation.actionsRun')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                  {executions.map((execution, index) => (
+                    <motion.tr
+                      key={execution.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                    >
+                      <td className="px-6 py-4">
+                        <span className="text-sm font-medium text-slate-900 dark:text-white">
+                          {execution.workflowName || execution.workflowId}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <Zap className="w-4 h-4 text-amber-500" />
+                          <span className="text-sm text-slate-600 dark:text-slate-400">{execution.type}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                        {new Date(execution.startedAt).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium ${getStatusStyles(execution.status)}`}>
+                          {getStatusIcon(execution.status)}
+                          {execution.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-slate-600 dark:text-slate-400">
+                            {execution.actionsExecutedCount} / {execution.actionsExecutedCount + execution.actionsFailedCount}
+                          </span>
+                          {execution.actionsFailedCount > 0 && (
+                            <span className="text-xs text-red-600 dark:text-red-400">
+                              ({execution.actionsFailedCount} failed)
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {executions.length === 0 && (
+              <div className="text-center py-12">
+                <History className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                <p className="text-slate-600 dark:text-slate-400">{t('automation.noExecutions')}</p>
+              </div>
+            )}
+
+            {totalExecutions > 20 && (
+              <div className="px-6 py-4 flex justify-between items-center border-t border-slate-200 dark:border-slate-700">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setExecutionPage(p => Math.max(1, p - 1))}
+                  disabled={executionPage === 1}
+                  className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl disabled:opacity-50 transition-all"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  {t('common.previous')}
+                </motion.button>
+                <span className="text-sm text-slate-600 dark:text-slate-400">
+                  {t('common.page')} {executionPage} / {Math.ceil(totalExecutions / 20)}
+                </span>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setExecutionPage(p => p + 1)}
+                  disabled={executionPage >= Math.ceil(totalExecutions / 20)}
+                  className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl disabled:opacity-50 transition-all"
+                >
+                  {t('common.next')}
+                  <ChevronRight className="w-4 h-4" />
+                </motion.button>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* Templates Tab */}
+        {activeTab === 'templates' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {templates.map((template, index) => (
+              <motion.div
+                key={template.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 hover:shadow-lg transition-all"
+              >
+                <div className="flex items-start gap-3 mb-4">
+                  <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                    <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{template.name}</h3>
+                    {template.description && (
+                      <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{template.description}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium ${getSeverityStyles(template.severity)}`}>
+                    <AlertTriangle className="w-3 h-3" />
+                    {template.severity}
+                  </span>
+                </div>
+                <div className="text-sm text-slate-600 dark:text-slate-400 mb-4 flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-amber-500" />
+                  {template.triggers.map(t => t.type).join(', ')}
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleCloneTemplate(template)}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-500/25"
+                >
+                  <Copy className="w-4 h-4" />
+                  {t('automation.useTemplate')}
+                </motion.button>
+              </motion.div>
+            ))}
+
+            {templates.length === 0 && (
+              <div className="col-span-3 text-center py-12 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                <FileText className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                <p className="text-slate-600 dark:text-slate-400">{t('automation.noTemplates')}</p>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* Triggers Tab */}
+        {activeTab === 'triggers' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {availableTriggers.map((trigger, index) => (
+              <motion.div
+                key={trigger.eventType}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 hover:shadow-lg transition-all"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+                      <Zap className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{trigger.eventType}</h3>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400">
+                    {trigger.sourceModule}
+                  </span>
+                </div>
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{trigger.description}</p>
+                <div className="mb-4">
+                  <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">Sample Payload:</h4>
+                  <pre className="text-xs bg-slate-50 dark:bg-slate-700/50 p-3 rounded-xl overflow-x-auto text-slate-600 dark:text-slate-400">
+                    {trigger.samplePayload}
+                  </pre>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    setNewWorkflow({
+                      ...newWorkflow,
+                      triggers: [{ eventType: trigger.eventType, sourceModule: trigger.sourceModule }]
+                    });
+                    setShowCreateModal(true);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-500/25"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create Workflow
+                </motion.button>
+              </motion.div>
+            ))}
+
+            {availableTriggers.length === 0 && (
+              <div className="col-span-3 text-center py-12 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                <Zap className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                <p className="text-slate-600 dark:text-slate-400">No triggers available</p>
+              </div>
+            )}
+          </motion.div>
         )}
       </div>
 
-      {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>
-      )}
-      {success && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">{success}</div>
-      )}
-
-      <div className="mb-6 border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
-          {(['workflows', 'executionHistory', 'templates', 'triggers'] as Tab[]).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === tab
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              {tab === 'executionHistory' ? 'Execution History' : tab === 'triggers' ? 'Available Triggers' : t(`automation.tabs.${tab}`)}
-            </button>
-          ))}
-        </nav>
-      </div>
-
-      {activeTab === 'workflows' && (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+      {/* Workflow Executions Modal */}
+      <Modal
+        isOpen={selectedWorkflowId !== '' && workflowExecutions.length > 0}
+        onClose={() => {
+          setSelectedWorkflowId('');
+          setWorkflowExecutions([]);
+        }}
+        title="Workflow Executions"
+        size="xl"
+      >
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+            <thead className="bg-slate-50 dark:bg-slate-900/50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('automation.name')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('automation.triggers')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('automation.severity')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('automation.status')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('automation.actions')}</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">Started At</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">Event Type</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase"></th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {workflows.map((workflow) => (
-                <tr key={workflow.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{workflow.name}</div>
-                    {workflow.description && (
-                      <div className="text-sm text-gray-500">{workflow.description}</div>
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+              {workflowExecutions.map((exec) => (
+                <tr key={exec.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                  <td className="px-4 py-3 text-sm text-slate-900 dark:text-white">
+                    {new Date(exec.startedAt).toLocaleString()}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">{exec.type}</td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium ${getStatusStyles(exec.status)}`}>
+                      {getStatusIcon(exec.status)}
+                      {exec.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
+                    {exec.actionsExecutedCount} / {exec.actionsExecutedCount + exec.actionsFailedCount}
+                    {exec.actionsFailedCount > 0 && (
+                      <span className="text-red-600 dark:text-red-400 ml-1">({exec.actionsFailedCount} failed)</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {workflow.triggers.map(t => t.type).join(', ')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 rounded text-xs ${getSeverityColor(workflow.severity)}`}>
-                      {workflow.severity}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 rounded text-xs ${workflow.isEnabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                      {workflow.isEnabled ? t('automation.enabled') : t('automation.disabled')}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        onClick={() => handleToggleWorkflow(workflow)}
-                        className="text-indigo-600 hover:text-indigo-900"
-                      >
-                        {workflow.isEnabled ? t('automation.disable') : t('automation.enable')}
-                      </button>
-                      <button
-                        onClick={() => handleTestWorkflow(workflow.id)}
-                        className="text-green-600 hover:text-green-900"
-                        title="Test Workflow"
-                      >
-                        Test
-                      </button>
-                      <button
-                        onClick={() => {
-                          setSelectedWorkflowId(workflow.id);
-                          fetchWorkflowExecutions(workflow.id);
-                        }}
-                        className="text-blue-600 hover:text-blue-900"
-                        title={t('common.viewExecutions')}
-                      >
-                        Executions
-                      </button>
-                      <button
-                        onClick={() => handleCreateTemplate(workflow)}
-                        className="text-purple-600 hover:text-purple-900"
-                        title={t('common.saveAsTemplate')}
-                      >
-                        Template
-                      </button>
-                      <button
-                        onClick={() => handleDeleteWorkflow(workflow.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        {t('common.delete')}
-                      </button>
-                    </div>
+                  <td className="px-4 py-3">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => fetchExecutionDetail(exec.workflowId, exec.id)}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
+                    >
+                      <Eye className="w-4 h-4" />
+                      Details
+                    </motion.button>
                   </td>
                 </tr>
               ))}
-              {workflows.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                    {t('automation.noWorkflows')}
-                  </td>
-                </tr>
-              )}
             </tbody>
           </table>
         </div>
-      )}
+      </Modal>
 
-      {activeTab === 'executionHistory' && (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('automation.workflow')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('automation.eventType')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('automation.startedAt')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('automation.status')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('automation.actionsRun')}</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {executions.map((execution) => (
-                <tr key={execution.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {execution.workflowName || execution.workflowId}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {execution.type}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(execution.startedAt).toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 rounded text-xs ${getStatusColor(execution.status)}`}>
-                      {execution.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {execution.actionsExecutedCount} / {execution.actionsExecutedCount + execution.actionsFailedCount}
-                    {execution.actionsFailedCount > 0 && (
-                      <span className="text-red-600 ml-1">({execution.actionsFailedCount} failed)</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {executions.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                    {t('automation.noExecutions')}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-          {totalExecutions > 20 && (
-            <div className="px-6 py-4 flex justify-between items-center border-t">
-              <button
-                onClick={() => setExecutionPage(p => Math.max(1, p - 1))}
-                disabled={executionPage === 1}
-                className="px-3 py-1 border rounded disabled:opacity-50"
-              >
-                {t('common.previous')}
-              </button>
-              <span className="text-sm text-gray-500">
-                {t('common.page')} {executionPage} / {Math.ceil(totalExecutions / 20)}
-              </span>
-              <button
-                onClick={() => setExecutionPage(p => p + 1)}
-                disabled={executionPage >= Math.ceil(totalExecutions / 20)}
-                className="px-3 py-1 border rounded disabled:opacity-50"
-              >
-                {t('common.next')}
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {activeTab === 'templates' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {templates.map((template) => (
-            <div key={template.id} className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">{template.name}</h3>
-              {template.description && (
-                <p className="text-sm text-gray-500 mb-4">{template.description}</p>
-              )}
-              <div className="mb-4">
-                <span className={`px-2 py-1 rounded text-xs ${getSeverityColor(template.severity)}`}>
-                  {template.severity}
+      {/* Execution Detail Modal */}
+      <Modal
+        isOpen={showExecutionDetail && !!executionDetail}
+        onClose={() => {
+          setShowExecutionDetail(false);
+          setExecutionDetail(null);
+        }}
+        title="Execution Details"
+        size="xl"
+      >
+        {executionDetail && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase mb-1">Workflow</p>
+                <p className="text-sm font-semibold text-slate-900 dark:text-white">{executionDetail.workflowName}</p>
+              </div>
+              <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase mb-1">Status</p>
+                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium ${getStatusStyles(executionDetail.status)}`}>
+                  {getStatusIcon(executionDetail.status)}
+                  {executionDetail.status}
                 </span>
               </div>
-              <div className="text-sm text-gray-500 mb-4">
-                <strong>{t('automation.triggers')}:</strong> {template.triggers.map(t => t.type).join(', ')}
+              <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase mb-1">Event Type</p>
+                <p className="text-sm font-semibold text-slate-900 dark:text-white">{executionDetail.type}</p>
               </div>
-              <button
-                onClick={() => handleCloneTemplate(template)}
-                className="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-              >
-                {t('automation.useTemplate')}
-              </button>
+              <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase mb-1">Started At</p>
+                <p className="text-sm font-semibold text-slate-900 dark:text-white">{new Date(executionDetail.startedAt).toLocaleString()}</p>
+              </div>
             </div>
-          ))}
-          {templates.length === 0 && (
-            <div className="col-span-3 text-center text-gray-500 py-8">
-              {t('automation.noTemplates')}
-            </div>
-          )}
-        </div>
-      )}
 
-      {activeTab === 'triggers' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {availableTriggers.map((trigger) => (
-            <div key={trigger.eventType} className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-start justify-between mb-3">
-                <h3 className="text-lg font-medium text-gray-900">{trigger.eventType}</h3>
-                <span className="px-2 py-1 rounded text-xs bg-indigo-100 text-indigo-800">
-                  {trigger.sourceModule}
-                </span>
-              </div>
-              <p className="text-sm text-gray-600 mb-4">{trigger.description}</p>
-              <div className="mb-4">
-                <h4 className="text-xs font-semibold text-gray-700 mb-2">Sample Payload:</h4>
-                <pre className="text-xs bg-gray-50 p-2 rounded overflow-x-auto">
-                  {trigger.samplePayload}
-                </pre>
-              </div>
-              <button
-                onClick={() => {
-                  setNewWorkflow({
-                    ...newWorkflow,
-                    triggers: [{ eventType: trigger.eventType, sourceModule: trigger.sourceModule }]
-                  });
-                  setShowCreateModal(true);
-                }}
-                className="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-              >
-                Create Workflow with this Trigger
-              </button>
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-2">Event Payload</h3>
+              <pre className="text-xs bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 p-4 rounded-xl overflow-x-auto text-slate-700 dark:text-slate-300">
+                {executionDetail.eventPayload}
+              </pre>
             </div>
-          ))}
-          {availableTriggers.length === 0 && (
-            <div className="col-span-3 text-center text-gray-500 py-8">
-              No triggers available
-            </div>
-          )}
-        </div>
-      )}
 
-      {selectedWorkflowId && workflowExecutions.length > 0 && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Workflow Executions</h2>
-              <button
-                onClick={() => {
-                  setSelectedWorkflowId('');
-                  setWorkflowExecutions([]);
-                }}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Started At</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Event Type</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase"></th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {workflowExecutions.map((exec) => (
-                  <tr key={exec.id}>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm">
-                      {new Date(exec.startedAt).toLocaleString()}
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm">{exec.type}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">
-                      <span className={`px-2 py-1 rounded text-xs ${getStatusColor(exec.status)}`}>
-                        {exec.status}
+            <div>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-3">Actions Executed</h3>
+              <div className="space-y-3">
+                {executionDetail.actionsExecuted.map((action, idx) => (
+                  <div key={idx} className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium text-sm text-slate-900 dark:text-white">{action.actionType}</span>
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium ${getStatusStyles(action.status)}`}>
+                        {getStatusIcon(action.status)}
+                        {action.status}
                       </span>
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm">
-                      {exec.actionsExecutedCount} / {exec.actionsExecutedCount + exec.actionsFailedCount}
-                      {exec.actionsFailedCount > 0 && (
-                        <span className="text-red-600 ml-1">({exec.actionsFailedCount} failed)</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm">
-                      <button
-                        onClick={() => fetchExecutionDetail(exec.workflowId, exec.id)}
-                        className="text-indigo-600 hover:text-indigo-900"
-                      >
-                        Details
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {showExecutionDetail && executionDetail && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Execution Details</h2>
-              <button
-                onClick={() => {
-                  setShowExecutionDetail(false);
-                  setExecutionDetail(null);
-                }}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Workflow:</label>
-                  <p className="text-sm text-gray-900">{executionDetail.workflowName}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Status:</label>
-                  <span className={`ml-2 px-2 py-1 rounded text-xs ${getStatusColor(executionDetail.status)}`}>
-                    {executionDetail.status}
-                  </span>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Event Type:</label>
-                  <p className="text-sm text-gray-900">{executionDetail.type}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-700">Started At:</label>
-                  <p className="text-sm text-gray-900">{new Date(executionDetail.startedAt).toLocaleString()}</p>
-                </div>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700">Event Payload:</label>
-                <pre className="text-xs bg-gray-50 p-3 rounded mt-1 overflow-x-auto">
-                  {executionDetail.eventPayload}
-                </pre>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">Actions Executed:</label>
-                <div className="space-y-2">
-                  {executionDetail.actionsExecuted.map((action, idx) => (
-                    <div key={idx} className="border rounded p-3">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium text-sm">{action.actionType}</span>
-                        <span className={`px-2 py-1 rounded text-xs ${getStatusColor(action.status)}`}>
-                          {action.status}
-                        </span>
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Executed at: {new Date(action.executedAt).toLocaleString()}
-                      </div>
-                      {action.errorMessage && (
-                        <div className="text-xs text-red-600 mt-1">Error: {action.errorMessage}</div>
-                      )}
                     </div>
-                  ))}
-                </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Executed at: {new Date(action.executedAt).toLocaleString()}
+                    </p>
+                    {action.errorMessage && (
+                      <p className="text-xs text-red-600 dark:text-red-400 mt-2 flex items-center gap-1">
+                        <XCircle className="w-3 h-3" />
+                        {action.errorMessage}
+                      </p>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
 
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">{t('automation.createWorkflow')}</h2>
-            <form onSubmit={handleCreateWorkflow}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('automation.name')}</label>
-                <input
-                  type="text"
-                  required
-                  className="w-full px-3 py-2 border rounded"
-                  value={newWorkflow.name}
-                  onChange={(e) => setNewWorkflow({ ...newWorkflow, name: e.target.value })}
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('automation.description')}</label>
-                <textarea
-                  className="w-full px-3 py-2 border rounded"
-                  value={newWorkflow.description}
-                  onChange={(e) => setNewWorkflow({ ...newWorkflow, description: e.target.value })}
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('automation.severity')}</label>
-                <select
-                  className="w-full px-3 py-2 border rounded"
-                  value={newWorkflow.severity}
-                  onChange={(e) => setNewWorkflow({ ...newWorkflow, severity: e.target.value })}
-                >
-                  <option value="Info">Info</option>
-                  <option value="Warning">Warning</option>
-                  <option value="Critical">Critical</option>
-                </select>
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('automation.trigger')}</label>
-                <select
-                  className="w-full px-3 py-2 border rounded"
-                  value={newWorkflow.triggers[0]?.eventType}
-                  onChange={(e) => setNewWorkflow({
-                    ...newWorkflow,
-                    triggers: [{ eventType: e.target.value, sourceModule: e.target.value.split('.')[0] }]
-                  })}
-                >
-                  {EVENT_TYPES.map(et => (
-                    <option key={et} value={et}>{et}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">{t('automation.action')}</label>
-                <select
-                  className="w-full px-3 py-2 border rounded"
-                  value={newWorkflow.actions[0]?.actionType}
-                  onChange={(e) => setNewWorkflow({
-                    ...newWorkflow,
-                    actions: [{ actionType: e.target.value, order: 0, configJson: '{}', isCritical: false }]
-                  })}
-                >
-                  {ACTION_TYPES.map(at => (
-                    <option key={at} value={at}>{at}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="mb-4">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    className="mr-2"
-                    checked={newWorkflow.isEnabled}
-                    onChange={(e) => setNewWorkflow({ ...newWorkflow, isEnabled: e.target.checked })}
-                  />
-                  {t('automation.enableImmediately')}
-                </label>
-              </div>
-              <div className="flex gap-2 justify-end">
-                <button
-                  type="button"
-                  onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 border rounded"
-                >
-                  {t('common.cancel')}
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-                >
-                  {t('common.create')}
-                </button>
-              </div>
-            </form>
+      {/* Create Workflow Modal */}
+      <Modal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        title={t('automation.createWorkflow')}
+      >
+        <form onSubmit={handleCreateWorkflow} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              {t('automation.name')}
+            </label>
+            <input
+              type="text"
+              required
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              value={newWorkflow.name}
+              onChange={(e) => setNewWorkflow({ ...newWorkflow, name: e.target.value })}
+            />
           </div>
-        </div>
-      )}
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              {t('automation.description')}
+            </label>
+            <textarea
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              rows={3}
+              value={newWorkflow.description}
+              onChange={(e) => setNewWorkflow({ ...newWorkflow, description: e.target.value })}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              {t('automation.severity')}
+            </label>
+            <select
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              value={newWorkflow.severity}
+              onChange={(e) => setNewWorkflow({ ...newWorkflow, severity: e.target.value })}
+            >
+              <option value="Info">Info</option>
+              <option value="Warning">Warning</option>
+              <option value="Critical">Critical</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              {t('automation.trigger')}
+            </label>
+            <select
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              value={newWorkflow.triggers[0]?.eventType}
+              onChange={(e) => setNewWorkflow({
+                ...newWorkflow,
+                triggers: [{ eventType: e.target.value, sourceModule: e.target.value.split('.')[0] }]
+              })}
+            >
+              {EVENT_TYPES.map(et => (
+                <option key={et} value={et}>{et}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              {t('automation.action')}
+            </label>
+            <select
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+              value={newWorkflow.actions[0]?.actionType}
+              onChange={(e) => setNewWorkflow({
+                ...newWorkflow,
+                actions: [{ actionType: e.target.value, order: 0, configJson: '{}', isCritical: false }]
+              })}
+            >
+              {ACTION_TYPES.map(at => (
+                <option key={at} value={at}>{at}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="flex items-center space-x-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={newWorkflow.isEnabled}
+                onChange={(e) => setNewWorkflow({ ...newWorkflow, isEnabled: e.target.checked })}
+                className="rounded border-slate-300 dark:border-slate-500 text-indigo-600 focus:ring-indigo-500 w-5 h-5"
+              />
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('automation.enableImmediately')}</span>
+            </label>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="submit"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-500/25"
+            >
+              <Plus className="w-4 h-4" />
+              {t('common.create')}
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="button"
+              onClick={() => setShowCreateModal(false)}
+              className="px-6 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-all"
+            >
+              {t('common.cancel')}
+            </motion.button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

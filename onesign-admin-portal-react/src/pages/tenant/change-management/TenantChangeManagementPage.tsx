@@ -2,10 +2,61 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
 import Modal from '@/components/common/Modal';
-import StatusBadge from '@/components/common/StatusBadge';
-import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { changeManagementService } from '@/lib/api/services/change-management.service';
 import { Helmet } from 'react-helmet-async';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  GitBranch,
+  Plus,
+  ArrowLeft,
+  FileText,
+  Shield,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  Play,
+  Calendar,
+  RotateCcw,
+  Copy,
+  Send,
+  Trash2,
+  Eye,
+  Users,
+  Server,
+  Activity,
+  ChevronLeft,
+  ChevronRight,
+  Zap,
+  LayoutTemplate
+} from 'lucide-react';
+
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+  color: string;
+  delay: number;
+}
+
+const StatCard = ({ title, value, icon, color, delay }: StatCardProps) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: delay * 0.1 }}
+    className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300"
+  >
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
+        <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+      </div>
+      <div className={`p-4 rounded-xl bg-gradient-to-br ${color}`}>
+        {icon}
+      </div>
+    </div>
+  </motion.div>
+);
 
 interface ChangeSet {
   id: string;
@@ -93,28 +144,48 @@ interface Template {
   createdAt: string;
 }
 
-interface ApprovalRule {
-  id: string;
-  name: string;
-  targetModule: string;
-  requiredApprovers: number;
-  approverRoles: string[];
-  isActive: boolean;
-  createdAt: string;
-}
-
-interface PendingApproval {
-  id: string;
-  changeSetId: string;
-  changeSetName: string;
-  requestedBy: string;
-  requestedAt: string;
-  status: 'Pending' | 'Approved' | 'Rejected';
-  targetModule: string;
-}
-
 type Tab = 'list' | 'details' | 'simulation' | 'executionLog' | 'approvals' | 'templates';
 type StatusFilter = 'All' | 'Draft' | 'InReview' | 'Approved' | 'Scheduled' | 'Applied' | 'Rejected';
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'Draft':
+      return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300';
+    case 'InReview':
+      return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300';
+    case 'Approved':
+      return 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300';
+    case 'Scheduled':
+      return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300';
+    case 'Applied':
+      return 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300';
+    case 'Rejected':
+      return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300';
+    case 'Pending':
+      return 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300';
+    default:
+      return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300';
+  }
+};
+
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case 'Draft':
+      return <FileText className="w-3 h-3" />;
+    case 'InReview':
+      return <Clock className="w-3 h-3" />;
+    case 'Approved':
+      return <CheckCircle className="w-3 h-3" />;
+    case 'Scheduled':
+      return <Calendar className="w-3 h-3" />;
+    case 'Applied':
+      return <Zap className="w-3 h-3" />;
+    case 'Rejected':
+      return <XCircle className="w-3 h-3" />;
+    default:
+      return <FileText className="w-3 h-3" />;
+  }
+};
 
 export default function TenantChangeManagementPage() {
   const { t } = useTranslation();
@@ -134,8 +205,6 @@ export default function TenantChangeManagementPage() {
   const [executionLogs, setExecutionLogs] = useState<ExecutionLog[]>([]);
   const [approvals, setApprovals] = useState<Approval[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
-  const [pendingApprovals, setPendingApprovals] = useState<PendingApproval[]>([]);
-  const [approvalRules, setApprovalRules] = useState<ApprovalRule[]>([]);
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -153,7 +222,6 @@ export default function TenantChangeManagementPage() {
   const [showRollbackModal, setShowRollbackModal] = useState(false);
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
-  const [showRuleModal, setShowRuleModal] = useState(false);
 
   // Form states
   const [newChangeSet, setNewChangeSet] = useState({
@@ -173,13 +241,6 @@ export default function TenantChangeManagementPage() {
   const [approvalComment, setApprovalComment] = useState('');
   const [rejectReason, setRejectReason] = useState('');
   const [cloneName, setCloneName] = useState('');
-  const [newRule, setNewRule] = useState({
-    name: '',
-    targetModule: 'Users',
-    requiredApprovers: 1,
-    approverRoles: ['Admin'],
-    isActive: true,
-  });
 
   const targetModules = ['Users', 'Groups', 'Applications', 'Policies', 'Settings', 'Security'];
 
@@ -229,7 +290,6 @@ export default function TenantChangeManagementPage() {
       setChangeSets(data.items || []);
       setTotalItems(data.totalCount || 0);
     } catch (err) {
-      // Mock data for development
       const mockData: ChangeSet[] = [
         {
           id: '1',
@@ -271,69 +331,11 @@ export default function TenantChangeManagementPage() {
     }
   };
 
-  const fetchPendingApprovals = async () => {
-    try {
-      const data = await changeManagementService.getTenantPendingApprovals(tenantId, userId, {
-        page,
-        pageSize,
-      });
-      setPendingApprovals(data.items || []);
-      setTotalItems(data.totalCount || 0);
-    } catch (err) {
-      // Mock data
-      const mockData: PendingApproval[] = [
-        {
-          id: '1',
-          changeSetId: '1',
-          changeSetName: 'Update User Permissions',
-          requestedBy: 'admin@example.com',
-          requestedAt: new Date().toISOString(),
-          status: 'Pending',
-          targetModule: 'Users',
-        },
-      ];
-      setPendingApprovals(mockData);
-      setTotalItems(mockData.length);
-    }
-  };
-
-  const fetchApprovalRules = async () => {
-    try {
-      const data = await changeManagementService.getTenantApprovalRules(tenantId);
-      setApprovalRules(data || []);
-    } catch (err) {
-      // Mock data
-      const mockData: ApprovalRule[] = [
-        {
-          id: '1',
-          name: 'Security Changes',
-          targetModule: 'Security',
-          requiredApprovers: 2,
-          approverRoles: ['SecurityAdmin', 'GlobalAdmin'],
-          isActive: true,
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          name: 'User Changes',
-          targetModule: 'Users',
-          requiredApprovers: 1,
-          approverRoles: ['Admin'],
-          isActive: true,
-          createdAt: new Date().toISOString(),
-        },
-      ];
-      setApprovalRules(mockData);
-    }
-  };
-
-  // 1. GET /api/tenant/changesets/{id} - جزئیات ChangeSet
   const fetchChangeSetDetails = async (id: string) => {
     try {
       const data = await changeManagementService.getTenantChangeSet(tenantId, id);
       setChangeSetDetails(data as any);
     } catch (err) {
-      // Mock data
       const mockData: ChangeSetDetails = {
         ...selectedChangeSet!,
         changes: [
@@ -364,7 +366,6 @@ export default function TenantChangeManagementPage() {
     }
   };
 
-  // 2. POST /api/tenant/changesets/{id}/simulate - شبیه‌سازی تغییرات
   const handleSimulate = async (id: string) => {
     setLoading(true);
     try {
@@ -372,7 +373,6 @@ export default function TenantChangeManagementPage() {
       setSimulationResult(data as any);
       setSuccess('Simulation completed successfully');
     } catch (err) {
-      // Mock data
       const mockResult: SimulationResult = {
         success: true,
         warnings: ['Some users may experience temporary access delays'],
@@ -391,13 +391,11 @@ export default function TenantChangeManagementPage() {
     }
   };
 
-  // 3. GET /api/tenant/changesets/{id}/execution-log - لاگ اجرا
   const fetchExecutionLogs = async (id: string) => {
     try {
       const data = await changeManagementService.getTenantExecutionLog(tenantId, id);
       setExecutionLogs(data || []);
     } catch (err) {
-      // Mock data
       const mockLogs: ExecutionLog[] = [
         {
           id: '1',
@@ -426,7 +424,6 @@ export default function TenantChangeManagementPage() {
     }
   };
 
-  // POST /api/tenant/change-sets/{id}/schedule - زمان‌بندی change set
   const handleSchedule = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedChangeSet) return;
@@ -449,7 +446,6 @@ export default function TenantChangeManagementPage() {
     }
   };
 
-  // 5. POST /api/tenant/changesets/{id}/execute - اجرای دستی
   const handleExecute = async () => {
     if (!selectedChangeSet) return;
 
@@ -466,7 +462,6 @@ export default function TenantChangeManagementPage() {
     }
   };
 
-  // POST /api/tenant/change-sets/{id}/rollback - بازگردانی change set
   const handleRollback = async () => {
     if (!selectedChangeSet) return;
 
@@ -483,7 +478,6 @@ export default function TenantChangeManagementPage() {
     }
   };
 
-  // POST /api/tenant/change-sets/{id}/approve - تایید change set
   const handleApproveChangeSet = async () => {
     if (!selectedChangeSet) return;
 
@@ -506,7 +500,6 @@ export default function TenantChangeManagementPage() {
     }
   };
 
-  // POST /api/tenant/change-sets/{id}/reject - رد change set
   const handleRejectChangeSet = async () => {
     if (!selectedChangeSet || !rejectReason.trim()) {
       setError('Please provide a reason for rejection');
@@ -532,13 +525,11 @@ export default function TenantChangeManagementPage() {
     }
   };
 
-  // 9. GET /api/tenant/changesets/{id}/approvals - لیست تاییدکنندگان
   const fetchApprovals = async (id: string) => {
     try {
       const data = await changeManagementService.getTenantApprovals(tenantId, id);
       setApprovals(data || []);
     } catch (err) {
-      // Mock data
       const mockApprovals: Approval[] = [
         {
           id: '1',
@@ -563,13 +554,11 @@ export default function TenantChangeManagementPage() {
     }
   };
 
-  // 10. GET /api/tenant/changesets/{id}/impact - تحلیل تاثیرات
   const fetchImpactAnalysis = async (id: string) => {
     try {
       const data = await changeManagementService.getTenantImpactAnalysis(tenantId, id);
       setImpactAnalysis(data as any);
     } catch (err) {
-      // Mock data
       const mockImpact: ImpactAnalysis = {
         riskLevel: 'Medium',
         affectedUsers: 42,
@@ -589,7 +578,6 @@ export default function TenantChangeManagementPage() {
     }
   };
 
-  // 11. POST /api/tenant/changesets/{id}/clone - کپی ChangeSet
   const handleClone = async () => {
     if (!selectedChangeSet || !cloneName.trim()) {
       setError('Please provide a name for the cloned change set');
@@ -615,13 +603,11 @@ export default function TenantChangeManagementPage() {
     }
   };
 
-  // 12. GET /api/tenant/changesets/templates - قالب‌های آماده
   const fetchTemplates = async () => {
     try {
       const data = await changeManagementService.getTenantTemplates(tenantId);
       setTemplates(data || []);
     } catch (err) {
-      // Mock data
       const mockTemplates: Template[] = [
         {
           id: '1',
@@ -690,47 +676,10 @@ export default function TenantChangeManagementPage() {
     }
   };
 
-  // POST /api/tenant/change-sets/{id}/submit - ارسال change set
   const handleSubmitForReview = async (changeSet: ChangeSet) => {
     try {
       await changeManagementService.submitTenantChangeSet(tenantId, changeSet.id, userId);
       setSuccess('Change set submitted for review');
-      fetchData();
-    } catch (err) {
-      setError(t('common.error'));
-    }
-  };
-
-  const handleApprove = async (approval: PendingApproval) => {
-    try {
-      await changeManagementService.approveTenantApproval(tenantId, approval.id, userId, '');
-      setSuccess('Change set approved');
-      fetchData();
-    } catch (err) {
-      setError(t('common.error'));
-    }
-  };
-
-  const handleReject = async (approval: PendingApproval) => {
-    const reason = prompt('Please provide a reason for rejection:');
-    if (!reason) return;
-
-    try {
-      await changeManagementService.rejectTenantApproval(tenantId, approval.id, userId, reason);
-      setSuccess('Change set rejected');
-      fetchData();
-    } catch (err) {
-      setError(t('common.error'));
-    }
-  };
-
-  // POST /api/tenant/change-sets/{id}/apply - اعمال change set
-  const handleApplyChangeSet = async (changeSet: ChangeSet) => {
-    if (!confirm('Are you sure you want to apply this change set? This action cannot be undone.')) return;
-
-    try {
-      await changeManagementService.applyTenantChangeSet(tenantId, changeSet.id, userId);
-      setSuccess('Change set applied successfully');
       fetchData();
     } catch (err) {
       setError(t('common.error'));
@@ -749,969 +698,1147 @@ export default function TenantChangeManagementPage() {
     }
   };
 
-  const handleCreateRule = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
-    try {
-      await changeManagementService.createTenantApprovalRule(tenantId, newRule);
-      setSuccess('Approval rule created successfully');
-      setShowRuleModal(false);
-      setNewRule({
-        name: '',
-        targetModule: 'Users',
-        requiredApprovers: 1,
-        approverRoles: ['Admin'],
-        isActive: true,
-      });
-      fetchData();
-    } catch (err) {
-      setError(t('common.error'));
-    }
-  };
-
-  const handleToggleRule = async (rule: ApprovalRule) => {
-    try {
-      await changeManagementService.toggleTenantApprovalRule(tenantId, rule.id, !rule.isActive);
-      setSuccess(`Rule ${rule.isActive ? 'disabled' : 'enabled'}`);
-      fetchData();
-    } catch (err) {
-      setError(t('common.error'));
-    }
-  };
-
-  const getRiskColor = (risk: string) => {
-    switch (risk) {
-      case 'Low': return 'success';
-      case 'Medium': return 'warning';
-      case 'High': return 'error';
-      case 'Critical': return 'error';
-      default: return 'default';
-    }
-  };
-
   const handleSelectChangeSet = (changeSet: ChangeSet) => {
     setSelectedChangeSet(changeSet);
     setActiveTab('details');
   };
 
-  const totalPages = Math.ceil(totalItems / pageSize);
+  const getRiskColor = (risk: string) => {
+    switch (risk) {
+      case 'Low': return 'from-green-500 to-emerald-600';
+      case 'Medium': return 'from-yellow-500 to-orange-600';
+      case 'High': return 'from-orange-500 to-red-600';
+      case 'Critical': return 'from-red-500 to-rose-600';
+      default: return 'from-gray-500 to-gray-600';
+    }
+  };
 
-  if (loading && !changeSets.length && !templates.length) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
-  }
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const mainTabs: Tab[] = ['list', 'templates'];
+  const detailTabs: Tab[] = ['details', 'simulation', 'executionLog', 'approvals'];
+
+  // Calculate stats
+  const draftCount = changeSets.filter(c => c.status === 'Draft').length;
+  const inReviewCount = changeSets.filter(c => c.status === 'InReview').length;
+  const approvedCount = changeSets.filter(c => c.status === 'Approved').length;
+  const appliedCount = changeSets.filter(c => c.status === 'Applied').length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+      <Helmet>
+        <title>{t('tenant.changeManagement.title') || 'Change Management'} | OneSign</title>
+      </Helmet>
+
       <div className="p-8">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              Change Management
-            </h1>
-            <p className="text-gray-600 mt-2">Manage and track organizational changes</p>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg">
+                <GitBranch className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {t('tenant.changeManagement.title') || 'Change Management'}
+                </h1>
+                <p className="text-gray-500 dark:text-gray-400 mt-1">
+                  {t('tenant.changeManagement.subtitle') || 'Manage and track organizational changes'}
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              {activeTab === 'list' && (
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowCreateModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <Plus className="w-5 h-5" />
+                  Create Change Set
+                </motion.button>
+              )}
+              {selectedChangeSet && (
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    setSelectedChangeSet(null);
+                    setActiveTab('list');
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 rounded-lg shadow border border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-600 transition-all duration-300"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                  Back to List
+                </motion.button>
+              )}
+            </div>
           </div>
-          <div className="flex gap-3">
-            {activeTab === 'list' && (
-              <button
-                onClick={() => setShowCreateModal(true)}
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-200 flex items-center gap-2"
-              >
-                <span>+</span>
-                Create Change Set
-              </button>
-            )}
-            {selectedChangeSet && (
-              <button
-                onClick={() => {
-                  setSelectedChangeSet(null);
-                  setActiveTab('list');
-                }}
-                className="bg-white text-gray-700 px-6 py-3 rounded-xl font-semibold border-2 border-gray-200 hover:border-indigo-300 transition-all duration-200"
-              >
-                Back to List
-              </button>
-            )}
-          </div>
-        </div>
+        </motion.div>
 
-        {/* Messages */}
-        {error && (
-          <div className="mb-6 bg-red-50 border-l-4 border-red-500 text-red-700 px-6 py-4 rounded-lg shadow-sm">
-            <p className="font-semibold">Error</p>
-            <p>{error}</p>
-          </div>
-        )}
-        {success && (
-          <div className="mb-6 bg-green-50 border-l-4 border-green-500 text-green-700 px-6 py-4 rounded-lg shadow-sm">
-            <p className="font-semibold">Success</p>
-            <p>{success}</p>
+        {/* Error/Success Messages */}
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-6 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl flex items-center gap-2"
+            >
+              <XCircle className="w-5 h-5" />
+              {error}
+            </motion.div>
+          )}
+          {success && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-6 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 px-4 py-3 rounded-xl flex items-center gap-2"
+            >
+              <CheckCircle className="w-5 h-5" />
+              {success}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Stats Cards */}
+        {!selectedChangeSet && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <StatCard
+              title="Draft"
+              value={draftCount}
+              icon={<FileText className="w-6 h-6 text-white" />}
+              color="from-gray-500 to-slate-600"
+              delay={0}
+            />
+            <StatCard
+              title="In Review"
+              value={inReviewCount}
+              icon={<Clock className="w-6 h-6 text-white" />}
+              color="from-yellow-500 to-orange-600"
+              delay={1}
+            />
+            <StatCard
+              title="Approved"
+              value={approvedCount}
+              icon={<CheckCircle className="w-6 h-6 text-white" />}
+              color="from-green-500 to-emerald-600"
+              delay={2}
+            />
+            <StatCard
+              title="Applied"
+              value={appliedCount}
+              icon={<Zap className="w-6 h-6 text-white" />}
+              color="from-indigo-500 to-purple-600"
+              delay={3}
+            />
           </div>
         )}
 
         {/* Tabs Navigation */}
-        {!selectedChangeSet ? (
-          <div className="mb-8 bg-white rounded-2xl shadow-lg p-2">
-            <nav className="flex space-x-2">
-              {(['list', 'templates'] as Tab[]).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => { setActiveTab(tab); setPage(1); }}
-                  className={`flex-1 py-4 px-6 rounded-xl font-semibold transition-all duration-200 ${
-                    activeTab === tab
-                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
-                      : 'text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  {tab === 'list' ? 'Change Sets' : 'Templates'}
-                </button>
-              ))}
-            </nav>
-          </div>
-        ) : (
-          <div className="mb-8 bg-white rounded-2xl shadow-lg p-2">
-            <nav className="flex space-x-2">
-              {(['details', 'simulation', 'executionLog', 'approvals'] as Tab[]).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`flex-1 py-4 px-6 rounded-xl font-semibold transition-all duration-200 ${
-                    activeTab === tab
-                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
-                      : 'text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  {tab === 'details' ? 'Details' :
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-2"
+        >
+          <nav className="flex space-x-2">
+            {(!selectedChangeSet ? mainTabs : detailTabs).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => { setActiveTab(tab); if (tab === 'list') setPage(1); }}
+                className={`relative flex-1 py-3 px-6 rounded-lg font-medium transition-all duration-200 ${
+                  activeTab === tab
+                    ? 'text-white'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700'
+                }`}
+              >
+                {activeTab === tab && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  {tab === 'list' && <FileText className="w-4 h-4" />}
+                  {tab === 'templates' && <LayoutTemplate className="w-4 h-4" />}
+                  {tab === 'details' && <Eye className="w-4 h-4" />}
+                  {tab === 'simulation' && <Activity className="w-4 h-4" />}
+                  {tab === 'executionLog' && <Clock className="w-4 h-4" />}
+                  {tab === 'approvals' && <CheckCircle className="w-4 h-4" />}
+                  {tab === 'list' ? 'Change Sets' :
+                   tab === 'templates' ? 'Templates' :
+                   tab === 'details' ? 'Details' :
                    tab === 'simulation' ? 'Simulation & Impact' :
                    tab === 'executionLog' ? 'Execution Log' : 'Approvals'}
-                </button>
-              ))}
-            </nav>
-          </div>
+                </span>
+              </button>
+            ))}
+          </nav>
+        </motion.div>
+
+        {/* List Tab */}
+        {activeTab === 'list' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            {/* Filter */}
+            <div className="mb-6 flex items-center gap-4">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Filter by Status:</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => { setStatusFilter(e.target.value as StatusFilter); setPage(1); }}
+                className="px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="All">All</option>
+                <option value="Draft">Draft</option>
+                <option value="InReview">In Review</option>
+                <option value="Approved">Approved</option>
+                <option value="Scheduled">Scheduled</option>
+                <option value="Applied">Applied</option>
+                <option value="Rejected">Rejected</option>
+              </select>
+            </div>
+
+            {/* Table */}
+            <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                  <thead className="bg-gray-50 dark:bg-slate-700/50">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Module</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
+                    {changeSets.map((changeSet, index) => (
+                      <motion.tr
+                        key={changeSet.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="text-sm font-semibold text-gray-900 dark:text-white">{changeSet.name}</div>
+                          {changeSet.description && (
+                            <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">{changeSet.description}</div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
+                            {changeSet.targetModule}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(changeSet.status)}`}>
+                            {getStatusIcon(changeSet.status)}
+                            {changeSet.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                          {new Date(changeSet.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <div className="flex gap-2">
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => handleSelectChangeSet(changeSet)}
+                              className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 font-medium flex items-center gap-1"
+                            >
+                              <Eye className="w-4 h-4" />
+                              View
+                            </motion.button>
+                            {changeSet.status === 'Draft' && (
+                              <>
+                                <motion.button
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={() => handleSubmitForReview(changeSet)}
+                                  className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 font-medium flex items-center gap-1"
+                                >
+                                  <Send className="w-4 h-4" />
+                                  Submit
+                                </motion.button>
+                                <motion.button
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={() => handleDeleteChangeSet(changeSet.id)}
+                                  className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 font-medium flex items-center gap-1"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                  Delete
+                                </motion.button>
+                              </>
+                            )}
+                            {changeSet.status === 'Approved' && (
+                              <>
+                                <motion.button
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={() => {
+                                    setSelectedChangeSet(changeSet);
+                                    setShowExecuteModal(true);
+                                  }}
+                                  className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 font-medium flex items-center gap-1"
+                                >
+                                  <Play className="w-4 h-4" />
+                                  Execute
+                                </motion.button>
+                                <motion.button
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={() => {
+                                    setSelectedChangeSet(changeSet);
+                                    setShowScheduleModal(true);
+                                  }}
+                                  className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 font-medium flex items-center gap-1"
+                                >
+                                  <Calendar className="w-4 h-4" />
+                                  Schedule
+                                </motion.button>
+                              </>
+                            )}
+                            {changeSet.status === 'Applied' && (
+                              <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => {
+                                  setSelectedChangeSet(changeSet);
+                                  setShowRollbackModal(true);
+                                }}
+                                className="text-orange-600 dark:text-orange-400 hover:text-orange-900 dark:hover:text-orange-300 font-medium flex items-center gap-1"
+                              >
+                                <RotateCcw className="w-4 h-4" />
+                                Rollback
+                              </motion.button>
+                            )}
+                            <motion.button
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => {
+                                setSelectedChangeSet(changeSet);
+                                setCloneName(`${changeSet.name} - Copy`);
+                                setShowCloneModal(true);
+                              }}
+                              className="text-purple-600 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300 font-medium flex items-center gap-1"
+                            >
+                              <Copy className="w-4 h-4" />
+                              Clone
+                            </motion.button>
+                          </div>
+                        </td>
+                      </motion.tr>
+                    ))}
+                    {changeSets.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-12 text-center">
+                          <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                          <p className="text-gray-500 dark:text-gray-400">No change sets found.</p>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              {totalItems > pageSize && (
+                <div className="px-6 py-4 border-t border-gray-200 dark:border-slate-700 flex justify-between items-center">
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    Page {page} of {totalPages}
+                  </span>
+                  <div className="flex gap-2">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setPage(p => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className="flex items-center gap-1 px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg disabled:opacity-50 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                      Previous
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setPage(p => p + 1)}
+                      disabled={page >= totalPages}
+                      className="flex items-center gap-1 px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg disabled:opacity-50 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700"
+                    >
+                      Next
+                      <ChevronRight className="w-4 h-4" />
+                    </motion.button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
         )}
 
-      {/* List Tab */}
-      {activeTab === 'list' && (
-        <>
-          <div className="mb-4">
-            <label className="mr-2 text-sm font-medium">Filter by Status:</label>
-            <select
-              value={statusFilter}
-              onChange={(e) => { setStatusFilter(e.target.value as StatusFilter); setPage(1); }}
-              className="px-3 py-2 border rounded"
-            >
-              <option value="All">All</option>
-              <option value="Draft">Draft</option>
-              <option value="InReview">In Review</option>
-              <option value="Approved">Approved</option>
-              <option value="Scheduled">Scheduled</option>
-              <option value="Applied">Applied</option>
-              <option value="Rejected">Rejected</option>
-            </select>
-          </div>
+        {/* Details Tab */}
+        {activeTab === 'details' && selectedChangeSet && changeSetDetails && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            {/* Overview Card */}
+            <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{changeSetDetails.name}</h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">{changeSetDetails.description}</p>
 
-          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gradient-to-r from-indigo-50 to-purple-50">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Module</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Created</th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-100">
-                {changeSets.map((changeSet) => (
-                  <tr key={changeSet.id} className="hover:bg-indigo-50/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-semibold text-gray-900">{changeSet.name}</div>
-                      {changeSet.description && (
-                        <div className="text-sm text-gray-500 mt-1">{changeSet.description}</div>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {changeSet.targetModule}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <StatusBadge status={changeSet.status} />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {new Date(changeSet.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleSelectChangeSet(changeSet)}
-                          className="text-indigo-600 hover:text-indigo-900 font-medium"
-                        >
-                          View
-                        </button>
-                        {changeSet.status === 'Draft' && (
-                          <>
-                            <button
-                              onClick={() => handleSubmitForReview(changeSet)}
-                              className="text-blue-600 hover:text-blue-900 font-medium"
-                            >
-                              Submit
-                            </button>
-                            <button
-                              onClick={() => handleDeleteChangeSet(changeSet.id)}
-                              className="text-red-600 hover:text-red-900 font-medium"
-                            >
-                              Delete
-                            </button>
-                          </>
-                        )}
-                        {changeSet.status === 'Approved' && (
-                          <>
-                            <button
-                              onClick={() => {
-                                setSelectedChangeSet(changeSet);
-                                setShowExecuteModal(true);
-                              }}
-                              className="text-green-600 hover:text-green-900 font-medium"
-                            >
-                              Execute
-                            </button>
-                            <button
-                              onClick={() => {
-                                setSelectedChangeSet(changeSet);
-                                setShowScheduleModal(true);
-                              }}
-                              className="text-blue-600 hover:text-blue-900 font-medium"
-                            >
-                              Schedule
-                            </button>
-                          </>
-                        )}
-                        {changeSet.status === 'Applied' && (
-                          <button
-                            onClick={() => {
-                              setSelectedChangeSet(changeSet);
-                              setShowRollbackModal(true);
-                            }}
-                            className="text-orange-600 hover:text-orange-900 font-medium"
-                          >
-                            Rollback
-                          </button>
-                        )}
-                        {changeSet.status === 'Scheduled' && (
-                          <span className="text-gray-500 text-xs">
-                            {changeSet.scheduledAt ? new Date(changeSet.scheduledAt).toLocaleString() : 'N/A'}
-                          </span>
-                        )}
-                        <button
-                          onClick={() => {
-                            setSelectedChangeSet(changeSet);
-                            setCloneName(`${changeSet.name} - Copy`);
-                            setShowCloneModal(true);
-                          }}
-                          className="text-purple-600 hover:text-purple-900 font-medium"
-                        >
-                          Clone
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {changeSets.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                      No change sets found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-            {totalItems > pageSize && (
-              <div className="px-6 py-4 flex justify-between items-center border-t">
-                <button
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="px-3 py-1 border rounded disabled:opacity-50"
-                >
-                  Previous
-                </button>
-                <span className="text-sm text-gray-500">
-                  Page {page} / {totalPages}
-                </span>
-                <button
-                  onClick={() => setPage(p => p + 1)}
-                  disabled={page >= totalPages}
-                  className="px-3 py-1 border rounded disabled:opacity-50"
-                >
-                  Next
-                </button>
-              </div>
-            )}
-          </div>
-        </>
-      )}
-
-      {/* Details Tab */}
-      {activeTab === 'details' && selectedChangeSet && changeSetDetails && (
-        <div className="space-y-6">
-          {/* Overview Card */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold mb-4 text-gray-900">{changeSetDetails.name}</h2>
-            <p className="text-gray-600 mb-6">{changeSetDetails.description}</p>
-
-            <div className="grid grid-cols-3 gap-6 mb-6">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Status</p>
-                <StatusBadge status={changeSetDetails.status} />
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Target Module</p>
-                <p className="font-semibold text-gray-900">{changeSetDetails.targetModule}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Created By</p>
-                <p className="font-semibold text-gray-900">{changeSetDetails.createdBy}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Estimated Impact</p>
-                <p className="font-semibold text-gray-900">{changeSetDetails.metadata.estimatedImpact}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Affected Resources</p>
-                <p className="font-semibold text-gray-900">{changeSetDetails.metadata.affectedResources}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Required Downtime</p>
-                <p className="font-semibold text-gray-900">{changeSetDetails.metadata.requiredDowntime}</p>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-3 pt-4 border-t">
-              {changeSetDetails.status === 'InReview' && (
-                <>
-                  <button
-                    onClick={() => setShowApprovalModal(true)}
-                    className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700"
-                  >
-                    Approve
-                  </button>
-                  <button
-                    onClick={() => setShowRejectModal(true)}
-                    className="bg-red-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-700"
-                  >
-                    Reject
-                  </button>
-                </>
-              )}
-              {changeSetDetails.status === 'Approved' && (
-                <>
-                  <button
-                    onClick={() => setShowExecuteModal(true)}
-                    className="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700"
-                  >
-                    Execute Now
-                  </button>
-                  <button
-                    onClick={() => setShowScheduleModal(true)}
-                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700"
-                  >
-                    Schedule
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Changes List */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h3 className="text-xl font-bold mb-4">Changes</h3>
-            <div className="space-y-4">
-              {changeSetDetails.changes.map((change) => (
-                <div key={change.id} className="border rounded-lg p-4 bg-gray-50">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <span className="font-semibold text-gray-900">{change.type}</span>
-                      <span className="text-gray-500 ml-2">({change.entity})</span>
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      change.operation === 'CREATE' ? 'bg-green-100 text-green-800' :
-                      change.operation === 'UPDATE' ? 'bg-blue-100 text-blue-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
-                      {change.operation}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 mt-3">
-                    {change.before && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Before</p>
-                        <pre className="text-xs bg-white p-2 rounded border">{JSON.stringify(change.before, null, 2)}</pre>
-                      </div>
-                    )}
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">After</p>
-                      <pre className="text-xs bg-white p-2 rounded border">{JSON.stringify(change.after, null, 2)}</pre>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Simulation Tab */}
-      {activeTab === 'simulation' && selectedChangeSet && (
-        <div className="space-y-6">
-          {/* Impact Analysis */}
-          {impactAnalysis && (
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h2 className="text-2xl font-bold mb-4">Impact Analysis</h2>
-              <div className="grid grid-cols-4 gap-6 mb-6">
-                <div className="text-center p-4 bg-gradient-to-br from-red-50 to-orange-50 rounded-xl">
-                  <p className="text-sm text-gray-600 mb-2">Risk Level</p>
-                  <StatusBadge status={impactAnalysis.riskLevel} variant={getRiskColor(impactAnalysis.riskLevel) as any} />
-                </div>
-                <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl">
-                  <p className="text-sm text-gray-600 mb-2">Affected Users</p>
-                  <p className="text-3xl font-bold text-indigo-600">{impactAnalysis.affectedUsers}</p>
-                </div>
-                <div className="text-center p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl">
-                  <p className="text-sm text-gray-600 mb-2">Affected Groups</p>
-                  <p className="text-3xl font-bold text-green-600">{impactAnalysis.affectedGroups}</p>
-                </div>
-                <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl">
-                  <p className="text-sm text-gray-600 mb-2">Affected Apps</p>
-                  <p className="text-3xl font-bold text-purple-600">{impactAnalysis.affectedApplications}</p>
-                </div>
-              </div>
-
-              {impactAnalysis.dependencies.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="font-bold mb-3">Dependencies</h3>
-                  <div className="space-y-2">
-                    {impactAnalysis.dependencies.map((dep, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div>
-                          <span className="font-semibold">{dep.name}</span>
-                          <span className="text-gray-500 text-sm ml-2">({dep.type})</span>
-                        </div>
-                        <p className="text-sm text-gray-600">{dep.impact}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {impactAnalysis.recommendations.length > 0 && (
-                <div>
-                  <h3 className="font-bold mb-3">Recommendations</h3>
-                  <ul className="space-y-2">
-                    {impactAnalysis.recommendations.map((rec, idx) => (
-                      <li key={idx} className="flex items-start">
-                        <span className="text-green-600 mr-2">✓</span>
-                        <span className="text-gray-700">{rec}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Simulation */}
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">Simulation</h2>
-              <button
-                onClick={() => handleSimulate(selectedChangeSet.id)}
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg"
-              >
-                Run Simulation
-              </button>
-            </div>
-
-            {simulationResult && (
-              <div className="mt-6 space-y-4">
-                <div className={`p-4 rounded-lg ${simulationResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-                  <p className="font-semibold">{simulationResult.success ? 'Simulation Successful' : 'Simulation Failed'}</p>
-                  <p className="text-sm mt-1">Estimated Duration: {simulationResult.estimatedDuration}</p>
-                </div>
-
-                {simulationResult.warnings.length > 0 && (
-                  <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
-                    <p className="font-semibold text-yellow-800 mb-2">Warnings</p>
-                    <ul className="list-disc list-inside text-sm">
-                      {simulationResult.warnings.map((warning, idx) => (
-                        <li key={idx} className="text-yellow-700">{warning}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {simulationResult.errors.length > 0 && (
-                  <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
-                    <p className="font-semibold text-red-800 mb-2">Errors</p>
-                    <ul className="list-disc list-inside text-sm">
-                      {simulationResult.errors.map((error, idx) => (
-                        <li key={idx} className="text-red-700">{error}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {simulationResult.affectedEntities.length > 0 && (
-                  <div>
-                    <h3 className="font-bold mb-3">Affected Entities</h3>
-                    <div className="space-y-2">
-                      {simulationResult.affectedEntities.map((entity) => (
-                        <div key={entity.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <div>
-                            <span className="font-semibold">{entity.name}</span>
-                            <span className="text-gray-500 text-sm ml-2">({entity.type})</span>
-                          </div>
-                          <p className="text-sm text-gray-600">{entity.change}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Execution Log Tab */}
-      {activeTab === 'executionLog' && selectedChangeSet && (
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h2 className="text-2xl font-bold mb-6">Execution Log</h2>
-          <div className="space-y-3">
-            {executionLogs.map((log) => (
-              <div key={log.id} className="border-l-4 pl-4 py-3 bg-gray-50 rounded-r-lg" style={{
-                borderLeftColor: log.status === 'Success' ? '#10b981' : log.status === 'Warning' ? '#f59e0b' : '#ef4444'
-              }}>
-                <div className="flex justify-between items-start mb-1">
-                  <div>
-                    <span className="font-semibold text-gray-900">{log.action}</span>
-                    <StatusBadge
-                      status={log.status}
-                      variant={log.status === 'Success' ? 'success' : log.status === 'Warning' ? 'warning' : 'error'}
-                    />
-                  </div>
-                  <span className="text-sm text-gray-500">{new Date(log.timestamp).toLocaleString()}</span>
-                </div>
-                <p className="text-sm text-gray-700">{log.message}</p>
-                {log.details && (
-                  <p className="text-xs text-gray-500 mt-1">{log.details}</p>
-                )}
-              </div>
-            ))}
-            {executionLogs.length === 0 && (
-              <p className="text-center text-gray-500 py-8">No execution logs available</p>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Approvals Tab */}
-      {activeTab === 'approvals' && selectedChangeSet && (
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h2 className="text-2xl font-bold mb-6">Approval Status</h2>
-          <div className="space-y-4">
-            {approvals.map((approval) => (
-              <div key={approval.id} className="border rounded-lg p-4 bg-gray-50">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <p className="font-semibold text-gray-900">{approval.approverName}</p>
-                    <p className="text-sm text-gray-600">{approval.approverRole}</p>
-                  </div>
-                  <StatusBadge
-                    status={approval.decision}
-                    variant={approval.decision === 'Approved' ? 'success' : approval.decision === 'Rejected' ? 'error' : 'warning'}
-                  />
-                </div>
-                {approval.comment && (
-                  <p className="text-sm text-gray-700 mt-2 italic">&ldquo;{approval.comment}&rdquo;</p>
-                )}
-                <p className="text-xs text-gray-500 mt-2">{new Date(approval.timestamp).toLocaleString()}</p>
-              </div>
-            ))}
-            {approvals.length === 0 && (
-              <p className="text-center text-gray-500 py-8">No approvals yet</p>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Templates Tab */}
-      {activeTab === 'templates' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {templates.map((template) => (
-            <div key={template.id} className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-              <div className="mb-4">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-bold text-lg text-gray-900">{template.name}</h3>
-                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                    {template.category}
+              <div className="grid grid-cols-3 gap-6 mb-6">
+                <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Status</p>
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(changeSetDetails.status)}`}>
+                    {getStatusIcon(changeSetDetails.status)}
+                    {changeSetDetails.status}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600 mb-3">{template.description}</p>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">Module: {template.targetModule}</span>
-                  <span className="text-gray-500">Used {template.usageCount}x</span>
+                <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Target Module</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">{changeSetDetails.targetModule}</p>
+                </div>
+                <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Created By</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">{changeSetDetails.createdBy}</p>
+                </div>
+                <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Estimated Impact</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">{changeSetDetails.metadata.estimatedImpact}</p>
+                </div>
+                <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Affected Resources</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">{changeSetDetails.metadata.affectedResources}</p>
+                </div>
+                <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Required Downtime</p>
+                  <p className="font-semibold text-gray-900 dark:text-white">{changeSetDetails.metadata.requiredDowntime}</p>
                 </div>
               </div>
-              <button
-                onClick={() => handleCreateFromTemplate(template)}
-                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-lg font-semibold hover:shadow-lg transition-all"
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-slate-700">
+                {changeSetDetails.status === 'InReview' && (
+                  <>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setShowApprovalModal(true)}
+                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg shadow-lg"
+                    >
+                      <CheckCircle className="w-5 h-5" />
+                      Approve
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setShowRejectModal(true)}
+                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-lg shadow-lg"
+                    >
+                      <XCircle className="w-5 h-5" />
+                      Reject
+                    </motion.button>
+                  </>
+                )}
+                {changeSetDetails.status === 'Approved' && (
+                  <>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setShowExecuteModal(true)}
+                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg shadow-lg"
+                    >
+                      <Play className="w-5 h-5" />
+                      Execute Now
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => setShowScheduleModal(true)}
+                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg shadow-lg"
+                    >
+                      <Calendar className="w-5 h-5" />
+                      Schedule
+                    </motion.button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Changes List */}
+            <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Changes</h3>
+              <div className="space-y-4">
+                {changeSetDetails.changes.map((change, index) => (
+                  <motion.div
+                    key={change.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="border border-gray-200 dark:border-slate-700 rounded-lg p-4 bg-gray-50 dark:bg-slate-700/50"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <span className="font-semibold text-gray-900 dark:text-white">{change.type}</span>
+                        <span className="text-gray-500 dark:text-gray-400 ml-2">({change.entity})</span>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        change.operation === 'CREATE' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
+                        change.operation === 'UPDATE' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300' :
+                        'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+                      }`}>
+                        {change.operation}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 mt-3">
+                      {change.before && (
+                        <div>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Before</p>
+                          <pre className="text-xs bg-white dark:bg-slate-800 p-2 rounded border border-gray-200 dark:border-slate-600 text-gray-900 dark:text-white overflow-auto">
+                            {JSON.stringify(change.before, null, 2)}
+                          </pre>
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">After</p>
+                        <pre className="text-xs bg-white dark:bg-slate-800 p-2 rounded border border-gray-200 dark:border-slate-600 text-gray-900 dark:text-white overflow-auto">
+                          {JSON.stringify(change.after, null, 2)}
+                        </pre>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Simulation Tab */}
+        {activeTab === 'simulation' && selectedChangeSet && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            {/* Impact Analysis */}
+            {impactAnalysis && (
+              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Impact Analysis</h2>
+                <div className="grid grid-cols-4 gap-6 mb-6">
+                  <div className="text-center p-4 bg-gray-50 dark:bg-slate-700/50 rounded-xl">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Risk Level</p>
+                    <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium text-white bg-gradient-to-r ${getRiskColor(impactAnalysis.riskLevel)}`}>
+                      <AlertTriangle className="w-4 h-4" />
+                      {impactAnalysis.riskLevel}
+                    </span>
+                  </div>
+                  <div className="text-center p-4 bg-gray-50 dark:bg-slate-700/50 rounded-xl">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Affected Users</p>
+                    <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{impactAnalysis.affectedUsers}</p>
+                  </div>
+                  <div className="text-center p-4 bg-gray-50 dark:bg-slate-700/50 rounded-xl">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Affected Groups</p>
+                    <p className="text-3xl font-bold text-green-600 dark:text-green-400">{impactAnalysis.affectedGroups}</p>
+                  </div>
+                  <div className="text-center p-4 bg-gray-50 dark:bg-slate-700/50 rounded-xl">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Affected Apps</p>
+                    <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{impactAnalysis.affectedApplications}</p>
+                  </div>
+                </div>
+
+                {impactAnalysis.dependencies.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="font-bold text-gray-900 dark:text-white mb-3">Dependencies</h3>
+                    <div className="space-y-2">
+                      {impactAnalysis.dependencies.map((dep, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
+                          <div>
+                            <span className="font-semibold text-gray-900 dark:text-white">{dep.name}</span>
+                            <span className="text-gray-500 dark:text-gray-400 text-sm ml-2">({dep.type})</span>
+                          </div>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{dep.impact}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {impactAnalysis.recommendations.length > 0 && (
+                  <div>
+                    <h3 className="font-bold text-gray-900 dark:text-white mb-3">Recommendations</h3>
+                    <ul className="space-y-2">
+                      {impactAnalysis.recommendations.map((rec, idx) => (
+                        <li key={idx} className="flex items-start">
+                          <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mr-2 flex-shrink-0 mt-0.5" />
+                          <span className="text-gray-700 dark:text-gray-300">{rec}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Simulation */}
+            <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Simulation</h2>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleSimulate(selectedChangeSet.id)}
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-lg"
+                >
+                  <Play className="w-5 h-5" />
+                  Run Simulation
+                </motion.button>
+              </div>
+
+              {simulationResult && (
+                <div className="space-y-4">
+                  <div className={`p-4 rounded-lg ${simulationResult.success ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800' : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'}`}>
+                    <div className="flex items-center gap-2">
+                      {simulationResult.success ? (
+                        <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                      ) : (
+                        <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+                      )}
+                      <p className={`font-semibold ${simulationResult.success ? 'text-green-800 dark:text-green-300' : 'text-red-800 dark:text-red-300'}`}>
+                        {simulationResult.success ? 'Simulation Successful' : 'Simulation Failed'}
+                      </p>
+                    </div>
+                    <p className="text-sm mt-1 text-gray-600 dark:text-gray-400">Estimated Duration: {simulationResult.estimatedDuration}</p>
+                  </div>
+
+                  {simulationResult.warnings.length > 0 && (
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-4 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                        <p className="font-semibold text-yellow-800 dark:text-yellow-300">Warnings</p>
+                      </div>
+                      <ul className="list-disc list-inside text-sm">
+                        {simulationResult.warnings.map((warning, idx) => (
+                          <li key={idx} className="text-yellow-700 dark:text-yellow-300">{warning}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {simulationResult.affectedEntities.length > 0 && (
+                    <div>
+                      <h3 className="font-bold text-gray-900 dark:text-white mb-3">Affected Entities</h3>
+                      <div className="space-y-2">
+                        {simulationResult.affectedEntities.map((entity) => (
+                          <div key={entity.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg">
+                            <div className="flex items-center gap-2">
+                              {entity.type === 'User' ? <Users className="w-4 h-4 text-gray-500" /> : <Server className="w-4 h-4 text-gray-500" />}
+                              <span className="font-semibold text-gray-900 dark:text-white">{entity.name}</span>
+                              <span className="text-gray-500 dark:text-gray-400 text-sm">({entity.type})</span>
+                            </div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{entity.change}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Execution Log Tab */}
+        {activeTab === 'executionLog' && selectedChangeSet && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6"
+          >
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Execution Log</h2>
+            <div className="space-y-3">
+              {executionLogs.map((log, index) => (
+                <motion.div
+                  key={log.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className={`border-l-4 pl-4 py-3 bg-gray-50 dark:bg-slate-700/50 rounded-r-lg ${
+                    log.status === 'Success' ? 'border-green-500' :
+                    log.status === 'Warning' ? 'border-yellow-500' : 'border-red-500'
+                  }`}
+                >
+                  <div className="flex justify-between items-start mb-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-gray-900 dark:text-white">{log.action}</span>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                        log.status === 'Success' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
+                        log.status === 'Warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' :
+                        'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+                      }`}>
+                        {log.status === 'Success' ? <CheckCircle className="w-3 h-3" /> :
+                         log.status === 'Warning' ? <AlertTriangle className="w-3 h-3" /> :
+                         <XCircle className="w-3 h-3" />}
+                        {log.status}
+                      </span>
+                    </div>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">{new Date(log.timestamp).toLocaleString()}</span>
+                  </div>
+                  <p className="text-sm text-gray-700 dark:text-gray-300">{log.message}</p>
+                  {log.details && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{log.details}</p>
+                  )}
+                </motion.div>
+              ))}
+              {executionLogs.length === 0 && (
+                <div className="text-center py-12">
+                  <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500 dark:text-gray-400">No execution logs available</p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Approvals Tab */}
+        {activeTab === 'approvals' && selectedChangeSet && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6"
+          >
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Approval Status</h2>
+            <div className="space-y-4">
+              {approvals.map((approval, index) => (
+                <motion.div
+                  key={approval.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="border border-gray-200 dark:border-slate-700 rounded-lg p-4 bg-gray-50 dark:bg-slate-700/50"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-white">{approval.approverName}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{approval.approverRole}</p>
+                    </div>
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(approval.decision)}`}>
+                      {approval.decision === 'Approved' ? <CheckCircle className="w-3 h-3" /> :
+                       approval.decision === 'Rejected' ? <XCircle className="w-3 h-3" /> :
+                       <Clock className="w-3 h-3" />}
+                      {approval.decision}
+                    </span>
+                  </div>
+                  {approval.comment && (
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mt-2 italic">&ldquo;{approval.comment}&rdquo;</p>
+                  )}
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{new Date(approval.timestamp).toLocaleString()}</p>
+                </motion.div>
+              ))}
+              {approvals.length === 0 && (
+                <div className="text-center py-12">
+                  <CheckCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500 dark:text-gray-400">No approvals yet</p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Templates Tab */}
+        {activeTab === 'templates' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {templates.map((template, index) => (
+              <motion.div
+                key={template.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ y: -4 }}
+                className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6 hover:shadow-xl transition-all"
               >
-                Use Template
+                <div className="mb-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-bold text-lg text-gray-900 dark:text-white">{template.name}</h3>
+                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
+                      {template.category}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{template.description}</p>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-500 dark:text-gray-400">Module: {template.targetModule}</span>
+                    <span className="text-gray-500 dark:text-gray-400">Used {template.usageCount}x</span>
+                  </div>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleCreateFromTemplate(template)}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all"
+                >
+                  <LayoutTemplate className="w-5 h-5" />
+                  Use Template
+                </motion.button>
+              </motion.div>
+            ))}
+            {templates.length === 0 && (
+              <div className="col-span-3 text-center py-12">
+                <LayoutTemplate className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 dark:text-gray-400">No templates available</p>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* Create Change Set Modal */}
+        <Modal
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          title="Create Change Set"
+          size="lg"
+        >
+          <form onSubmit={handleCreateChangeSet}>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Name *</label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                  value={newChangeSet.name}
+                  onChange={(e) => setNewChangeSet({ ...newChangeSet, name: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Description</label>
+                <textarea
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                  rows={3}
+                  value={newChangeSet.description}
+                  onChange={(e) => setNewChangeSet({ ...newChangeSet, description: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Target Module *</label>
+                <select
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                  value={newChangeSet.targetModule}
+                  onChange={(e) => setNewChangeSet({ ...newChangeSet, targetModule: e.target.value })}
+                >
+                  {targetModules.map(module => (
+                    <option key={module} value={module}>{module}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Changes (JSON) *</label>
+                <textarea
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white font-mono text-sm focus:ring-2 focus:ring-indigo-500"
+                  rows={5}
+                  value={newChangeSet.changesJson}
+                  onChange={(e) => setNewChangeSet({ ...newChangeSet, changesJson: e.target.value })}
+                />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                type="button"
+                onClick={() => setShowCreateModal(false)}
+                className="flex-1 px-6 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="flex-1 px-6 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl"
+              >
+                Create
               </button>
             </div>
-          ))}
-          {templates.length === 0 && (
-            <div className="col-span-3 text-center text-gray-500 py-12">
-              No templates available
-            </div>
-          )}
-        </div>
-      )}
+          </form>
+        </Modal>
 
-      {/* Create Change Set Modal */}
-      <Modal
-        isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        title={`${t('common.create')} ${t('common.changeSet')}`}
-        size="lg"
-      >
-        <form onSubmit={handleCreateChangeSet}>
+        {/* Schedule Modal */}
+        <Modal
+          isOpen={showScheduleModal}
+          onClose={() => setShowScheduleModal(false)}
+          title="Schedule Execution"
+          size="md"
+        >
+          <form onSubmit={handleSchedule}>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Scheduled Time *</label>
+                <input
+                  type="datetime-local"
+                  required
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                  value={scheduleData.scheduledAt}
+                  onChange={(e) => setScheduleData({ ...scheduleData, scheduledAt: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Timezone</label>
+                <select
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                  value={scheduleData.timezone}
+                  onChange={(e) => setScheduleData({ ...scheduleData, timezone: e.target.value })}
+                >
+                  <option value="UTC">UTC</option>
+                  <option value="America/New_York">Eastern Time</option>
+                  <option value="America/Chicago">Central Time</option>
+                  <option value="America/Los_Angeles">Pacific Time</option>
+                </select>
+              </div>
+              <div>
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    className="mr-2 w-4 h-4 text-indigo-600 rounded"
+                    checked={scheduleData.notifyUsers}
+                    onChange={(e) => setScheduleData({ ...scheduleData, notifyUsers: e.target.checked })}
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Notify affected users</span>
+                </label>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                type="button"
+                onClick={() => setShowScheduleModal(false)}
+                className="flex-1 px-6 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="flex-1 px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl"
+              >
+                Schedule
+              </button>
+            </div>
+          </form>
+        </Modal>
+
+        {/* Execute Confirmation Modal */}
+        <Modal
+          isOpen={showExecuteModal}
+          onClose={() => setShowExecuteModal(false)}
+          title="Execute Change Set"
+          size="md"
+        >
           <div className="space-y-4">
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-4 rounded-lg flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-yellow-800 dark:text-yellow-300 font-semibold">Warning</p>
+                <p className="text-yellow-700 dark:text-yellow-400 text-sm mt-1">
+                  This will execute the change set immediately. This action may affect production systems.
+                </p>
+              </div>
+            </div>
+            {selectedChangeSet && (
+              <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg">
+                <p className="text-sm text-gray-600 dark:text-gray-400">Change Set:</p>
+                <p className="font-semibold text-gray-900 dark:text-white">{selectedChangeSet.name}</p>
+              </div>
+            )}
+          </div>
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={() => setShowExecuteModal(false)}
+              className="flex-1 px-6 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleExecute}
+              className="flex-1 px-6 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl"
+            >
+              Execute Now
+            </button>
+          </div>
+        </Modal>
+
+        {/* Rollback Confirmation Modal */}
+        <Modal
+          isOpen={showRollbackModal}
+          onClose={() => setShowRollbackModal(false)}
+          title="Rollback Change Set"
+          size="md"
+        >
+          <div className="space-y-4">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-lg flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-red-800 dark:text-red-300 font-semibold">Critical Action</p>
+                <p className="text-red-700 dark:text-red-400 text-sm mt-1">
+                  This will rollback all changes from this change set. Make sure you understand the impact.
+                </p>
+              </div>
+            </div>
+            {selectedChangeSet && (
+              <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg">
+                <p className="text-sm text-gray-600 dark:text-gray-400">Change Set:</p>
+                <p className="font-semibold text-gray-900 dark:text-white">{selectedChangeSet.name}</p>
+              </div>
+            )}
+          </div>
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={() => setShowRollbackModal(false)}
+              className="flex-1 px-6 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleRollback}
+              className="flex-1 px-6 py-2.5 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl"
+            >
+              Rollback
+            </button>
+          </div>
+        </Modal>
+
+        {/* Approval Modal */}
+        <Modal
+          isOpen={showApprovalModal}
+          onClose={() => setShowApprovalModal(false)}
+          title="Approve Change Set"
+          size="md"
+        >
+          <div className="space-y-4">
+            {selectedChangeSet && (
+              <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg">
+                <p className="text-sm text-gray-600 dark:text-gray-400">Change Set:</p>
+                <p className="font-semibold text-gray-900 dark:text-white">{selectedChangeSet.name}</p>
+              </div>
+            )}
             <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">Name *</label>
+              <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Comment (Optional)</label>
+              <textarea
+                className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                rows={3}
+                placeholder="Add your approval comment..."
+                value={approvalComment}
+                onChange={(e) => setApprovalComment(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={() => setShowApprovalModal(false)}
+              className="flex-1 px-6 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleApproveChangeSet}
+              className="flex-1 px-6 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl"
+            >
+              Approve
+            </button>
+          </div>
+        </Modal>
+
+        {/* Reject Modal */}
+        <Modal
+          isOpen={showRejectModal}
+          onClose={() => setShowRejectModal(false)}
+          title="Reject Change Set"
+          size="md"
+        >
+          <div className="space-y-4">
+            {selectedChangeSet && (
+              <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg">
+                <p className="text-sm text-gray-600 dark:text-gray-400">Change Set:</p>
+                <p className="font-semibold text-gray-900 dark:text-white">{selectedChangeSet.name}</p>
+              </div>
+            )}
+            <div>
+              <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Reason for Rejection *</label>
+              <textarea
+                className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                rows={4}
+                placeholder="Please provide a detailed reason for rejection..."
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={() => setShowRejectModal(false)}
+              className="flex-1 px-6 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleRejectChangeSet}
+              className="flex-1 px-6 py-2.5 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl"
+            >
+              Reject
+            </button>
+          </div>
+        </Modal>
+
+        {/* Clone Modal */}
+        <Modal
+          isOpen={showCloneModal}
+          onClose={() => setShowCloneModal(false)}
+          title="Clone Change Set"
+          size="md"
+        >
+          <div className="space-y-4">
+            {selectedChangeSet && (
+              <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg">
+                <p className="text-sm text-gray-600 dark:text-gray-400">Original Change Set:</p>
+                <p className="font-semibold text-gray-900 dark:text-white">{selectedChangeSet.name}</p>
+              </div>
+            )}
+            <div>
+              <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">New Name *</label>
               <input
                 type="text"
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                value={newChangeSet.name}
-                onChange={(e) => setNewChangeSet({ ...newChangeSet, name: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">Description</label>
-              <textarea
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                rows={3}
-                value={newChangeSet.description}
-                onChange={(e) => setNewChangeSet({ ...newChangeSet, description: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">Target Module *</label>
-              <select
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                value={newChangeSet.targetModule}
-                onChange={(e) => setNewChangeSet({ ...newChangeSet, targetModule: e.target.value })}
-              >
-                {targetModules.map(module => (
-                  <option key={module} value={module}>{module}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">Changes (JSON) *</label>
-              <textarea
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg font-mono text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                rows={5}
-                value={newChangeSet.changesJson}
-                onChange={(e) => setNewChangeSet({ ...newChangeSet, changesJson: e.target.value })}
+                className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                value={cloneName}
+                onChange={(e) => setCloneName(e.target.value)}
               />
             </div>
           </div>
           <div className="flex gap-3 mt-6">
             <button
-              type="button"
-              onClick={() => setShowCreateModal(false)}
-              className="flex-1 px-6 py-3 border-2 border-gray-300 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
+              onClick={() => setShowCloneModal(false)}
+              className="flex-1 px-6 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700"
             >
               Cancel
             </button>
             <button
-              type="submit"
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all"
+              onClick={handleClone}
+              className="flex-1 px-6 py-2.5 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl"
             >
-              Create
+              Clone
             </button>
           </div>
-        </form>
-      </Modal>
-
-      {/* Schedule Modal */}
-      <Modal
-        isOpen={showScheduleModal}
-        onClose={() => setShowScheduleModal(false)}
-        title="Schedule Execution"
-        size="md"
-      >
-        <form onSubmit={handleSchedule}>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">Scheduled Time *</label>
-              <input
-                type="datetime-local"
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                value={scheduleData.scheduledAt}
-                onChange={(e) => setScheduleData({ ...scheduleData, scheduledAt: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2 text-gray-700">Timezone</label>
-              <select
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                value={scheduleData.timezone}
-                onChange={(e) => setScheduleData({ ...scheduleData, timezone: e.target.value })}
-              >
-                <option value="UTC">UTC</option>
-                <option value="America/New_York">Eastern Time</option>
-                <option value="America/Chicago">Central Time</option>
-                <option value="America/Los_Angeles">Pacific Time</option>
-              </select>
-            </div>
-            <div>
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  className="mr-2 w-4 h-4 text-indigo-600 rounded"
-                  checked={scheduleData.notifyUsers}
-                  onChange={(e) => setScheduleData({ ...scheduleData, notifyUsers: e.target.checked })}
-                />
-                <span className="text-sm text-gray-700">Notify affected users</span>
-              </label>
-            </div>
-          </div>
-          <div className="flex gap-3 mt-6">
-            <button
-              type="button"
-              onClick={() => setShowScheduleModal(false)}
-              className="flex-1 px-6 py-3 border-2 border-gray-300 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all"
-            >
-              Schedule
-            </button>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Execute Confirmation Modal */}
-      <Modal
-        isOpen={showExecuteModal}
-        onClose={() => setShowExecuteModal(false)}
-        title="Execute Change Set"
-        size="md"
-      >
-        <div className="space-y-4">
-          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-            <p className="text-yellow-800 font-semibold">Warning</p>
-            <p className="text-yellow-700 text-sm mt-1">
-              This will execute the change set immediately. This action may affect production systems.
-            </p>
-          </div>
-          {selectedChangeSet && (
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-600">Change Set:</p>
-              <p className="font-semibold text-gray-900">{selectedChangeSet.name}</p>
-            </div>
-          )}
-        </div>
-        <div className="flex gap-3 mt-6">
-          <button
-            onClick={() => setShowExecuteModal(false)}
-            className="flex-1 px-6 py-3 border-2 border-gray-300 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleExecute}
-            className="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all"
-          >
-            Execute Now
-          </button>
-        </div>
-      </Modal>
-
-      {/* Rollback Confirmation Modal */}
-      <Modal
-        isOpen={showRollbackModal}
-        onClose={() => setShowRollbackModal(false)}
-        title="Rollback Change Set"
-        size="md"
-      >
-        <div className="space-y-4">
-          <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded">
-            <p className="text-red-800 font-semibold">Critical Action</p>
-            <p className="text-red-700 text-sm mt-1">
-              This will rollback all changes from this change set. Make sure you understand the impact.
-            </p>
-          </div>
-          {selectedChangeSet && (
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-600">Change Set:</p>
-              <p className="font-semibold text-gray-900">{selectedChangeSet.name}</p>
-            </div>
-          )}
-        </div>
-        <div className="flex gap-3 mt-6">
-          <button
-            onClick={() => setShowRollbackModal(false)}
-            className="flex-1 px-6 py-3 border-2 border-gray-300 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleRollback}
-            className="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all"
-          >
-            Rollback
-          </button>
-        </div>
-      </Modal>
-
-      {/* Approval Modal */}
-      <Modal
-        isOpen={showApprovalModal}
-        onClose={() => setShowApprovalModal(false)}
-        title="Approve Change Set"
-        size="md"
-      >
-        <div className="space-y-4">
-          {selectedChangeSet && (
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-600">Change Set:</p>
-              <p className="font-semibold text-gray-900">{selectedChangeSet.name}</p>
-            </div>
-          )}
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700">Comment (Optional)</label>
-            <textarea
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              rows={3}
-              placeholder="Add your approval comment..."
-              value={approvalComment}
-              onChange={(e) => setApprovalComment(e.target.value)}
-            />
-          </div>
-        </div>
-        <div className="flex gap-3 mt-6">
-          <button
-            onClick={() => setShowApprovalModal(false)}
-            className="flex-1 px-6 py-3 border-2 border-gray-300 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleApproveChangeSet}
-            className="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all"
-          >
-            Approve
-          </button>
-        </div>
-      </Modal>
-
-      {/* Reject Modal */}
-      <Modal
-        isOpen={showRejectModal}
-        onClose={() => setShowRejectModal(false)}
-        title="Reject Change Set"
-        size="md"
-      >
-        <div className="space-y-4">
-          {selectedChangeSet && (
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-600">Change Set:</p>
-              <p className="font-semibold text-gray-900">{selectedChangeSet.name}</p>
-            </div>
-          )}
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700">Reason for Rejection *</label>
-            <textarea
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              rows={4}
-              placeholder="Please provide a detailed reason for rejection..."
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              required
-            />
-          </div>
-        </div>
-        <div className="flex gap-3 mt-6">
-          <button
-            onClick={() => setShowRejectModal(false)}
-            className="flex-1 px-6 py-3 border-2 border-gray-300 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleRejectChangeSet}
-            className="flex-1 px-6 py-3 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all"
-          >
-            Reject
-          </button>
-        </div>
-      </Modal>
-
-      {/* Clone Modal */}
-      <Modal
-        isOpen={showCloneModal}
-        onClose={() => setShowCloneModal(false)}
-        title="Clone Change Set"
-        size="md"
-      >
-        <div className="space-y-4">
-          {selectedChangeSet && (
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-600">Original Change Set:</p>
-              <p className="font-semibold text-gray-900">{selectedChangeSet.name}</p>
-            </div>
-          )}
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-700">New Name *</label>
-            <input
-              type="text"
-              required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              value={cloneName}
-              onChange={(e) => setCloneName(e.target.value)}
-            />
-          </div>
-        </div>
-        <div className="flex gap-3 mt-6">
-          <button
-            onClick={() => setShowCloneModal(false)}
-            className="flex-1 px-6 py-3 border-2 border-gray-300 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleClone}
-            className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all"
-          >
-            Clone
-          </button>
-        </div>
-      </Modal>
-    </div>
+        </Modal>
+      </div>
     </div>
   );
 }

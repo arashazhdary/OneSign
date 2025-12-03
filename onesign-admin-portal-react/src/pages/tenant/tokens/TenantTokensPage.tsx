@@ -1,6 +1,29 @@
 import { useState, useEffect } from 'react';
 import { tenantService } from '@/lib/api/services/tenant.service';
 import { Helmet } from 'react-helmet-async';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Key,
+  Plus,
+  RefreshCw,
+  Copy,
+  Eye,
+  EyeOff,
+  RotateCcw,
+  XCircle,
+  CheckCircle,
+  AlertTriangle,
+  Clock,
+  Shield,
+  Activity,
+  X,
+  Trash2,
+  Lock,
+  Unlock,
+  Server,
+  Globe
+} from 'lucide-react';
+import Modal from '@/components/common/Modal';
 
 interface Token {
   id: string;
@@ -18,12 +41,48 @@ interface Token {
   ipWhitelist?: string[];
 }
 
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ElementType;
+  color: string;
+  delay?: number;
+}
+
+const StatCard = ({ title, value, icon: Icon, color, delay = 0 }: StatCardProps) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: delay * 0.1 }}
+    className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 hover:shadow-lg transition-all"
+  >
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-slate-600 dark:text-slate-400">{title}</p>
+        <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{value}</p>
+      </div>
+      <div className={`p-3 rounded-xl ${color}`}>
+        <Icon className="w-6 h-6 text-white" />
+      </div>
+    </div>
+  </motion.div>
+);
+
 export default function TenantTokensPage() {
   const [tokens, setTokens] = useState<Token[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [showToken, setShowToken] = useState<string | null>(null);
   const [filterType, setFilterType] = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Form state
+  const [newTokenName, setNewTokenName] = useState('');
+  const [newTokenType, setNewTokenType] = useState('api_key');
+  const [newTokenPermissions, setNewTokenPermissions] = useState(['read', 'write']);
+  const [newTokenIpWhitelist, setNewTokenIpWhitelist] = useState('');
 
   useEffect(() => {
     fetchTokens();
@@ -117,60 +176,94 @@ export default function TenantTokensPage() {
     }
   };
 
-  const handleCreate = async () => {
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
     try {
       await tenantService.createToken({
-        name: 'New Token',
-        type: 'access',
-        permissions: ['read', 'write'],
+        name: newTokenName,
+        type: newTokenType as any,
+        permissions: newTokenPermissions,
       });
+      setSuccess('Token created successfully');
       setShowCreate(false);
+      setNewTokenName('');
+      setNewTokenType('api_key');
+      setNewTokenPermissions(['read', 'write']);
+      setNewTokenIpWhitelist('');
       fetchTokens();
     } catch (error) {
+      setError('Failed to create token');
       console.error('Failed to create token:', error);
     }
   };
 
   const handleRevoke = async (tokenId: string) => {
     if (!confirm('Revoke this token? This action cannot be undone.')) return;
+    setError('');
+    setSuccess('');
     try {
       await tenantService.revokeToken(tokenId);
+      setSuccess('Token revoked successfully');
       fetchTokens();
     } catch (error) {
+      setError('Failed to revoke token');
       console.error('Failed to revoke token:', error);
     }
   };
 
   const handleRotate = async (tokenId: string) => {
     if (!confirm('Rotate this token? The old token will be invalidated.')) return;
+    setError('');
+    setSuccess('');
     try {
       await tenantService.rotateToken(tokenId);
+      setSuccess('Token rotated successfully');
       fetchTokens();
     } catch (error) {
+      setError('Failed to rotate token');
       console.error('Failed to rotate token:', error);
     }
   };
 
-  const handleCopy = (token: string) => {
+  const handleCopy = (token: string, id: string) => {
     navigator.clipboard.writeText(token);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const togglePermission = (perm: string) => {
+    setNewTokenPermissions(prev =>
+      prev.includes(perm) ? prev.filter(p => p !== perm) : [...prev, perm]
+    );
   };
 
   const getTypeBadge = (type: string) => {
     const colors = {
-      access: 'bg-blue-100 text-blue-800',
-      refresh: 'bg-purple-100 text-purple-800',
-      api_key: 'bg-green-100 text-green-800',
+      access: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+      refresh: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
+      api_key: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400',
     };
-    return colors[type as keyof typeof colors] || 'bg-gray-100';
+    return colors[type as keyof typeof colors] || 'bg-slate-100 dark:bg-slate-700';
   };
 
   const getStatusBadge = (status: string) => {
     const colors = {
-      active: 'bg-green-100 text-green-800',
-      expired: 'bg-red-100 text-red-800',
-      revoked: 'bg-gray-100 text-gray-800',
+      active: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400',
+      expired: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+      revoked: 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-400',
     };
-    return colors[status as keyof typeof colors] || 'bg-gray-100';
+    return colors[status as keyof typeof colors] || 'bg-slate-100 dark:bg-slate-700';
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'active': return <CheckCircle className="w-4 h-4" />;
+      case 'expired': return <Clock className="w-4 h-4" />;
+      case 'revoked': return <XCircle className="w-4 h-4" />;
+      default: return null;
+    }
   };
 
   const maskToken = (token: string, prefix: string) => {
@@ -181,58 +274,154 @@ export default function TenantTokensPage() {
     ? tokens.filter(t => t.type === filterType)
     : tokens;
 
-  if (loading) return <div className="p-6">Loading...</div>;
+  // Stats
+  const totalTokens = tokens.length;
+  const activeTokens = tokens.filter(t => t.status === 'active').length;
+  const revokedTokens = tokens.filter(t => t.status === 'revoked').length;
+  const totalApiCalls = tokens.reduce((acc, t) => acc + t.usageCount, 0);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 p-8">
+        <div className="flex items-center justify-center h-64">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          >
+            <Key className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+          </motion.div>
+          <span className="ml-3 text-slate-600 dark:text-slate-400">Loading tokens...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Access Tokens</h1>
-          <p className="text-gray-600 mt-1">Manage API keys and access tokens</p>
-        </div>
-        <button
-          onClick={() => setShowCreate(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+      <Helmet>
+        <title>Access Tokens - OneSign</title>
+      </Helmet>
+
+      <div className="p-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8"
         >
-          Create Token
-        </button>
-      </div>
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg">
+              <Key className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+                Access Tokens
+              </h1>
+              <p className="text-slate-600 dark:text-slate-400 mt-1">
+                Manage API keys and access tokens
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={fetchTokens}
+              className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Refresh
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setShowCreate(true)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-500/25"
+            >
+              <Plus className="w-4 h-4" />
+              Create Token
+            </motion.button>
+          </div>
+        </motion.div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-600">Total Tokens</div>
-          <div className="text-2xl font-bold">{tokens.length}</div>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-600">Active</div>
-          <div className="text-2xl font-bold text-green-600">
-            {tokens.filter(t => t.status === 'active').length}
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-600">Revoked</div>
-          <div className="text-2xl font-bold text-gray-600">
-            {tokens.filter(t => t.status === 'revoked').length}
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-600">Total API Calls</div>
-          <div className="text-2xl font-bold">
-            {tokens.reduce((acc, t) => acc + t.usageCount, 0).toLocaleString()}
-          </div>
-        </div>
-      </div>
+        {/* Alerts */}
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl flex items-center gap-3"
+            >
+              <XCircle className="w-5 h-5 flex-shrink-0" />
+              {error}
+              <button onClick={() => setError('')} className="ml-auto">
+                <X className="w-4 h-4" />
+              </button>
+            </motion.div>
+          )}
 
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4 mb-4">
-        <div className="flex space-x-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">Filter by Type</label>
+          {success && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-6 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 px-4 py-3 rounded-xl flex items-center gap-3"
+            >
+              <CheckCircle className="w-5 h-5 flex-shrink-0" />
+              {success}
+              <button onClick={() => setSuccess('')} className="ml-auto">
+                <X className="w-4 h-4" />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatCard
+            title="Total Tokens"
+            value={totalTokens}
+            icon={Key}
+            color="bg-gradient-to-br from-indigo-500 to-purple-600"
+            delay={0}
+          />
+          <StatCard
+            title="Active"
+            value={activeTokens}
+            icon={Unlock}
+            color="bg-gradient-to-br from-emerald-500 to-teal-600"
+            delay={1}
+          />
+          <StatCard
+            title="Revoked"
+            value={revokedTokens}
+            icon={Lock}
+            color="bg-gradient-to-br from-slate-500 to-slate-600"
+            delay={2}
+          />
+          <StatCard
+            title="Total API Calls"
+            value={totalApiCalls.toLocaleString()}
+            icon={Activity}
+            color="bg-gradient-to-br from-blue-500 to-cyan-600"
+            delay={3}
+          />
+        </div>
+
+        {/* Filters */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-4 mb-6"
+        >
+          <div className="flex items-center gap-4">
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Filter by Type:</label>
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2"
+              className="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
             >
               <option value="">All Types</option>
               <option value="api_key">API Key</option>
@@ -240,217 +429,298 @@ export default function TenantTokensPage() {
               <option value="refresh">Refresh Token</option>
             </select>
           </div>
-        </div>
-      </div>
+        </motion.div>
 
-      {/* Tokens List */}
-      <div className="space-y-4">
-        {filteredTokens.map((token) => (
-          <div key={token.id} className="bg-white rounded-lg shadow p-6">
-            <div className="flex justify-between items-start mb-4">
-              <div className="flex-1">
-                <div className="flex items-center space-x-3 mb-2">
-                  <h3 className="text-lg font-semibold">{token.name}</h3>
-                  <span className={`px-2 py-1 text-xs rounded-full ${getTypeBadge(token.type)}`}>
-                    {token.type.replace('_', ' ')}
-                  </span>
-                  <span className={`px-2 py-1 text-xs rounded-full ${getStatusBadge(token.status)}`}>
-                    {token.status}
-                  </span>
-                </div>
-
-                {/* Token Display */}
-                <div className="bg-gray-50 rounded p-3 mb-3 font-mono text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="break-all">
-                      {showToken === token.id ? token.token : maskToken(token.token, token.prefix)}
+        {/* Tokens List */}
+        <div className="space-y-4">
+          {filteredTokens.map((token, index) => (
+            <motion.div
+              key={token.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 + index * 0.1 }}
+              className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 hover:shadow-lg transition-all"
+            >
+              <div className="flex flex-col lg:flex-row justify-between items-start gap-4">
+                <div className="flex-1 w-full">
+                  {/* Token Header */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+                      <Key className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{token.name}</h3>
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg font-medium ${getTypeBadge(token.type)}`}>
+                      {token.type === 'api_key' ? 'API Key' : token.type === 'access' ? 'Access' : 'Refresh'}
                     </span>
-                    <div className="flex space-x-2 ml-4">
-                      <button
-                        onClick={() => setShowToken(showToken === token.id ? null : token.id)}
-                        className="text-blue-600 hover:text-blue-800 text-xs"
-                      >
-                        {showToken === token.id ? 'Hide' : 'Show'}
-                      </button>
-                      <button
-                        onClick={() => handleCopy(token.token)}
-                        className="text-blue-600 hover:text-blue-800 text-xs"
-                      >
-                        Copy
-                      </button>
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg font-medium ${getStatusBadge(token.status)}`}>
+                      {getStatusIcon(token.status)}
+                      {token.status}
+                    </span>
+                  </div>
+
+                  {/* Token Display */}
+                  <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4 mb-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <code className="text-sm font-mono text-slate-700 dark:text-slate-300 break-all">
+                        {showToken === token.id ? token.token : maskToken(token.token, token.prefix)}
+                      </code>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => setShowToken(showToken === token.id ? null : token.id)}
+                          className="p-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
+                          title={showToken === token.id ? 'Hide' : 'Show'}
+                        >
+                          {showToken === token.id ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => handleCopy(token.token, token.id)}
+                          className="p-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-colors"
+                          title="Copy"
+                        >
+                          {copiedId === token.id ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                        </motion.button>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Permissions */}
-                <div className="mb-3">
-                  <span className="text-sm text-gray-500">Permissions:</span>
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {token.permissions.map((perm, idx) => (
-                      <span key={idx} className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
-                        {perm}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Token Info */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-500">Created:</span>
-                    <span className="ml-2">{new Date(token.createdAt).toLocaleDateString()}</span>
-                  </div>
-                  {token.expiresAt && (
-                    <div>
-                      <span className="text-gray-500">Expires:</span>
-                      <span className="ml-2">{new Date(token.expiresAt).toLocaleDateString()}</span>
-                    </div>
-                  )}
-                  {token.lastUsed && (
-                    <div>
-                      <span className="text-gray-500">Last Used:</span>
-                      <span className="ml-2">{new Date(token.lastUsed).toLocaleString()}</span>
-                    </div>
-                  )}
-                  <div>
-                    <span className="text-gray-500">Usage:</span>
-                    <span className="ml-2 font-semibold">{token.usageCount.toLocaleString()} calls</span>
-                  </div>
-                </div>
-
-                {/* IP Whitelist */}
-                {token.ipWhitelist && token.ipWhitelist.length > 0 && (
-                  <div className="mt-3">
-                    <span className="text-sm text-gray-500">IP Whitelist:</span>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {token.ipWhitelist.map((ip, idx) => (
-                        <span key={idx} className="px-2 py-1 text-xs bg-gray-100 rounded font-mono">
-                          {ip}
+                  {/* Permissions */}
+                  <div className="mb-4">
+                    <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Permissions:</span>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {token.permissions.map((perm, idx) => (
+                        <span key={idx} className="inline-flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                          <Shield className="w-3 h-3" />
+                          {perm}
                         </span>
                       ))}
                     </div>
                   </div>
+
+                  {/* Token Info */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Created</p>
+                      <p className="font-medium text-slate-900 dark:text-white">{new Date(token.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    {token.expiresAt && (
+                      <div className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Expires</p>
+                        <p className="font-medium text-slate-900 dark:text-white">{new Date(token.expiresAt).toLocaleDateString()}</p>
+                      </div>
+                    )}
+                    {token.lastUsed && (
+                      <div className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Last Used</p>
+                        <p className="font-medium text-slate-900 dark:text-white">{new Date(token.lastUsed).toLocaleString()}</p>
+                      </div>
+                    )}
+                    <div className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">API Calls</p>
+                      <p className="font-medium text-slate-900 dark:text-white">{token.usageCount.toLocaleString()}</p>
+                    </div>
+                  </div>
+
+                  {/* IP Whitelist */}
+                  {token.ipWhitelist && token.ipWhitelist.length > 0 && (
+                    <div className="mt-4">
+                      <span className="text-sm font-medium text-slate-600 dark:text-slate-400 flex items-center gap-1">
+                        <Globe className="w-4 h-4" />
+                        IP Whitelist:
+                      </span>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {token.ipWhitelist.map((ip, idx) => (
+                          <span key={idx} className="px-2.5 py-1 text-xs bg-slate-100 dark:bg-slate-700 rounded-lg font-mono text-slate-700 dark:text-slate-300">
+                            {ip}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Expiry Warning */}
+                  {token.expiresAt && token.status === 'active' && (
+                    (() => {
+                      const daysUntilExpiry = Math.ceil((new Date(token.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                      if (daysUntilExpiry <= 30) {
+                        return (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="mt-4 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl text-sm flex items-center gap-3"
+                          >
+                            <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                            <div>
+                              <p className="font-medium text-amber-800 dark:text-amber-300">Expiring Soon</p>
+                              <p className="text-amber-700 dark:text-amber-400">This token will expire in {daysUntilExpiry} days. Consider rotating it before expiry.</p>
+                            </div>
+                          </motion.div>
+                        );
+                      }
+                      return null;
+                    })()
+                  )}
+                </div>
+
+                {/* Actions */}
+                {token.status === 'active' && (
+                  <div className="flex lg:flex-col gap-2 flex-shrink-0">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleRotate(token.id)}
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      Rotate
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleRevoke(token.id)}
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Revoke
+                    </motion.button>
+                  </div>
                 )}
               </div>
+            </motion.div>
+          ))}
 
-              {token.status === 'active' && (
-                <div className="flex space-x-2 ml-4">
-                  <button
-                    onClick={() => handleRotate(token.id)}
-                    className="px-3 py-1 text-sm border border-blue-300 text-blue-600 rounded hover:bg-blue-50"
-                  >
-                    Rotate
-                  </button>
-                  <button
-                    onClick={() => handleRevoke(token.id)}
-                    className="px-3 py-1 text-sm text-red-600 border border-red-300 rounded hover:bg-red-50"
-                  >
-                    Revoke
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Expiry Warning */}
-            {token.expiresAt && token.status === 'active' && (
-              (() => {
-                const daysUntilExpiry = Math.ceil((new Date(token.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-                if (daysUntilExpiry <= 30) {
-                  return (
-                    <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
-                      <strong>⚠️ Expiring Soon:</strong> This token will expire in {daysUntilExpiry} days.
-                      Consider rotating it before expiry.
-                    </div>
-                  );
-                }
-                return null;
-              })()
-            )}
-          </div>
-        ))}
+          {filteredTokens.length === 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-12 text-center"
+            >
+              <div className="p-4 bg-slate-100 dark:bg-slate-700 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                <Key className="w-8 h-8 text-slate-400" />
+              </div>
+              <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">
+                No tokens found
+              </h3>
+              <p className="text-slate-600 dark:text-slate-400 mb-4">
+                Create your first access token to get started
+              </p>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowCreate(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Create Token
+              </motion.button>
+            </motion.div>
+          )}
+        </div>
       </div>
 
       {/* Create Token Modal */}
-      {showCreate && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Create New Token</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">Token Name</label>
-                <input
-                  type="text"
-                  placeholder="e.g., Production API Key"
-                  className="w-full border border-gray-300 rounded-lg p-2"
-                />
-              </div>
+      <Modal
+        isOpen={showCreate}
+        onClose={() => setShowCreate(false)}
+        title="Create New Token"
+      >
+        <form onSubmit={handleCreate} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Token Name
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="e.g., Production API Key"
+              value={newTokenName}
+              onChange={(e) => setNewTokenName(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            />
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">Token Type</label>
-                <select className="w-full border border-gray-300 rounded-lg p-2">
-                  <option value="api_key">API Key (No expiration)</option>
-                  <option value="access">Access Token (Expires in 90 days)</option>
-                  <option value="refresh">Refresh Token (Expires in 1 year)</option>
-                </select>
-              </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Token Type
+            </label>
+            <select
+              value={newTokenType}
+              onChange={(e) => setNewTokenType(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            >
+              <option value="api_key">API Key (No expiration)</option>
+              <option value="access">Access Token (Expires in 90 days)</option>
+              <option value="refresh">Refresh Token (Expires in 1 year)</option>
+            </select>
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-2">Permissions</label>
-                <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input type="checkbox" className="mr-2" defaultChecked />
-                    <span className="text-sm">Read</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input type="checkbox" className="mr-2" defaultChecked />
-                    <span className="text-sm">Write</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input type="checkbox" className="mr-2" />
-                    <span className="text-sm">Delete</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input type="checkbox" className="mr-2" />
-                    <span className="text-sm">Admin</span>
-                  </label>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">IP Whitelist (Optional)</label>
-                <input
-                  type="text"
-                  placeholder="192.168.1.0/24, 10.0.0.0/16"
-                  className="w-full border border-gray-300 rounded-lg p-2"
-                />
-                <p className="mt-1 text-xs text-gray-500">
-                  Comma-separated list of IP addresses or CIDR ranges
-                </p>
-              </div>
-
-              <div className="p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
-                <strong>Important:</strong> The token will be displayed only once after creation.
-                Make sure to copy and store it securely.
-              </div>
-
-              <div className="flex justify-end space-x-2">
-                <button
-                  onClick={() => setShowCreate(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleCreate}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  Create Token
-                </button>
-              </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Permissions
+            </label>
+            <div className="space-y-2">
+              {['read', 'write', 'delete', 'admin'].map((perm) => (
+                <label key={perm} className="flex items-center p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={newTokenPermissions.includes(perm)}
+                    onChange={() => togglePermission(perm)}
+                    className="rounded border-slate-300 dark:border-slate-500 text-indigo-600 focus:ring-indigo-500 w-5 h-5"
+                  />
+                  <span className="ml-3 text-sm font-medium text-slate-700 dark:text-slate-300 capitalize">{perm}</span>
+                </label>
+              ))}
             </div>
           </div>
-        </div>
-      )}
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              IP Whitelist (Optional)
+            </label>
+            <input
+              type="text"
+              placeholder="192.168.1.0/24, 10.0.0.0/16"
+              value={newTokenIpWhitelist}
+              onChange={(e) => setNewTokenIpWhitelist(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            />
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+              Comma-separated list of IP addresses or CIDR ranges
+            </p>
+          </div>
+
+          <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-amber-700 dark:text-amber-400">
+              <strong>Important:</strong> The token will be displayed only once after creation. Make sure to copy and store it securely.
+            </p>
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="submit"
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-500/25"
+            >
+              <Key className="w-4 h-4" />
+              Create Token
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              type="button"
+              onClick={() => setShowCreate(false)}
+              className="px-6 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-all"
+            >
+              Cancel
+            </motion.button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

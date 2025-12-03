@@ -4,7 +4,56 @@ import { useLocale } from '@/hooks/useLocale';
 import { getTenantId } from '@/lib/tenant-context';
 import * as ObservabilityAPI from '@/lib/api/observability';
 import { Helmet } from 'react-helmet-async';
+import { motion, AnimatePresence } from 'framer-motion';
+import Modal from '@/components/common/Modal';
+import {
+  Eye,
+  Search,
+  Download,
+  Filter,
+  Calendar,
+  User,
+  Shield,
+  Server,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  Activity,
+  Clock,
+  Globe,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  FileText,
+  Trash2
+} from 'lucide-react';
 
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+  color: string;
+  delay: number;
+}
+
+const StatCard = ({ title, value, icon, color, delay }: StatCardProps) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: delay * 0.1 }}
+    className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300"
+  >
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
+        <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+      </div>
+      <div className={`p-4 rounded-xl bg-gradient-to-br ${color}`}>
+        {icon}
+      </div>
+    </div>
+  </motion.div>
+);
 
 export default function TenantObservabilityPage() {
   const { t } = useTranslation();
@@ -139,354 +188,602 @@ export default function TenantObservabilityPage() {
     setSearchResults(null);
   };
 
+  const getEventTypeIcon = (type: string) => {
+    switch (type) {
+      case 'Authentication':
+        return <Shield className="w-4 h-4" />;
+      case 'Authorization':
+        return <User className="w-4 h-4" />;
+      case 'UserManagement':
+        return <User className="w-4 h-4" />;
+      case 'ApplicationManagement':
+        return <Server className="w-4 h-4" />;
+      case 'SecurityPolicy':
+        return <Shield className="w-4 h-4" />;
+      case 'Configuration':
+        return <FileText className="w-4 h-4" />;
+      default:
+        return <Activity className="w-4 h-4" />;
+    }
+  };
+
+  // Calculate stats from search results
+  const totalEvents = searchResults?.totalCount || 0;
+  const successEvents = searchResults?.events?.filter((e: any) => e.success).length || 0;
+  const failedEvents = searchResults?.events?.filter((e: any) => !e.success).length || 0;
+  const uniqueActors = searchResults ? new Set(searchResults.events?.map((e: any) => e.actorId)).size : 0;
+
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">{t('tenant.observability.title') || 'Advanced Audit Search'}</h1>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+      <Helmet>
+        <title>{t('tenant.observability.title') || 'Advanced Audit Search'} | OneSign</title>
+      </Helmet>
+
+      <div className="p-8">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg">
+                <Eye className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {t('tenant.observability.title') || 'Advanced Audit Search'}
+                </h1>
+                <p className="text-gray-500 dark:text-gray-400 mt-1">
+                  {t('tenant.observability.subtitle') || 'Search and analyze audit events across your organization'}
+                </p>
+              </div>
+            </div>
+            {searchResults && (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleExport}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                <Download className="w-5 h-5" />
+                {t('common.exportResults')}
+              </motion.button>
+            )}
+          </div>
+        </motion.div>
+
+        {/* Error/Success Messages */}
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-6 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-xl flex items-center gap-2"
+            >
+              <XCircle className="w-5 h-5" />
+              {error}
+            </motion.div>
+          )}
+          {success && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-6 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 px-4 py-3 rounded-xl flex items-center gap-2"
+            >
+              <CheckCircle className="w-5 h-5" />
+              {success}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Stats Cards */}
         {searchResults && (
-          <button
-            onClick={handleExport}
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-          >
-            {t('common.exportResults')}
-          </button>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <StatCard
+              title={t('tenant.observability.totalEvents') || 'Total Events'}
+              value={totalEvents.toLocaleString()}
+              icon={<Activity className="w-6 h-6 text-white" />}
+              color="from-blue-500 to-indigo-600"
+              delay={0}
+            />
+            <StatCard
+              title={t('tenant.observability.successfulEvents') || 'Successful'}
+              value={successEvents}
+              icon={<CheckCircle className="w-6 h-6 text-white" />}
+              color="from-green-500 to-emerald-600"
+              delay={1}
+            />
+            <StatCard
+              title={t('tenant.observability.failedEvents') || 'Failed'}
+              value={failedEvents}
+              icon={<XCircle className="w-6 h-6 text-white" />}
+              color="from-red-500 to-rose-600"
+              delay={2}
+            />
+            <StatCard
+              title={t('tenant.observability.uniqueActors') || 'Unique Actors'}
+              value={uniqueActors}
+              icon={<User className="w-6 h-6 text-white" />}
+              color="from-purple-500 to-violet-600"
+              delay={3}
+            />
+          </div>
         )}
-      </div>
 
-      {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-          {success}
-        </div>
-      )}
-
-      {/* Search Form */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
-        <h2 className="text-xl font-semibold mb-4">{t('common.searchFilters')}</h2>
-        <form onSubmit={handleSearch}>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Date Range */}
-            <div>
-              <label className="block text-sm font-medium mb-2">{t('tenant.observability.startDate') || 'Start Date'}</label>
-              <input
-                type="date"
-                className="w-full px-3 py-2 border rounded"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
+        {/* Search Form */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6 mb-8"
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-gradient-to-br from-indigo-100 to-blue-100 dark:from-indigo-900/50 dark:to-blue-900/50 rounded-lg">
+              <Filter className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">{t('tenant.observability.endDate') || 'End Date'}</label>
-              <input
-                type="date"
-                className="w-full px-3 py-2 border rounded"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-            </div>
-
-            {/* Event Type */}
-            <div>
-              <label className="block text-sm font-medium mb-2">{t('tenant.observability.eventType') || 'Event Type'}</label>
-              <select
-                className="w-full px-3 py-2 border rounded"
-                value={eventType}
-                onChange={(e) => setEventType(e.target.value)}
-              >
-                <option value="">{t('common.all')}</option>
-                <option value="Authentication">Authentication</option>
-                <option value="Authorization">Authorization</option>
-                <option value="UserManagement">User Management</option>
-                <option value="ApplicationManagement">Application Management</option>
-                <option value="SecurityPolicy">Security Policy</option>
-                <option value="Configuration">Configuration</option>
-              </select>
-            </div>
-
-            {/* Action */}
-            <div>
-              <label className="block text-sm font-medium mb-2">{t('tenant.observability.action') || 'Action'}</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border rounded"
-                value={action}
-                onChange={(e) => setAction(e.target.value)}
-                placeholder={t('common.placeholderAction')}
-              />
-            </div>
-
-            {/* Actor ID */}
-            <div>
-              <label className="block text-sm font-medium mb-2">{t('tenant.observability.actorId') || 'Actor (User ID)'}</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border rounded"
-                value={actorId}
-                onChange={(e) => setActorId(e.target.value)}
-                placeholder={t('common.placeholderUserIdOrEmail')}
-              />
-            </div>
-
-            {/* Resource Type */}
-            <div>
-              <label className="block text-sm font-medium mb-2">{t('tenant.observability.resourceType') || 'Resource Type'}</label>
-              <select
-                className="w-full px-3 py-2 border rounded"
-                value={resourceType}
-                onChange={(e) => setResourceType(e.target.value)}
-              >
-                <option value="">{t('common.all')}</option>
-                <option value="User">User</option>
-                <option value="Application">Application</option>
-                <option value="Role">Role</option>
-                <option value="Policy">Policy</option>
-                <option value="OrgUnit">Org Unit</option>
-              </select>
-            </div>
-
-            {/* Resource ID */}
-            <div>
-              <label className="block text-sm font-medium mb-2">{t('tenant.observability.resourceId') || 'Resource ID'}</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border rounded"
-                value={resourceId}
-                onChange={(e) => setResourceId(e.target.value)}
-                placeholder={t('common.placeholderResourceId')}
-              />
-            </div>
-
-            {/* IP Address */}
-            <div>
-              <label className="block text-sm font-medium mb-2">{t('audit.ipAddress')}</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border rounded"
-                value={ipAddress}
-                onChange={(e) => setIpAddress(e.target.value)}
-                placeholder={t('common.placeholderIpAddress')}
-              />
-            </div>
-
-            {/* Success Filter */}
-            <div>
-              <label className="block text-sm font-medium mb-2">{t('common.status')}</label>
-              <select
-                className="w-full px-3 py-2 border rounded"
-                value={successFilter === null ? 'all' : successFilter.toString()}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setSuccessFilter(value === 'all' ? null : value === 'true');
-                }}
-              >
-                <option value="all">{t('common.all')}</option>
-                <option value="true">{t('common.success')}</option>
-                <option value="false">{t('common.failed')}</option>
-              </select>
-            </div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('common.searchFilters')}</h2>
           </div>
 
-          <div className="mt-6 flex gap-2">
-            <button
-              type="submit"
-              disabled={loading}
-              className="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 disabled:bg-gray-400"
-            >
-              {loading ? t('common.searching') : t('common.search')}
-            </button>
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="bg-gray-300 px-6 py-2 rounded hover:bg-gray-400"
-            >
-              {t('common.clearFilters')}
-            </button>
-          </div>
-        </form>
-      </div>
+          <form onSubmit={handleSearch}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Date Range */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <Calendar className="w-4 h-4 inline mr-2" />
+                  {t('tenant.observability.startDate') || 'Start Date'}
+                </label>
+                <input
+                  type="date"
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <Calendar className="w-4 h-4 inline mr-2" />
+                  {t('tenant.observability.endDate') || 'End Date'}
+                </label>
+                <input
+                  type="date"
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
 
-      {/* Search Results */}
-      {searchResults && (
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold">
-              {t('common.results')} ({searchResults.totalCount.toLocaleString()} {t('common.events')})
-            </h2>
-          </div>
+              {/* Event Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <Activity className="w-4 h-4 inline mr-2" />
+                  {t('tenant.observability.eventType') || 'Event Type'}
+                </label>
+                <select
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                  value={eventType}
+                  onChange={(e) => setEventType(e.target.value)}
+                >
+                  <option value="">{t('common.all')}</option>
+                  <option value="Authentication">Authentication</option>
+                  <option value="Authorization">Authorization</option>
+                  <option value="UserManagement">User Management</option>
+                  <option value="ApplicationManagement">Application Management</option>
+                  <option value="SecurityPolicy">Security Policy</option>
+                  <option value="Configuration">Configuration</option>
+                </select>
+              </div>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.observability.timestamp') || 'Timestamp'}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.observability.eventType') || 'Event Type'}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.observability.action') || 'Action'}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.observability.actor') || 'Actor'}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('tenant.observability.resource') || 'Resource'}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.status')}</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {searchResults.events.map((event) => (
-                  <tr key={event.id} className={!event.success ? 'bg-red-50' : ''}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(event.timestamp).toLocaleString(locale)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{event.eventType}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{event.action}</td>
-                    <td className="px-6 py-4 text-sm">
-                      <div className="text-gray-900">{event.actorEmail}</div>
-                      <div className="text-gray-500 text-xs">{event.actorId}</div>
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      <div className="text-gray-900">{event.resourceType}</div>
-                      <div className="text-gray-500 text-xs">{event.resourceId}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${
-                        event.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                        {event.success ? t('common.success') : t('common.failed')}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <button
-                        onClick={() => handleViewDetails(event)}
-                        className="text-indigo-600 hover:text-indigo-900"
-                      >
-                        {t('common.viewDetails')}
-                      </button>
-                    </td>
+              {/* Action */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('tenant.observability.action') || 'Action'}
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                  value={action}
+                  onChange={(e) => setAction(e.target.value)}
+                  placeholder={t('common.placeholderAction')}
+                />
+              </div>
+
+              {/* Actor ID */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <User className="w-4 h-4 inline mr-2" />
+                  {t('tenant.observability.actorId') || 'Actor (User ID)'}
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                  value={actorId}
+                  onChange={(e) => setActorId(e.target.value)}
+                  placeholder={t('common.placeholderUserIdOrEmail')}
+                />
+              </div>
+
+              {/* Resource Type */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <Server className="w-4 h-4 inline mr-2" />
+                  {t('tenant.observability.resourceType') || 'Resource Type'}
+                </label>
+                <select
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                  value={resourceType}
+                  onChange={(e) => setResourceType(e.target.value)}
+                >
+                  <option value="">{t('common.all')}</option>
+                  <option value="User">User</option>
+                  <option value="Application">Application</option>
+                  <option value="Role">Role</option>
+                  <option value="Policy">Policy</option>
+                  <option value="OrgUnit">Org Unit</option>
+                </select>
+              </div>
+
+              {/* Resource ID */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('tenant.observability.resourceId') || 'Resource ID'}
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                  value={resourceId}
+                  onChange={(e) => setResourceId(e.target.value)}
+                  placeholder={t('common.placeholderResourceId')}
+                />
+              </div>
+
+              {/* IP Address */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <Globe className="w-4 h-4 inline mr-2" />
+                  {t('audit.ipAddress')}
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                  value={ipAddress}
+                  onChange={(e) => setIpAddress(e.target.value)}
+                  placeholder={t('common.placeholderIpAddress')}
+                />
+              </div>
+
+              {/* Success Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('common.status')}
+                </label>
+                <select
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                  value={successFilter === null ? 'all' : successFilter.toString()}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setSuccessFilter(value === 'all' ? null : value === 'true');
+                  }}
+                >
+                  <option value="all">{t('common.all')}</option>
+                  <option value="true">{t('common.success')}</option>
+                  <option value="false">{t('common.failed')}</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                type="submit"
+                disabled={loading}
+                className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-lg hover:shadow-xl disabled:opacity-50 transition-all duration-300"
+              >
+                {loading ? (
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                  />
+                ) : (
+                  <Search className="w-5 h-5" />
+                )}
+                {loading ? t('common.searching') : t('common.search')}
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                type="button"
+                onClick={clearFilters}
+                className="flex items-center gap-2 px-6 py-2.5 bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-500 transition-all duration-300"
+              >
+                <Trash2 className="w-5 h-5" />
+                {t('common.clearFilters')}
+              </motion.button>
+            </div>
+          </form>
+        </motion.div>
+
+        {/* Search Results */}
+        {searchResults && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 overflow-hidden"
+          >
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                {t('common.results')} ({searchResults.totalCount.toLocaleString()} {t('common.events')})
+              </h2>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                <thead className="bg-gray-50 dark:bg-slate-700/50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      <Clock className="w-4 h-4 inline mr-1" />
+                      {t('tenant.observability.timestamp') || 'Timestamp'}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      {t('tenant.observability.eventType') || 'Event Type'}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      {t('tenant.observability.action') || 'Action'}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      {t('tenant.observability.actor') || 'Actor'}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      {t('tenant.observability.resource') || 'Resource'}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      {t('common.status')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      {t('common.actions')}
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {searchResults.events.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              {t('tenant.observability.noResults') || t('common.noResults')}
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
+                  {searchResults.events.map((event: any, index: number) => (
+                    <motion.tr
+                      key={event.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.02 }}
+                      className={`hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors ${
+                        !event.success ? 'bg-red-50/50 dark:bg-red-900/10' : ''
+                      }`}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        {new Date(event.timestamp).toLocaleString(locale)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <span className="p-1.5 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg text-indigo-600 dark:text-indigo-400">
+                            {getEventTypeIcon(event.eventType)}
+                          </span>
+                          <span className="text-sm text-gray-900 dark:text-white">{event.eventType}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        {event.action}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-900 dark:text-white">{event.actorEmail}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">{event.actorId?.substring(0, 8)}...</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-gray-900 dark:text-white">{event.resourceType}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">{event.resourceId?.substring(0, 8)}...</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${
+                          event.success
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+                            : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+                        }`}>
+                          {event.success ? (
+                            <CheckCircle className="w-3 h-3" />
+                          ) : (
+                            <XCircle className="w-3 h-3" />
+                          )}
+                          {event.success ? t('common.success') : t('common.failed')}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => handleViewDetails(event)}
+                          className="flex items-center gap-1 text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm font-medium"
+                        >
+                          <Eye className="w-4 h-4" />
+                          {t('common.viewDetails')}
+                        </motion.button>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          )}
 
-          {/* Pagination */}
-          {searchResults.totalCount > pageSize && (
-            <div className="px-6 py-4 border-t border-gray-200 flex justify-between items-center">
-              <div className="text-sm text-gray-700">
-                {t('tenant.observability.showing') || 'Showing'} {((pageNumber - 1) * pageSize) + 1} - {Math.min(pageNumber * pageSize, searchResults.totalCount)} {t('tenant.observability.of') || 'of'} {searchResults.totalCount.toLocaleString()}
+            {searchResults.events.length === 0 && (
+              <div className="text-center py-12">
+                <AlertTriangle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 dark:text-gray-400">
+                  {t('tenant.observability.noResults') || t('common.noResults')}
+                </p>
               </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => {
-                    setPageNumber(Math.max(1, pageNumber - 1));
-                    handleSearch();
-                  }}
-                  disabled={pageNumber === 1}
-                  className="px-3 py-1 border rounded disabled:bg-gray-100 disabled:text-gray-400"
-                >
-                  {t('common.previous')}
-                </button>
-                <button
-                  onClick={() => {
-                    setPageNumber(pageNumber + 1);
-                    handleSearch();
-                  }}
-                  disabled={pageNumber * pageSize >= searchResults.totalCount}
-                  className="px-3 py-1 border rounded disabled:bg-gray-100 disabled:text-gray-400"
-                >
-                  {t('common.next')}
-                </button>
+            )}
+
+            {/* Pagination */}
+            {searchResults.totalCount > pageSize && (
+              <div className="px-6 py-4 border-t border-gray-200 dark:border-slate-700 flex justify-between items-center">
+                <div className="text-sm text-gray-700 dark:text-gray-300">
+                  {t('tenant.observability.showing') || 'Showing'}{' '}
+                  <span className="font-medium">{((pageNumber - 1) * pageSize) + 1}</span> -{' '}
+                  <span className="font-medium">{Math.min(pageNumber * pageSize, searchResults.totalCount)}</span>{' '}
+                  {t('tenant.observability.of') || 'of'}{' '}
+                  <span className="font-medium">{searchResults.totalCount.toLocaleString()}</span>
+                </div>
+                <div className="flex gap-2">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      setPageNumber(Math.max(1, pageNumber - 1));
+                      handleSearch();
+                    }}
+                    disabled={pageNumber === 1}
+                    className="flex items-center gap-1 px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-all"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    {t('common.previous')}
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      setPageNumber(pageNumber + 1);
+                      handleSearch();
+                    }}
+                    disabled={pageNumber * pageSize >= searchResults.totalCount}
+                    className="flex items-center gap-1 px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-all"
+                  >
+                    {t('common.next')}
+                    <ChevronRight className="w-4 h-4" />
+                  </motion.button>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      )}
+            )}
+          </motion.div>
+        )}
 
-      {/* Detail Modal */}
-      {showDetailModal && selectedEvent && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">{t('tenant.observability.eventDetails') || 'Event Details'}</h2>
-
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">{t('tenant.observability.timestamp') || 'Timestamp'}</h3>
-                  <p className="text-sm text-gray-900">{new Date(selectedEvent.timestamp).toLocaleString(locale)}</p>
+        {/* Detail Modal */}
+        <Modal
+          isOpen={showDetailModal}
+          onClose={() => {
+            setShowDetailModal(false);
+            setSelectedEvent(null);
+          }}
+          title={t('tenant.observability.eventDetails') || 'Event Details'}
+          size="lg"
+        >
+          {selectedEvent && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg">
+                  <div className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    <Clock className="w-4 h-4" />
+                    {t('tenant.observability.timestamp') || 'Timestamp'}
+                  </div>
+                  <p className="text-gray-900 dark:text-white">
+                    {new Date(selectedEvent.timestamp).toLocaleString(locale)}
+                  </p>
                 </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">{t('tenant.observability.eventType') || 'Event Type'}</h3>
-                  <p className="text-sm text-gray-900">{selectedEvent.eventType}</p>
+                <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg">
+                  <div className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    <Activity className="w-4 h-4" />
+                    {t('tenant.observability.eventType') || 'Event Type'}
+                  </div>
+                  <p className="text-gray-900 dark:text-white">{selectedEvent.eventType}</p>
                 </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">{t('tenant.observability.action') || 'Action'}</h3>
-                  <p className="text-sm text-gray-900">{selectedEvent.action}</p>
+                <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg">
+                  <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    {t('tenant.observability.action') || 'Action'}
+                  </div>
+                  <p className="text-gray-900 dark:text-white">{selectedEvent.action}</p>
                 </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">{t('common.status')}</h3>
-                  <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                    selectedEvent.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg">
+                  <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    {t('common.status')}
+                  </div>
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${
+                    selectedEvent.success
+                      ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+                      : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
                   }`}>
+                    {selectedEvent.success ? (
+                      <CheckCircle className="w-3 h-3" />
+                    ) : (
+                      <XCircle className="w-3 h-3" />
+                    )}
                     {selectedEvent.success ? t('common.success') : t('common.failed')}
                   </span>
                 </div>
               </div>
 
-              <div className="border-t pt-4">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">{t('tenant.observability.actor') || 'Actor'}</h3>
-                <p className="text-sm text-gray-900">{selectedEvent.actorEmail}</p>
-                <p className="text-xs text-gray-500">{selectedEvent.actorId}</p>
+              <div className="border-t border-gray-200 dark:border-slate-700 pt-4">
+                <h3 className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
+                  <User className="w-4 h-4" />
+                  {t('tenant.observability.actor') || 'Actor'}
+                </h3>
+                <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg">
+                  <p className="text-gray-900 dark:text-white">{selectedEvent.actorEmail}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-mono mt-1">{selectedEvent.actorId}</p>
+                </div>
               </div>
 
-              <div className="border-t pt-4">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">{t('tenant.observability.resource') || 'Resource'}</h3>
-                <p className="text-sm text-gray-900">{selectedEvent.resourceType}</p>
-                <p className="text-xs text-gray-500">{selectedEvent.resourceId}</p>
+              <div className="border-t border-gray-200 dark:border-slate-700 pt-4">
+                <h3 className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
+                  <Server className="w-4 h-4" />
+                  {t('tenant.observability.resource') || 'Resource'}
+                </h3>
+                <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg">
+                  <p className="text-gray-900 dark:text-white">{selectedEvent.resourceType}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-mono mt-1">{selectedEvent.resourceId}</p>
+                </div>
               </div>
 
-              <div className="border-t pt-4">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">{t('tenant.observability.connectionInfo') || 'Connection Info'}</h3>
-                <p className="text-sm text-gray-900"><strong>IP:</strong> {selectedEvent.ipAddress}</p>
-                <p className="text-sm text-gray-900"><strong>User Agent:</strong> {selectedEvent.userAgent}</p>
+              <div className="border-t border-gray-200 dark:border-slate-700 pt-4">
+                <h3 className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
+                  <Globe className="w-4 h-4" />
+                  {t('tenant.observability.connectionInfo') || 'Connection Info'}
+                </h3>
+                <div className="bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg space-y-2">
+                  <p className="text-gray-900 dark:text-white">
+                    <strong className="text-gray-500 dark:text-gray-400">IP:</strong> {selectedEvent.ipAddress}
+                  </p>
+                  <p className="text-gray-900 dark:text-white text-sm">
+                    <strong className="text-gray-500 dark:text-gray-400">User Agent:</strong> {selectedEvent.userAgent}
+                  </p>
+                </div>
               </div>
 
               {selectedEvent.errorMessage && (
-                <div className="border-t pt-4">
-                  <h3 className="text-sm font-medium text-gray-500 mb-2">{t('common.errorMessage')}</h3>
-                  <p className="text-sm text-red-600">{selectedEvent.errorMessage}</p>
+                <div className="border-t border-gray-200 dark:border-slate-700 pt-4">
+                  <h3 className="flex items-center gap-2 text-sm font-medium text-red-500 mb-3">
+                    <AlertTriangle className="w-4 h-4" />
+                    {t('common.errorMessage')}
+                  </h3>
+                  <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border border-red-200 dark:border-red-800">
+                    <p className="text-red-600 dark:text-red-400">{selectedEvent.errorMessage}</p>
+                  </div>
                 </div>
               )}
 
               {selectedEvent.metadata && Object.keys(selectedEvent.metadata).length > 0 && (
-                <div className="border-t pt-4">
-                  <h3 className="text-sm font-medium text-gray-500 mb-2">{t('tenant.observability.metadata') || 'Metadata'}</h3>
-                  <pre className="text-xs bg-gray-50 p-3 rounded overflow-auto max-h-64">
+                <div className="border-t border-gray-200 dark:border-slate-700 pt-4">
+                  <h3 className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
+                    <FileText className="w-4 h-4" />
+                    {t('tenant.observability.metadata') || 'Metadata'}
+                  </h3>
+                  <pre className="text-xs bg-gray-50 dark:bg-slate-700/50 p-4 rounded-lg overflow-auto max-h-64 text-gray-900 dark:text-white">
                     {JSON.stringify(selectedEvent.metadata, null, 2)}
                   </pre>
                 </div>
               )}
             </div>
-
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => {
-                  setShowDetailModal(false);
-                  setSelectedEvent(null);
-                }}
-                className="bg-gray-300 px-4 py-2 rounded"
-              >
-                {t('common.close')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          )}
+        </Modal>
+      </div>
     </div>
   );
 }
