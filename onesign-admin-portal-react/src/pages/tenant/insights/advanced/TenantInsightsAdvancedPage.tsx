@@ -1,7 +1,27 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { motion, AnimatePresence } from 'framer-motion';
 import { getTenantId } from '@/lib/tenant-context';
 import * as InsightsAPI from '@/lib/api/insights';
+import { Helmet } from 'react-helmet-async';
+import {
+  Brain,
+  Save,
+  Download,
+  RefreshCw,
+  AlertTriangle,
+  TrendingUp,
+  Users,
+  Clock,
+  Zap,
+  Eye,
+  EyeOff,
+  BarChart3,
+  PieChart,
+  Activity,
+  Shield,
+  Settings,
+} from 'lucide-react';
 
 type ChartType = 'line' | 'bar' | 'pie' | 'heatmap';
 type MetricType = 'users' | 'logins' | 'security' | 'applications' | 'mfa' | 'risk';
@@ -55,6 +75,33 @@ interface SavedView {
   createdAt: string;
 }
 
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+  color: string;
+  delay: number;
+}
+
+const StatCard = ({ title, value, icon, color, delay }: StatCardProps) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: delay * 0.1 }}
+    className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300"
+  >
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
+        <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+      </div>
+      <div className={`p-4 rounded-xl bg-gradient-to-br ${color}`}>
+        {icon}
+      </div>
+    </div>
+  </motion.div>
+);
+
 export default function TenantInsightsAdvancedPage() {
   const { t } = useTranslation();
   const [tenantId, setTenantIdState] = useState<string | null>(null);
@@ -77,9 +124,6 @@ export default function TenantInsightsAdvancedPage() {
     { id: '6', title: 'Risk Events Heatmap', chartType: 'heatmap', metric: 'risk', position: 6, enabled: true },
   ]);
 
-  // Selected metrics
-  const [selectedMetrics, setSelectedMetrics] = useState<MetricType[]>(['users', 'logins', 'security']);
-
   // Data
   const [userActivityData, setUserActivityData] = useState<TimeSeriesPoint[]>([]);
   const [loginDistribution, setLoginDistribution] = useState<ChartDataPoint[]>([]);
@@ -95,10 +139,6 @@ export default function TenantInsightsAdvancedPage() {
   const [showSaveViewModal, setShowSaveViewModal] = useState(false);
   const [newViewName, setNewViewName] = useState('');
   const [newViewDescription, setNewViewDescription] = useState('');
-
-  // Widget configuration
-  const [showWidgetConfig, setShowWidgetConfig] = useState(false);
-  const [editingWidget, setEditingWidget] = useState<DashboardWidget | null>(null);
 
   useEffect(() => {
     const contextTenantId = getTenantId();
@@ -121,23 +161,18 @@ export default function TenantInsightsAdvancedPage() {
     try {
       const { from, to } = getDateRange();
 
-      // Fetch insights overview
       const overview = await InsightsAPI.getTenantInsightsOverview(tenantId!) as any;
 
-      // Transform data for charts
-      // User Activity Trend
-      const userTrend = (overview as any).signInTrend.map(item => ({
+      const userTrend = (overview as any).signInTrend.map((item: any) => ({
         date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         value: item.count,
         secondary: item.failureCount,
       }));
       setUserActivityData(userTrend);
 
-      // Login Distribution by day of week
       const loginByDay = transformLoginDistribution((overview as any).signInTrend);
       setLoginDistribution(loginByDay);
 
-      // Security Score breakdown
       const securityData = [
         { label: 'High Risk', value: overview.highRiskEvents, color: '#ef4444' },
         { label: 'Medium Risk', value: overview.mediumRiskEvents, color: '#f59e0b' },
@@ -145,29 +180,24 @@ export default function TenantInsightsAdvancedPage() {
       ];
       setSecurityScore(securityData);
 
-      // Application Usage
-      const appData = overview.topApplications.slice(0, 6).map(app => ({
+      const appData = overview.topApplications.slice(0, 6).map((app: any) => ({
         label: app.appName,
         value: app.signInCount,
       }));
       setApplicationUsage(appData);
 
-      // MFA Adoption Trend (simulated progressive data)
-      const mfaTrend = overview.signInTrend.map((item, index) => ({
+      const mfaTrend = overview.signInTrend.map((item: any, index: number) => ({
         date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         value: Math.min(overview.mfaAdoptionPercent + (index * 0.5), 100),
       }));
       setMfaAdoption(mfaTrend);
 
-      // Risk Events Heatmap (simulated hourly distribution)
       const heatmap = generateRiskHeatmap(overview.highRiskEvents);
       setRiskHeatmap(heatmap);
 
-      // Generate anomalies
       const detectedAnomalies = detectAnomalies(overview);
       setAnomalies(detectedAnomalies);
 
-      // Generate behavior patterns
       const patterns = generateBehaviorPatterns(overview);
       setBehaviorPatterns(patterns);
 
@@ -211,7 +241,6 @@ export default function TenantInsightsAdvancedPage() {
 
     for (let day = 0; day < 7; day++) {
       for (let hour = 0; hour < 24; hour++) {
-        // Simulate risk event distribution (higher during business hours)
         let baseValue = Math.random() * 5;
         if (hour >= 9 && hour <= 17 && day < 5) {
           baseValue *= 2;
@@ -229,7 +258,6 @@ export default function TenantInsightsAdvancedPage() {
   const detectAnomalies = (overview: any): AnomalyDetection[] => {
     const anomalies: AnomalyDetection[] = [];
 
-    // Check for login spikes
     const avgLogins = overview.totalSignIns / overview.signInTrend.length;
     overview.signInTrend.forEach((day: any, index: number) => {
       if (day.count > avgLogins * 2) {
@@ -245,7 +273,6 @@ export default function TenantInsightsAdvancedPage() {
       }
     });
 
-    // Check MFA adoption drop
     if (overview.mfaAdoptionPercent < 70) {
       anomalies.push({
         id: 'anomaly-mfa',
@@ -258,7 +285,6 @@ export default function TenantInsightsAdvancedPage() {
       });
     }
 
-    // Check risk events
     if (overview.highRiskEvents > 10) {
       anomalies.push({
         id: 'anomaly-risk',
@@ -307,10 +333,6 @@ export default function TenantInsightsAdvancedPage() {
     setSuccess('');
     setError('');
     try {
-      // Note: exportTenantInsightsOverview functionality commented out due to API signature mismatch
-      // const { from, to } = getDateRange();
-      // const blob = await InsightsAPI.exportTenantInsightsOverview(tenantId!, from, to, 'xlsx');
-      // Fallback: generate a simple CSV export
       const csvContent = 'data:text/csv;charset=utf-8,' + encodeURIComponent('Dashboard Export\nNo data available');
       const link = document.createElement('a');
       link.setAttribute('href', csvContent);
@@ -350,6 +372,24 @@ export default function TenantInsightsAdvancedPage() {
     setWidgets(widgets.map(w =>
       w.id === widgetId ? { ...w, enabled: !w.enabled } : w
     ));
+  };
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'critical': return 'from-red-500 to-red-600';
+      case 'high': return 'from-orange-500 to-orange-600';
+      case 'medium': return 'from-yellow-500 to-yellow-600';
+      default: return 'from-blue-500 to-blue-600';
+    }
+  };
+
+  const getSeverityBgColor = (severity: string) => {
+    switch (severity) {
+      case 'critical': return 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400 border-red-200 dark:border-red-800';
+      case 'high': return 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400 border-orange-200 dark:border-orange-800';
+      case 'medium': return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800';
+      default: return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 border-blue-200 dark:border-blue-800';
+    }
   };
 
   const renderChart = (widget: DashboardWidget) => {
@@ -396,22 +436,32 @@ export default function TenantInsightsAdvancedPage() {
     return (
       <div className="space-y-2">
         {data.map((point, index) => (
-          <div key={index} className="flex items-center gap-2">
-            <span className="text-xs text-gray-500 w-20 text-right">{point.date}</span>
-            <div className="flex-1 bg-gray-100 rounded h-6 relative">
-              <div
-                className="bg-indigo-600 h-6 rounded transition-all"
-                style={{ width: `${(point.value / maxValue) * 100}%` }}
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.05 }}
+            className="flex items-center gap-2"
+          >
+            <span className="text-xs text-gray-500 dark:text-gray-400 w-20 text-right">{point.date}</span>
+            <div className="flex-1 bg-gray-100 dark:bg-slate-700 rounded-lg h-6 relative overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${(point.value / maxValue) * 100}%` }}
+                transition={{ duration: 0.5, delay: index * 0.05 }}
+                className="bg-gradient-to-r from-indigo-500 to-purple-500 h-6 rounded-lg"
               />
               {point.secondary !== undefined && point.secondary > 0 && (
-                <div
-                  className="absolute top-0 bg-red-400 h-6 rounded"
-                  style={{ width: `${(point.secondary / maxValue) * 100}%`, opacity: 0.7 }}
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(point.secondary / maxValue) * 100}%` }}
+                  className="absolute top-0 bg-gradient-to-r from-red-400 to-red-500 h-6 rounded-lg"
+                  style={{ opacity: 0.7 }}
                 />
               )}
             </div>
-            <span className="text-xs font-medium w-12">{point.value}</span>
-          </div>
+            <span className="text-xs font-medium text-gray-900 dark:text-white w-12">{point.value}</span>
+          </motion.div>
         ))}
       </div>
     );
@@ -421,19 +471,25 @@ export default function TenantInsightsAdvancedPage() {
     return (
       <div className="flex items-end justify-between gap-2 h-48">
         {data.map((point, index) => (
-          <div key={index} className="flex-1 flex flex-col items-center gap-2">
-            <div className="w-full bg-gray-100 rounded relative flex-1 flex items-end">
-              <div
-                className="w-full rounded transition-all"
-                style={{
-                  height: `${(point.value / maxValue) * 100}%`,
-                  backgroundColor: point.color || '#4f46e5',
-                }}
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="flex-1 flex flex-col items-center gap-2"
+          >
+            <div className="w-full bg-gray-100 dark:bg-slate-700 rounded-lg relative flex-1 flex items-end">
+              <motion.div
+                initial={{ height: 0 }}
+                animate={{ height: `${(point.value / maxValue) * 100}%` }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="w-full rounded-lg bg-gradient-to-t from-indigo-500 to-purple-500"
+                style={{ backgroundColor: point.color || undefined }}
               />
             </div>
-            <span className="text-xs text-gray-500 text-center">{point.label}</span>
-            <span className="text-xs font-medium">{point.value}</span>
-          </div>
+            <span className="text-xs text-gray-500 dark:text-gray-400 text-center">{point.label}</span>
+            <span className="text-xs font-medium text-gray-900 dark:text-white">{point.value}</span>
+          </motion.div>
         ))}
       </div>
     );
@@ -446,27 +502,33 @@ export default function TenantInsightsAdvancedPage() {
         {data.map((point, index) => {
           const percentage = total > 0 ? (point.value / total) * 100 : 0;
           return (
-            <div key={index} className="space-y-1">
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="space-y-1"
+            >
               <div className="flex justify-between text-sm">
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                   <span
                     className="w-3 h-3 rounded"
                     style={{ backgroundColor: point.color || '#4f46e5' }}
                   />
                   {point.label}
                 </span>
-                <span className="font-medium">{point.value} ({percentage.toFixed(1)}%)</span>
+                <span className="font-medium text-gray-900 dark:text-white">{point.value} ({percentage.toFixed(1)}%)</span>
               </div>
-              <div className="w-full bg-gray-100 rounded h-2">
-                <div
-                  className="h-2 rounded transition-all"
-                  style={{
-                    width: `${percentage}%`,
-                    backgroundColor: point.color || '#4f46e5',
-                  }}
+              <div className="w-full bg-gray-100 dark:bg-slate-700 rounded-full h-2">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${percentage}%` }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="h-2 rounded-full"
+                  style={{ backgroundColor: point.color || '#4f46e5' }}
                 />
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>
@@ -484,7 +546,7 @@ export default function TenantInsightsAdvancedPage() {
           <div className="flex gap-1">
             <div className="flex flex-col gap-1 pt-6">
               {days.map(day => (
-                <div key={day} className="h-6 w-10 flex items-center justify-end pr-2 text-xs text-gray-500">
+                <div key={day} className="h-6 w-10 flex items-center justify-end pr-2 text-xs text-gray-500 dark:text-gray-400">
                   {day}
                 </div>
               ))}
@@ -492,7 +554,7 @@ export default function TenantInsightsAdvancedPage() {
             <div>
               <div className="flex gap-1 mb-1">
                 {hours.filter(h => h % 2 === 0).map(hour => (
-                  <div key={hour} className="w-6 text-xs text-gray-500 text-center">
+                  <div key={hour} className="w-6 text-xs text-gray-500 dark:text-gray-400 text-center">
                     {hour}
                   </div>
                 ))}
@@ -503,15 +565,18 @@ export default function TenantInsightsAdvancedPage() {
                     {hours.map(hour => {
                       const point = riskHeatmap.find(p => p.day === day && p.hour === hour);
                       const intensity = point ? (point.value / maxValue) : 0;
-                      const color = intensity === 0 ? 'bg-gray-100' :
-                        intensity < 0.3 ? 'bg-green-200' :
-                        intensity < 0.6 ? 'bg-yellow-300' :
-                        intensity < 0.8 ? 'bg-orange-400' : 'bg-red-500';
-
                       return (
-                        <div
+                        <motion.div
                           key={hour}
-                          className={`w-3 h-6 rounded ${color}`}
+                          initial={{ opacity: 0, scale: 0.5 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: (days.indexOf(day) * 24 + hour) * 0.002 }}
+                          className={`w-3 h-6 rounded transition-colors ${
+                            intensity === 0 ? 'bg-gray-100 dark:bg-slate-700' :
+                            intensity < 0.3 ? 'bg-green-200 dark:bg-green-800' :
+                            intensity < 0.6 ? 'bg-yellow-300 dark:bg-yellow-700' :
+                            intensity < 0.8 ? 'bg-orange-400 dark:bg-orange-600' : 'bg-red-500 dark:bg-red-600'
+                          }`}
                           title={`${day} ${hour}:00 - ${point?.value || 0} events`}
                         />
                       );
@@ -526,269 +591,365 @@ export default function TenantInsightsAdvancedPage() {
     );
   };
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'critical': return 'bg-red-100 text-red-800 border-red-200';
-      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      default: return 'bg-blue-100 text-blue-800 border-blue-200';
-    }
-  };
-
   if (loading && !userActivityData.length) {
-    return <div className="p-8">{t('common.loading')}</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 p-8 flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex items-center gap-3 text-gray-600 dark:text-gray-400"
+        >
+          <RefreshCw className="w-6 h-6 animate-spin" />
+          <span>{t('common.loading')}</span>
+        </motion.div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Advanced Insights</h1>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setShowSaveViewModal(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-            </svg>
-            Save View
-          </button>
-          <button
-            onClick={handleExportDashboard}
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Export Dashboard
-          </button>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+      <Helmet>
+        <title>Advanced Insights | OneSign</title>
+      </Helmet>
 
-      {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
-      {success && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-          {success}
-        </div>
-      )}
-
-      {/* Controls */}
-      <div className="mb-6 bg-white p-4 rounded-lg shadow space-y-4">
-        <div className="flex flex-wrap gap-4 items-center">
-          <div>
-            <label className="block text-sm font-medium mb-2">Date Range</label>
-            <select
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-              className="px-3 py-2 border rounded"
-            >
-              <option value="7">Last 7 days</option>
-              <option value="14">Last 14 days</option>
-              <option value="30">Last 30 days</option>
-              <option value="60">Last 60 days</option>
-              <option value="90">Last 90 days</option>
-              <option value="custom">Custom Range</option>
-            </select>
+      <div className="p-8 space-y-6">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex justify-between items-center"
+        >
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 shadow-lg">
+              <Brain className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                Advanced Insights
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">AI-powered analytics and anomaly detection</p>
+            </div>
           </div>
+          <div className="flex gap-2">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setShowSaveViewModal(true)}
+              className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all shadow-lg"
+            >
+              <Save className="w-4 h-4" />
+              Save View
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleExportDashboard}
+              className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg"
+            >
+              <Download className="w-4 h-4" />
+              Export Dashboard
+            </motion.button>
+          </div>
+        </motion.div>
 
-          {dateRange === 'custom' && (
-            <>
-              <div>
-                <label className="block text-sm font-medium mb-2">From</label>
-                <input
-                  type="date"
-                  value={customFrom}
-                  onChange={(e) => setCustomFrom(e.target.value)}
-                  className="px-3 py-2 border rounded"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">To</label>
-                <input
-                  type="date"
-                  value={customTo}
-                  onChange={(e) => setCustomTo(e.target.value)}
-                  className="px-3 py-2 border rounded"
-                />
-              </div>
-            </>
+        {/* Alerts */}
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl"
+            >
+              {error}
+            </motion.div>
           )}
+          {success && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-xl"
+            >
+              {success}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-          <div className="flex-1">
-            <label className="block text-sm font-medium mb-2">Visible Widgets</label>
-            <div className="flex flex-wrap gap-2">
-              {widgets.map(widget => (
-                <button
-                  key={widget.id}
-                  onClick={() => toggleWidget(widget.id)}
-                  className={`px-3 py-1 rounded text-sm ${
-                    widget.enabled
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-gray-200 text-gray-600'
-                  }`}
+        {/* Controls */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 p-6"
+        >
+          <div className="flex flex-wrap gap-4 items-center">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date Range</label>
+              <select
+                value={dateRange}
+                onChange={(e) => setDateRange(e.target.value)}
+                className="px-4 py-2 border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"
+              >
+                <option value="7">Last 7 days</option>
+                <option value="14">Last 14 days</option>
+                <option value="30">Last 30 days</option>
+                <option value="60">Last 60 days</option>
+                <option value="90">Last 90 days</option>
+                <option value="custom">Custom Range</option>
+              </select>
+            </div>
+
+            {dateRange === 'custom' && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">From</label>
+                  <input
+                    type="date"
+                    value={customFrom}
+                    onChange={(e) => setCustomFrom(e.target.value)}
+                    className="px-4 py-2 border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">To</label>
+                  <input
+                    type="date"
+                    value={customTo}
+                    onChange={(e) => setCustomTo(e.target.value)}
+                    className="px-4 py-2 border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+              </>
+            )}
+
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Visible Widgets</label>
+              <div className="flex flex-wrap gap-2">
+                {widgets.map(widget => (
+                  <motion.button
+                    key={widget.id}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => toggleWidget(widget.id)}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                      widget.enabled
+                        ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                        : 'bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-gray-400'
+                    }`}
+                  >
+                    {widget.enabled ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    {widget.title}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Saved Views */}
+        {savedViews.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Saved Views</h3>
+            <div className="flex gap-2 flex-wrap">
+              {savedViews.map(view => (
+                <motion.button
+                  key={view.id}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => handleLoadView(view)}
+                  className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm px-4 py-2 rounded-xl shadow border border-gray-200 dark:border-slate-700 hover:border-purple-500 transition-all text-left"
                 >
-                  {widget.title}
-                </button>
+                  <div className="font-medium text-gray-900 dark:text-white">{view.name}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{view.description}</div>
+                </motion.button>
               ))}
             </div>
-          </div>
-        </div>
-      </div>
+          </motion.div>
+        )}
 
-      {/* Saved Views */}
-      {savedViews.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-3">Saved Views</h3>
-          <div className="flex gap-2 flex-wrap">
-            {savedViews.map(view => (
-              <button
-                key={view.id}
-                onClick={() => handleLoadView(view)}
-                className="bg-white px-4 py-2 rounded shadow border hover:border-indigo-500 text-left"
-              >
-                <div className="font-medium">{view.name}</div>
-                <div className="text-xs text-gray-500">{view.description}</div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Anomaly Detection */}
-      {anomalies.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold mb-3">Anomaly Detection</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {anomalies.map(anomaly => (
-              <div
-                key={anomaly.id}
-                className={`p-4 rounded-lg border ${getSeverityColor(anomaly.severity)}`}
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <div className="font-medium">{anomaly.type}</div>
-                  <span className="text-xs uppercase px-2 py-1 rounded bg-white">
-                    {anomaly.severity}
-                  </span>
-                </div>
-                <p className="text-sm mb-2">{anomaly.description}</p>
-                <div className="text-xs opacity-75">
-                  Detected: {new Date(anomaly.detectedAt).toLocaleString()}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Dashboard Widgets */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {widgets.filter(w => w.enabled).map(widget => (
-          <div key={widget.id} className="bg-white p-6 rounded-lg shadow">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">{widget.title}</h3>
-              <span className="text-xs text-gray-500 uppercase px-2 py-1 bg-gray-100 rounded">
-                {widget.chartType}
-              </span>
-            </div>
-            {renderChart(widget)}
-          </div>
-        ))}
-      </div>
-
-      {/* User Behavior Patterns */}
-      <div className="bg-white p-6 rounded-lg shadow mb-6">
-        <h3 className="text-lg font-semibold mb-4">User Behavior Analysis</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {behaviorPatterns.map(pattern => (
-            <div key={pattern.id} className="border rounded-lg p-4">
-              <h4 className="font-medium mb-3">{pattern.pattern}</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">User Count:</span>
-                  <span className="font-medium">{pattern.userCount}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Avg Session:</span>
-                  <span className="font-medium">{pattern.avgSessionDuration} min</span>
-                </div>
-                <div>
-                  <span className="text-gray-600">Peak Hours:</span>
-                  <div className="flex gap-1 mt-1">
-                    {pattern.peakHours.map(hour => (
-                      <span key={hour} className="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded">
-                        {hour}
-                      </span>
-                    ))}
+        {/* Anomaly Detection */}
+        {anomalies.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-yellow-500" />
+              Anomaly Detection
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {anomalies.map((anomaly, index) => (
+                <motion.div
+                  key={anomaly.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 + index * 0.1 }}
+                  className={`p-4 rounded-xl border ${getSeverityBgColor(anomaly.severity)}`}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="font-medium">{anomaly.type}</div>
+                    <span className={`text-xs uppercase px-2 py-1 rounded-full bg-white/50 dark:bg-slate-900/50`}>
+                      {anomaly.severity}
+                    </span>
                   </div>
-                </div>
-                <div>
-                  <span className="text-gray-600">Common Apps:</span>
-                  <div className="flex flex-wrap gap-1 mt-1">
-                    {pattern.commonApplications.map(app => (
-                      <span key={app} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                        {app}
-                      </span>
-                    ))}
+                  <p className="text-sm mb-2">{anomaly.description}</p>
+                  <div className="text-xs opacity-75">
+                    Detected: {new Date(anomaly.detectedAt).toLocaleString()}
                   </div>
-                </div>
-              </div>
+                </motion.div>
+              ))}
             </div>
+          </motion.div>
+        )}
+
+        {/* Dashboard Widgets */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {widgets.filter(w => w.enabled).map((widget, index) => (
+            <motion.div
+              key={widget.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 + index * 0.1 }}
+              className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 p-6"
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{widget.title}</h3>
+                <span className="text-xs text-gray-500 dark:text-gray-400 uppercase px-2 py-1 bg-gray-100 dark:bg-slate-700 rounded-lg">
+                  {widget.chartType}
+                </span>
+              </div>
+              {renderChart(widget)}
+            </motion.div>
           ))}
         </div>
+
+        {/* User Behavior Patterns */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 p-6"
+        >
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <Users className="w-5 h-5 text-purple-500" />
+            User Behavior Analysis
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {behaviorPatterns.map((pattern, index) => (
+              <motion.div
+                key={pattern.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 + index * 0.1 }}
+                className="border border-gray-200 dark:border-slate-700 rounded-xl p-4 hover:shadow-md transition-all"
+              >
+                <h4 className="font-medium text-gray-900 dark:text-white mb-3">{pattern.pattern}</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">User Count:</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{pattern.userCount}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Avg Session:</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{pattern.avgSessionDuration} min</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-600 dark:text-gray-400">Peak Hours:</span>
+                    <div className="flex gap-1 mt-1 flex-wrap">
+                      {pattern.peakHours.map(hour => (
+                        <span key={hour} className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400 px-2 py-1 rounded-lg">
+                          {hour}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-gray-600 dark:text-gray-400">Common Apps:</span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {pattern.commonApplications.map(app => (
+                        <span key={app} className="text-xs bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-lg">
+                          {app}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
       </div>
 
       {/* Save View Modal */}
-      {showSaveViewModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-md w-full">
-            <h2 className="text-xl font-bold mb-4">Save Custom View</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">View Name</label>
-                <input
-                  type="text"
-                  value={newViewName}
-                  onChange={(e) => setNewViewName(e.target.value)}
-                  className="w-full px-3 py-2 border rounded"
-                  placeholder="e.g., Weekly Security Review"
-                />
+      <AnimatePresence>
+        {showSaveViewModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white dark:bg-slate-800 p-6 rounded-2xl max-w-md w-full mx-4 shadow-2xl"
+            >
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Save Custom View</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">View Name</label>
+                  <input
+                    type="text"
+                    value={newViewName}
+                    onChange={(e) => setNewViewName(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"
+                    placeholder="e.g., Weekly Security Review"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                  <textarea
+                    value={newViewDescription}
+                    onChange={(e) => setNewViewDescription(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"
+                    rows={3}
+                    placeholder="Brief description of this view..."
+                  />
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  This will save the current widget configuration and date range.
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Description</label>
-                <textarea
-                  value={newViewDescription}
-                  onChange={(e) => setNewViewDescription(e.target.value)}
-                  className="w-full px-3 py-2 border rounded"
-                  rows={3}
-                  placeholder="Brief description of this view..."
-                />
+              <div className="flex gap-2 justify-end mt-6">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowSaveViewModal(false)}
+                  className="px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  Cancel
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleSaveView}
+                  disabled={!newViewName}
+                  className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 transition-all"
+                >
+                  Save View
+                </motion.button>
               </div>
-              <div className="text-sm text-gray-600">
-                This will save the current widget configuration and date range.
-              </div>
-            </div>
-            <div className="flex gap-2 justify-end mt-6">
-              <button
-                onClick={() => setShowSaveViewModal(false)}
-                className="px-4 py-2 border rounded"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveView}
-                disabled={!newViewName}
-                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
-              >
-                Save View
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

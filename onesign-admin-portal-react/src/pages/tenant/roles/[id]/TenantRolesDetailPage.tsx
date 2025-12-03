@@ -1,10 +1,28 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion, AnimatePresence } from 'framer-motion';
 import { tenantService } from '@/lib/api/services/tenant.service';
 import { getTenantId } from '@/lib/tenant-context';
 import Breadcrumbs from '@/components/common/Breadcrumbs';
 import { Helmet } from 'react-helmet-async';
+import {
+  Shield,
+  ArrowLeft,
+  Edit,
+  Trash2,
+  Users,
+  Key,
+  History,
+  FileText,
+  CheckCircle,
+  XCircle,
+  RefreshCw,
+  Plus,
+  Check,
+  X,
+  AlertTriangle,
+} from 'lucide-react';
 
 interface Permission {
   id: string;
@@ -41,6 +59,33 @@ interface RoleDetails {
   updatedAt: string;
 }
 
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ReactNode;
+  color: string;
+  delay: number;
+}
+
+const StatCard = ({ title, value, icon, color, delay }: StatCardProps) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: delay * 0.1 }}
+    className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300"
+  >
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
+        <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+      </div>
+      <div className={`p-4 rounded-xl bg-gradient-to-br ${color}`}>
+        {icon}
+      </div>
+    </div>
+  </motion.div>
+);
+
 export default function TenantRolesDetailPage() {
   const { t } = useTranslation();
   const params = useParams();
@@ -66,6 +111,13 @@ export default function TenantRolesDetailPage() {
   const [editDescription, setEditDescription] = useState('');
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
 
+  const tabs = [
+    { key: 'overview', label: 'Overview', icon: FileText },
+    { key: 'permissions', label: 'Permissions', icon: Key },
+    { key: 'users', label: 'Users', icon: Users },
+    { key: 'audit', label: 'Audit Log', icon: History },
+  ];
+
   useEffect(() => {
     const contextTenantId = getTenantId();
     setTenantIdState(contextTenantId || '00000000-0000-0000-0000-000000000000');
@@ -84,7 +136,6 @@ export default function TenantRolesDetailPage() {
       setLoading(true);
       const result = await tenantService.getRoleById(id);
 
-      // Transform to expected format
       const roleData: RoleDetails = {
         id: result.id,
         name: result.name || result.displayName,
@@ -93,7 +144,7 @@ export default function TenantRolesDetailPage() {
         isBuiltIn: result.isBuiltIn,
         scope: result.scope,
         permissions: result.permissions || [],
-        userCount: 0, // Will be populated from users list
+        userCount: 0,
         createdAt: result.createdAt,
         updatedAt: result.updatedAt,
       };
@@ -103,7 +154,6 @@ export default function TenantRolesDetailPage() {
       setEditDescription(roleData.description);
       setSelectedPermissions(roleData.permissions.map(p => p.id));
 
-      // Fetch related data
       await Promise.all([
         fetchUsers(),
         fetchAuditLogs(),
@@ -114,7 +164,6 @@ export default function TenantRolesDetailPage() {
       if (err.status === 404 || err.response?.status === 404) {
         setNotFound(true);
       } else {
-        // Fallback to mock data
         loadMockData();
       }
     } finally {
@@ -179,7 +228,6 @@ export default function TenantRolesDetailPage() {
   };
 
   const fetchUsers = async () => {
-    // Mock implementation - would call API
     const mockUsers: User[] = [
       { id: '1', name: 'John Doe', email: 'john.doe@example.com', assignedAt: '2024-01-20T10:00:00Z' },
       { id: '2', name: 'Jane Smith', email: 'jane.smith@example.com', assignedAt: '2024-02-10T14:30:00Z' },
@@ -188,7 +236,6 @@ export default function TenantRolesDetailPage() {
   };
 
   const fetchAuditLogs = async () => {
-    // Mock implementation - would call API
     const mockAuditLogs: AuditLog[] = [
       { id: '1', action: 'Role Updated', performedBy: 'admin@example.com', timestamp: '2024-03-20T14:30:00Z', details: 'Updated role description' },
       { id: '2', action: 'Permission Added', performedBy: 'admin@example.com', timestamp: '2024-02-15T11:20:00Z', details: 'Added settings:write permission' },
@@ -197,7 +244,6 @@ export default function TenantRolesDetailPage() {
   };
 
   const fetchAvailablePermissions = async () => {
-    // Use mock permissions as getPermissions is not available in tenantService
     const mockPermissions: Permission[] = [
       { id: 'users:read', resource: 'Users', action: 'Read', description: 'View users' },
       { id: 'users:write', resource: 'Users', action: 'Write', description: 'Create and edit users' },
@@ -293,27 +339,39 @@ export default function TenantRolesDetailPage() {
 
   if (loading) {
     return (
-      <div className="p-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-cyan-50 to-teal-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 p-8 flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex items-center gap-3 text-gray-600 dark:text-gray-400"
+        >
+          <RefreshCw className="w-6 h-6 animate-spin" />
+          <span>Loading role details...</span>
+        </motion.div>
       </div>
     );
   }
 
   if (notFound) {
     return (
-      <div className="p-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Role Not Found</h1>
-          <p className="text-gray-600 mb-6">The role you're looking for doesn't exist.</p>
-          <button
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-cyan-50 to-teal-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 p-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center py-12"
+        >
+          <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Role Not Found</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">The role you're looking for doesn't exist.</p>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => navigate('/tenant/roles')}
-            className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+            className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-teal-600 text-white rounded-xl hover:from-cyan-600 hover:to-teal-700 transition-all"
           >
             Back to Roles
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
       </div>
     );
   }
@@ -323,361 +381,515 @@ export default function TenantRolesDetailPage() {
   }
 
   return (
-    <div className="p-8">
-      <Breadcrumbs className="mb-6" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-cyan-50 to-teal-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+      <Helmet>
+        <title>{role.name} - Role Details | OneSign</title>
+      </Helmet>
 
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">{role.name}</h1>
-          <p className="text-gray-600 mt-1">{role.description}</p>
-        </div>
-        <div className="flex gap-2">
-          {!role.isBuiltIn && (
-            <>
-              <button
-                onClick={() => setShowEditModal(true)}
-                className="px-4 py-2 border rounded hover:bg-gray-50"
-              >
-                Edit Role
-              </button>
-              <button
-                onClick={() => setShowDeleteConfirm(true)}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-              >
-                Delete
-              </button>
-            </>
-          )}
-          <button
-            onClick={() => navigate('/tenant/roles')}
-            className="px-4 py-2 border rounded hover:bg-gray-50"
+      <div className="p-8 space-y-6">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col gap-4"
+        >
+          <Breadcrumbs className="mb-2" />
+
+          <motion.button
+            onClick={() => navigate(-1)}
+            whileHover={{ x: -4 }}
+            className="flex items-center gap-2 text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-300 transition-colors w-fit"
           >
-            Back to List
-          </button>
-        </div>
-      </div>
+            <ArrowLeft className="w-5 h-5" />
+            Back to Roles
+          </motion.button>
 
-      {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-600 shadow-lg">
+                <Shield className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent">
+                  {role.name}
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400 mt-1">{role.description}</p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              {!role.isBuiltIn && (
+                <>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setShowEditModal(true)}
+                    className="flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-slate-700 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors text-gray-700 dark:text-gray-300"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Edit Role
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-xl hover:from-red-600 hover:to-rose-700 transition-all"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </motion.button>
+                </>
+              )}
+            </div>
+          </div>
+        </motion.div>
 
-      {success && (
-        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
-          {success}
-        </div>
-      )}
-
-      {/* Tabs */}
-      <div className="border-b border-gray-200 mb-6">
-        <nav className="flex space-x-8">
-          {(['overview', 'permissions', 'users', 'audit'] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === tab
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+        {/* Alerts */}
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl flex items-center gap-2"
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
-        </nav>
+              <XCircle className="w-5 h-5" />
+              {error}
+            </motion.div>
+          )}
+          {success && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-400 px-4 py-3 rounded-xl flex items-center gap-2"
+            >
+              <CheckCircle className="w-5 h-5" />
+              {success}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Tabs */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-2"
+        >
+          <nav className="flex space-x-1">
+            {tabs.map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key as any)}
+                className={`relative flex items-center gap-2 py-3 px-4 rounded-lg font-medium transition-all ${
+                  activeTab === tab.key
+                    ? 'text-white'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700'
+                }`}
+              >
+                {activeTab === tab.key && (
+                  <motion.div
+                    layoutId="activeRoleTab"
+                    className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-teal-600 rounded-lg"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+                <tab.icon className="w-4 h-4 relative z-10" />
+                <span className="relative z-10">{tab.label}</span>
+              </button>
+            ))}
+          </nav>
+        </motion.div>
+
+        {/* Tab Content */}
+        <AnimatePresence mode="wait">
+          {activeTab === 'overview' && (
+            <motion.div
+              key="overview"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            >
+              {/* Role Info Card */}
+              <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Role Information</h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm text-gray-500 dark:text-gray-400">Role ID</label>
+                    <p className="font-mono text-sm text-gray-900 dark:text-white">{role.id}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-500 dark:text-gray-400">Type</label>
+                    <p>
+                      <span className={`px-3 py-1 text-sm font-semibold rounded-full ${
+                        role.type === 'system' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400'
+                      }`}>
+                        {role.type}
+                      </span>
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-500 dark:text-gray-400">Scope</label>
+                    <p className="capitalize text-gray-900 dark:text-white">{role.scope}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-500 dark:text-gray-400">Built-in</label>
+                    <p className="text-gray-900 dark:text-white">{role.isBuiltIn ? 'Yes' : 'No'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-500 dark:text-gray-400">Created</label>
+                    <p className="text-sm text-gray-900 dark:text-white">{formatDate(role.createdAt)}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-500 dark:text-gray-400">Last Updated</label>
+                    <p className="text-sm text-gray-900 dark:text-white">{formatDate(role.updatedAt)}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Statistics Card */}
+              <div className="space-y-6">
+                <StatCard
+                  title="Total Permissions"
+                  value={role.permissions.length}
+                  icon={<Key className="w-6 h-6 text-white" />}
+                  color="from-cyan-500 to-teal-500"
+                  delay={0}
+                />
+                <StatCard
+                  title="Assigned Users"
+                  value={users.length}
+                  icon={<Users className="w-6 h-6 text-white" />}
+                  color="from-purple-500 to-pink-500"
+                  delay={1}
+                />
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'permissions' && (
+            <motion.div
+              key="permissions"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700"
+            >
+              <div className="p-6 border-b border-gray-200 dark:border-slate-700 flex justify-between items-center">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Permissions ({role.permissions.length})</h2>
+                {!role.isBuiltIn && (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setShowPermissionModal(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-teal-600 text-white rounded-xl hover:from-cyan-600 hover:to-teal-700 transition-all"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Manage Permissions
+                  </motion.button>
+                )}
+              </div>
+              <div className="p-6">
+                {role.permissions.length === 0 ? (
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-8">No permissions assigned</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                      <thead>
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Resource</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Action</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Description</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
+                        {role.permissions.map((perm, index) => (
+                          <motion.tr
+                            key={perm.id}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className="font-medium text-gray-900 dark:text-white">{perm.resource}</span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className="px-2 py-1 text-xs bg-gray-100 dark:bg-slate-700 rounded-lg text-gray-700 dark:text-gray-300">{perm.action}</span>
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{perm.description}</td>
+                          </motion.tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'users' && (
+            <motion.div
+              key="users"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700"
+            >
+              <div className="p-6 border-b border-gray-200 dark:border-slate-700">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Assigned Users ({users.length})</h2>
+              </div>
+              <div className="p-6">
+                {users.length === 0 ? (
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-8">No users assigned to this role</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
+                      <thead>
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Name</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Email</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Assigned At</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
+                        {users.map((user, index) => (
+                          <motion.tr
+                            key={user.id}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                            className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors"
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="font-medium text-gray-900 dark:text-white">{user.name}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{user.email}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                              {formatDate(user.assignedAt)}
+                            </td>
+                          </motion.tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'audit' && (
+            <motion.div
+              key="audit"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 dark:border-slate-700"
+            >
+              <div className="p-6 border-b border-gray-200 dark:border-slate-700">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Activity Log</h2>
+              </div>
+              <div className="p-6">
+                {auditLogs.length === 0 ? (
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-8">No activity recorded</p>
+                ) : (
+                  <div className="space-y-4">
+                    {auditLogs.map((log, index) => (
+                      <motion.div
+                        key={log.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="border-l-4 border-cyan-500 pl-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700/50 rounded-r-lg transition-colors"
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium text-gray-900 dark:text-white">{log.action}</p>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">{log.details}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              by {log.performedBy} at {formatDate(log.timestamp)}
+                            </p>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Tab Content */}
-      {activeTab === 'overview' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Role Info Card */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Role Information</h2>
-            <div className="space-y-3">
-              <div>
-                <label className="text-sm text-gray-500">Role ID</label>
-                <p className="font-mono text-sm">{role.id}</p>
-              </div>
-              <div>
-                <label className="text-sm text-gray-500">Type</label>
-                <p>
-                  <span className={`px-2 py-1 text-xs rounded ${
-                    role.type === 'system' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
-                  }`}>
-                    {role.type}
-                  </span>
-                </p>
-              </div>
-              <div>
-                <label className="text-sm text-gray-500">Scope</label>
-                <p className="capitalize">{role.scope}</p>
-              </div>
-              <div>
-                <label className="text-sm text-gray-500">Built-in</label>
-                <p>{role.isBuiltIn ? 'Yes' : 'No'}</p>
-              </div>
-              <div>
-                <label className="text-sm text-gray-500">Created</label>
-                <p className="text-sm">{formatDate(role.createdAt)}</p>
-              </div>
-              <div>
-                <label className="text-sm text-gray-500">Last Updated</label>
-                <p className="text-sm">{formatDate(role.updatedAt)}</p>
-              </div>
-            </div>
-          </div>
+      {/* Edit Role Modal */}
+      <AnimatePresence>
+        {showEditModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white dark:bg-slate-800 p-6 rounded-2xl max-w-md w-full mx-4 shadow-2xl"
+            >
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Edit Role</h2>
+              <form onSubmit={handleUpdateRole}>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                    <textarea
+                      value={editDescription}
+                      onChange={(e) => setEditDescription(e.target.value)}
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-cyan-500"
+                      rows={3}
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-6">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    type="submit"
+                    className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-teal-600 text-white rounded-xl hover:from-cyan-600 hover:to-teal-700 transition-all"
+                  >
+                    Save Changes
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    type="button"
+                    onClick={() => setShowEditModal(false)}
+                    className="px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    Cancel
+                  </motion.button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-          {/* Statistics Card */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Statistics</h2>
-            <div className="space-y-3">
-              <div>
-                <label className="text-sm text-gray-500">Total Permissions</label>
-                <p className="text-2xl font-bold text-indigo-600">{role.permissions.length}</p>
-              </div>
-              <div>
-                <label className="text-sm text-gray-500">Assigned Users</label>
-                <p className="text-2xl font-bold text-indigo-600">{users.length}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'permissions' && (
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-6 border-b flex justify-between items-center">
-            <h2 className="text-lg font-semibold">Permissions ({role.permissions.length})</h2>
-            {!role.isBuiltIn && (
-              <button
-                onClick={() => setShowPermissionModal(true)}
-                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-              >
-                Manage Permissions
-              </button>
-            )}
-          </div>
-          <div className="p-6">
-            {role.permissions.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No permissions assigned</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Resource</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {role.permissions.map((perm) => (
-                      <tr key={perm.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="font-medium">{perm.resource}</span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="px-2 py-1 text-xs bg-gray-100 rounded">{perm.action}</span>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">{perm.description}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'users' && (
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-6 border-b">
-            <h2 className="text-lg font-semibold">Assigned Users ({users.length})</h2>
-          </div>
-          <div className="p-6">
-            {users.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No users assigned to this role</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Assigned At</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {users.map((user) => (
-                      <tr key={user.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="font-medium text-gray-900">{user.name}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {formatDate(user.assignedAt)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'audit' && (
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-6 border-b">
-            <h2 className="text-lg font-semibold">Activity Log</h2>
-          </div>
-          <div className="p-6">
-            {auditLogs.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No activity recorded</p>
-            ) : (
-              <div className="space-y-4">
-                {auditLogs.map((log) => (
-                  <div key={log.id} className="border-l-4 border-indigo-500 pl-4 py-2">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="font-medium">{log.action}</p>
-                        <p className="text-sm text-gray-600">{log.details}</p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          by {log.performedBy} at {formatDate(log.timestamp)}
-                        </p>
-                      </div>
+      {/* Manage Permissions Modal */}
+      <AnimatePresence>
+        {showPermissionModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white dark:bg-slate-800 p-6 rounded-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-2xl"
+            >
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Manage Permissions</h2>
+              <div className="border border-gray-200 dark:border-slate-700 rounded-xl p-4 max-h-96 overflow-y-auto mb-4">
+                {Object.entries(getResourceGroups()).map(([resource, perms]) => (
+                  <div key={resource} className="mb-4">
+                    <h3 className="font-medium text-sm text-gray-900 dark:text-white mb-2">{resource}</h3>
+                    <div className="space-y-2 ml-4">
+                      {perms.map((perm) => (
+                        <label key={perm.id} className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={selectedPermissions.includes(perm.id)}
+                            onChange={() => togglePermission(perm.id)}
+                            className="rounded border-gray-300 dark:border-slate-600 text-cyan-500 focus:ring-cyan-500"
+                          />
+                          <span className="text-sm text-gray-700 dark:text-gray-300">
+                            {perm.action} - {perm.description}
+                          </span>
+                        </label>
+                      ))}
                     </div>
                   </div>
                 ))}
               </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Edit Role Modal */}
-      {showEditModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-md w-full">
-            <h2 className="text-xl font-bold mb-4">Edit Role</h2>
-            <form onSubmit={handleUpdateRole}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Role Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    className="w-full px-3 py-2 border rounded"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Description</label>
-                  <textarea
-                    value={editDescription}
-                    onChange={(e) => setEditDescription(e.target.value)}
-                    className="w-full px-3 py-2 border rounded"
-                    rows={3}
-                  />
-                </div>
+              <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                {selectedPermissions.length} permissions selected
               </div>
-              <div className="flex gap-2 mt-6">
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+              <div className="flex gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleUpdatePermissions}
+                  className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-teal-600 text-white rounded-xl hover:from-cyan-600 hover:to-teal-700 transition-all"
                 >
-                  Save Changes
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowEditModal(false)}
-                  className="px-4 py-2 border rounded hover:bg-gray-50"
+                  Save Permissions
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowPermissionModal(false)}
+                  className="px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                 >
                   Cancel
-                </button>
+                </motion.button>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Manage Permissions Modal */}
-      {showPermissionModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">Manage Permissions</h2>
-            <div className="border rounded p-4 max-h-96 overflow-y-auto mb-4">
-              {Object.entries(getResourceGroups()).map(([resource, perms]) => (
-                <div key={resource} className="mb-4">
-                  <h3 className="font-medium text-sm mb-2">{resource}</h3>
-                  <div className="space-y-2 ml-4">
-                    {perms.map((perm) => (
-                      <label key={perm.id} className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={selectedPermissions.includes(perm.id)}
-                          onChange={() => togglePermission(perm.id)}
-                          className="rounded"
-                        />
-                        <span className="text-sm">
-                          {perm.action} - {perm.description}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="text-sm text-gray-500 mb-4">
-              {selectedPermissions.length} permissions selected
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={handleUpdatePermissions}
-                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-              >
-                Save Permissions
-              </button>
-              <button
-                onClick={() => setShowPermissionModal(false)}
-                className="px-4 py-2 border rounded hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg max-w-md w-full">
-            <h2 className="text-xl font-bold mb-4">Delete Role</h2>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to delete this role? This action cannot be undone.
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={handleDeleteRole}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-              >
-                Delete
-              </button>
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 border rounded hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="bg-white dark:bg-slate-800 p-6 rounded-2xl max-w-md w-full mx-4 shadow-2xl"
+            >
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Delete Role</h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Are you sure you want to delete this role? This action cannot be undone.
+              </p>
+              <div className="flex gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleDeleteRole}
+                  className="px-4 py-2 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-xl hover:from-red-600 hover:to-rose-700 transition-all"
+                >
+                  Delete
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  Cancel
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
