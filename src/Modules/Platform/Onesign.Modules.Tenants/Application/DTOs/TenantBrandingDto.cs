@@ -78,4 +78,6 @@ public class BrandingFeaturesDto
     public bool ShowRememberMe { get; set; } = true;
     public bool ShowLanguageSwitcher { get; set; } = true;
     public bool AllowRegistration { get; set; } = true;
+    public bool EnableRecaptcha { get; set; } = false;
+    public string? RecaptchaSiteKey { get; set; }
 }

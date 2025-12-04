@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import OptimizedImage from './OptimizedImage';
+import { preloadResponsiveImage, generateOptimizedImageSet, type ImageOptimizationConfig } from '@/lib/image-optimization';
 
 export interface SliderImage {
   id: string;
@@ -20,6 +22,7 @@ export interface ImageSliderProps {
   overlayGradient?: boolean;
   tenantName?: string;
   tenantLogo?: string;
+  imageConfig?: ImageOptimizationConfig;
 }
 
 // Default slider images when no tenant customization
@@ -56,9 +59,12 @@ export default function ImageSlider({
   overlayGradient = true,
   tenantName,
   tenantLogo,
+  imageConfig,
 }: ImageSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [imagesLoaded, setImagesLoaded] = useState<Record<number, boolean>>({});
+  const preloadedRef = useRef<Set<number>>(new Set());
 
   const sortedImages = [...images].sort((a, b) => a.order - b.order);
   const displayImages = sortedImages.length > 0 ? sortedImages : DEFAULT_SLIDER_IMAGES;
@@ -75,6 +81,20 @@ export default function ImageSlider({
     setCurrentIndex(index);
   };
 
+  // Preload next image
+  useEffect(() => {
+    const nextIndex = (currentIndex + 1) % displayImages.length;
+
+    // Only preload if not already preloaded
+    if (!preloadedRef.current.has(nextIndex) && displayImages[nextIndex]) {
+      const nextImage = displayImages[nextIndex];
+      const imageSet = generateOptimizedImageSet(nextImage.url, imageConfig);
+
+      preloadResponsiveImage(imageSet.src, imageSet.srcSet, imageSet.srcSetWebP);
+      preloadedRef.current.add(nextIndex);
+    }
+  }, [currentIndex, displayImages, imageConfig]);
+
   // Auto-play functionality
   useEffect(() => {
     if (!autoPlay || isHovered || displayImages.length <= 1) return;
@@ -82,6 +102,11 @@ export default function ImageSlider({
     const timer = setInterval(nextSlide, interval);
     return () => clearInterval(timer);
   }, [autoPlay, interval, isHovered, nextSlide, displayImages.length]);
+
+  // Track image load status
+  const handleImageLoad = (index: number) => {
+    setImagesLoaded(prev => ({ ...prev, [index]: true }));
+  };
 
   // Animation variants
   const slideVariants = {
@@ -96,7 +121,6 @@ export default function ImageSlider({
       scale: 1,
       transition: {
         duration: 0.8,
-        ease: [0.25, 0.46, 0.45, 0.94],
       },
     },
     exit: (direction: number) => ({
@@ -105,7 +129,6 @@ export default function ImageSlider({
       scale: 0.95,
       transition: {
         duration: 0.6,
-        ease: [0.25, 0.46, 0.45, 0.94],
       },
     }),
   };
@@ -118,7 +141,6 @@ export default function ImageSlider({
       transition: {
         duration: 0.6,
         delay: 0.3,
-        ease: 'easeOut',
       },
     },
   };
@@ -140,11 +162,16 @@ export default function ImageSlider({
           exit="exit"
           className="absolute inset-0"
         >
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{
-              backgroundImage: `url(${displayImages[currentIndex]?.url})`,
-            }}
+          <OptimizedImage
+            src={displayImages[currentIndex]?.url || ''}
+            alt={displayImages[currentIndex]?.title || 'Slider image'}
+            className="absolute inset-0"
+            config={imageConfig}
+            loading="eager"
+            priority={currentIndex === 0}
+            onLoad={() => handleImageLoad(currentIndex)}
+            objectFit="cover"
+            objectPosition="center"
           />
           {/* Dark Overlay */}
           <div className="absolute inset-0 bg-black/40" />

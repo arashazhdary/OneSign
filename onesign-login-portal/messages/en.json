@@ -19,6 +19,8 @@
     "signIn": "Sign In",
     "signingIn": "Signing you in...",
     "signInWithGoogle": "Sign in with Google",
+    "signInWithMicrosoft": "Sign in with Microsoft",
+    "signInWithEmail": "Sign in with Email (Magic Link)",
     "orContinueWith": "Or continue with",
     "invalidCredentials": "Invalid email or password",
     "securityNote": "Protected by enterprise-grade security",
@@ -68,5 +70,22 @@
     "integrationDesc": "Connect all your applications with single sign-on",
     "global": "Global Access",
     "globalDesc": "Secure authentication from anywhere in the world"
+  },
+  "magicLink": {
+    "title": "Sign in with Magic Link",
+    "subtitle": "We'll send you a secure link to sign in without a password",
+    "emailPlaceholder": "Enter your email",
+    "sendLink": "Send Magic Link",
+    "sendingLink": "Sending magic link...",
+    "checkYourEmail": "Check Your Email",
+    "emailSent": "We've sent a magic link to your email. Click the link to sign in.",
+    "linkExpiresIn": "This link will expire in 15 minutes",
+    "backToLogin": "Back to Login",
+    "verifying": "Verifying Magic Link",
+    "verifyingSubtitle": "Please wait while we verify your link...",
+    "verificationFailed": "Verification Failed",
+    "invalidToken": "Invalid or expired magic link",
+    "tokenExpired": "This magic link has expired",
+    "tokenUsed": "This magic link has already been used"
   }
 }

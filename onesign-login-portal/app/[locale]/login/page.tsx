@@ -8,6 +8,9 @@ import { getTenantId, getTenantIdAsync, setTenantId } from '@/lib/tenant-context
 import { getTenantBranding, TenantBranding, DEFAULT_BRANDING, getGradientStyle } from '@/lib/tenant-branding';
 import LoadingOverlay from '@/app/components/LoadingOverlay';
 import ImageSlider, { DEFAULT_SLIDER_IMAGES } from '@/app/components/ImageSlider';
+import ValidationIcon from '@/app/components/ValidationIcon';
+import PasswordStrengthMeter from '@/app/components/PasswordStrengthMeter';
+import { useFormValidation, PasswordStrength } from '@/hooks/useFormValidation';
 
 declare global {
   interface Window {
@@ -19,6 +22,11 @@ declare global {
         };
       };
     };
+    msal?: any;
+    grecaptcha?: {
+      ready: (callback: () => void) => void;
+      execute: (siteKey: string, options: { action: string }) => Promise<string>;
+    };
   }
 }
 
@@ -28,11 +36,31 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // Form validation hook
+  const {
+    fields,
+    registerField,
+    updateField,
+    touchField,
+    validateEmail,
+    validatePassword,
+    calculatePasswordStrength,
+    isFormValid,
+  } = useFormValidation({
+    validateOnChange: true,
+    validateOnBlur: true,
+    debounceMs: 300,
+  });
+
   // Form state
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>({
+    score: 0,
+    label: '',
+    color: '',
+    percentage: 0,
+  });
 
   // UI state
   const [error, setError] = useState('');
@@ -53,6 +81,12 @@ export default function LoginPage() {
 
   // RTL detection
   const isRTL = useMemo(() => ['fa', 'ar', 'he'].includes(locale), [locale]);
+
+  // Register form fields on mount
+  useEffect(() => {
+    registerField('email', '');
+    registerField('password', '');
+  }, [registerField]);
 
   useEffect(() => {
     // Get tenant ID from URL or context
@@ -79,6 +113,15 @@ export default function LoginPage() {
       getTenantBranding(tenantId).then((data) => {
         setBranding(data);
         setPageLoading(false);
+
+        // Load reCAPTCHA script if enabled for this tenant
+        if (data.features?.enableRecaptcha && data.features?.recaptchaSiteKey) {
+          const script = document.createElement('script');
+          script.src = `https://www.google.com/recaptcha/api.js?render=${data.features.recaptchaSiteKey}`;
+          script.async = true;
+          script.defer = true;
+          document.head.appendChild(script);
+        }
       });
     }
   }, [tenantId]);
@@ -165,8 +208,7 @@ export default function LoginPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleMicrosoftLogin = async () => {
     setError('');
     setLoading(true);
 
@@ -177,13 +219,156 @@ export default function LoginPage() {
         return;
       }
 
+      // Load MSAL library if not already loaded
+      if (!window.msal) {
+        const script = document.createElement('script');
+        script.src = 'https://alcdn.msauth.net/browser/2.38.1/js/msal-browser.min.js';
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+
+        await new Promise((resolve) => {
+          script.onload = resolve;
+        });
+      }
+
+      const msalConfig = {
+        auth: {
+          clientId: process.env.NEXT_PUBLIC_MICROSOFT_CLIENT_ID || '',
+          authority: 'https://login.microsoftonline.com/common',
+          redirectUri: window.location.origin + `/${locale}/login`,
+        },
+        cache: {
+          cacheLocation: 'sessionStorage',
+          storeAuthStateInCookie: false,
+        },
+      };
+
+      const msalInstance = new window.msal.PublicClientApplication(msalConfig);
+      await msalInstance.initialize();
+
+      const loginRequest = {
+        scopes: ['openid', 'profile', 'email', 'User.Read'],
+      };
+
+      try {
+        const loginResponse = await msalInstance.loginPopup(loginRequest);
+
+        if (loginResponse && loginResponse.idToken) {
+          const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7000';
+          const apiResponse = await fetch(`${baseUrl}/api/auth/microsoft-login?tenantId=${tenantId}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              idToken: loginResponse.idToken,
+              clientId: clientId ? clientId : undefined,
+            }),
+          });
+
+          if (!apiResponse.ok) {
+            const data = await apiResponse.json();
+            setError(data.errorMessage || t('login.invalidCredentials'));
+            setLoading(false);
+            return;
+          }
+
+          const data = await apiResponse.json();
+
+          // If OIDC flow, redirect to authorize endpoint
+          if (clientId && redirectUri) {
+            const authorizeUrl = new URL(`${baseUrl}/connect/authorize`);
+            authorizeUrl.searchParams.set('client_id', clientId);
+            authorizeUrl.searchParams.set('redirect_uri', redirectUri);
+            authorizeUrl.searchParams.set('response_type', 'code');
+            authorizeUrl.searchParams.set('scope', 'openid profile email');
+            if (state) authorizeUrl.searchParams.set('state', state);
+            if (codeChallenge) authorizeUrl.searchParams.set('code_challenge', codeChallenge);
+            if (codeChallengeMethod) authorizeUrl.searchParams.set('code_challenge_method', codeChallengeMethod);
+            authorizeUrl.searchParams.set('tenantId', tenantId);
+
+            window.location.href = authorizeUrl.toString();
+          } else {
+            router.push('/');
+          }
+        }
+      } catch (msalError: any) {
+        console.error('Microsoft login error:', msalError);
+        if (msalError.errorCode !== 'user_cancelled') {
+          setError(t('common.error'));
+        }
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error('Microsoft login error:', err);
+      setError(t('common.error'));
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    // Validate all fields before submission
+    const emailField = fields.email;
+    const passwordField = fields.password;
+
+    if (!emailField || !passwordField || !emailField.isValid || !passwordField.isValid) {
+      // Touch all fields to show errors
+      touchField('email', validateEmail);
+      touchField('password', validatePassword);
+      setError(t('login.invalidCredentials'));
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      if (!tenantId) {
+        setError(t('common.error'));
+        setLoading(false);
+        return;
+      }
+
+      // Execute reCAPTCHA if enabled
+      let recaptchaToken: string | undefined;
+      if (branding.features?.enableRecaptcha && branding.features?.recaptchaSiteKey) {
+        try {
+          if (window.grecaptcha) {
+            recaptchaToken = await new Promise<string>((resolve, reject) => {
+              window.grecaptcha!.ready(async () => {
+                try {
+                  const token = await window.grecaptcha!.execute(branding.features!.recaptchaSiteKey!, {
+                    action: 'login',
+                  });
+                  resolve(token);
+                } catch (error) {
+                  reject(error);
+                }
+              });
+            });
+          }
+        } catch (error) {
+          console.error('reCAPTCHA execution failed:', error);
+          setError(t('login.recaptchaError') || 'reCAPTCHA verification failed. Please try again.');
+          setLoading(false);
+          return;
+        }
+      }
+
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7000';
       const response = await fetch(`${baseUrl}/api/auth/login?tenantId=${tenantId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          email: emailField.value,
+          password: passwordField.value,
+          recaptchaToken: recaptchaToken
+        }),
       });
 
       if (!response.ok) {
@@ -258,7 +443,7 @@ export default function LoginPage() {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.5, ease: 'easeOut' },
+      transition: { duration: 0.5 },
     },
   };
 
@@ -305,6 +490,13 @@ export default function LoginPage() {
               interval={loginConfig.sliderInterval ?? 5000}
               tenantName={branding.tenantName}
               tenantLogo={branding.logoDarkUrl || branding.logoUrl}
+              imageConfig={branding.cdnConfig ? {
+                cdnBaseUrl: branding.cdnConfig.baseUrl,
+                defaultQuality: branding.cdnConfig.quality,
+                responsiveWidths: branding.cdnConfig.responsiveWidths,
+                enableWebP: branding.cdnConfig.enableWebP,
+                enableBlurPlaceholder: branding.cdnConfig.enableBlurPlaceholder,
+              } : undefined}
             />
           ) : loginConfig.backgroundType === 'image' && loginConfig.backgroundImageUrl ? (
             <div
@@ -393,7 +585,13 @@ export default function LoginPage() {
                   >
                     <svg
                       className={`h-5 w-5 transition-colors duration-200 ${
-                        focusedField === 'email' ? 'text-indigo-500' : 'text-slate-400'
+                        focusedField === 'email'
+                          ? 'text-indigo-500'
+                          : fields.email?.error && fields.email?.touched
+                            ? 'text-red-500'
+                            : fields.email?.isValid && fields.email?.touched
+                              ? 'text-green-500'
+                              : 'text-slate-400'
                       }`}
                       style={focusedField === 'email' ? { color: primaryColor } : {}}
                       fill="none"
@@ -413,19 +611,44 @@ export default function LoginPage() {
                     name="email"
                     type="email"
                     required
-                    className={`block w-full ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-3.5 border rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 bg-slate-50 dark:bg-slate-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:bg-white dark:focus:bg-slate-700 ${
+                    className={`block w-full ${isRTL ? 'pr-10 pl-12' : 'pl-10 pr-12'} py-3.5 border rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 bg-slate-50 dark:bg-slate-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:bg-white dark:focus:bg-slate-700 ${
                       focusedField === 'email'
                         ? 'border-transparent ring-2'
-                        : 'border-slate-200 dark:border-slate-700'
+                        : fields.email?.error && fields.email?.touched
+                          ? 'border-red-500 dark:border-red-500'
+                          : fields.email?.isValid && fields.email?.touched
+                            ? 'border-green-500 dark:border-green-500'
+                            : 'border-slate-200 dark:border-slate-700'
                     }`}
                     style={focusedField === 'email' ? { '--tw-ring-color': primaryColor } as any : {}}
                     placeholder={t('login.emailPlaceholder')}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={fields.email?.value || ''}
+                    onChange={(e) => updateField('email', e.target.value, validateEmail)}
                     onFocus={() => setFocusedField('email')}
-                    onBlur={() => setFocusedField(null)}
+                    onBlur={() => {
+                      setFocusedField(null);
+                      touchField('email', validateEmail);
+                    }}
+                  />
+                  <ValidationIcon
+                    isValid={fields.email?.isValid || false}
+                    show={fields.email?.touched && !fields.email?.isValidating || false}
+                    isRTL={isRTL}
                   />
                 </div>
+                <AnimatePresence>
+                  {fields.email?.error && fields.email?.touched && (
+                    <motion.p
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="mt-2 text-sm text-red-600 dark:text-red-400"
+                    >
+                      {fields.email.error}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Password Input */}
@@ -439,7 +662,13 @@ export default function LoginPage() {
                   >
                     <svg
                       className={`h-5 w-5 transition-colors duration-200 ${
-                        focusedField === 'password' ? 'text-indigo-500' : 'text-slate-400'
+                        focusedField === 'password'
+                          ? 'text-indigo-500'
+                          : fields.password?.error && fields.password?.touched
+                            ? 'text-red-500'
+                            : fields.password?.isValid && fields.password?.touched
+                              ? 'text-green-500'
+                              : 'text-slate-400'
                       }`}
                       style={focusedField === 'password' ? { color: primaryColor } : {}}
                       fill="none"
@@ -462,19 +691,31 @@ export default function LoginPage() {
                     className={`block w-full ${isRTL ? 'pr-10 pl-12' : 'pl-10 pr-12'} py-3.5 border rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 bg-slate-50 dark:bg-slate-800 transition-all duration-200 focus:outline-none focus:ring-2 focus:bg-white dark:focus:bg-slate-700 ${
                       focusedField === 'password'
                         ? 'border-transparent ring-2'
-                        : 'border-slate-200 dark:border-slate-700'
+                        : fields.password?.error && fields.password?.touched
+                          ? 'border-red-500 dark:border-red-500'
+                          : fields.password?.isValid && fields.password?.touched
+                            ? 'border-green-500 dark:border-green-500'
+                            : 'border-slate-200 dark:border-slate-700'
                     }`}
                     style={focusedField === 'password' ? { '--tw-ring-color': primaryColor } as any : {}}
                     placeholder={t('login.passwordPlaceholder')}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={fields.password?.value || ''}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      updateField('password', value, validatePassword);
+                      // Update password strength in real-time
+                      setPasswordStrength(calculatePasswordStrength(value));
+                    }}
                     onFocus={() => setFocusedField('password')}
-                    onBlur={() => setFocusedField(null)}
+                    onBlur={() => {
+                      setFocusedField(null);
+                      touchField('password', validatePassword);
+                    }}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className={`absolute inset-y-0 ${isRTL ? 'left-0 pl-3' : 'right-0 pr-3'} flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors`}
+                    className={`absolute inset-y-0 ${isRTL ? 'left-0 pl-3' : 'right-0 pr-3'} flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors z-10`}
                   >
                     {showPassword ? (
                       <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -503,6 +744,23 @@ export default function LoginPage() {
                     )}
                   </button>
                 </div>
+                <AnimatePresence>
+                  {fields.password?.error && fields.password?.touched && (
+                    <motion.p
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="mt-2 text-sm text-red-600 dark:text-red-400"
+                    >
+                      {fields.password.error}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+                <PasswordStrengthMeter
+                  strength={passwordStrength}
+                  show={!!fields.password?.value && fields.password.value.length > 0}
+                />
               </div>
 
               {/* Remember Me & Forgot Password */}
@@ -598,20 +856,39 @@ export default function LoginPage() {
                 )}
               </motion.button>
 
-              {/* Social Login Divider */}
+              {/* Divider */}
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-200 dark:border-slate-700"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400">
+                    {t('login.orContinueWith')}
+                  </span>
+                </div>
+              </div>
+
+              {/* Magic Link Button */}
+              <motion.a
+                href={`/${locale}/magic-link${window.location.search}`}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                className="w-full flex justify-center items-center gap-3 py-3.5 px-4 border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-700 dark:text-slate-300 font-semibold rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 focus:outline-none focus:ring-4 focus:ring-slate-200 dark:focus:ring-slate-700 transition-all duration-200"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  />
+                </svg>
+                <span>{t('login.signInWithEmail')}</span>
+              </motion.a>
+
+              {/* Social Login */}
               {features.showSocialLogin && (
                 <>
-                  <div className="relative my-6">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-slate-200 dark:border-slate-700"></div>
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="px-4 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400">
-                        {t('login.orContinueWith')}
-                      </span>
-                    </div>
-                  </div>
-
                   {/* Google Sign In Button */}
                   <motion.button
                     type="button"
@@ -640,6 +917,24 @@ export default function LoginPage() {
                       />
                     </svg>
                     <span>{t('login.signInWithGoogle')}</span>
+                  </motion.button>
+
+                  {/* Microsoft Sign In Button */}
+                  <motion.button
+                    type="button"
+                    onClick={handleMicrosoftLogin}
+                    disabled={loading}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                    className="w-full flex justify-center items-center gap-3 py-3.5 px-4 border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-700 dark:text-slate-300 font-semibold rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 focus:outline-none focus:ring-4 focus:ring-slate-200 dark:focus:ring-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  >
+                    <svg className="w-5 h-5" viewBox="0 0 23 23" fill="none">
+                      <path fill="#f25022" d="M0 0h10.93v10.93H0z" />
+                      <path fill="#00a4ef" d="M12.07 0H23v10.93H12.07z" />
+                      <path fill="#7fba00" d="M0 12.07h10.93V23H0z" />
+                      <path fill="#ffb900" d="M12.07 12.07H23V23H12.07z" />
+                    </svg>
+                    <span>{t('login.signInWithMicrosoft')}</span>
                   </motion.button>
                 </>
               )}

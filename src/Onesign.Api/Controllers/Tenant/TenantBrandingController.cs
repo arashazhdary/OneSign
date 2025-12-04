@@ -158,7 +158,9 @@ public class TenantBrandingController : ControllerBase
                 ShowSocialLogin = true,
                 ShowRememberMe = true,
                 ShowLanguageSwitcher = true,
-                AllowRegistration = true
+                AllowRegistration = true,
+                EnableRecaptcha = false,
+                RecaptchaSiteKey = null
             }
         };
     }
