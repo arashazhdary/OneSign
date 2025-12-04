@@ -16,8 +16,10 @@ import {
   AlertCircle,
   Layout,
   Lock,
-  X
+  X,
+  Images
 } from 'lucide-react';
+import SliderImageManager, { SliderImage } from '@/components/branding/SliderImageManager';
 import { getTenantId } from '@/lib/tenant-context';
 import { tenantService } from '@/lib/api/services/tenant.service';
 import Modal from '@/components/common/Modal';
@@ -43,7 +45,7 @@ interface EmailTemplate {
 }
 
 interface LoginPageConfig {
-  backgroundType: 'color' | 'gradient' | 'image';
+  backgroundType: 'color' | 'gradient' | 'image' | 'slider';
   backgroundColor?: string;
   gradientStart?: string;
   gradientEnd?: string;
@@ -51,11 +53,16 @@ interface LoginPageConfig {
   showLogo: boolean;
   title?: string;
   subtitle?: string;
+  sliderImages?: SliderImage[];
+  sliderAutoPlay?: boolean;
+  sliderInterval?: number;
+  layout?: 'split' | 'centered' | 'overlay';
+  formPosition?: 'left' | 'right';
 }
 
 const DEFAULT_EMAIL_TEMPLATES: EmailTemplate[] = [];
 
-type Tab = 'logos' | 'colors' | 'login' | 'emails' | 'domain';
+type Tab = 'logos' | 'colors' | 'login' | 'slider' | 'emails' | 'domain';
 
 export default function TenantBrandingPage() {
   const { t } = useTranslation();
@@ -148,6 +155,7 @@ export default function TenantBrandingPage() {
     { id: 'logos', label: t('tenant.branding.tabs.logos'), icon: Image },
     { id: 'colors', label: t('tenant.branding.tabs.colors'), icon: Palette },
     { id: 'login', label: t('tenant.branding.tabs.login'), icon: Layout },
+    { id: 'slider', label: t('tenant.branding.tabs.slider', 'Slider'), icon: Images },
     { id: 'emails', label: t('tenant.branding.tabs.emails'), icon: Mail },
     { id: 'domain', label: t('tenant.branding.tabs.domain'), icon: Globe },
   ];
@@ -575,6 +583,7 @@ export default function TenantBrandingPage() {
                     <option value="color">{t('tenant.branding.login.backgroundTypes.color')}</option>
                     <option value="gradient">{t('tenant.branding.login.backgroundTypes.gradient')}</option>
                     <option value="image">{t('tenant.branding.login.backgroundTypes.image')}</option>
+                    <option value="slider">{t('tenant.branding.login.backgroundTypes.slider', 'Image Slider')}</option>
                   </select>
                 </div>
 
@@ -735,6 +744,126 @@ export default function TenantBrandingPage() {
                   {t('tenant.branding.login.livePreview')}
                 </h3>
                 {renderLoginPreview()}
+              </div>
+            </div>
+          )}
+
+          {/* Slider Tab */}
+          {activeTab === 'slider' && (
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+              <SliderImageManager
+                images={branding.loginPageConfig?.sliderImages || []}
+                onChange={(images) =>
+                  setBranding({
+                    ...branding,
+                    loginPageConfig: {
+                      ...branding.loginPageConfig!,
+                      sliderImages: images,
+                    },
+                  })
+                }
+                primaryColor={branding.primaryColor}
+              />
+
+              {/* Slider Settings */}
+              <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700 space-y-4">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                  {t('tenant.branding.slider.settings', 'Slider Settings')}
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={branding.loginPageConfig?.sliderAutoPlay ?? true}
+                        onChange={(e) =>
+                          setBranding({
+                            ...branding,
+                            loginPageConfig: {
+                              ...branding.loginPageConfig!,
+                              sliderAutoPlay: e.target.checked,
+                            },
+                          })
+                        }
+                        className="rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                      />
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        {t('tenant.branding.slider.autoPlay', 'Auto-play slides')}
+                      </span>
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      {t('tenant.branding.slider.interval', 'Slide interval (ms)')}
+                    </label>
+                    <input
+                      type="number"
+                      value={branding.loginPageConfig?.sliderInterval || 5000}
+                      onChange={(e) =>
+                        setBranding({
+                          ...branding,
+                          loginPageConfig: {
+                            ...branding.loginPageConfig!,
+                            sliderInterval: parseInt(e.target.value) || 5000,
+                          },
+                        })
+                      }
+                      min={1000}
+                      max={15000}
+                      step={500}
+                      className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      {t('tenant.branding.slider.layout', 'Page Layout')}
+                    </label>
+                    <select
+                      value={branding.loginPageConfig?.layout || 'split'}
+                      onChange={(e) =>
+                        setBranding({
+                          ...branding,
+                          loginPageConfig: {
+                            ...branding.loginPageConfig!,
+                            layout: e.target.value as any,
+                          },
+                        })
+                      }
+                      className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white"
+                    >
+                      <option value="split">{t('tenant.branding.slider.layouts.split', 'Split Screen')}</option>
+                      <option value="centered">{t('tenant.branding.slider.layouts.centered', 'Centered')}</option>
+                      <option value="overlay">{t('tenant.branding.slider.layouts.overlay', 'Overlay')}</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      {t('tenant.branding.slider.formPosition', 'Form Position')}
+                    </label>
+                    <select
+                      value={branding.loginPageConfig?.formPosition || 'right'}
+                      onChange={(e) =>
+                        setBranding({
+                          ...branding,
+                          loginPageConfig: {
+                            ...branding.loginPageConfig!,
+                            formPosition: e.target.value as any,
+                          },
+                        })
+                      }
+                      className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white"
+                    >
+                      <option value="left">{t('tenant.branding.slider.positions.left', 'Left')}</option>
+                      <option value="right">{t('tenant.branding.slider.positions.right', 'Right')}</option>
+                    </select>
+                  </div>
+                </div>
               </div>
             </div>
           )}

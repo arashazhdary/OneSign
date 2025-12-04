@@ -10,12 +10,20 @@
   },
   "login": {
     "title": "ورود به سامانه",
+    "welcomeBack": "خوش آمدید",
+    "subtitle": "برای دسترسی به حساب کاربری وارد شوید",
     "emailPlaceholder": "رایانامه خود را وارد کنید",
     "passwordPlaceholder": "گذرواژه خود را وارد کنید",
     "forgotPassword": "گذرواژه را فراموش کرده‌اید؟",
+    "rememberMe": "مرا به خاطر بسپار",
     "signIn": "ورود",
+    "signingIn": "در حال ورود...",
     "signInWithGoogle": "ورود با گوگل",
-    "invalidCredentials": "رایانامه یا گذرواژه نامعتبر است"
+    "orContinueWith": "یا ادامه با",
+    "invalidCredentials": "رایانامه یا گذرواژه نامعتبر است",
+    "securityNote": "محافظت شده با امنیت سازمانی",
+    "noAccount": "حساب کاربری ندارید؟",
+    "createAccount": "ایجاد حساب"
   },
   "forgotPassword": {
     "title": "فراموشی گذرواژه",
@@ -52,6 +60,13 @@
     "verify": "تأیید",
     "invalidCode": "کد تأیید نامعتبر است",
     "backToLogin": "بازگشت به صفحه ورود"
+  },
+  "slider": {
+    "enterprise": "امنیت سازمانی",
+    "enterpriseDesc": "سازمان خود را با مدیریت هویت در سطح جهانی محافظت کنید",
+    "integration": "یکپارچگی بی‌نقص",
+    "integrationDesc": "همه اپلیکیشن‌های خود را با ورود یکپارچه متصل کنید",
+    "global": "دسترسی جهانی",
+    "globalDesc": "احراز هویت امن از هر نقطه جهان"
   }
 }
-

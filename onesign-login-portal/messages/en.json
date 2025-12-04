@@ -10,12 +10,20 @@
   },
   "login": {
     "title": "Sign In",
+    "welcomeBack": "Welcome Back",
+    "subtitle": "Sign in to continue to your account",
     "emailPlaceholder": "Enter your email",
     "passwordPlaceholder": "Enter your password",
     "forgotPassword": "Forgot password?",
+    "rememberMe": "Remember me",
     "signIn": "Sign In",
+    "signingIn": "Signing you in...",
     "signInWithGoogle": "Sign in with Google",
-    "invalidCredentials": "Invalid email or password"
+    "orContinueWith": "Or continue with",
+    "invalidCredentials": "Invalid email or password",
+    "securityNote": "Protected by enterprise-grade security",
+    "noAccount": "Don't have an account?",
+    "createAccount": "Create one"
   },
   "forgotPassword": {
     "title": "Forgot Password",
@@ -52,6 +60,13 @@
     "verify": "Verify",
     "invalidCode": "Invalid verification code",
     "backToLogin": "Back to Login"
+  },
+  "slider": {
+    "enterprise": "Enterprise Security",
+    "enterpriseDesc": "Protect your organization with world-class identity management",
+    "integration": "Seamless Integration",
+    "integrationDesc": "Connect all your applications with single sign-on",
+    "global": "Global Access",
+    "globalDesc": "Secure authentication from anywhere in the world"
   }
 }
-
