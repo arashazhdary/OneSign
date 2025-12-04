@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
@@ -22,6 +23,7 @@ interface RateLimit {
 }
 
 export default function GlobalRateLimitingPage() {
+  const { t } = useTranslation();
   const [limits, setLimits] = useState<RateLimit[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -165,7 +167,7 @@ export default function GlobalRateLimitingPage() {
   };
 
   const handleDelete = async (limitId: string) => {
-    if (!confirm('Delete this rate limit?')) return;
+    if (!confirm(t('rateLimiting.confirmDelete'))) return;
     try {
       await globalService.deleteRateLimit(limitId);
       fetchLimits();
@@ -197,20 +199,20 @@ export default function GlobalRateLimitingPage() {
     return `${limit.limit.toLocaleString()} requests / ${limit.window} ${limit.windowUnit}${limit.window > 1 ? 's' : ''}`;
   };
 
-  if (loading) return <div className="p-6">Loading...</div>;
+  if (loading) return <div className="p-6">{t('common.loading')}...</div>;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Rate Limiting</h1>
-          <p className="text-gray-600 mt-1">Configure API rate limits and throttling</p>
+          <h1 className="text-2xl font-bold">{t('rateLimiting.title')}</h1>
+          <p className="text-gray-600 mt-1">{t('rateLimiting.subtitle')}</p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
-          Create Rate Limit
+          {t('rateLimiting.createRateLimit')}
         </button>
       </div>
 

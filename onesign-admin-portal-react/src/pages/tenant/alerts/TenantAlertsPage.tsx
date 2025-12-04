@@ -323,7 +323,7 @@ export default function TenantAlertsPage() {
       } else {
         await securityService.createAlertRule(ruleData);
       }
-      setSuccess(editingRule ? 'Alert rule updated successfully' : 'Alert rule created successfully');
+      setSuccess(editingRule ? t('common.alertRuleUpdatedSuccessfully') : t('common.alertRuleCreatedSuccessfully'));
       setShowRuleModal(false);
       fetchAlertRules();
     } catch (err: any) {
@@ -338,7 +338,7 @@ export default function TenantAlertsPage() {
     setLoading(true);
     try {
       await securityService.deleteAlertRule(deletingRule.id);
-      setSuccess('Alert rule deleted successfully');
+      setSuccess(t('common.alertRuleDeletedSuccessfully'));
       setShowDeleteModal(false);
       setDeletingRule(null);
       fetchAlertRules();
@@ -354,7 +354,7 @@ export default function TenantAlertsPage() {
     setLoading(true);
     try {
       await securityService.toggleAlertRule(id);
-      setSuccess(`Alert rule ${isEnabled ? 'enabled' : 'disabled'} successfully`);
+      setSuccess(`${t('common.alertRule')} ${isEnabled ? t('common.enabled') : t('common.disabled')} ${t('common.successfully')}`);
       fetchAlertRules();
     } catch (err: any) {
       setError(err?.message || t('common.failedToToggleAlertRule'));
@@ -368,7 +368,7 @@ export default function TenantAlertsPage() {
     setLoading(true);
     try {
       await securityService.muteAlertRule(id);
-      setSuccess('Alert rule muted successfully');
+      setSuccess(t('common.alertRuleMutedSuccessfully'));
       fetchAlertRules();
     } catch (err: any) {
       setError(err?.message || t('common.failedToMuteAlertRule'));
@@ -678,7 +678,7 @@ export default function TenantAlertsPage() {
                                   : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
                               }`}
                             >
-                              {rule.isEnabled ? 'Active' : 'Disabled'}
+                              {rule.isEnabled ? t('common.active') : t('common.disabled')}
                             </span>
                             {rule.isMuted && (
                               <span className="px-2.5 py-1 text-xs font-medium rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 flex items-center gap-1">
@@ -904,7 +904,7 @@ export default function TenantAlertsPage() {
         <Modal
           isOpen={showRuleModal}
           onClose={() => setShowRuleModal(false)}
-          title={editingRule ? 'Edit Alert Rule' : 'Create Alert Rule'}
+          title={editingRule ? t('common.editAlertRule') : t('common.createAlertRule')}
           size="lg"
           footer={
             <div className="flex justify-end gap-3">
@@ -1115,7 +1115,7 @@ export default function TenantAlertsPage() {
             setShowDeleteModal(false);
             setDeletingRule(null);
           }}
-          title="Delete Alert Rule"
+          title=t('common.deleteAlertRule')
           footer={
             <div className="flex justify-end gap-3">
               <button
@@ -1138,7 +1138,7 @@ export default function TenantAlertsPage() {
                     Deleting...
                   </span>
                 ) : (
-                  'Delete Rule'
+                  t('common.deleteRule')
                 )}
               </button>
             </div>
@@ -1164,7 +1164,7 @@ export default function TenantAlertsPage() {
         <Modal
           isOpen={showHistoryModal}
           onClose={() => setShowHistoryModal(false)}
-          title="Alert Details"
+          title=t('common.alertDetails')
           footer={
             <div className="flex justify-end">
               <button

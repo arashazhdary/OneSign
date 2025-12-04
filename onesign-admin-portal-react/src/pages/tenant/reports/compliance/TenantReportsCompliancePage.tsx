@@ -342,7 +342,7 @@ export default function TenantReportsCompliancePage() {
 
   const generateCustomReport = () => {
     if (!customReport.name) {
-      alert('Please enter a report name');
+      alert(t('common.pleaseEnterReportName'));
       return;
     }
 
@@ -367,7 +367,7 @@ export default function TenantReportsCompliancePage() {
 
   const scheduleReport = () => {
     if (!newSchedule.reportId || !newSchedule.recipients) {
-      alert('Please fill in all fields');
+      alert(t('common.pleaseFillInAllFields'));
       return;
     }
 
@@ -395,7 +395,7 @@ export default function TenantReportsCompliancePage() {
     setScheduledReports([...scheduledReports, scheduled]);
     setShowScheduleModal(false);
     setNewSchedule({ reportId: '', frequency: 'monthly', recipients: '' });
-    alert('Report scheduled successfully!');
+    alert(t('common.reportScheduledSuccessfully'));
   };
 
   const downloadHistoryReport = (report: ReportHistory) => {
@@ -477,7 +477,7 @@ export default function TenantReportsCompliancePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50 to-green-50 dark:from-slate-900 dark:via-emerald-900/20 dark:to-green-900/20">
       <Helmet>
-        <title>Compliance Reports</title>
+        <title>{t('common.complianceReports')}</title>
       </Helmet>
 
       <div className="p-8">
@@ -491,8 +491,8 @@ export default function TenantReportsCompliancePage() {
             <Shield className="w-8 h-8 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Compliance Reports</h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">Generate and manage compliance reports</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('common.complianceReports')}</h1>
+            <p className="text-gray-600 dark:text-gray-400 mt-1">{t('common.generateAndManageComplianceReports')}</p>
           </div>
         </motion.div>
 
@@ -513,7 +513,7 @@ export default function TenantReportsCompliancePage() {
             delay={1}
           />
           <StatCard
-            title="Compliant"
+            title=t('common.compliant')
             value={compliantCount}
             icon={<CheckCircle className="w-6 h-6 text-white" />}
             color="from-green-500 to-emerald-600"
@@ -919,7 +919,7 @@ export default function TenantReportsCompliancePage() {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => {
-                        if (confirm('Are you sure you want to delete this scheduled report?')) {
+                        if (confirm(t('tenant.reports.compliance.confirmDeleteScheduledReport', 'Are you sure you want to delete this scheduled report?'))) {
                           setScheduledReports(scheduledReports.filter(r => r.id !== report.id));
                         }
                       }}

@@ -117,7 +117,7 @@ const StatCard = ({ title, value, subtitle, icon, trend, trendLabel, color, dela
 };
 
 // Progress Bar Component
-const ProgressBar = ({ current, max, label, color }: { current: number; max: number; label: string; color: string }) => {
+const ProgressBar = ({ current, max, label, color, t }: { current: number; max: number; label: string; color: string; t: any }) => {
   const percentage = max > 0 ? Math.min((current / max) * 100, 100) : 0;
 
   const getBarColor = () => {
@@ -147,7 +147,7 @@ const ProgressBar = ({ current, max, label, color }: { current: number; max: num
         />
       </div>
       <p className="text-xs text-slate-500 dark:text-slate-400 text-left">
-        {percentage.toFixed(1)}% استفاده شده
+        {percentage.toFixed(1)}% {t('tenant.billing.used')}
       </p>
     </motion.div>
   );
@@ -242,7 +242,7 @@ export default function TenantBillingPage() {
       await new Promise(resolve => setTimeout(resolve, 1000));
       setShowUpgradeModal(false);
       setUpgradeComments('');
-      setSuccess('درخواست ارتقا با موفقیت ارسال شد. تیم ما به زودی با شما تماس خواهد گرفت.');
+      setSuccess(t('tenant.billing.upgradeRequestSuccess'));
     } catch (error: any) {
       setError(error?.message || t('common.error'));
       console.error('Error requesting upgrade:', error);
@@ -256,10 +256,30 @@ export default function TenantBillingPage() {
   };
 
   const planFeatures: Record<string, string[]> = {
-    Starter: ['۱۰۰ کاربر', '۵ اپلیکیشن', '۱۰,۰۰۰ درخواست API/ماه', '۱ گیگابایت فضا'],
-    Professional: ['۵۰۰ کاربر', '۲۰ اپلیکیشن', '۱۰۰,۰۰۰ درخواست API/ماه', '۱۰ گیگابایت فضا'],
-    Premium: ['۲,۰۰۰ کاربر', '۵۰ اپلیکیشن', '۵۰۰,۰۰۰ درخواست API/ماه', '۵۰ گیگابایت فضا'],
-    Enterprise: ['نامحدود کاربر', 'نامحدود اپلیکیشن', 'نامحدود درخواست API', 'نامحدود فضا']
+    Starter: [
+      t('tenant.billing.planFeatures.starter.users'),
+      t('tenant.billing.planFeatures.starter.apps'),
+      t('tenant.billing.planFeatures.starter.apiCalls'),
+      t('tenant.billing.planFeatures.starter.storage')
+    ],
+    Professional: [
+      t('tenant.billing.planFeatures.professional.users'),
+      t('tenant.billing.planFeatures.professional.apps'),
+      t('tenant.billing.planFeatures.professional.apiCalls'),
+      t('tenant.billing.planFeatures.professional.storage')
+    ],
+    Premium: [
+      t('tenant.billing.planFeatures.premium.users'),
+      t('tenant.billing.planFeatures.premium.apps'),
+      t('tenant.billing.planFeatures.premium.apiCalls'),
+      t('tenant.billing.planFeatures.premium.storage')
+    ],
+    Enterprise: [
+      t('tenant.billing.planFeatures.enterprise.users'),
+      t('tenant.billing.planFeatures.enterprise.apps'),
+      t('tenant.billing.planFeatures.enterprise.apiCalls'),
+      t('tenant.billing.planFeatures.enterprise.storage')
+    ]
   };
 
   if (loading) {
@@ -272,7 +292,7 @@ export default function TenantBillingPage() {
               <CreditCard className="w-6 h-6 text-green-500" />
             </div>
           </div>
-          <p className="text-slate-600 dark:text-slate-400 font-medium">{t('common.loading', 'در حال بارگذاری...')}</p>
+          <p className="text-slate-600 dark:text-slate-400 font-medium">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -281,7 +301,7 @@ export default function TenantBillingPage() {
   return (
     <>
       <Helmet>
-        <title>{t('tenant.billing.title', 'صورتحساب و مصرف')} | OneSign</title>
+        <title>{t('tenant.billing.title')} | OneSign</title>
       </Helmet>
 
       <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-green-50/30 to-emerald-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 min-h-screen" dir="rtl">
@@ -296,7 +316,7 @@ export default function TenantBillingPage() {
               <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl text-white">
                 <CreditCard className="w-6 h-6" />
               </div>
-              {t('tenant.billing.title', 'صورتحساب و مصرف')}
+              {t('tenant.billing.title')}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, x: -20 }}
@@ -304,7 +324,7 @@ export default function TenantBillingPage() {
               transition={{ delay: 0.1 }}
               className="text-slate-500 dark:text-slate-400 mt-1"
             >
-              {t('tenant.billing.subtitle', 'مدیریت اشتراک و مشاهده میزان مصرف')}
+              {t('tenant.billing.subtitle')}
             </motion.p>
           </div>
           <div className="flex gap-3">
@@ -318,7 +338,7 @@ export default function TenantBillingPage() {
               className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-              {t('common.refresh', 'بروزرسانی')}
+              {t('common.refresh')}
             </motion.button>
             <motion.button
               initial={{ opacity: 0, scale: 0.9 }}
@@ -329,7 +349,7 @@ export default function TenantBillingPage() {
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl"
             >
               <ArrowUpRight className="w-4 h-4" />
-              {t('tenant.billing.requestUpgrade', 'درخواست ارتقا')}
+              {t('tenant.billing.requestUpgrade')}
             </motion.button>
           </div>
         </div>
@@ -368,13 +388,13 @@ export default function TenantBillingPage() {
             <div className="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4">
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
                 <Package className="w-5 h-5" />
-                اشتراک فعلی
+                {t('tenant.billing.currentSubscription')}
               </h2>
             </div>
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="text-center md:text-right">
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">پلن</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">{t('tenant.billing.plan')}</p>
                   <div className="flex items-center gap-2 justify-center md:justify-start">
                     <Star className="w-5 h-5 text-yellow-500" />
                     <span className="text-2xl font-bold text-green-600 dark:text-green-400">{subscription.planName}</span>
@@ -382,25 +402,25 @@ export default function TenantBillingPage() {
                   <p className="text-sm text-slate-500 dark:text-slate-400">{subscription.planTier}</p>
                 </div>
                 <div className="text-center md:text-right">
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">وضعیت</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">{t('tenant.billing.status')}</p>
                   <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold ${
                     subscription.status === 'Active'
                       ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                       : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
                   }`}>
                     {subscription.status === 'Active' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-                    {subscription.status === 'Active' ? 'فعال' : 'غیرفعال'}
+                    {subscription.status === 'Active' ? t('tenant.billing.statusActive') : t('tenant.billing.statusInactive')}
                   </span>
                 </div>
                 <div className="text-center md:text-right">
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">قیمت</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">{t('tenant.billing.price')}</p>
                   <p className="text-2xl font-bold text-slate-900 dark:text-white">
                     {subscription.price.toLocaleString('fa-IR')} {subscription.currency}
                   </p>
                   <p className="text-sm text-slate-500 dark:text-slate-400">{subscription.billingCycle}</p>
                 </div>
                 <div className="text-center md:text-right">
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">تاریخ تمدید</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">{t('tenant.billing.renewalDate')}</p>
                   <div className="flex items-center gap-2 justify-center md:justify-start">
                     <Calendar className="w-5 h-5 text-slate-400" />
                     <span className="text-lg font-semibold text-slate-900 dark:text-white">
@@ -417,43 +437,43 @@ export default function TenantBillingPage() {
         {usageSummary && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <StatCard
-              title="کل کاربران"
+              title={t('tenant.billing.totalUsers')}
               value={usageSummary.totalUsers}
-              subtitle={`${usageSummary.activeUsers} کاربر فعال`}
+              subtitle={t('tenant.billing.activeUsersCount', { count: usageSummary.activeUsers })}
               icon={<Users className="w-6 h-6" />}
               color="blue"
               delay={0}
             />
             <StatCard
-              title="اپلیکیشن‌ها"
+              title={t('tenant.billing.applications')}
               value={usageSummary.totalApplications}
               icon={<AppWindow className="w-6 h-6" />}
               color="purple"
               delay={1}
             />
             <StatCard
-              title="رویدادهای احراز هویت"
+              title={t('tenant.billing.authEvents')}
               value={usageSummary.totalAuthEvents}
               icon={<Activity className="w-6 h-6" />}
               color="green"
               delay={2}
             />
             <StatCard
-              title="درخواست‌های API"
+              title={t('tenant.billing.apiRequests')}
               value={usageSummary.totalApiCalls}
               icon={<Zap className="w-6 h-6" />}
               color="yellow"
               delay={3}
             />
             <StatCard
-              title="فضای استفاده شده"
+              title={t('tenant.billing.storageUsed')}
               value={`${usageSummary.storageUsedMB.toFixed(0)} MB`}
               icon={<HardDrive className="w-6 h-6" />}
               color="orange"
               delay={4}
             />
             <StatCard
-              title="دوره گزارش"
+              title={t('tenant.billing.reportPeriod')}
               value={usageSummary.period}
               icon={<Clock className="w-6 h-6" />}
               color="cyan"
@@ -472,32 +492,36 @@ export default function TenantBillingPage() {
           >
             <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
               <Receipt className="w-5 h-5 text-green-600" />
-              وضعیت سهمیه‌ها
+              {t('tenant.billing.quotaStatus')}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <ProgressBar
                 current={quotaStatus.currentUsers}
                 max={quotaStatus.maxUsers}
-                label="کاربران"
+                label={t('tenant.billing.users')}
                 color="bg-blue-500"
+                t={t}
               />
               <ProgressBar
                 current={quotaStatus.currentApplications}
                 max={quotaStatus.maxApplications}
-                label="اپلیکیشن‌ها"
+                label={t('tenant.billing.applications')}
                 color="bg-purple-500"
+                t={t}
               />
               <ProgressBar
                 current={quotaStatus.currentApiCalls}
                 max={quotaStatus.maxApiCallsPerMonth}
-                label="درخواست‌های API (ماهانه)"
+                label={t('tenant.billing.apiRequestsMonthly')}
                 color="bg-yellow-500"
+                t={t}
               />
               <ProgressBar
                 current={quotaStatus.currentStorageGB}
                 max={quotaStatus.maxStorageGB}
-                label="فضای ذخیره‌سازی (گیگابایت)"
+                label={t('tenant.billing.storageGB')}
                 color="bg-orange-500"
+                t={t}
               />
             </div>
           </motion.div>
@@ -510,13 +534,13 @@ export default function TenantBillingPage() {
             setShowUpgradeModal(false);
             setUpgradeComments('');
           }}
-          title="درخواست ارتقای پلن"
+          title={t('tenant.billing.requestPlanUpgrade')}
           size="lg"
         >
           <form onSubmit={handleRequestUpgrade} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
-                پلن مورد نظر
+                {t('tenant.billing.targetPlan')}
               </label>
               <div className="grid grid-cols-2 gap-4">
                 {Object.entries(planFeatures).map(([plan, features]) => (
@@ -545,14 +569,14 @@ export default function TenantBillingPage() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                توضیحات (اختیاری)
+                {t('tenant.billing.commentsOptional')}
               </label>
               <textarea
                 value={upgradeComments}
                 onChange={(e) => setUpgradeComments(e.target.value)}
                 rows={4}
                 className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-green-500"
-                placeholder="نیازمندی‌ها و توقعات خود را بنویسید..."
+                placeholder={t('tenant.billing.commentsPlaceholder')}
               />
             </div>
 
@@ -565,14 +589,14 @@ export default function TenantBillingPage() {
                 }}
                 className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               >
-                انصراف
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
                 disabled={submitting}
                 className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all disabled:opacity-50"
               >
-                {submitting ? 'در حال ارسال...' : 'ارسال درخواست'}
+                {submitting ? t('tenant.billing.submitting') : t('tenant.billing.submitRequest')}
               </button>
             </div>
           </form>

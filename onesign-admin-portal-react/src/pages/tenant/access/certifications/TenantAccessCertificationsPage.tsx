@@ -879,7 +879,7 @@ export default function TenantAccessCertificationsPage() {
       <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        title="Create Certification Campaign"
+        title={t('tenant.accessCertifications.createCertificationCampaign')}
       >
         <div className="space-y-4">
           <div>

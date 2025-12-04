@@ -910,7 +910,7 @@ export default function TenantFederationPage() {
               setShowCreateModal(false);
               resetSAMLForm();
             }}
-            title="Create SAML Provider"
+            title={t('tenant.federation.createSAMLProvider', 'Create SAML Provider')}
             size="lg"
             footer={
               <div className="flex justify-end gap-3">
@@ -931,10 +931,10 @@ export default function TenantFederationPage() {
                   {submitting ? (
                     <span className="flex items-center gap-2">
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      Creating...
+                      {t('common.creating')}
                     </span>
                   ) : (
-                    'Create Provider'
+                    t('tenant.federation.createProvider')
                   )}
                 </button>
               </div>
@@ -1023,7 +1023,7 @@ export default function TenantFederationPage() {
               setShowCreateModal(false);
               resetOIDCForm();
             }}
-            title="Create OIDC Provider"
+            title={t('tenant.federation.createOIDCProvider', 'Create OIDC Provider')}
             size="xl"
             footer={
               <div className="flex justify-end gap-3">
@@ -1044,10 +1044,10 @@ export default function TenantFederationPage() {
                   {submitting ? (
                     <span className="flex items-center gap-2">
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      Creating...
+                      {t('common.creating')}
                     </span>
                   ) : (
-                    'Create Provider'
+                    t('tenant.federation.createProvider')
                   )}
                 </button>
               </div>
@@ -1193,7 +1193,7 @@ export default function TenantFederationPage() {
               setShowCreateModal(false);
               resetSCIMForm();
             }}
-            title="Create SCIM Token"
+            title={t('tenant.federation.createSCIMToken', 'Create SCIM Token')}
             footer={
               <div className="flex justify-end gap-3">
                 <button
@@ -1213,10 +1213,10 @@ export default function TenantFederationPage() {
                   {submitting ? (
                     <span className="flex items-center gap-2">
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      Creating...
+                      {t('common.creating')}
                     </span>
                   ) : (
-                    'Create Token'
+                    t('tenant.federation.createToken')
                   )}
                 </button>
               </div>
@@ -1288,10 +1288,10 @@ export default function TenantFederationPage() {
                 {submitting ? (
                   <span className="flex items-center gap-2">
                     <RefreshCw className="w-4 h-4 animate-spin" />
-                    Updating...
+                    {t('common.updating')}
                   </span>
                 ) : (
-                  'Update Provider'
+                  t('tenant.federation.updateProvider')
                 )}
               </button>
             </div>
@@ -1481,10 +1481,10 @@ export default function TenantFederationPage() {
                 {submitting ? (
                   <span className="flex items-center gap-2">
                     <RefreshCw className="w-4 h-4 animate-spin" />
-                    Deleting...
+                    {t('common.deleting')}
                   </span>
                 ) : (
-                  'Delete'
+                  t('common.delete')
                 )}
               </button>
             </div>

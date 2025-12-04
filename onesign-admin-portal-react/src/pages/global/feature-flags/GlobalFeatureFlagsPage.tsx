@@ -98,7 +98,7 @@ export default function GlobalFeatureFlagsPage() {
     setSuccess('');
     try {
       await globalService.toggleFeatureFlag(flag.id, newState);
-      setSuccess(`Feature flag "${flag.name}" ${newState ? 'enabled' : 'disabled'} successfully`);
+      setSuccess(t('global.featureFlags.messages.flagToggled', { name: flag.name, state: newState ? t('common.enabled') : t('common.disabled') }));
       fetchFlags();
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -142,7 +142,7 @@ export default function GlobalFeatureFlagsPage() {
       }
 
       await globalService.createFeatureFlag(payload);
-      setSuccess('Feature flag created successfully');
+      setSuccess(t('global.featureFlags.messages.created'));
       setIsCreateModalOpen(false);
       resetForm();
       fetchFlags();
@@ -154,13 +154,13 @@ export default function GlobalFeatureFlagsPage() {
   };
 
   const deleteFlag = async (flagId: string) => {
-    if (!confirm('Are you sure you want to delete this feature flag?')) return;
+    if (!confirm(t('global.featureFlags.confirmDelete'))) return;
 
     setLoading(true);
     setError('');
     try {
       await globalService.deleteFeatureFlag(flagId);
-      setSuccess('Feature flag deleted successfully');
+      setSuccess(t('global.featureFlags.messages.deleted'));
       fetchFlags();
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -193,12 +193,12 @@ export default function GlobalFeatureFlagsPage() {
   }, []);
 
   const flagColumns: Column<FeatureFlag>[] = [
-    { key: 'name', label: 'Name', render: (flag) => <span className="font-semibold">{flag.name}</span> },
-    { key: 'key', label: 'Key', render: (flag) => <code className="text-xs bg-gray-100 px-2 py-1 rounded">{flag.key}</code> },
-    { key: 'description', label: 'Description' },
+    { key: 'name', label: t('common.name'), render: (flag) => <span className="font-semibold">{flag.name}</span> },
+    { key: 'key', label: t('global.featureFlags.key'), render: (flag) => <code className="text-xs bg-gray-100 px-2 py-1 rounded">{flag.key}</code> },
+    { key: 'description', label: t('common.description') },
     {
       key: 'enabled',
-      label: 'Status',
+      label: t('common.status'),
       render: (flag) => (
         <button
           onClick={(e) => {
@@ -219,32 +219,32 @@ export default function GlobalFeatureFlagsPage() {
     },
     {
       key: 'targetAudience',
-      label: 'Target',
+      label: t('global.featureFlags.target'),
       render: (flag) => {
-        if (flag.targetAudience === 'all') return 'All Users';
-        if (flag.targetAudience === 'specific') return `${flag.targetTenants?.length || 0} Tenants`;
-        return `${flag.rolloutPercentage}% Rollout`;
+        if (flag.targetAudience === 'all') return t('global.featureFlags.allUsers');
+        if (flag.targetAudience === 'specific') return t('global.featureFlags.tenantCount', { count: flag.targetTenants?.length || 0 });
+        return t('global.featureFlags.rolloutPercentage', { percentage: flag.rolloutPercentage });
       }
     }
   ];
 
   const historyColumns: Column<FeatureFlagHistory>[] = [
-    { key: 'timestamp', label: 'Timestamp', render: (h) => new Date(h.timestamp).toLocaleString() },
-    { key: 'action', label: 'Action' },
-    { key: 'performedBy', label: 'Performed By' },
-    { key: 'previousValue', label: 'Previous', render: (h) => <code className="text-xs">{h.previousValue}</code> },
-    { key: 'newValue', label: 'New', render: (h) => <code className="text-xs">{h.newValue}</code> }
+    { key: 'timestamp', label: t('common.timestamp'), render: (h) => new Date(h.timestamp).toLocaleString() },
+    { key: 'action', label: t('common.action') },
+    { key: 'performedBy', label: t('common.performedBy') },
+    { key: 'previousValue', label: t('global.featureFlags.previous'), render: (h) => <code className="text-xs">{h.previousValue}</code> },
+    { key: 'newValue', label: t('global.featureFlags.new'), render: (h) => <code className="text-xs">{h.newValue}</code> }
   ];
 
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Feature Flags Management</h1>
+        <h1 className="text-3xl font-bold">{t('global.featureFlags.title')}</h1>
         <button
           onClick={() => setIsCreateModalOpen(true)}
           className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium"
         >
-          Create Feature Flag
+          {t('global.featureFlags.createButton')}
         </button>
       </div>
 
@@ -263,23 +263,23 @@ export default function GlobalFeatureFlagsPage() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm text-gray-500">Total Flags</div>
+          <div className="text-sm text-gray-500">{t('global.featureFlags.totalFlags')}</div>
           <div className="text-2xl font-bold text-gray-900 mt-1">{flags.length}</div>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm text-gray-500">Enabled</div>
+          <div className="text-sm text-gray-500">{t('global.featureFlags.enabled')}</div>
           <div className="text-2xl font-bold text-green-600 mt-1">
             {flags.filter(f => f.enabled).length}
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm text-gray-500">Disabled</div>
+          <div className="text-sm text-gray-500">{t('global.featureFlags.disabled')}</div>
           <div className="text-2xl font-bold text-gray-600 mt-1">
             {flags.filter(f => !f.enabled).length}
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm text-gray-500">A/B Tests</div>
+          <div className="text-sm text-gray-500">{t('global.featureFlags.abTests')}</div>
           <div className="text-2xl font-bold text-purple-600 mt-1">
             {flags.filter(f => f.abTestConfig).length}
           </div>
@@ -292,20 +292,20 @@ export default function GlobalFeatureFlagsPage() {
           data={flags}
           columns={flagColumns}
           loading={loading}
-          emptyMessage="No feature flags found"
+          emptyMessage={t('global.featureFlags.noFlags')}
           actions={(flag) => (
             <div className="flex gap-2">
               <button
                 onClick={() => fetchHistory(flag.id)}
                 className="text-indigo-600 hover:text-indigo-900 font-medium"
               >
-                History
+                {t('common.history')}
               </button>
               <button
                 onClick={() => deleteFlag(flag.id)}
                 className="text-red-600 hover:text-red-900 font-medium"
               >
-                Delete
+                {t('common.delete')}
               </button>
             </div>
           )}
@@ -317,7 +317,7 @@ export default function GlobalFeatureFlagsPage() {
         <Modal
           isOpen={true}
           onClose={() => setConfirmToggle(null)}
-          title="Confirm Action"
+          title={t('common.confirmAction')}
           size="sm"
           footer={
             <>
@@ -325,7 +325,7 @@ export default function GlobalFeatureFlagsPage() {
                 onClick={() => setConfirmToggle(null)}
                 className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={() => toggleFlag(confirmToggle.flag, confirmToggle.newState)}
@@ -333,17 +333,21 @@ export default function GlobalFeatureFlagsPage() {
                   confirmToggle.newState ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
                 }`}
               >
-                {confirmToggle.newState ? 'Enable' : 'Disable'}
+                {confirmToggle.newState ? t('common.enable') : t('common.disable')}
               </button>
             </>
           }
         >
           <p>
-            Are you sure you want to {confirmToggle.newState ? 'enable' : 'disable'} the feature flag{' '}
-            <strong>{confirmToggle.flag.name}</strong>?
+            {t('global.featureFlags.confirmToggle', {
+              action: confirmToggle.newState ? t('common.enable') : t('common.disable'),
+              name: confirmToggle.flag.name
+            })}
           </p>
           <p className="text-sm text-gray-500 mt-2">
-            This will affect {confirmToggle.flag.targetAudience === 'all' ? 'all users' : 'targeted users'}.
+            {t('global.featureFlags.toggleWarning', {
+              audience: confirmToggle.flag.targetAudience === 'all' ? t('global.featureFlags.allUsers') : t('global.featureFlags.targetedUsers')
+            })}
           </p>
         </Modal>
       )}
@@ -366,14 +370,14 @@ export default function GlobalFeatureFlagsPage() {
               }}
               className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               onClick={createFlag}
               disabled={!formData.name || !formData.key || loading}
               className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
             >
-              Create Flag
+              {t('global.featureFlags.createFlag')}
             </button>
           </>
         }
@@ -381,7 +385,7 @@ export default function GlobalFeatureFlagsPage() {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.name')} *</label>
               <input
                 type="text"
                 value={formData.name}
@@ -390,7 +394,7 @@ export default function GlobalFeatureFlagsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Key *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('global.featureFlags.key')} *</label>
               <input
                 type="text"
                 value={formData.key}
@@ -401,7 +405,7 @@ export default function GlobalFeatureFlagsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('common.description')}</label>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -418,12 +422,12 @@ export default function GlobalFeatureFlagsPage() {
                 onChange={(e) => setFormData({ ...formData, enabled: e.target.checked })}
                 className="mr-2"
               />
-              <span className="text-sm font-medium text-gray-700">Enable immediately</span>
+              <span className="text-sm font-medium text-gray-700">{t('global.featureFlags.enableImmediately')}</span>
             </label>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Target Audience</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">{t('global.featureFlags.targetAudience')}</label>
             <div className="space-y-2">
               <label className="flex items-center">
                 <input
@@ -432,7 +436,7 @@ export default function GlobalFeatureFlagsPage() {
                   onChange={() => setFormData({ ...formData, targetAudience: 'all' })}
                   className="mr-2"
                 />
-                <span>All Users</span>
+                <span>{t('global.featureFlags.allUsers')}</span>
               </label>
               <label className="flex items-center">
                 <input
@@ -441,14 +445,14 @@ export default function GlobalFeatureFlagsPage() {
                   onChange={() => setFormData({ ...formData, targetAudience: 'specific' })}
                   className="mr-2"
                 />
-                <span>Specific Tenants</span>
+                <span>{t('global.featureFlags.specificTenants')}</span>
               </label>
               {formData.targetAudience === 'specific' && (
                 <input
                   type="text"
                   value={formData.targetTenants}
                   onChange={(e) => setFormData({ ...formData, targetTenants: e.target.value })}
-                  placeholder="Tenant IDs (comma-separated)"
+                  placeholder={t('global.featureFlags.tenantIdsPlaceholder')}
                   className="w-full ml-6 px-3 py-2 border border-gray-300 rounded-lg"
                 />
               )}
@@ -459,7 +463,7 @@ export default function GlobalFeatureFlagsPage() {
                   onChange={() => setFormData({ ...formData, targetAudience: 'percentage' })}
                   className="mr-2"
                 />
-                <span>Percentage Rollout</span>
+                <span>{t('global.featureFlags.percentageRollout')}</span>
               </label>
               {formData.targetAudience === 'percentage' && (
                 <div className="ml-6">
@@ -485,12 +489,12 @@ export default function GlobalFeatureFlagsPage() {
                 onChange={(e) => setFormData({ ...formData, enableSchedule: e.target.checked })}
                 className="mr-2"
               />
-              <span className="text-sm font-medium text-gray-700">Schedule Rollout</span>
+              <span className="text-sm font-medium text-gray-700">{t('global.featureFlags.scheduleRollout')}</span>
             </label>
             {formData.enableSchedule && (
               <div className="grid grid-cols-2 gap-4 ml-6">
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">Start Date</label>
+                  <label className="block text-sm text-gray-600 mb-1">{t('global.featureFlags.startDate')}</label>
                   <input
                     type="datetime-local"
                     value={formData.startDate}
@@ -499,7 +503,7 @@ export default function GlobalFeatureFlagsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">End Date (Optional)</label>
+                  <label className="block text-sm text-gray-600 mb-1">{t('global.featureFlags.endDateOptional')}</label>
                   <input
                     type="datetime-local"
                     value={formData.endDate}
@@ -519,7 +523,7 @@ export default function GlobalFeatureFlagsPage() {
                 onChange={(e) => setFormData({ ...formData, enableABTest: e.target.checked })}
                 className="mr-2"
               />
-              <span className="text-sm font-medium text-gray-700">Enable A/B Testing</span>
+              <span className="text-sm font-medium text-gray-700">{t('global.featureFlags.enableABTesting')}</span>
             </label>
             {formData.enableABTest && (
               <div className="space-y-3 ml-6">
@@ -528,19 +532,19 @@ export default function GlobalFeatureFlagsPage() {
                     type="text"
                     value={formData.variantA}
                     onChange={(e) => setFormData({ ...formData, variantA: e.target.value })}
-                    placeholder="Variant A"
+                    placeholder={t('global.featureFlags.variantA')}
                     className="px-3 py-2 border border-gray-300 rounded-lg"
                   />
                   <input
                     type="text"
                     value={formData.variantB}
                     onChange={(e) => setFormData({ ...formData, variantB: e.target.value })}
-                    placeholder="Variant B"
+                    placeholder={t('global.featureFlags.variantB')}
                     className="px-3 py-2 border border-gray-300 rounded-lg"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">Split Percentage (A/B)</label>
+                  <label className="block text-sm text-gray-600 mb-1">{t('global.featureFlags.splitPercentage')}</label>
                   <input
                     type="range"
                     min="0"
@@ -563,13 +567,13 @@ export default function GlobalFeatureFlagsPage() {
       <Modal
         isOpen={isHistoryModalOpen}
         onClose={() => setIsHistoryModalOpen(false)}
-        title="Feature Flag History"
+        title={t('global.featureFlags.historyTitle')}
         size="xl"
       >
         <DataTable
           data={history}
           columns={historyColumns}
-          emptyMessage="No history available"
+          emptyMessage={t('global.featureFlags.noHistory')}
         />
       </Modal>
     </div>

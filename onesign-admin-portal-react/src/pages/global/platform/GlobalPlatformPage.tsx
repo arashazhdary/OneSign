@@ -145,7 +145,7 @@ export default function GlobalPlatformPage() {
     setError('');
     try {
       // Test execution not available in service
-      setError('Platform tests are not available');
+      setError(t('global.platform.messages.platformTestsNotAvailable'));
     } catch (err: any) {
       setError(err.response?.data?.errorMessage || t('common.error'));
     }
@@ -168,7 +168,7 @@ export default function GlobalPlatformPage() {
     setError('');
     try {
       // Test result retrieval not available in service
-      setError('Test result retrieval not available');
+      setError(t('global.platform.messages.testResultRetrievalNotAvailable'));
     } catch (err: any) {
       setError(err.response?.data?.errorMessage || t('common.error'));
     }
@@ -178,7 +178,7 @@ export default function GlobalPlatformPage() {
     setError('');
     try {
       // Test results not available in service
-      setError('Platform tests are not available');
+      setError(t('global.platform.messages.platformTestsNotAvailable'));
     } catch (err: any) {
       setError(err.response?.data?.errorMessage || t('common.error'));
     }
@@ -189,7 +189,7 @@ export default function GlobalPlatformPage() {
     setGeneratingDocs(true);
     try {
       // API docs generation not available in service
-      setError('Documentation generation is not available');
+      setError(t('global.platform.messages.documentationGenerationNotAvailable'));
     } catch (err: any) {
       setError(err.response?.data?.errorMessage || t('common.error'));
     } finally {
@@ -240,7 +240,7 @@ export default function GlobalPlatformPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold mb-6">Platform Management</h1>
+      <h1 className="text-3xl font-bold mb-6">{t('global.platform.title')}</h1>
 
       {error && (
         <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>
@@ -258,12 +258,12 @@ export default function GlobalPlatformPage() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              {tab === 'version' ? 'Version Info' :
-               tab === 'health' ? 'Health Status' :
-               tab === 'migrations' ? 'Migrations' :
-               tab === 'diagnostics' ? 'Diagnostics' :
-               tab === 'tests' ? 'Tests' :
-               'Documentation'}
+              {tab === 'version' ? t('global.platform.tabs.versionInfo') :
+               tab === 'health' ? t('global.platform.tabs.healthStatus') :
+               tab === 'migrations' ? t('global.platform.tabs.migrations') :
+               tab === 'diagnostics' ? t('global.platform.tabs.diagnostics') :
+               tab === 'tests' ? t('global.platform.tabs.tests') :
+               t('global.platform.tabs.documentation')}
             </button>
           ))}
         </nav>
@@ -281,19 +281,19 @@ export default function GlobalPlatformPage() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">Version</h3>
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">{t('global.platform.labels.version')}</h3>
                   <p className="text-lg font-semibold">{platformVersion.version}</p>
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">Build Number</h3>
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">{t('global.platform.labels.buildNumber')}</h3>
                   <p className="text-lg font-semibold">{platformVersion.buildNumber}</p>
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">Release Date</h3>
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">{t('global.platform.labels.releaseDate')}</h3>
                   <p className="text-lg font-semibold">{new Date(platformVersion.releaseDate).toLocaleDateString()}</p>
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">Environment</h3>
+                  <h3 className="text-sm font-medium text-gray-500 mb-1">{t('global.platform.labels.environment')}</h3>
                   <p className="text-lg font-semibold">
                     <span className={`px-2 py-1 rounded text-xs ${
                       platformVersion.environment === 'Production' ? 'bg-green-100 text-green-800' :
@@ -307,7 +307,7 @@ export default function GlobalPlatformPage() {
               </div>
             </div>
           ) : (
-            <p className="text-gray-500">Unable to load version information</p>
+            <p className="text-gray-500">{t('global.platform.messages.unableToLoadVersionInfo')}</p>
           )}
         </div>
       )}
@@ -317,12 +317,12 @@ export default function GlobalPlatformPage() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Migration</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Version</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Applied At</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Execution Time</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.platform.labels.migration')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.platform.labels.version')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.platform.labels.appliedAt')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.platform.labels.executionTime')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -353,7 +353,7 @@ export default function GlobalPlatformPage() {
                         disabled={applyingMigration}
                         className="text-indigo-600 hover:text-indigo-900 disabled:opacity-50"
                       >
-                        Apply
+                        {t('global.platform.actions.apply')}
                       </button>
                     )}
                   </td>
@@ -362,7 +362,7 @@ export default function GlobalPlatformPage() {
               {migrations.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                    No migrations found
+                    {t('global.platform.messages.noMigrationsFound')}
                   </td>
                 </tr>
               )}
@@ -395,7 +395,7 @@ export default function GlobalPlatformPage() {
       {activeTab === 'diagnostics' && (
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="p-6">
-            <h2 className="text-xl font-semibold mb-4">System Diagnostics</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('global.platform.labels.systemDiagnostics')}</h2>
             <div className="space-y-6">
               {(diagnostics.reduce((acc: any[], item) => {
                 const existing = acc.find((group: any) => group.category === item.category);
@@ -424,7 +424,7 @@ export default function GlobalPlatformPage() {
               ))}
               {diagnostics.length === 0 && (
                 <div className="text-center text-gray-500 py-8">
-                  No diagnostic information available
+                  {t('global.platform.messages.noDiagnosticInfo')}
                 </div>
               )}
             </div>
@@ -440,7 +440,7 @@ export default function GlobalPlatformPage() {
                 type="text"
                 value={selectedTestId}
                 onChange={(e) => setSelectedTestId(e.target.value)}
-                placeholder="Enter test ID to view details"
+                placeholder={t('global.platform.placeholders.enterTestId')}
                 className="flex-1 px-3 py-2 border border-gray-300 rounded"
               />
               <button
@@ -448,7 +448,7 @@ export default function GlobalPlatformPage() {
                 disabled={!selectedTestId}
                 className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 disabled:opacity-50"
               >
-                Get Test Result
+                {t('global.platform.actions.getTestResult')}
               </button>
             </div>
             <div className="flex gap-2">
@@ -456,42 +456,42 @@ export default function GlobalPlatformPage() {
                 onClick={getTestResults}
                 className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
               >
-                Get All Results
+                {t('global.platform.actions.getAllResults')}
               </button>
               <button
                 onClick={runTests}
                 className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
               >
-                Run All Tests
+                {t('global.platform.actions.runAllTests')}
               </button>
             </div>
           </div>
 
           {singleTestResult && (
             <div className="mb-4 bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-4">Test Result Details</h3>
+              <h3 className="text-lg font-semibold mb-4">{t('global.platform.labels.testResultDetails')}</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <span className="text-sm text-gray-500">Test Name:</span>
+                  <span className="text-sm text-gray-500">{t('global.platform.labels.testName')}:</span>
                   <p className="font-medium">{singleTestResult.testName}</p>
                 </div>
                 <div>
-                  <span className="text-sm text-gray-500">Category:</span>
+                  <span className="text-sm text-gray-500">{t('global.platform.labels.category')}:</span>
                   <p className="font-medium">{singleTestResult.category}</p>
                 </div>
                 <div>
-                  <span className="text-sm text-gray-500">Status:</span>
+                  <span className="text-sm text-gray-500">{t('common.status')}:</span>
                   <span className={`px-2 py-1 rounded text-xs ${getTestStatusColor(singleTestResult.status)}`}>
                     {singleTestResult.status}
                   </span>
                 </div>
                 <div>
-                  <span className="text-sm text-gray-500">Duration:</span>
+                  <span className="text-sm text-gray-500">{t('global.platform.labels.duration')}:</span>
                   <p className="font-medium">{singleTestResult.duration}ms</p>
                 </div>
                 {singleTestResult.message && (
                   <div className="col-span-2">
-                    <span className="text-sm text-gray-500">Message:</span>
+                    <span className="text-sm text-gray-500">{t('global.platform.labels.message')}:</span>
                     <p className="font-medium">{singleTestResult.message}</p>
                   </div>
                 )}
@@ -500,32 +500,32 @@ export default function GlobalPlatformPage() {
                 onClick={() => setSingleTestResult(null)}
                 className="mt-4 text-sm text-gray-600 hover:text-gray-900"
               >
-                Clear
+                {t('global.platform.actions.clear')}
               </button>
             </div>
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-white p-4 rounded-lg shadow">
-              <div className="text-sm text-gray-500">Passed</div>
+              <div className="text-sm text-gray-500">{t('global.platform.labels.passed')}</div>
               <div className="text-2xl font-bold text-green-600">
                 {testResults.filter(t => t.status === 'Passed').length}
               </div>
             </div>
             <div className="bg-white p-4 rounded-lg shadow">
-              <div className="text-sm text-gray-500">Failed</div>
+              <div className="text-sm text-gray-500">{t('global.platform.labels.failed')}</div>
               <div className="text-2xl font-bold text-red-600">
                 {testResults.filter(t => t.status === 'Failed').length}
               </div>
             </div>
             <div className="bg-white p-4 rounded-lg shadow">
-              <div className="text-sm text-gray-500">Pending</div>
+              <div className="text-sm text-gray-500">{t('global.platform.labels.pending')}</div>
               <div className="text-2xl font-bold text-yellow-600">
                 {testResults.filter(t => t.status === 'Pending').length}
               </div>
             </div>
             <div className="bg-white p-4 rounded-lg shadow">
-              <div className="text-sm text-gray-500">Skipped</div>
+              <div className="text-sm text-gray-500">{t('global.platform.labels.skipped')}</div>
               <div className="text-2xl font-bold text-gray-600">
                 {testResults.filter(t => t.status === 'Skipped').length}
               </div>
@@ -536,11 +536,11 @@ export default function GlobalPlatformPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Test Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Duration</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Run</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.platform.labels.testName')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.platform.labels.category')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.status')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.platform.labels.duration')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.platform.labels.lastRun')}</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -571,7 +571,7 @@ export default function GlobalPlatformPage() {
                 {testResults.length === 0 && (
                   <tr>
                     <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                      No test results found
+                      {t('global.platform.messages.noTestResultsFound')}
                     </td>
                   </tr>
                 )}
@@ -613,17 +613,17 @@ export default function GlobalPlatformPage() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-sm text-gray-500">Status</span>
+                    <span className="text-sm text-gray-500">{t('common.status')}</span>
                     <span className={`px-2 py-1 rounded text-xs ${getHealthStatusColor(service.status)}`}>
                       {service.status}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-gray-500">Latency</span>
+                    <span className="text-sm text-gray-500">{t('global.platform.labels.latency')}</span>
                     <span className="text-sm font-medium">{service.latency}ms</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-sm text-gray-500">Last Checked</span>
+                    <span className="text-sm text-gray-500">{t('global.platform.labels.lastChecked')}</span>
                     <span className="text-sm">{new Date(service.lastChecked).toLocaleTimeString()}</span>
                   </div>
                   {service.details && (
@@ -636,7 +636,7 @@ export default function GlobalPlatformPage() {
             ))}
             {systemHealth.length === 0 && (
               <div className="col-span-3 text-center text-gray-500 py-8">
-                No health data available
+                {t('global.platform.messages.noHealthData')}
               </div>
             )}
           </div>
@@ -646,13 +646,13 @@ export default function GlobalPlatformPage() {
       {activeTab === 'docs' && (
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">API Documentation</h2>
+            <h2 className="text-2xl font-bold">{t('global.platform.labels.apiDocumentation')}</h2>
             <button
               onClick={generateDocs}
               disabled={generatingDocs}
               className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
             >
-              {generatingDocs ? 'Generating...' : 'Regenerate Docs'}
+              {generatingDocs ? t('global.platform.labels.generating') : t('global.platform.actions.regenerateDocs')}
             </button>
           </div>
 
@@ -660,12 +660,12 @@ export default function GlobalPlatformPage() {
             <div className="space-y-6">
               <div className="border-b pb-4">
                 <h3 className="text-xl font-semibold">{openApiSpec.info.title}</h3>
-                <p className="text-gray-600 mt-1">Version: {openApiSpec.info.version}</p>
+                <p className="text-gray-600 mt-1">{t('global.platform.labels.version')}: {openApiSpec.info.version}</p>
                 <p className="text-gray-500 mt-2">{openApiSpec.info.description}</p>
               </div>
 
               <div>
-                <h4 className="text-lg font-semibold mb-3">Available Endpoints</h4>
+                <h4 className="text-lg font-semibold mb-3">{t('global.platform.labels.availableEndpoints')}</h4>
                 <div className="space-y-2">
                   {Object.entries(openApiSpec.paths).map(([path, methods]: [string, any]) => (
                     <div key={path} className="border rounded-lg p-4">
@@ -692,7 +692,7 @@ export default function GlobalPlatformPage() {
               </div>
 
               <div className="pt-4 border-t">
-                <h4 className="text-lg font-semibold mb-3">OpenAPI Specification</h4>
+                <h4 className="text-lg font-semibold mb-3">{t('global.platform.labels.openApiSpecification')}</h4>
                 <pre className="bg-gray-50 p-4 rounded-lg overflow-auto max-h-96 text-xs">
                   {JSON.stringify(openApiSpec, null, 2)}
                 </pre>
@@ -700,7 +700,7 @@ export default function GlobalPlatformPage() {
             </div>
           ) : (
             <div className="text-center text-gray-500 py-8">
-              No API documentation available
+              {t('global.platform.messages.noApiDocumentation')}
             </div>
           )}
         </div>

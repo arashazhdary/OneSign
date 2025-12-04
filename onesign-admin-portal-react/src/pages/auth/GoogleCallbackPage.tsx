@@ -19,14 +19,14 @@ const GoogleCallbackPage = () => {
       const errorParam = searchParams.get('error');
 
       if (errorParam) {
-        setError('Google authentication was cancelled or failed');
+        setError(t('common.auth.googleAuthCancelled'));
         setIsLoading(false);
         setTimeout(() => navigate('/login'), 3000);
         return;
       }
 
       if (!code) {
-        setError('Invalid callback: missing authorization code');
+        setError(t('common.auth.invalidCallback'));
         setIsLoading(false);
         setTimeout(() => navigate('/login'), 3000);
         return;
@@ -53,7 +53,7 @@ const GoogleCallbackPage = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-600 dark:text-slate-400">Completing Google sign in...</p>
+          <p className="text-slate-600 dark:text-slate-400">{t('common.auth.completingGoogleSignIn')}</p>
         </div>
       </div>
     );
@@ -72,11 +72,11 @@ const GoogleCallbackPage = () => {
                 </div>
               </div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                {t('auth.authenticationFailed')}
+                {t('common.auth.authenticationFailed')}
               </h1>
               <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">{error}</p>
               <p className="text-gray-500 dark:text-gray-500 text-xs">
-                {t('auth.redirectingToLogin')}
+                {t('common.auth.redirectingToLogin')}
               </p>
             </div>
           </div>

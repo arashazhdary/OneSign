@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { globalService } from '@/lib/api/services/global.service';
 
 interface Alert {
@@ -31,6 +32,7 @@ interface AlertRule {
 }
 
 export default function GlobalAlertsPage() {
+  const { t } = useTranslation();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [rules, setRules] = useState<AlertRule[]>([]);
   const [loading, setLoading] = useState(true);
@@ -97,7 +99,7 @@ export default function GlobalAlertsPage() {
   };
 
   const handleDeleteRule = async (ruleId: string) => {
-    if (!confirm('Are you sure you want to delete this alert rule?')) return;
+    if (!confirm(t('alerts.confirmDeleteRule'))) return;
     try {
       await globalService.deleteAlertRule(ruleId);
       fetchData();
@@ -144,51 +146,51 @@ export default function GlobalAlertsPage() {
   const activeAlerts = filteredAlerts.filter(a => a.status === 'active' || a.status === 'acknowledged');
   const historicalAlerts = filteredAlerts.filter(a => a.status === 'resolved' || a.status === 'silenced');
 
-  if (loading) return <div className="p-6">Loading...</div>;
+  if (loading) return <div className="p-6">{t('common.loading')}...</div>;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Global Platform Alerts</h1>
-          <p className="text-gray-600 mt-1">Platform-wide alert monitoring and management</p>
+          <h1 className="text-2xl font-bold">{t('global.alerts.title')}</h1>
+          <p className="text-gray-600 mt-1">{t('global.alerts.subtitle')}</p>
         </div>
         <button
           onClick={() => setShowCreateRule(true)}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
-          Create Alert Rule
+          {t('global.alerts.buttons.createRule')}
         </button>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="text-sm text-red-600">Critical</div>
+          <div className="text-sm text-red-600">{t('global.alerts.stats.critical')}</div>
           <div className="text-2xl font-bold text-red-700">
             {alerts.filter(a => a.severity === 'critical' && a.status === 'active').length}
           </div>
         </div>
         <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-          <div className="text-sm text-orange-600">High</div>
+          <div className="text-sm text-orange-600">{t('global.alerts.stats.high')}</div>
           <div className="text-2xl font-bold text-orange-700">
             {alerts.filter(a => a.severity === 'high' && a.status === 'active').length}
           </div>
         </div>
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="text-sm text-yellow-600">Medium</div>
+          <div className="text-sm text-yellow-600">{t('global.alerts.stats.medium')}</div>
           <div className="text-2xl font-bold text-yellow-700">
             {alerts.filter(a => a.severity === 'medium' && a.status === 'active').length}
           </div>
         </div>
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="text-sm text-green-600">Resolved Today</div>
+          <div className="text-sm text-green-600">{t('global.alerts.stats.resolvedToday')}</div>
           <div className="text-2xl font-bold text-green-700">
             {alerts.filter(a => a.status === 'resolved').length}
           </div>
         </div>
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="text-sm text-blue-600">Active Rules</div>
+          <div className="text-sm text-blue-600">{t('global.alerts.stats.activeRules')}</div>
           <div className="text-2xl font-bold text-blue-700">
             {rules.filter(r => r.isEnabled).length}
           </div>
@@ -206,7 +208,7 @@ export default function GlobalAlertsPage() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            Active Alerts ({activeAlerts.length})
+            {t('global.alerts.tabs.activeAlerts')} ({activeAlerts.length})
           </button>
           <button
             onClick={() => setActiveTab('history')}
@@ -216,7 +218,7 @@ export default function GlobalAlertsPage() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            History ({historicalAlerts.length})
+            {t('global.alerts.tabs.history')} ({historicalAlerts.length})
           </button>
           <button
             onClick={() => setActiveTab('rules')}
@@ -226,7 +228,7 @@ export default function GlobalAlertsPage() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            Alert Rules ({rules.length})
+            {t('global.alerts.tabs.alertRules')} ({rules.length})
           </button>
         </div>
       </div>
@@ -235,17 +237,17 @@ export default function GlobalAlertsPage() {
       <div className="bg-white rounded-lg shadow p-4 mb-4">
         <div className="flex space-x-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Filter by Severity</label>
+            <label className="block text-sm font-medium mb-2">{t('global.alerts.filters.bySeverity')}</label>
             <select
               value={filterSeverity}
               onChange={(e) => setFilterSeverity(e.target.value)}
               className="border border-gray-300 rounded-lg px-3 py-2"
             >
-              <option value="">All Severities</option>
-              <option value="critical">Critical</option>
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
+              <option value="">{t('global.alerts.filters.allSeverities')}</option>
+              <option value="critical">{t('global.alerts.filters.critical')}</option>
+              <option value="high">{t('global.alerts.filters.high')}</option>
+              <option value="medium">{t('global.alerts.filters.medium')}</option>
+              <option value="low">{t('global.alerts.filters.low')}</option>
             </select>
           </div>
         </div>
@@ -283,40 +285,40 @@ export default function GlobalAlertsPage() {
                       onClick={() => handleAcknowledge(alert.id)}
                       className="px-3 py-1 text-sm bg-yellow-600 text-white rounded hover:bg-yellow-700"
                     >
-                      Acknowledge
+                      {t('global.alerts.buttons.acknowledge')}
                     </button>
                   )}
                   <button
                     onClick={() => handleResolve(alert.id)}
                     className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
                   >
-                    Resolve
+                    {t('global.alerts.buttons.resolve')}
                   </button>
                   <button
                     onClick={() => handleSilence(alert.id)}
                     className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
                   >
-                    Silence
+                    {t('global.alerts.buttons.silence')}
                   </button>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mt-4">
                 <div>
-                  <span className="text-gray-500">Triggered:</span>
+                  <span className="text-gray-500">{t('global.alerts.fields.triggered')}:</span>
                   <span className="ml-2">{new Date(alert.triggeredAt).toLocaleString()}</span>
                 </div>
                 <div>
-                  <span className="text-gray-500">Source:</span>
+                  <span className="text-gray-500">{t('global.alerts.fields.source')}:</span>
                   <span className="ml-2">{alert.source}</span>
                 </div>
                 <div>
-                  <span className="text-gray-500">Category:</span>
+                  <span className="text-gray-500">{t('global.alerts.fields.category')}:</span>
                   <span className="ml-2">{alert.category}</span>
                 </div>
                 {alert.affectedTenants && (
                   <div>
-                    <span className="text-gray-500">Affected Tenants:</span>
+                    <span className="text-gray-500">{t('global.alerts.fields.affectedTenants')}:</span>
                     <span className="ml-2">{alert.affectedTenants.length}</span>
                   </div>
                 )}
@@ -324,7 +326,7 @@ export default function GlobalAlertsPage() {
 
               {alert.acknowledgedBy && (
                 <div className="mt-3 pt-3 border-t border-gray-200 text-sm text-gray-600">
-                  Acknowledged by {alert.acknowledgedBy} at {new Date(alert.acknowledgedAt!).toLocaleString()}
+                  {t('global.alerts.fields.acknowledgedBy')} {alert.acknowledgedBy} {t('global.alerts.fields.at')} {new Date(alert.acknowledgedAt!).toLocaleString()}
                 </div>
               )}
             </div>
@@ -338,12 +340,12 @@ export default function GlobalAlertsPage() {
           <table className="min-w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alert</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Severity</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Triggered</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Resolved</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.alerts.table.alert')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.alerts.table.severity')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.alerts.table.category')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.alerts.table.triggered')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.alerts.table.resolved')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.alerts.table.status')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -383,13 +385,13 @@ export default function GlobalAlertsPage() {
           <table className="min-w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rule Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Condition</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Threshold</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Severity</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Channels</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.alerts.table.ruleName')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.alerts.table.condition')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.alerts.table.threshold')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.alerts.table.severity')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.alerts.table.channels')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.alerts.table.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.alerts.table.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -419,12 +421,12 @@ export default function GlobalAlertsPage() {
                     </label>
                   </td>
                   <td className="px-6 py-4 text-sm">
-                    <button className="text-blue-600 hover:text-blue-800 mr-3">Edit</button>
+                    <button className="text-blue-600 hover:text-blue-800 mr-3">{t('global.alerts.buttons.edit')}</button>
                     <button
                       onClick={() => handleDeleteRule(rule.id)}
                       className="text-red-600 hover:text-red-800"
                     >
-                      Delete
+                      {t('global.alerts.buttons.delete')}
                     </button>
                   </td>
                 </tr>

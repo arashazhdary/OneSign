@@ -261,7 +261,7 @@ export default function TenantHuntingPage() {
   };
 
   const handleDeleteQuery = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this query?')) return;
+    if (!confirm(t('tenant.hunting.confirmDeleteQuery'))) return;
     try {
       await HuntingAPI.deleteSavedQuery(id);
       setSuccess('Query deleted successfully');
@@ -272,7 +272,7 @@ export default function TenantHuntingPage() {
   };
 
   const handleDeleteSchedule = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this scheduled hunt?')) return;
+    if (!confirm(t('tenant.hunting.confirmDeleteScheduledHunt'))) return;
     try {
       await HuntingAPI.deleteScheduledHunt(id);
       setSuccess('Scheduled hunt deleted successfully');
@@ -925,7 +925,7 @@ export default function TenantHuntingPage() {
                   className="w-full border border-gray-300 dark:border-slate-600 rounded-xl px-4 py-3 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                   value={builderField}
                   onChange={(e) => setBuilderField(e.target.value)}
-                  placeholder="e.g., ipAddress, userId"
+                  placeholder={t('tenant.hunting.fieldPlaceholder')}
                 />
               </div>
               <div>
@@ -953,7 +953,7 @@ export default function TenantHuntingPage() {
                   className="w-full border border-gray-300 dark:border-slate-600 rounded-xl px-4 py-3 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                   value={builderValue}
                   onChange={(e) => setBuilderValue(e.target.value)}
-                  placeholder="Value to match"
+                  placeholder={t('tenant.hunting.valuePlaceholder')}
                 />
               </div>
             </div>

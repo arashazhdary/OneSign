@@ -87,12 +87,12 @@ interface AuditEntry {
 
 type Tab = 'overview' | 'credentials' | 'usage' | 'permissions' | 'audit';
 
-const tabs = [
-  { key: 'overview', label: 'Overview', icon: <KeyRound className="w-4 h-4" /> },
-  { key: 'credentials', label: 'Credentials', icon: <Key className="w-4 h-4" /> },
-  { key: 'usage', label: 'Usage', icon: <BarChart3 className="w-4 h-4" /> },
-  { key: 'permissions', label: 'Permissions', icon: <Shield className="w-4 h-4" /> },
-  { key: 'audit', label: 'Audit', icon: <FileText className="w-4 h-4" /> },
+const tabs = (t: (key: string) => string) => [
+  { key: 'overview', label: t('serviceAccountDetail.tabs.overview'), icon: <KeyRound className="w-4 h-4" /> },
+  { key: 'credentials', label: t('serviceAccountDetail.tabs.credentials'), icon: <Key className="w-4 h-4" /> },
+  { key: 'usage', label: t('serviceAccountDetail.tabs.usage'), icon: <BarChart3 className="w-4 h-4" /> },
+  { key: 'permissions', label: t('serviceAccountDetail.tabs.permissions'), icon: <Shield className="w-4 h-4" /> },
+  { key: 'audit', label: t('serviceAccountDetail.tabs.audit'), icon: <FileText className="w-4 h-4" /> },
 ];
 
 interface StatCardProps {
@@ -179,7 +179,7 @@ export default function TenantServiceAccountsDetailPage() {
       };
       setAccount(mockData);
     } catch (err) {
-      setError('Failed to load service account');
+      setError(t('serviceAccountDetail.errors.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -216,10 +216,10 @@ export default function TenantServiceAccountsDetailPage() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       const generatedSecret = 'sk_' + Array.from({ length: 32 }, () => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 62)]).join('');
       setNewSecretValue(generatedSecret);
-      setSuccess('Secret generated successfully');
+      setSuccess(t('serviceAccountDetail.success.secretGenerated'));
       setTimeout(() => fetchServiceAccount(), 2000);
     } catch (err) {
-      setError('Failed to generate secret');
+      setError(t('serviceAccountDetail.errors.generateSecretFailed'));
     } finally {
       setProcessing(false);
     }
@@ -239,7 +239,7 @@ export default function TenantServiceAccountsDetailPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 p-8">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-6 py-4 rounded-xl flex items-center gap-3">
-          <AlertCircle className="w-6 h-6" />Service account not found
+          <AlertCircle className="w-6 h-6" />{t('serviceAccountDetail.errors.notFound')}
         </motion.div>
       </div>
     );
@@ -250,7 +250,7 @@ export default function TenantServiceAccountsDetailPage() {
       <Helmet><title>{account.name} - Service Account - OneSign</title></Helmet>
 
       <motion.button initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} onClick={() => navigate(-1)} className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 mb-6">
-        <ArrowLeft className="w-5 h-5" />Back
+        <ArrowLeft className="w-5 h-5" />{t('common.back')}
       </motion.button>
 
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between mb-8">
@@ -275,7 +275,7 @@ export default function TenantServiceAccountsDetailPage() {
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl p-2 shadow-lg border border-gray-200 dark:border-slate-700">
         <nav className="flex space-x-2">
-          {tabs.map((tab) => (
+          {tabs(t).map((tab) => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key as Tab)} className={`relative flex-1 py-3 px-4 rounded-lg font-medium transition-all ${activeTab === tab.key ? 'text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700'}`}>
               {activeTab === tab.key && <motion.div layoutId="activeServiceTab" className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg" transition={{ type: "spring", bounce: 0.2, duration: 0.6 }} />}
               <span className="relative z-10 flex items-center justify-center gap-2">{tab.icon}{tab.label}</span>
@@ -287,17 +287,17 @@ export default function TenantServiceAccountsDetailPage() {
       {activeTab === 'overview' && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <StatCard title="Total Secrets" value={account.secrets.length} icon={<Key className="w-6 h-6 text-white" />} color="from-indigo-500 to-indigo-600" delay={0} />
-            <StatCard title="Permissions" value={account.permissions.length} icon={<Shield className="w-6 h-6 text-white" />} color="from-purple-500 to-purple-600" delay={1} />
-            <StatCard title="Active Secrets" value={account.secrets.filter(s => s.isActive).length} icon={<CheckCircle className="w-6 h-6 text-white" />} color="from-green-500 to-emerald-600" delay={2} />
-            <StatCard title="Status" value={account.status} icon={<Activity className="w-6 h-6 text-white" />} color={account.status === 'Active' ? 'from-green-500 to-green-600' : 'from-red-500 to-red-600'} delay={3} />
+            <StatCard title={t('serviceAccountDetail.overview.totalSecrets')} value={account.secrets.length} icon={<Key className="w-6 h-6 text-white" />} color="from-indigo-500 to-indigo-600" delay={0} />
+            <StatCard title={t('serviceAccountDetail.overview.permissions')} value={account.permissions.length} icon={<Shield className="w-6 h-6 text-white" />} color="from-purple-500 to-purple-600" delay={1} />
+            <StatCard title={t('serviceAccountDetail.overview.activeSecrets')} value={account.secrets.filter(s => s.isActive).length} icon={<CheckCircle className="w-6 h-6 text-white" />} color="from-green-500 to-emerald-600" delay={2} />
+            <StatCard title={t('serviceAccountDetail.overview.status')} value={account.status} icon={<Activity className="w-6 h-6 text-white" />} color={account.status === 'Active' ? 'from-green-500 to-green-600' : 'from-red-500 to-red-600'} delay={3} />
           </div>
 
           <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2"><KeyRound className="w-5 h-5 text-indigo-500" />Client ID</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2"><KeyRound className="w-5 h-5 text-indigo-500" />{t('serviceAccountDetail.overview.clientId')}</h3>
             <div className="bg-gray-50 dark:bg-slate-700 rounded-xl p-4 flex items-center justify-between">
               <code className="text-sm font-mono text-gray-900 dark:text-white">{account.clientId}</code>
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => { navigator.clipboard.writeText(account.clientId); setSuccess('Copied!'); }} className="p-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg">
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => { navigator.clipboard.writeText(account.clientId); setSuccess(t('common.copied')); }} className="p-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg">
                 <Copy className="w-5 h-5" />
               </motion.button>
             </div>
@@ -309,9 +309,9 @@ export default function TenantServiceAccountsDetailPage() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
           <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2"><Key className="w-5 h-5 text-indigo-500" />API Secrets</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2"><Key className="w-5 h-5 text-indigo-500" />{t('serviceAccountDetail.credentials.apiSecrets')}</h3>
               <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setShowGenerateSecretModal(true)} className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-xl hover:shadow-lg font-medium">
-                <Plus className="w-4 h-4" />Generate Secret
+                <Plus className="w-4 h-4" />{t('serviceAccountDetail.credentials.generateSecret')}
               </motion.button>
             </div>
             <div className="space-y-4">
@@ -322,11 +322,11 @@ export default function TenantServiceAccountsDetailPage() {
                       <div className="flex items-center gap-3">
                         <span className="font-medium text-gray-900 dark:text-white">{secret.name}</span>
                         <span className={`px-2 py-1 text-xs rounded-full ${secret.isActive ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'}`}>
-                          {secret.isActive ? 'Active' : 'Revoked'}
+                          {secret.isActive ? t('serviceAccountDetail.credentials.active') : t('serviceAccountDetail.credentials.revoked')}
                         </span>
                       </div>
                       <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        <span className="font-mono">{secret.hint}</span> • Created: {formatDate(secret.createdAt)}
+                        <span className="font-mono">{secret.hint}</span> • {t('serviceAccountDetail.credentials.created')}: {formatDate(secret.createdAt)}
                       </div>
                     </div>
                     {secret.isActive && (
@@ -345,17 +345,17 @@ export default function TenantServiceAccountsDetailPage() {
       {activeTab === 'usage' && usageStats && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <StatCard title="Today" value={usageStats.callsToday.toLocaleString()} icon={<Activity className="w-6 h-6 text-white" />} color="from-blue-500 to-blue-600" delay={0} />
-            <StatCard title="This Week" value={usageStats.callsThisWeek.toLocaleString()} icon={<BarChart3 className="w-6 h-6 text-white" />} color="from-green-500 to-emerald-600" delay={1} />
-            <StatCard title="This Month" value={usageStats.callsThisMonth.toLocaleString()} icon={<BarChart3 className="w-6 h-6 text-white" />} color="from-purple-500 to-purple-600" delay={2} />
-            <StatCard title="Total" value={usageStats.totalCalls.toLocaleString()} icon={<BarChart3 className="w-6 h-6 text-white" />} color="from-orange-500 to-amber-600" delay={3} />
+            <StatCard title={t('serviceAccountDetail.usage.today')} value={usageStats.callsToday.toLocaleString()} icon={<Activity className="w-6 h-6 text-white" />} color="from-blue-500 to-blue-600" delay={0} />
+            <StatCard title={t('serviceAccountDetail.usage.thisWeek')} value={usageStats.callsThisWeek.toLocaleString()} icon={<BarChart3 className="w-6 h-6 text-white" />} color="from-green-500 to-emerald-600" delay={1} />
+            <StatCard title={t('serviceAccountDetail.usage.thisMonth')} value={usageStats.callsThisMonth.toLocaleString()} icon={<BarChart3 className="w-6 h-6 text-white" />} color="from-purple-500 to-purple-600" delay={2} />
+            <StatCard title={t('serviceAccountDetail.usage.total')} value={usageStats.totalCalls.toLocaleString()} icon={<BarChart3 className="w-6 h-6 text-white" />} color="from-orange-500 to-amber-600" delay={3} />
           </div>
 
           <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Rate Limits</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('serviceAccountDetail.usage.rateLimits')}</h3>
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Usage</span>
+                <span className="text-gray-600 dark:text-gray-400">{t('serviceAccountDetail.usage.usage')}</span>
                 <span className="font-medium text-gray-900 dark:text-white">{usageStats.rateLimitRemaining.toLocaleString()} / {usageStats.rateLimit.toLocaleString()}</span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-3">
@@ -368,7 +368,7 @@ export default function TenantServiceAccountsDetailPage() {
 
       {activeTab === 'permissions' && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2"><Shield className="w-5 h-5 text-indigo-500" />Assigned Permissions</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2"><Shield className="w-5 h-5 text-indigo-500" />{t('serviceAccountDetail.permissions.assignedPermissions')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {account.permissions.map((permission, index) => (
               <motion.div key={permission} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: index * 0.05 }} className="border border-gray-200 dark:border-slate-600 rounded-xl p-4 flex items-center justify-between">
@@ -383,7 +383,7 @@ export default function TenantServiceAccountsDetailPage() {
       {activeTab === 'audit' && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 overflow-hidden">
           <div className="p-6 border-b border-gray-200 dark:border-slate-700">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2"><FileText className="w-5 h-5 text-indigo-500" />Audit Trail</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2"><FileText className="w-5 h-5 text-indigo-500" />{t('serviceAccountDetail.audit.auditTrail')}</h3>
           </div>
           <div className="divide-y divide-gray-200 dark:divide-slate-700">
             {auditLog.map((entry, index) => (
@@ -391,7 +391,7 @@ export default function TenantServiceAccountsDetailPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="font-medium text-gray-900 dark:text-white">{entry.action}</span>
-                    <span className="text-gray-500 dark:text-gray-400 ml-2">by {entry.actor}</span>
+                    <span className="text-gray-500 dark:text-gray-400 ml-2">{t('serviceAccountDetail.audit.by')} {entry.actor}</span>
                   </div>
                   <span className={`px-2 py-1 text-xs rounded-full ${entry.status === 'Success' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'}`}>
                     {entry.status}
@@ -404,29 +404,29 @@ export default function TenantServiceAccountsDetailPage() {
         </motion.div>
       )}
 
-      <Modal isOpen={showGenerateSecretModal} onClose={() => { setShowGenerateSecretModal(false); setNewSecretValue(''); }} title="Generate New Secret">
+      <Modal isOpen={showGenerateSecretModal} onClose={() => { setShowGenerateSecretModal(false); setNewSecretValue(''); }} title={t('serviceAccountDetail.modal.generateNewSecret')}>
         {newSecretValue ? (
           <div className="space-y-4">
             <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-4 rounded-xl">
-              <p className="text-sm text-yellow-800 dark:text-yellow-300 flex items-center gap-2"><AlertCircle className="w-5 h-5" />Copy now - you won't see it again!</p>
+              <p className="text-sm text-yellow-800 dark:text-yellow-300 flex items-center gap-2"><AlertCircle className="w-5 h-5" />{t('serviceAccountDetail.modal.copyWarning')}</p>
             </div>
             <div className="bg-gray-50 dark:bg-slate-700 p-4 rounded-xl font-mono text-sm break-all">{newSecretValue}</div>
-            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => { navigator.clipboard.writeText(newSecretValue); setSuccess('Copied!'); }} className="w-full flex items-center justify-center gap-2 bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-gray-300 px-4 py-3 rounded-xl">
-              <Copy className="w-4 h-4" />Copy to Clipboard
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => { navigator.clipboard.writeText(newSecretValue); setSuccess(t('common.copied')); }} className="w-full flex items-center justify-center gap-2 bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-gray-300 px-4 py-3 rounded-xl">
+              <Copy className="w-4 h-4" />{t('serviceAccountDetail.modal.copyToClipboard')}
             </motion.button>
           </div>
         ) : (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Secret Name</label>
-              <input type="text" value={secretName} onChange={(e) => setSecretName(e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white" placeholder="e.g., Production Secret" />
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('serviceAccountDetail.modal.secretName')}</label>
+              <input type="text" value={secretName} onChange={(e) => setSecretName(e.target.value)} className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white" placeholder={t('serviceAccountDetail.modal.secretNamePlaceholder')} />
             </div>
             <div className="flex gap-3">
               <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={handleGenerateSecret} disabled={processing} className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-3 rounded-xl disabled:opacity-50">
-                {processing ? 'Generating...' : 'Generate'}
+                {processing ? t('serviceAccountDetail.modal.generating') : t('serviceAccountDetail.modal.generate')}
               </motion.button>
               <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setShowGenerateSecretModal(false)} className="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 px-4 py-3 rounded-xl">
-                Cancel
+                {t('common.cancel')}
               </motion.button>
             </div>
           </div>

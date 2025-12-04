@@ -188,7 +188,7 @@ export default function GlobalSettingsPage() {
       // await globalService.updateGlobalSettings(activeTab, payload);
       // For now, we just show a success message with the prepared payload
       console.log('Settings to save:', { tab: activeTab, payload });
-      setSuccess('Settings saved successfully');
+      setSuccess(t('globalSettings.settingsSavedSuccessfully'));
       setHasChanges(false);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -205,7 +205,7 @@ export default function GlobalSettingsPage() {
       // await globalService.testEmailConfiguration(emailSettings);
       // For now, we just show a simulated success message
       console.log('Testing email configuration:', emailSettings);
-      setSuccess('Test email sent successfully!');
+      setSuccess(t('globalSettings.email.testEmailSentSuccessfully'));
     } catch (err: any) {
       setError(err.message || t('common.failedToSendTestEmail'));
     } finally {
@@ -221,7 +221,7 @@ export default function GlobalSettingsPage() {
       // await globalService.testSMSConfiguration(smsSettings);
       // For now, we just show a simulated success message
       console.log('Testing SMS configuration:', smsSettings);
-      setSuccess('Test SMS sent successfully!');
+      setSuccess(t('globalSettings.sms.testSmsSentSuccessfully'));
     } catch (err: any) {
       setError(err.message || t('common.failedToSendTestSMS'));
     } finally {
@@ -240,17 +240,17 @@ export default function GlobalSettingsPage() {
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Global Settings</h1>
+        <h1 className="text-3xl font-bold">{t('globalSettings.title')}</h1>
         {hasChanges && (
           <button
             onClick={() => showConfirmation(
-              'Save Changes',
-              'Are you sure you want to save these settings? This may affect all users.',
+              t('globalSettings.saveChanges'),
+              t('globalSettings.confirmSaveMessage'),
               saveSettings
             )}
             className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium"
           >
-            Save Changes
+            {t('globalSettings.saveChanges')}
           </button>
         )}
       </div>
@@ -300,9 +300,9 @@ export default function GlobalSettingsPage() {
                 }}
                 className="mr-2 h-4 w-4"
               />
-              <span className="font-medium text-gray-900">Maintenance Mode</span>
+              <span className="font-medium text-gray-900">{t('globalSettings.platform.maintenanceMode')}</span>
             </label>
-            <p className="text-sm text-gray-500 mt-1">When enabled, only administrators can access the platform</p>
+            <p className="text-sm text-gray-500 mt-1">{t('globalSettings.platform.maintenanceModeDescription')}</p>
             {platformSettings.maintenanceMode && (
               <textarea
                 value={platformSettings.maintenanceMessage}
@@ -310,7 +310,7 @@ export default function GlobalSettingsPage() {
                   setPlatformSettings({ ...platformSettings, maintenanceMessage: e.target.value });
                   setHasChanges(true);
                 }}
-                placeholder="Maintenance message for users"
+                placeholder={t('globalSettings.platform.maintenanceMessagePlaceholder')}
                 rows={3}
                 className="mt-2 w-full px-3 py-2 border border-gray-300 rounded-lg"
               />
@@ -328,7 +328,7 @@ export default function GlobalSettingsPage() {
                 }}
                 className="mr-2 h-4 w-4"
               />
-              <span className="font-medium text-gray-900">Allow New Registrations</span>
+              <span className="font-medium text-gray-900">{t('globalSettings.platform.allowNewRegistrations')}</span>
             </label>
           </div>
 
@@ -343,13 +343,13 @@ export default function GlobalSettingsPage() {
                 }}
                 className="mr-2 h-4 w-4"
               />
-              <span className="font-medium text-gray-900">Allow Guest Access</span>
+              <span className="font-medium text-gray-900">{t('globalSettings.platform.allowGuestAccess')}</span>
             </label>
           </div>
 
           <div className="border-t pt-6 grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Platform Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.platform.platformName')}</label>
               <input
                 type="text"
                 value={platformSettings.platformName}
@@ -361,7 +361,7 @@ export default function GlobalSettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Support Email</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.platform.supportEmail')}</label>
               <input
                 type="email"
                 value={platformSettings.supportEmail}
@@ -381,7 +381,7 @@ export default function GlobalSettingsPage() {
         <div className="bg-white rounded-lg shadow p-6 space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">SMTP Host</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.email.smtpHost')}</label>
               <input
                 type="text"
                 value={emailSettings.smtpHost}
@@ -393,7 +393,7 @@ export default function GlobalSettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">SMTP Port</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.email.smtpPort')}</label>
               <input
                 type="number"
                 value={emailSettings.smtpPort}
@@ -408,7 +408,7 @@ export default function GlobalSettingsPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.email.username')}</label>
               <input
                 type="text"
                 value={emailSettings.smtpUsername}
@@ -420,7 +420,7 @@ export default function GlobalSettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.email.password')}</label>
               <input
                 type="password"
                 value={emailSettings.smtpPassword}
@@ -435,7 +435,7 @@ export default function GlobalSettingsPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">From Email</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.email.fromEmail')}</label>
               <input
                 type="email"
                 value={emailSettings.fromEmail}
@@ -447,7 +447,7 @@ export default function GlobalSettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">From Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.email.fromName')}</label>
               <input
                 type="text"
                 value={emailSettings.fromName}
@@ -471,7 +471,7 @@ export default function GlobalSettingsPage() {
                 }}
                 className="mr-2 h-4 w-4"
               />
-              <span className="font-medium text-gray-900">Use SSL/TLS</span>
+              <span className="font-medium text-gray-900">{t('globalSettings.email.useSslTls')}</span>
             </label>
           </div>
 
@@ -481,7 +481,7 @@ export default function GlobalSettingsPage() {
               disabled={loading}
               className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
             >
-              Send Test Email
+              {t('globalSettings.email.sendTestEmail')}
             </button>
           </div>
         </div>
@@ -501,12 +501,12 @@ export default function GlobalSettingsPage() {
                 }}
                 className="mr-2 h-4 w-4"
               />
-              <span className="font-medium text-gray-900">Enable SMS</span>
+              <span className="font-medium text-gray-900">{t('globalSettings.sms.enableSms')}</span>
             </label>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Provider</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.sms.provider')}</label>
             <select
               value={smsSettings.provider}
               onChange={(e) => {
@@ -515,15 +515,15 @@ export default function GlobalSettingsPage() {
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg"
             >
-              <option value="twilio">Twilio</option>
-              <option value="aws-sns">AWS SNS</option>
-              <option value="nexmo">Nexmo</option>
+              <option value="twilio">{t('globalSettings.sms.providerTwilio')}</option>
+              <option value="aws-sns">{t('globalSettings.sms.providerAwsSns')}</option>
+              <option value="nexmo">{t('globalSettings.sms.providerNexmo')}</option>
             </select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">API Key</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.sms.apiKey')}</label>
               <input
                 type="text"
                 value={smsSettings.apiKey}
@@ -535,7 +535,7 @@ export default function GlobalSettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">API Secret</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.sms.apiSecret')}</label>
               <input
                 type="password"
                 value={smsSettings.apiSecret}
@@ -549,7 +549,7 @@ export default function GlobalSettingsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">From Number</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.sms.fromNumber')}</label>
             <input
               type="text"
               value={smsSettings.fromNumber}
@@ -557,7 +557,7 @@ export default function GlobalSettingsPage() {
                 setSmsSettings({ ...smsSettings, fromNumber: e.target.value });
                 setHasChanges(true);
               }}
-              placeholder="+1234567890"
+              placeholder={t('globalSettings.sms.fromNumberPlaceholder')}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg"
             />
           </div>
@@ -568,7 +568,7 @@ export default function GlobalSettingsPage() {
               disabled={loading || !smsSettings.enabled}
               className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
             >
-              Send Test SMS
+              {t('globalSettings.sms.sendTestSms')}
             </button>
           </div>
         </div>
@@ -593,12 +593,12 @@ export default function GlobalSettingsPage() {
                     }}
                     className="mr-2 h-4 w-4"
                   />
-                  <span className="text-sm font-medium">Enabled</span>
+                  <span className="text-sm font-medium">{t('globalSettings.oauth.enabled')}</span>
                 </label>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Client ID</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.oauth.clientId')}</label>
                   <input
                     type="text"
                     value={provider.clientId}
@@ -612,7 +612,7 @@ export default function GlobalSettingsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Client Secret</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.oauth.clientSecret')}</label>
                   <input
                     type="password"
                     value={provider.clientSecret}
@@ -636,7 +636,7 @@ export default function GlobalSettingsPage() {
         <div className="bg-white rounded-lg shadow p-6 space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Session Timeout (minutes)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.security.sessionTimeout')}</label>
               <input
                 type="number"
                 value={securitySettings.sessionTimeout}
@@ -648,7 +648,7 @@ export default function GlobalSettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password Min Length</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.security.passwordMinLength')}</label>
               <input
                 type="number"
                 value={securitySettings.passwordMinLength}
@@ -662,7 +662,7 @@ export default function GlobalSettingsPage() {
           </div>
 
           <div>
-            <h4 className="font-medium text-gray-900 mb-2">Password Requirements</h4>
+            <h4 className="font-medium text-gray-900 mb-2">{t('globalSettings.security.passwordRequirements')}</h4>
             <div className="space-y-2">
               <label className="flex items-center">
                 <input
@@ -674,7 +674,7 @@ export default function GlobalSettingsPage() {
                   }}
                   className="mr-2 h-4 w-4"
                 />
-                <span>Require Uppercase Letters</span>
+                <span>{t('globalSettings.security.requireUppercase')}</span>
               </label>
               <label className="flex items-center">
                 <input
@@ -686,7 +686,7 @@ export default function GlobalSettingsPage() {
                   }}
                   className="mr-2 h-4 w-4"
                 />
-                <span>Require Numbers</span>
+                <span>{t('globalSettings.security.requireNumbers')}</span>
               </label>
               <label className="flex items-center">
                 <input
@@ -698,14 +698,14 @@ export default function GlobalSettingsPage() {
                   }}
                   className="mr-2 h-4 w-4"
                 />
-                <span>Require Special Characters</span>
+                <span>{t('globalSettings.security.requireSpecialChars')}</span>
               </label>
             </div>
           </div>
 
           <div className="border-t pt-6 grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Max Login Attempts</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.security.maxLoginAttempts')}</label>
               <input
                 type="number"
                 value={securitySettings.maxLoginAttempts}
@@ -717,7 +717,7 @@ export default function GlobalSettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Lockout Duration (minutes)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.security.lockoutDuration')}</label>
               <input
                 type="number"
                 value={securitySettings.lockoutDuration}
@@ -741,7 +741,7 @@ export default function GlobalSettingsPage() {
                 }}
                 className="mr-2 h-4 w-4"
               />
-              <span className="font-medium text-gray-900">Require Two-Factor Authentication</span>
+              <span className="font-medium text-gray-900">{t('globalSettings.security.requireTwoFactor')}</span>
             </label>
           </div>
         </div>
@@ -761,13 +761,13 @@ export default function GlobalSettingsPage() {
                 }}
                 className="mr-2 h-4 w-4"
               />
-              <span className="font-medium text-gray-900">Enable Automated Backups</span>
+              <span className="font-medium text-gray-900">{t('globalSettings.backup.enableAutomatedBackups')}</span>
             </label>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Schedule</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.backup.schedule')}</label>
               <select
                 value={backupSettings.schedule}
                 onChange={(e) => {
@@ -777,14 +777,14 @@ export default function GlobalSettingsPage() {
                 disabled={!backupSettings.enabled}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg"
               >
-                <option value="hourly">Hourly</option>
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
+                <option value="hourly">{t('globalSettings.backup.scheduleHourly')}</option>
+                <option value="daily">{t('globalSettings.backup.scheduleDaily')}</option>
+                <option value="weekly">{t('globalSettings.backup.scheduleWeekly')}</option>
+                <option value="monthly">{t('globalSettings.backup.scheduleMonthly')}</option>
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Retention (days)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.backup.retentionDays')}</label>
               <input
                 type="number"
                 value={backupSettings.retentionDays}
@@ -799,7 +799,7 @@ export default function GlobalSettingsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Backup Location</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.backup.backupLocation')}</label>
             <input
               type="text"
               value={backupSettings.backupLocation}
@@ -808,7 +808,7 @@ export default function GlobalSettingsPage() {
                 setHasChanges(true);
               }}
               disabled={!backupSettings.enabled}
-              placeholder="s3://bucket-name or /path/to/backup"
+              placeholder={t('globalSettings.backup.backupLocationPlaceholder')}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg"
             />
           </div>
@@ -825,7 +825,7 @@ export default function GlobalSettingsPage() {
                 disabled={!backupSettings.enabled}
                 className="mr-2 h-4 w-4"
               />
-              <span className="font-medium text-gray-900">Notify on Completion</span>
+              <span className="font-medium text-gray-900">{t('globalSettings.backup.notifyOnCompletion')}</span>
             </label>
           </div>
         </div>
@@ -835,7 +835,7 @@ export default function GlobalSettingsPage() {
       {activeTab === 'logs' && (
         <div className="bg-white rounded-lg shadow p-6 space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Log Level</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.logs.logLevel')}</label>
             <select
               value={logSettings.logLevel}
               onChange={(e) => {
@@ -844,16 +844,16 @@ export default function GlobalSettingsPage() {
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg"
             >
-              <option value="Debug">Debug</option>
-              <option value="Info">Info</option>
-              <option value="Warning">Warning</option>
-              <option value="Error">Error</option>
-              <option value="Critical">Critical</option>
+              <option value="Debug">{t('globalSettings.logs.levelDebug')}</option>
+              <option value="Info">{t('globalSettings.logs.levelInfo')}</option>
+              <option value="Warning">{t('globalSettings.logs.levelWarning')}</option>
+              <option value="Error">{t('globalSettings.logs.levelError')}</option>
+              <option value="Critical">{t('globalSettings.logs.levelCritical')}</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Log Retention (days)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.logs.logRetentionDays')}</label>
             <input
               type="number"
               value={logSettings.retentionDays}
@@ -876,11 +876,11 @@ export default function GlobalSettingsPage() {
                 }}
                 className="mr-2 h-4 w-4"
               />
-              <span className="font-medium text-gray-900">Enable Remote Logging</span>
+              <span className="font-medium text-gray-900">{t('globalSettings.logs.enableRemoteLogging')}</span>
             </label>
             {logSettings.enableRemoteLogging && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Remote Endpoint</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalSettings.logs.remoteEndpoint')}</label>
                 <input
                   type="text"
                   value={logSettings.remoteLoggingEndpoint}
@@ -888,7 +888,7 @@ export default function GlobalSettingsPage() {
                     setLogSettings({ ...logSettings, remoteLoggingEndpoint: e.target.value });
                     setHasChanges(true);
                   }}
-                  placeholder="https://logs.example.com/api"
+                  placeholder={t('globalSettings.logs.remoteEndpointPlaceholder')}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                 />
               </div>
@@ -909,7 +909,7 @@ export default function GlobalSettingsPage() {
               onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })}
               className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               onClick={() => {
@@ -918,7 +918,7 @@ export default function GlobalSettingsPage() {
               }}
               className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
             >
-              Confirm
+              {t('common.confirm')}
             </button>
           </>
         }

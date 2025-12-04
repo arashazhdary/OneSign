@@ -303,14 +303,14 @@ const UsersPage = () => {
 
   const handleBulkDelete = async () => {
     if (selectedUsers.length === 0) return;
-    if (confirm(`Delete ${selectedUsers.length} users?`)) {
+    if (confirm(t('tenant.users.confirmDeleteMultiple', { count: selectedUsers.length }))) {
       try {
         // Delete users via API
         const selectedIds = selectedUsers.map((u) => u.id);
         await Promise.all(selectedIds.map((id) => tenantService.deleteUser(id)));
 
         setUsers((prev) => prev.filter((u) => !selectedIds.includes(u.id)));
-        toast.success(`${selectedUsers.length} users deleted`);
+        toast.success(t('tenant.users.deletedCount', { count: selectedUsers.length }));
         setSelectedUsers([]);
       } catch (error) {
         console.error('Error deleting users:', error);
@@ -381,7 +381,7 @@ const UsersPage = () => {
               label={t('users.name')}
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Enter user name"
+              placeholder={t('users.enterUserName', 'Enter user name')}
             />
             <Input
               label={t('users.email')}
@@ -389,7 +389,7 @@ const UsersPage = () => {
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               leftIcon={<Mail className="w-4 h-4" />}
-              placeholder="user@example.com"
+              placeholder={t('users.emailPlaceholder', 'user@example.com')}
             />
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('users.role')}</label>

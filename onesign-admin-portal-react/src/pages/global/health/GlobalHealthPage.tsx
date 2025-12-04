@@ -117,7 +117,7 @@ export default function GlobalHealthPage() {
 
       setLastRefresh(new Date());
     } catch (err) {
-      setError('Failed to fetch health data. Please try again.');
+      setError(t('global.health.messages.failedToFetchHealthData'));
       console.error('Health fetch error:', err);
     } finally {
       setLoading(false);
@@ -198,15 +198,15 @@ export default function GlobalHealthPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Health Monitoring
+              {t('global.health.title')}
             </h1>
             <p className="text-gray-600 mt-2">
-              Real-time system health and performance monitoring
+              {t('global.health.description')}
             </p>
           </div>
           <div className="flex items-center gap-4">
             <div className="text-sm text-gray-500">
-              Last updated: {lastRefresh.toLocaleTimeString()}
+              {t('global.health.labels.lastUpdated')}: {lastRefresh.toLocaleTimeString()}
             </div>
             <label className="flex items-center gap-2 text-sm text-gray-700">
               <input
@@ -215,7 +215,7 @@ export default function GlobalHealthPage() {
                 onChange={(e) => setAutoRefresh(e.target.checked)}
                 className="rounded"
               />
-              Auto-refresh (30s)
+              {t('global.health.labels.autoRefresh')}
             </label>
             <button
               onClick={fetchHealthData}
@@ -228,10 +228,10 @@ export default function GlobalHealthPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  Refreshing...
+                  {t('global.health.labels.refreshing')}
                 </span>
               ) : (
-                'Refresh Now'
+                t('global.health.actions.refreshNow')
               )}
             </button>
           </div>
@@ -399,7 +399,7 @@ export default function GlobalHealthPage() {
               )) || (
                 <tr>
                   <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                    {loading ? 'Loading components...' : 'No component data available'}
+                    {loading ? t('global.health.loading.components') : t('global.health.empty.noComponentData')}
                   </td>
                 </tr>
               )}
@@ -485,7 +485,7 @@ export default function GlobalHealthPage() {
               {regionsHealth.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                    {loading ? 'Loading regions...' : 'No region data available'}
+                    {loading ? t('global.health.loading.regions') : t('global.health.empty.noRegionData')}
                   </td>
                 </tr>
               )}

@@ -136,7 +136,7 @@ export default function GlobalApiManagementPage() {
         scope: keyFormData.scope,
         expiresIn: parseInt(keyFormData.expiresIn)
       });
-      setSuccess(`API Key created: ${data.key}`);
+      setSuccess(t('global.api.messages.keyCreated', { key: data.key }));
       setIsCreateKeyModalOpen(false);
       setKeyFormData({ name: '', scope: [], expiresIn: '90' });
       fetchAPIKeys();
@@ -148,13 +148,13 @@ export default function GlobalApiManagementPage() {
   };
 
   const revokeAPIKey = async (keyId: string) => {
-    if (!confirm('Are you sure you want to revoke this API key?')) return;
+    if (!confirm(t('global.api.confirmRevoke'))) return;
 
     setLoading(true);
     setError('');
     try {
       await globalService.revokeAPIKey(keyId);
-      setSuccess('API Key revoked successfully');
+      setSuccess(t('global.api.messages.keyRevoked'));
       fetchAPIKeys();
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -170,7 +170,7 @@ export default function GlobalApiManagementPage() {
     setError('');
     try {
       await globalService.updateEndpointRateLimit(selectedEndpoint.id, rateLimitForm);
-      setSuccess('Rate limit updated successfully');
+      setSuccess(t('global.api.messages.rateLimitUpdated'));
       setIsRateLimitModalOpen(false);
       fetchEndpoints();
     } catch (err: any) {
@@ -278,13 +278,13 @@ export default function GlobalApiManagementPage() {
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">API Management</h1>
+        <h1 className="text-3xl font-bold">{t('global.api.title')}</h1>
         {activeTab === 'keys' && (
           <button
             onClick={() => setIsCreateKeyModalOpen(true)}
             className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium"
           >
-            Create API Key
+            {t('global.api.createKey')}
           </button>
         )}
       </div>
@@ -304,23 +304,23 @@ export default function GlobalApiManagementPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm text-gray-500">Total Endpoints</div>
+          <div className="text-sm text-gray-500">{t('global.api.stats.totalEndpoints')}</div>
           <div className="text-2xl font-bold text-gray-900 mt-1">{endpoints.length}</div>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm text-gray-500">Active Keys</div>
+          <div className="text-sm text-gray-500">{t('global.api.stats.activeKeys')}</div>
           <div className="text-2xl font-bold text-green-600 mt-1">
             {apiKeys.filter(k => k.isActive).length}
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm text-gray-500">Total Requests</div>
+          <div className="text-sm text-gray-500">{t('global.api.stats.totalRequests')}</div>
           <div className="text-2xl font-bold text-gray-900 mt-1">
             {endpoints.reduce((sum, e) => sum + e.requestCount, 0).toLocaleString()}
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="text-sm text-gray-500">Avg Error Rate</div>
+          <div className="text-sm text-gray-500">{t('global.api.stats.avgErrorRate')}</div>
           <div className="text-2xl font-bold text-gray-900 mt-1">
             {endpoints.length > 0
               ? (endpoints.reduce((sum, e) => sum + e.errorRate, 0) / endpoints.length).toFixed(2)
@@ -355,7 +355,7 @@ export default function GlobalApiManagementPage() {
             data={endpoints}
             columns={endpointColumns}
             loading={loading}
-            emptyMessage="No endpoints found"
+            emptyMessage={t('global.api.noEndpointsFound')}
             actions={(endpoint) => (
               <button
                 onClick={() => {
@@ -368,7 +368,7 @@ export default function GlobalApiManagementPage() {
                 }}
                 className="text-indigo-600 hover:text-indigo-900 font-medium"
               >
-                Configure
+                {t('global.api.configure')}
               </button>
             )}
           />
@@ -381,14 +381,14 @@ export default function GlobalApiManagementPage() {
             data={apiKeys}
             columns={keyColumns}
             loading={loading}
-            emptyMessage="No API keys found"
+            emptyMessage={t('global.api.noKeysFound')}
             actions={(key) => (
               <button
                 onClick={() => revokeAPIKey(key.id)}
                 disabled={!key.isActive}
                 className="text-red-600 hover:text-red-900 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Revoke
+                {t('global.api.revoke')}
               </button>
             )}
           />
@@ -401,7 +401,7 @@ export default function GlobalApiManagementPage() {
             data={consumers}
             columns={consumerColumns}
             loading={loading}
-            emptyMessage="No consumers found"
+            emptyMessage={t('global.api.noConsumersFound')}
           />
         </div>
       )}
@@ -412,7 +412,7 @@ export default function GlobalApiManagementPage() {
             data={versions}
             columns={versionColumns}
             loading={loading}
-            emptyMessage="No API versions found"
+            emptyMessage={t('global.api.noVersionsFound')}
           />
         </div>
       )}
@@ -429,32 +429,32 @@ export default function GlobalApiManagementPage() {
               onClick={() => setIsCreateKeyModalOpen(false)}
               className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               onClick={createAPIKey}
               disabled={!keyFormData.name || loading}
               className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
             >
-              Create Key
+              {t('global.api.createKeyButton')}
             </button>
           </>
         }
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Key Name *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('global.api.keyName')}</label>
             <input
               type="text"
               value={keyFormData.name}
               onChange={(e) => setKeyFormData({ ...keyFormData, name: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="e.g., Production API Key"
+              placeholder={t('global.api.keyNamePlaceholder')}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Scope</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">{t('global.api.scope')}</label>
             <div className="space-y-2">
               {['read', 'write', 'delete', 'admin'].map((scope) => (
                 <label key={scope} className="flex items-center">
@@ -477,7 +477,7 @@ export default function GlobalApiManagementPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Expires In (days)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('global.api.expiresIn')}</label>
             <input
               type="number"
               value={keyFormData.expiresIn}
@@ -493,7 +493,7 @@ export default function GlobalApiManagementPage() {
       <Modal
         isOpen={isRateLimitModalOpen}
         onClose={() => setIsRateLimitModalOpen(false)}
-        title="Configure Rate Limit"
+        title={t('global.api.configureRateLimit')}
         size="md"
         footer={
           <>
@@ -501,14 +501,14 @@ export default function GlobalApiManagementPage() {
               onClick={() => setIsRateLimitModalOpen(false)}
               className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               onClick={updateRateLimit}
               disabled={loading}
               className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
             >
-              Update
+              {t('common.update')}
             </button>
           </>
         }
@@ -516,14 +516,14 @@ export default function GlobalApiManagementPage() {
         {selectedEndpoint && (
           <div className="space-y-4">
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <div className="text-sm text-gray-500">Endpoint</div>
+              <div className="text-sm text-gray-500">{t('global.api.endpoint')}</div>
               <div className="font-mono text-sm mt-1">
                 <span className="font-bold">{selectedEndpoint.method}</span> {selectedEndpoint.path}
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Rate Limit (requests)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('global.api.rateLimitRequests')}</label>
               <input
                 type="number"
                 value={rateLimitForm.rateLimit}
@@ -534,7 +534,7 @@ export default function GlobalApiManagementPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Time Window</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('global.api.timeWindow')}</label>
               <select
                 value={rateLimitForm.rateLimitWindow}
                 onChange={(e) => setRateLimitForm({ ...rateLimitForm, rateLimitWindow: e.target.value })}

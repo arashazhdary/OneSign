@@ -237,7 +237,7 @@ export default function TenantInsightsPage() {
         isActive: newReport.isActive,
       } as any);
 
-      setSuccess(t('tenant.insights.reportCreated', 'Report subscription created successfully'));
+      setSuccess(t('tenant.insights.reportCreated'));
       setShowCreateReportModal(false);
       setNewReport({
         name: '',
@@ -267,7 +267,7 @@ export default function TenantInsightsPage() {
         isActive: editingReport.isActive,
       } as any);
 
-      setSuccess(t('tenant.insights.reportUpdated', 'Report subscription updated successfully'));
+      setSuccess(t('tenant.insights.reportUpdated'));
       setEditingReport(null);
       fetchReportSubscriptions();
     } catch (err) {
@@ -276,14 +276,14 @@ export default function TenantInsightsPage() {
   };
 
   const handleDeleteReport = async (id: string) => {
-    if (!confirm(t('tenant.insights.confirmDeleteReport', 'Are you sure you want to delete this report subscription?'))) return;
+    if (!confirm(t('tenant.insights.confirmDeleteReport'))) return;
     if (!tenantId) return;
     setError('');
     setSuccess('');
 
     try {
       await InsightsAPI.deleteReportSubscription(tenantId, id);
-      setSuccess(t('tenant.insights.reportDeleted', 'Report subscription deleted successfully'));
+      setSuccess(t('tenant.insights.reportDeleted'));
       fetchReportSubscriptions();
     } catch (err) {
       setError(t('common.error'));
@@ -306,8 +306,8 @@ export default function TenantInsightsPage() {
 
       setSuccess(
         report.isActive
-          ? t('tenant.insights.reportDisabled', 'Report subscription disabled successfully')
-          : t('tenant.insights.reportEnabled', 'Report subscription enabled successfully')
+          ? t('tenant.insights.reportDisabled')
+          : t('tenant.insights.reportEnabled')
       );
       fetchReportSubscriptions();
     } catch (err) {
@@ -327,7 +327,7 @@ export default function TenantInsightsPage() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      setSuccess(t('tenant.insights.overviewExported', 'Overview exported successfully'));
+      setSuccess(t('tenant.insights.overviewExported'));
     } catch (err) {
       setError(t('common.error'));
     }
@@ -345,7 +345,7 @@ export default function TenantInsightsPage() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      setSuccess(t('tenant.insights.usersExported', 'User security posture exported successfully'));
+      setSuccess(t('tenant.insights.usersExported'));
     } catch (err) {
       setError(t('common.error'));
     }
@@ -381,9 +381,9 @@ export default function TenantInsightsPage() {
   const totalPages = Math.ceil(postureTotalCount / pageSize);
 
   const tabs = [
-    { id: 'dashboard', label: t('tenant.insights.dashboard', 'Dashboard'), icon: LayoutDashboard },
-    { id: 'security-posture', label: t('tenant.insights.securityPosture', 'User Security Posture'), icon: Shield },
-    { id: 'reports', label: t('tenant.insights.reports', 'Reports'), icon: FileText },
+    { id: 'dashboard', label: t('tenant.insights.dashboard'), icon: LayoutDashboard },
+    { id: 'security-posture', label: t('tenant.insights.securityPosture'), icon: Shield },
+    { id: 'reports', label: t('tenant.insights.reports'), icon: FileText },
   ];
 
   if (loading && !dashboardStats.totalUsers && !userPostures.length && !reportSubscriptions.length) {
@@ -395,7 +395,7 @@ export default function TenantInsightsPage() {
           className="flex items-center gap-3 text-gray-600"
         >
           <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-          <span>{t('common.loading', 'Loading...')}</span>
+          <span>{t('common.loading')}</span>
         </motion.div>
       </div>
     );
@@ -404,7 +404,7 @@ export default function TenantInsightsPage() {
   return (
     <div dir={locale === 'fa' ? 'rtl' : 'ltr'} className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-8">
       <Helmet>
-        <title>{t('tenant.insights.title', 'Insights')} | OneSign</title>
+        <title>{t('tenant.insights.title')} | OneSign</title>
       </Helmet>
 
       {/* Header */}
@@ -415,10 +415,10 @@ export default function TenantInsightsPage() {
       >
         <div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            {t('tenant.insights.title', 'Insights')}
+            {t('tenant.insights.title')}
           </h1>
           <p className="text-gray-600 mt-1">
-            {t('tenant.insights.subtitle', 'Monitor security metrics and generate reports')}
+            {t('tenant.insights.subtitle')}
           </p>
         </div>
         <div className="flex gap-3">
@@ -430,7 +430,7 @@ export default function TenantInsightsPage() {
               className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2.5 rounded-xl hover:shadow-lg transition-all"
             >
               <Download className="w-5 h-5" />
-              {t('tenant.insights.exportOverview', 'Export Overview')}
+              {t('tenant.insights.exportOverview')}
             </motion.button>
           )}
           {activeTab === 'security-posture' && (
@@ -441,7 +441,7 @@ export default function TenantInsightsPage() {
               className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2.5 rounded-xl hover:shadow-lg transition-all"
             >
               <Download className="w-5 h-5" />
-              {t('tenant.insights.exportUsers', 'Export Users')}
+              {t('tenant.insights.exportUsers')}
             </motion.button>
           )}
           {activeTab === 'reports' && (
@@ -452,7 +452,7 @@ export default function TenantInsightsPage() {
               className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2.5 rounded-xl hover:shadow-lg transition-all"
             >
               <Plus className="w-5 h-5" />
-              {t('tenant.insights.createReport', 'Create Report')}
+              {t('tenant.insights.createReport')}
             </motion.button>
           )}
         </div>
@@ -531,42 +531,42 @@ export default function TenantInsightsPage() {
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               <StatCard
-                title={t('tenant.insights.totalUsers', 'Total Users')}
+                title={t('tenant.insights.totalUsers')}
                 value={dashboardStats.totalUsers}
                 icon={<Users className="w-6 h-6 text-blue-600" />}
                 color="bg-blue-100"
                 delay={0}
               />
               <StatCard
-                title={t('tenant.insights.activeUsers', 'Active Users (30 days)')}
+                title={t('tenant.insights.activeUsers')}
                 value={dashboardStats.activeUsersLast30Days}
                 icon={<UserCheck className="w-6 h-6 text-green-600" />}
                 color="bg-green-100"
                 delay={1}
               />
               <StatCard
-                title={t('tenant.insights.mfaRate', 'MFA Adoption Rate')}
+                title={t('tenant.insights.mfaRate')}
                 value={`${dashboardStats.mfaAdoptionRate}%`}
                 icon={<Lock className="w-6 h-6 text-indigo-600" />}
                 color="bg-indigo-100"
                 delay={2}
               />
               <StatCard
-                title={t('tenant.insights.avgLogins', 'Avg Daily Logins')}
+                title={t('tenant.insights.avgLogins')}
                 value={dashboardStats.averageLoginRate}
                 icon={<Activity className="w-6 h-6 text-purple-600" />}
                 color="bg-purple-100"
                 delay={3}
               />
               <StatCard
-                title={t('tenant.insights.riskEvents', 'Risk Events (Week)')}
+                title={t('tenant.insights.riskEvents')}
                 value={dashboardStats.riskEventsThisWeek}
                 icon={<AlertTriangle className="w-6 h-6 text-orange-600" />}
                 color="bg-orange-100"
                 delay={4}
               />
               <StatCard
-                title={t('tenant.insights.highRiskUsers', 'High Risk Users')}
+                title={t('tenant.insights.highRiskUsers')}
                 value={dashboardStats.highRiskUsers}
                 icon={<Shield className="w-6 h-6 text-red-600" />}
                 color="bg-red-100"
@@ -586,7 +586,7 @@ export default function TenantInsightsPage() {
                   <TrendingUp className="w-5 h-5 text-blue-600" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900">
-                  {t('tenant.insights.usageTrend', 'Usage Trend (Last 30 Days)')}
+                  {t('tenant.insights.usageTrend')}
                 </h3>
               </div>
               {usageSnapshots.length > 0 ? (
@@ -615,14 +615,14 @@ export default function TenantInsightsPage() {
                           className="bg-gradient-to-r from-blue-500 to-indigo-600 h-8 rounded-lg"
                         />
                       </div>
-                      <span className="text-sm font-medium w-20 text-end text-gray-700">{snapshot.totalLogins} {t('tenant.insights.logins', 'logins')}</span>
+                      <span className="text-sm font-medium w-20 text-end text-gray-700">{snapshot.totalLogins} {t('tenant.insights.logins')}</span>
                     </motion.div>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-8">
                   <BarChart3 className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">{t('tenant.insights.noUsageData', 'No usage data available')}</p>
+                  <p className="text-gray-500">{t('tenant.insights.noUsageData')}</p>
                 </div>
               )}
             </motion.div>
@@ -651,7 +651,7 @@ export default function TenantInsightsPage() {
                         onClick={() => handleSort('email')}
                       >
                         <div className="flex items-center gap-2">
-                          {t('tenant.insights.user', 'User')}
+                          {t('tenant.insights.user')}
                           <ArrowUpDown className="w-4 h-4" />
                           {postureSortBy === 'email' && (postureSortDesc ? '↓' : '↑')}
                         </div>
@@ -661,7 +661,7 @@ export default function TenantInsightsPage() {
                         onClick={() => handleSort('mfaEnabled')}
                       >
                         <div className="flex items-center gap-2">
-                          {t('tenant.insights.mfaStatus', 'MFA Status')}
+                          {t('tenant.insights.mfaStatus')}
                           <ArrowUpDown className="w-4 h-4" />
                           {postureSortBy === 'mfaEnabled' && (postureSortDesc ? '↓' : '↑')}
                         </div>
@@ -671,7 +671,7 @@ export default function TenantInsightsPage() {
                         onClick={() => handleSort('lastLoginAt')}
                       >
                         <div className="flex items-center gap-2">
-                          {t('tenant.insights.lastLogin', 'Last Login')}
+                          {t('tenant.insights.lastLogin')}
                           <ArrowUpDown className="w-4 h-4" />
                           {postureSortBy === 'lastLoginAt' && (postureSortDesc ? '↓' : '↑')}
                         </div>
@@ -681,7 +681,7 @@ export default function TenantInsightsPage() {
                         onClick={() => handleSort('riskLevel')}
                       >
                         <div className="flex items-center gap-2">
-                          {t('tenant.insights.riskLevel', 'Risk Level')}
+                          {t('tenant.insights.riskLevel')}
                           <ArrowUpDown className="w-4 h-4" />
                           {postureSortBy === 'riskLevel' && (postureSortDesc ? '↓' : '↑')}
                         </div>
@@ -691,7 +691,7 @@ export default function TenantInsightsPage() {
                         onClick={() => handleSort('riskEvents')}
                       >
                         <div className="flex items-center gap-2">
-                          {t('tenant.insights.riskEventsCol', 'Risk Events')}
+                          {t('tenant.insights.riskEventsCol')}
                           <ArrowUpDown className="w-4 h-4" />
                           {postureSortBy === 'riskEvents' && (postureSortDesc ? '↓' : '↑')}
                         </div>
@@ -719,18 +719,18 @@ export default function TenantInsightsPage() {
                           {posture.mfaEnabled ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200">
                               <Lock className="w-3 h-3" />
-                              {posture.mfaMethod || t('common.enabled', 'Enabled')}
+                              {posture.mfaMethod || t('common.enabled')}
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
-                              {t('tenant.insights.notEnabled', 'Not Enabled')}
+                              {t('tenant.insights.notEnabled')}
                             </span>
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {posture.lastLoginAt
                             ? formatDate(posture.lastLoginAt)
-                            : t('common.never', 'Never')}
+                            : t('common.never')}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${getRiskLevelStyles(posture.riskLevel)}`}>
@@ -741,7 +741,7 @@ export default function TenantInsightsPage() {
                           {posture.riskEvents}
                           {posture.lastRiskEvent && (
                             <span className="text-xs text-gray-400 ms-2">
-                              ({t('common.last', 'Last')}: {new Date(posture.lastRiskEvent).toLocaleDateString(locale === 'fa' ? 'fa-IR' : 'en-US')})
+                              ({t('common.last')}: {new Date(posture.lastRiskEvent).toLocaleDateString(locale === 'fa' ? 'fa-IR' : 'en-US')})
                             </span>
                           )}
                         </td>
@@ -751,7 +751,7 @@ export default function TenantInsightsPage() {
                       <tr>
                         <td colSpan={5} className="px-6 py-12 text-center">
                           <Shield className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                          <p className="text-gray-500">{t('tenant.insights.noPostureData', 'No user security posture data available')}</p>
+                          <p className="text-gray-500">{t('tenant.insights.noPostureData')}</p>
                         </td>
                       </tr>
                     )}
@@ -763,8 +763,8 @@ export default function TenantInsightsPage() {
               {totalPages > 1 && (
                 <div className="bg-gray-50 px-6 py-4 flex items-center justify-between border-t border-gray-200">
                   <p className="text-sm text-gray-500">
-                    {t('tenant.insights.showing', 'Showing')} {(posturePageNumber - 1) * pageSize + 1} {t('common.to', 'to')}{' '}
-                    {Math.min(posturePageNumber * pageSize, postureTotalCount)} {t('common.of', 'of')} {postureTotalCount} {t('tenant.insights.users', 'users')}
+                    {t('tenant.insights.showing')} {(posturePageNumber - 1) * pageSize + 1} {t('common.to')}{' '}
+                    {Math.min(posturePageNumber * pageSize, postureTotalCount)} {t('common.of')} {postureTotalCount} {t('tenant.insights.users')}
                   </p>
                   <div className="flex gap-2">
                     <motion.button
@@ -775,10 +775,10 @@ export default function TenantInsightsPage() {
                       className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     >
                       <ChevronLeft className="w-4 h-4" />
-                      {t('common.previous', 'Previous')}
+                      {t('common.previous')}
                     </motion.button>
                     <span className="px-4 py-2 text-sm text-gray-700">
-                      {t('common.page', 'Page')} {posturePageNumber} {t('common.of', 'of')} {totalPages}
+                      {t('common.page')} {posturePageNumber} {t('common.of')} {totalPages}
                     </span>
                     <motion.button
                       whileHover={{ scale: 1.02 }}
@@ -787,7 +787,7 @@ export default function TenantInsightsPage() {
                       disabled={posturePageNumber === totalPages}
                       className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                     >
-                      {t('common.next', 'Next')}
+                      {t('common.next')}
                       <ChevronRight className="w-4 h-4" />
                     </motion.button>
                   </div>
@@ -811,22 +811,22 @@ export default function TenantInsightsPage() {
                 <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                   <tr>
                     <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      {t('common.name', 'Name')}
+                      {t('common.name')}
                     </th>
                     <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      {t('common.type', 'Type')}
+                      {t('common.type')}
                     </th>
                     <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      {t('tenant.insights.frequency', 'Frequency')}
+                      {t('tenant.insights.frequency')}
                     </th>
                     <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      {t('tenant.insights.recipients', 'Recipients')}
+                      {t('tenant.insights.recipients')}
                     </th>
                     <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      {t('common.status', 'Status')}
+                      {t('common.status')}
                     </th>
                     <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                      {t('common.actions', 'Actions')}
+                      {t('common.actions')}
                     </th>
                   </tr>
                 </thead>
@@ -859,7 +859,7 @@ export default function TenantInsightsPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 text-gray-600 rounded-lg text-sm">
                           <Mail className="w-3 h-3" />
-                          {report.recipients.length} {t('tenant.insights.recipientsCount', 'recipient(s)')}
+                          {report.recipients.length} {t('tenant.insights.recipientsCount')}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -870,7 +870,7 @@ export default function TenantInsightsPage() {
                               : 'bg-gray-100 text-gray-600 border-gray-200'
                           }`}
                         >
-                          {report.isActive ? t('common.active', 'Active') : t('common.inactive', 'Inactive')}
+                          {report.isActive ? t('common.active') : t('common.inactive')}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -880,7 +880,7 @@ export default function TenantInsightsPage() {
                             whileTap={{ scale: 0.9 }}
                             onClick={() => setEditingReport(report)}
                             className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                            title={t('common.edit', 'Edit')}
+                            title={t('common.edit')}
                           >
                             <Edit className="w-4 h-4" />
                           </motion.button>
@@ -893,7 +893,7 @@ export default function TenantInsightsPage() {
                                 ? 'text-yellow-600 hover:bg-yellow-50'
                                 : 'text-green-600 hover:bg-green-50'
                             }`}
-                            title={report.isActive ? t('common.disable', 'Disable') : t('common.enable', 'Enable')}
+                            title={report.isActive ? t('common.disable') : t('common.enable')}
                           >
                             {report.isActive ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
                           </motion.button>
@@ -902,7 +902,7 @@ export default function TenantInsightsPage() {
                             whileTap={{ scale: 0.9 }}
                             onClick={() => handleDeleteReport(report.id)}
                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title={t('common.delete', 'Delete')}
+                            title={t('common.delete')}
                           >
                             <Trash2 className="w-4 h-4" />
                           </motion.button>
@@ -914,7 +914,7 @@ export default function TenantInsightsPage() {
                     <tr>
                       <td colSpan={6} className="px-6 py-12 text-center">
                         <FileText className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                        <p className="text-gray-500">{t('tenant.insights.noReports', 'No report subscriptions. Click "Create Report" to add one.')}</p>
+                        <p className="text-gray-500">{t('tenant.insights.noReports')}</p>
                       </td>
                     </tr>
                   )}
@@ -948,7 +948,7 @@ export default function TenantInsightsPage() {
                     <div className="p-2 bg-white/20 rounded-xl">
                       <FileText className="w-6 h-6" />
                     </div>
-                    <h2 className="text-xl font-bold">{t('tenant.insights.createReport', 'Create Report Subscription')}</h2>
+                    <h2 className="text-xl font-bold">{t('tenant.insights.createReport')}</h2>
                   </div>
                   <button
                     onClick={() => setShowCreateReportModal(false)}
@@ -1036,7 +1036,7 @@ export default function TenantInsightsPage() {
                     className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl hover:shadow-lg transition-all"
                   >
                     <CheckCircle className="w-4 h-4" />
-                    {t('common.create', 'Create')}
+                    {t('common.create')}
                   </motion.button>
                 </div>
               </form>
@@ -1068,7 +1068,7 @@ export default function TenantInsightsPage() {
                     <div className="p-2 bg-white/20 rounded-xl">
                       <Edit className="w-6 h-6" />
                     </div>
-                    <h2 className="text-xl font-bold">{t('tenant.insights.editReport', 'Edit Report Subscription')}</h2>
+                    <h2 className="text-xl font-bold">{t('tenant.insights.editReport')}</h2>
                   </div>
                   <button
                     onClick={() => setEditingReport(null)}
@@ -1160,7 +1160,7 @@ export default function TenantInsightsPage() {
                     className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl hover:shadow-lg transition-all"
                   >
                     <CheckCircle className="w-4 h-4" />
-                    {t('common.save', 'Save')}
+                    {t('common.save')}
                   </motion.button>
                 </div>
               </form>

@@ -189,7 +189,7 @@ export default function GlobalCopilotPage() {
     setError('');
     try {
       const data = await copilotService.analyzeTenants({} as any);
-      setSuccess(`Analysis completed: ${data.summary}`);
+      setSuccess(t('global.copilot.messages.analysisCompleted', { summary: data.summary }));
       setActiveTab('insights');
       fetchData();
     } catch (err) {
@@ -202,7 +202,7 @@ export default function GlobalCopilotPage() {
   const handleAcknowledgeAlert = async (alertId: string) => {
     try {
       await copilotService.acknowledgeGlobalAlert(alertId);
-      setSuccess('Alert acknowledged');
+      setSuccess(t('global.copilot.messages.alertAcknowledged'));
       fetchData();
     } catch (err) {
       setError(t('common.error'));
@@ -283,7 +283,7 @@ export default function GlobalCopilotPage() {
     setSuccess('');
     try {
       await copilotService.updateGlobalSettings(settings);
-      setSuccess('Settings saved successfully');
+      setSuccess(t('global.copilot.messages.settingsSavedSuccessfully'));
     } catch (err) {
       setError(t('common.error'));
     }
@@ -305,16 +305,16 @@ export default function GlobalCopilotPage() {
   return (
     <div className="p-8">
       <Helmet>
-        <title>Copilot - Global Management</title>
+        <title>{t('global.copilot.pageTitle')}</title>
       </Helmet>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Copilot - Global Management</h1>
+        <h1 className="text-3xl font-bold">{t('global.copilot.title')}</h1>
         <button
           onClick={handleAnalyzeTenants}
           disabled={analyzingTenants}
           className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 disabled:opacity-50"
         >
-          {analyzingTenants ? 'Analyzing Tenants...' : 'Analyze All Tenants'}
+          {analyzingTenants ? t('global.copilot.actions.analyzingTenants') : t('global.copilot.actions.analyzeAllTenants')}
         </button>
       </div>
 
@@ -337,14 +337,14 @@ export default function GlobalCopilotPage() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              {tab === 'settings' ? 'Settings' :
-               tab === 'query' ? 'AI Query' :
-               tab === 'analytics' ? 'Analytics' :
-               tab === 'insights' ? 'Platform Insights' :
-               tab === 'recommendations' ? 'Recommendations' :
-               tab === 'alerts' ? 'Smart Alerts' :
-               tab === 'history' ? 'Conversation History' :
-               'Knowledge Base'}
+              {tab === 'settings' ? t('global.copilot.settings') :
+               tab === 'query' ? t('global.copilot.aiQuery') :
+               tab === 'analytics' ? t('global.copilot.analytics') :
+               tab === 'insights' ? t('global.copilot.platformInsights') :
+               tab === 'recommendations' ? t('global.copilot.recommendations') :
+               tab === 'alerts' ? t('global.copilot.smartAlerts') :
+               tab === 'history' ? t('global.copilot.conversationHistory') :
+               t('global.copilot.knowledgeBase')}
             </button>
           ))}
         </nav>
@@ -362,24 +362,24 @@ export default function GlobalCopilotPage() {
                     checked={settings.isEnabled}
                     onChange={(e) => setSettings({ ...settings, isEnabled: e.target.checked })}
                   />
-                  <span className="font-medium">Enable Copilot</span>
+                  <span className="font-medium">{t('global.copilot.enableCopilot')}</span>
                 </label>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">Model Provider</label>
+                  <label className="block text-sm font-medium mb-2">{t('global.copilot.modelProvider')}</label>
                   <select
                     className="w-full px-3 py-2 border rounded"
                     value={settings.modelProvider}
                     onChange={(e) => setSettings({ ...settings, modelProvider: e.target.value })}
                   >
-                    <option value="OpenAI">OpenAI</option>
-                    <option value="Azure">Azure OpenAI</option>
-                    <option value="Anthropic">Anthropic</option>
+                    <option value="OpenAI">{t('global.copilot.openAI')}</option>
+                    <option value="Azure">{t('global.copilot.azureOpenAI')}</option>
+                    <option value="Anthropic">{t('global.copilot.anthropic')}</option>
                   </select>
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">Max Tokens Per Request</label>
+                  <label className="block text-sm font-medium mb-2">{t('global.copilot.maxTokensPerRequest')}</label>
                   <input
                     type="number"
                     className="w-full px-3 py-2 border rounded"
@@ -391,7 +391,7 @@ export default function GlobalCopilotPage() {
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">Max Conversation History</label>
+                  <label className="block text-sm font-medium mb-2">{t('global.copilot.maxConversationHistory')}</label>
                   <input
                     type="number"
                     className="w-full px-3 py-2 border rounded"
@@ -405,7 +405,7 @@ export default function GlobalCopilotPage() {
 
               <div>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">Rate Limit (per minute)</label>
+                  <label className="block text-sm font-medium mb-2">{t('global.copilot.rateLimitPerMinute')}</label>
                   <input
                     type="number"
                     className="w-full px-3 py-2 border rounded"
@@ -417,7 +417,7 @@ export default function GlobalCopilotPage() {
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">Retention Days</label>
+                  <label className="block text-sm font-medium mb-2">{t('global.copilot.retentionDays')}</label>
                   <input
                     type="number"
                     className="w-full px-3 py-2 border rounded"
@@ -429,7 +429,7 @@ export default function GlobalCopilotPage() {
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">Enabled Context Types</label>
+                  <label className="block text-sm font-medium mb-2">{t('global.copilot.enabledContextTypes')}</label>
                   <div className="space-y-2">
                     {['Dashboard', 'User', 'Application', 'Incident', 'Policy', 'Hunt', 'Generic'].map((ctx) => (
                       <label key={ctx} className="flex items-center">
@@ -452,7 +452,7 @@ export default function GlobalCopilotPage() {
                 type="submit"
                 className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
               >
-                Save Settings
+                {t('global.copilot.saveSettings')}
               </button>
             </div>
           </form>
@@ -463,25 +463,25 @@ export default function GlobalCopilotPage() {
         <div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-2">Total Conversations</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('global.copilot.totalConversations')}</h3>
               <p className="text-3xl font-bold text-indigo-600">{usageStats.totalConversations.toLocaleString()}</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-2">Total Messages</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('global.copilot.totalMessages')}</h3>
               <p className="text-3xl font-bold text-indigo-600">{usageStats.totalMessages.toLocaleString()}</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-2">Active Users</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('global.copilot.activeUsers')}</h3>
               <p className="text-3xl font-bold text-indigo-600">{usageStats.activeUsers.toLocaleString()}</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-2">Avg Response Time</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('global.copilot.avgResponseTime')}</h3>
               <p className="text-3xl font-bold text-indigo-600">{usageStats.averageResponseTime}ms</p>
             </div>
           </div>
 
           <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-lg font-semibold mb-4">Top Context Types</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('global.copilot.topContextTypes')}</h3>
             {usageStats.topContextTypes.length > 0 ? (
               <div className="space-y-3">
                 {usageStats.topContextTypes.map((item) => (
@@ -502,7 +502,7 @@ export default function GlobalCopilotPage() {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500">No usage data available yet</p>
+              <p className="text-gray-500">{t('global.copilot.noUsageData')}</p>
             )}
           </div>
         </div>
@@ -544,7 +544,7 @@ export default function GlobalCopilotPage() {
           ))}
           {platformInsights.length === 0 && (
             <div className="col-span-2 text-center text-gray-500 py-12">
-              No platform insights available. Run "Analyze All Tenants" to generate insights.
+              {t('global.copilot.noPlatformInsights')}
             </div>
           )}
         </div>
@@ -573,14 +573,14 @@ export default function GlobalCopilotPage() {
                   {rec.category}
                 </span>
                 <button className="text-sm text-indigo-600 hover:text-indigo-800">
-                  View Details
+                  {t('global.copilot.viewDetails')}
                 </button>
               </div>
             </div>
           ))}
           {recommendations.length === 0 && (
             <div className="text-center text-gray-500 py-12">
-              No recommendations available yet.
+              {t('global.copilot.noRecommendations')}
             </div>
           )}
         </div>
@@ -608,7 +608,7 @@ export default function GlobalCopilotPage() {
                     )}
                     {alert.acknowledged && (
                       <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded">
-                        Acknowledged
+                        {t('global.copilot.acknowledged')}
                       </span>
                     )}
                   </div>
@@ -623,7 +623,7 @@ export default function GlobalCopilotPage() {
                     onClick={() => handleAcknowledgeAlert(alert.id)}
                     className="ml-4 px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-700"
                   >
-                    Acknowledge
+                    {t('global.copilot.acknowledge')}
                   </button>
                 )}
               </div>
@@ -631,7 +631,7 @@ export default function GlobalCopilotPage() {
           ))}
           {alerts.length === 0 && (
             <div className="text-center text-gray-500 py-12">
-              No alerts at this time. All systems operational.
+              {t('global.copilot.noAlerts')}
             </div>
           )}
         </div>
@@ -644,7 +644,7 @@ export default function GlobalCopilotPage() {
               type="text"
               value={selectedConversationId}
               onChange={(e) => setSelectedConversationId(e.target.value)}
-              placeholder="Enter conversation ID to view details"
+              placeholder={t('global.copilot.enterConversationId')}
               className="flex-1 px-3 py-2 border border-gray-300 rounded"
             />
             <button
@@ -652,7 +652,7 @@ export default function GlobalCopilotPage() {
               disabled={!selectedConversationId}
               className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
             >
-              View Conversation
+              {t('global.copilot.viewConversation')}
             </button>
           </div>
 
@@ -660,15 +660,15 @@ export default function GlobalCopilotPage() {
             <div className="mb-4 bg-white rounded-lg shadow p-6">
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="text-lg font-semibold">Conversation Details</h3>
-                  <p className="text-sm text-gray-600">Tenant: {conversationDetail.tenantName}</p>
-                  <p className="text-sm text-gray-600">User: {conversationDetail.userEmail}</p>
+                  <h3 className="text-lg font-semibold">{t('global.copilot.conversationDetails')}</h3>
+                  <p className="text-sm text-gray-600">{t('common.tenant')}: {conversationDetail.tenantName}</p>
+                  <p className="text-sm text-gray-600">{t('common.user')}: {conversationDetail.userEmail}</p>
                 </div>
                 <button
                   onClick={() => setConversationDetail(null)}
                   className="text-sm text-gray-600 hover:text-gray-900"
                 >
-                  Close
+                  {t('common.close')}
                 </button>
               </div>
               <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -681,7 +681,7 @@ export default function GlobalCopilotPage() {
                   >
                     <div className="flex justify-between mb-1">
                       <span className="text-xs font-semibold text-gray-700">
-                        {msg.role === 'user' ? 'User' : 'Assistant'}
+                        {msg.role === 'user' ? t('common.user') : t('global.copilot.assistant')}
                       </span>
                       <span className="text-xs text-gray-500">
                         {new Date(msg.timestamp).toLocaleString()}
@@ -698,13 +698,13 @@ export default function GlobalCopilotPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tenant</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Context</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Messages</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Activity</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.tenant')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.user')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.copilot.context')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.copilot.messages')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.created')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.copilot.lastActivity')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -738,7 +738,7 @@ export default function GlobalCopilotPage() {
                         }}
                         className="text-indigo-600 hover:text-indigo-900"
                       >
-                        View
+                        {t('common.view')}
                       </button>
                     </td>
                   </tr>
@@ -746,7 +746,7 @@ export default function GlobalCopilotPage() {
                 {conversations.length === 0 && (
                   <tr>
                     <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
-                      No conversations found
+                      {t('global.copilot.noConversations')}
                     </td>
                   </tr>
                 )}
@@ -780,14 +780,14 @@ export default function GlobalCopilotPage() {
       {activeTab === 'query' && (
         <div className="space-y-6">
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">AI Query Interface</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('global.copilot.aiQueryInterface')}</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Enter your query</label>
+                <label className="block text-sm font-medium mb-2">{t('global.copilot.enterYourQuery')}</label>
                 <textarea
                   value={queryText}
                   onChange={(e) => setQueryText(e.target.value)}
-                  placeholder="Ask anything about your platform, tenants, or data..."
+                  placeholder={t('global.copilot.queryPlaceholder')}
                   className="w-full px-3 py-2 border border-gray-300 rounded h-32"
                 />
               </div>
@@ -796,14 +796,14 @@ export default function GlobalCopilotPage() {
                 disabled={queryLoading || !queryText.trim()}
                 className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
               >
-                {queryLoading ? 'Processing...' : 'Execute Query'}
+                {queryLoading ? t('global.copilot.processing') : t('global.copilot.executeQuery')}
               </button>
             </div>
           </div>
 
           {queryResponse && (
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-4">Query Response</h3>
+              <h3 className="text-lg font-semibold mb-4">{t('global.copilot.queryResponse')}</h3>
               <div className="space-y-4">
                 <div>
                   <p className="text-gray-800 whitespace-pre-wrap">{queryResponse.response}</p>
@@ -811,7 +811,7 @@ export default function GlobalCopilotPage() {
                 <div className="pt-4 border-t">
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div>
-                      <span className="text-sm text-gray-500">Confidence:</span>
+                      <span className="text-sm text-gray-500">{t('global.copilot.confidence')}:</span>
                       <div className="flex items-center gap-2 mt-1">
                         <div className="flex-1 bg-gray-200 rounded-full h-2">
                           <div
@@ -823,13 +823,13 @@ export default function GlobalCopilotPage() {
                       </div>
                     </div>
                     <div>
-                      <span className="text-sm text-gray-500">Execution Time:</span>
+                      <span className="text-sm text-gray-500">{t('global.copilot.executionTime')}:</span>
                       <p className="font-medium">{queryResponse.executionTime}ms</p>
                     </div>
                   </div>
                   {queryResponse.sources.length > 0 && (
                     <div>
-                      <span className="text-sm font-medium text-gray-700">Sources:</span>
+                      <span className="text-sm font-medium text-gray-700">{t('global.copilot.sources')}:</span>
                       <ul className="mt-2 space-y-1">
                         {queryResponse.sources.map((source, idx) => (
                           <li key={idx} className="text-sm text-gray-600">
@@ -845,15 +845,15 @@ export default function GlobalCopilotPage() {
           )}
 
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">Execute Action</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('global.copilot.executeAction')}</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Action Command</label>
+                <label className="block text-sm font-medium mb-2">{t('global.copilot.actionCommand')}</label>
                 <input
                   type="text"
                   value={actionCommand}
                   onChange={(e) => setActionCommand(e.target.value)}
-                  placeholder="e.g., restart-service, clear-cache, etc."
+                  placeholder={t('global.copilot.actionPlaceholder')}
                   className="w-full px-3 py-2 border border-gray-300 rounded"
                 />
               </div>
@@ -862,7 +862,7 @@ export default function GlobalCopilotPage() {
                 disabled={actionLoading || !actionCommand.trim()}
                 className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 disabled:opacity-50"
               >
-                {actionLoading ? 'Executing...' : 'Execute Action'}
+                {actionLoading ? t('global.copilot.executing') : t('global.copilot.executeAction')}
               </button>
             </div>
 
@@ -886,7 +886,7 @@ export default function GlobalCopilotPage() {
 
       {activeTab === 'knowledge' && (
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-6">Knowledge Base Status</h2>
+          <h2 className="text-xl font-semibold mb-6">{t('global.copilot.knowledgeBaseStatus')}</h2>
           {knowledgeBaseStatus ? (
             <div className="space-y-6">
               <div className="flex items-center gap-4">
@@ -894,25 +894,25 @@ export default function GlobalCopilotPage() {
                   knowledgeBaseStatus.isHealthy ? 'bg-green-500' : 'bg-red-500'
                 }`} />
                 <h3 className="text-lg font-medium">
-                  {knowledgeBaseStatus.isHealthy ? 'Healthy' : 'Unhealthy'}
+                  {knowledgeBaseStatus.isHealthy ? t('global.copilot.healthy') : t('global.copilot.unhealthy')}
                 </h3>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="p-4 bg-gray-50 rounded">
-                  <h4 className="text-sm font-medium text-gray-700 mb-1">Total Documents</h4>
+                  <h4 className="text-sm font-medium text-gray-700 mb-1">{t('global.copilot.totalDocuments')}</h4>
                   <p className="text-2xl font-bold text-gray-900">{knowledgeBaseStatus.totalDocuments.toLocaleString()}</p>
                 </div>
                 <div className="p-4 bg-gray-50 rounded">
-                  <h4 className="text-sm font-medium text-gray-700 mb-1">Index Size</h4>
+                  <h4 className="text-sm font-medium text-gray-700 mb-1">{t('global.copilot.indexSize')}</h4>
                   <p className="text-2xl font-bold text-gray-900">{knowledgeBaseStatus.indexSize}</p>
                 </div>
                 <div className="p-4 bg-gray-50 rounded">
-                  <h4 className="text-sm font-medium text-gray-700 mb-1">Query Latency</h4>
+                  <h4 className="text-sm font-medium text-gray-700 mb-1">{t('global.copilot.queryLatency')}</h4>
                   <p className="text-2xl font-bold text-gray-900">{knowledgeBaseStatus.queryLatency}ms</p>
                 </div>
                 <div className="p-4 bg-gray-50 rounded">
-                  <h4 className="text-sm font-medium text-gray-700 mb-1">Last Updated</h4>
+                  <h4 className="text-sm font-medium text-gray-700 mb-1">{t('global.copilot.lastUpdated')}</h4>
                   <p className="text-2xl font-bold text-gray-900">
                     {new Date(knowledgeBaseStatus.lastUpdated).toLocaleDateString()}
                   </p>
@@ -921,7 +921,7 @@ export default function GlobalCopilotPage() {
             </div>
           ) : (
             <div className="text-center text-gray-500 py-8">
-              No knowledge base status available
+              {t('global.copilot.noKnowledgeBaseStatus')}
             </div>
           )}
         </div>

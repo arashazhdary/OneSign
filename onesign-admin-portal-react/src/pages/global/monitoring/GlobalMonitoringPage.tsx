@@ -272,7 +272,7 @@ export default function GlobalMonitoringPage() {
               disabled={loading}
               className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 transition-all duration-200 shadow-lg hover:shadow-xl"
             >
-              {loading ? 'Refreshing...' : 'Refresh Now'}
+              {loading ? t('global.monitoring.labels.refreshing') : t('global.monitoring.actions.refreshNow')}
             </button>
           </div>
         </div>

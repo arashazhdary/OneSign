@@ -106,7 +106,7 @@ export default function GlobalAutomationPage() {
   const handlePublish = async (id: string) => {
     try {
       await publishTemplate(id);
-      setSuccess('Template published successfully');
+      setSuccess(t('global.automation.messages.templatePublished'));
       fetchTemplates();
     } catch (err) {
       setError(t('common.error'));
@@ -117,10 +117,10 @@ export default function GlobalAutomationPage() {
     try {
       if (template.isEnforced) {
         await unenforceTemplate(template.id);
-        setSuccess('Template unenforced successfully');
+        setSuccess(t('global.automation.messages.templateUnenforced'));
       } else {
         await enforceTemplate(template.id);
-        setSuccess('Template enforced successfully');
+        setSuccess(t('global.automation.messages.templateEnforced'));
       }
       fetchTemplates();
     } catch (err) {
@@ -131,7 +131,7 @@ export default function GlobalAutomationPage() {
   const handleUpdateTemplate = async (id: string, data: any) => {
     try {
       await updateGlobalTemplate(id, data);
-      setSuccess('Template updated successfully');
+      setSuccess(t('global.automation.messages.templateUpdated'));
       fetchTemplates();
     } catch (err) {
       setError(t('common.error'));
@@ -139,10 +139,10 @@ export default function GlobalAutomationPage() {
   };
 
   const handleDeleteTemplate = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this template?')) return;
+    if (!confirm(t('global.automation.confirmDelete'))) return;
     try {
       await deleteGlobalTemplate(id);
-      setSuccess('Template deleted successfully');
+      setSuccess(t('global.automation.messages.templateDeleted'));
       fetchTemplates();
     } catch (err) {
       setError(t('common.error'));
@@ -172,7 +172,7 @@ export default function GlobalAutomationPage() {
             onClick={() => setShowCreateModal(true)}
             className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
           >
-            Create Template
+            {t('global.automation.createTemplate')}
           </button>
         )}
       </div>
@@ -196,7 +196,7 @@ export default function GlobalAutomationPage() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              {tab === 'templates' ? 'Templates' : tab === 'enforced' ? 'Enforced Workflows' : 'Executions'}
+              {tab === 'templates' ? t('global.automation.templates') : tab === 'enforced' ? t('global.automation.enforcedWorkflows') : t('global.automation.executions')}
             </button>
           ))}
         </nav>
@@ -234,11 +234,11 @@ export default function GlobalAutomationPage() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex flex-col gap-1">
                       <span className={`px-2 py-1 rounded text-xs inline-block w-fit ${template.isEnabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                        {template.isEnabled ? 'Published' : 'Draft'}
+                        {template.isEnabled ? t('common.published') : t('common.draft')}
                       </span>
                       {template.isEnforced && (
                         <span className="px-2 py-1 rounded text-xs bg-purple-100 text-purple-800 inline-block w-fit">
-                          Enforced
+                          {t('global.automation.enforced')}
                         </span>
                       )}
                     </div>
@@ -250,20 +250,20 @@ export default function GlobalAutomationPage() {
                           onClick={() => handlePublish(template.id)}
                           className="text-green-600 hover:text-green-900"
                         >
-                          Publish
+                          {t('common.publish')}
                         </button>
                       )}
                       <button
                         onClick={() => handleEnforce(template)}
                         className="text-purple-600 hover:text-purple-900"
                       >
-                        {template.isEnforced ? 'Unenforce' : 'Enforce'}
+                        {template.isEnforced ? t('global.automation.unenforce') : t('global.automation.enforce')}
                       </button>
                       <button
                         onClick={() => handleDeleteTemplate(template.id)}
                         className="text-red-600 hover:text-red-900"
                       >
-                        Delete
+                        {t('common.delete')}
                       </button>
                     </div>
                   </td>
@@ -289,7 +289,7 @@ export default function GlobalAutomationPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('automation.name')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('automation.triggers')}</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('automation.severity')}</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tenant Can Disable</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.automation.tenantCanDisable')}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -307,14 +307,14 @@ export default function GlobalAutomationPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {template.tenantCanDisable ? 'Yes' : 'No'}
+                    {template.tenantCanDisable ? t('common.yes') : t('common.no')}
                   </td>
                 </tr>
               ))}
               {enforcedTemplates.length === 0 && (
                 <tr>
                   <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
-                    No enforced workflows.
+                    {t('global.automation.noEnforcedWorkflows')}
                   </td>
                 </tr>
               )}
@@ -325,14 +325,14 @@ export default function GlobalAutomationPage() {
 
       {activeTab === 'executions' && (
         <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-gray-500">Execution overview will be available here. This view aggregates automation executions across all tenants for global monitoring and troubleshooting.</p>
+          <p className="text-gray-500">{t('global.automation.executionOverview')}</p>
         </div>
       )}
 
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">Create Global Template</h2>
+            <h2 className="text-xl font-bold mb-4">{t('global.automation.createGlobalTemplate')}</h2>
             <form onSubmit={handleCreateTemplate}>
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-2">{t('automation.name')}</label>
@@ -402,7 +402,7 @@ export default function GlobalAutomationPage() {
                     checked={newTemplate.tenantCanDisable}
                     onChange={(e) => setNewTemplate({ ...newTemplate, tenantCanDisable: e.target.checked })}
                   />
-                  Tenant can disable
+                  {t('global.automation.tenantCanDisable')}
                 </label>
               </div>
               <div className="mb-4">
@@ -413,7 +413,7 @@ export default function GlobalAutomationPage() {
                     checked={newTemplate.tenantCanOverrideConditions}
                     onChange={(e) => setNewTemplate({ ...newTemplate, tenantCanOverrideConditions: e.target.checked })}
                   />
-                  Tenant can override conditions
+                  {t('global.automation.tenantCanOverrideConditions')}
                 </label>
               </div>
               <div className="flex gap-2 justify-end">

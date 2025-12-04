@@ -81,10 +81,10 @@ export default function LoginPage() {
                 </div>
               </div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-                Admin Portal
+                {t('common.auth.adminPortal')}
               </h1>
               <p className="text-gray-700 text-sm">
-                Sign in to manage your Onesign platform
+                {t('common.auth.signInDescription')}
               </p>
             </div>
 
@@ -103,7 +103,7 @@ export default function LoginPage() {
             {/* Email Input */}
             <div>
               <label htmlFor="email-address" className="block text-sm font-semibold text-gray-700 mb-2">
-                Email address
+                {t('common.auth.emailAddress')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -118,7 +118,7 @@ export default function LoginPage() {
                   autoComplete="email"
                   required
                   className="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50"
-                  placeholder="admin@example.com"
+                  placeholder={t('common.auth.emailPlaceholder')}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -128,7 +128,7 @@ export default function LoginPage() {
             {/* Password Input */}
             <div>
               <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
-                Password
+                {t('common.auth.password')}
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -143,7 +143,7 @@ export default function LoginPage() {
                   autoComplete="current-password"
                   required
                   className="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50"
-                  placeholder="Enter your password"
+                  placeholder={t('common.auth.passwordPlaceholder')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -160,12 +160,12 @@ export default function LoginPage() {
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-                  Remember me
+                  {t('common.auth.rememberMe')}
                 </label>
               </div>
               <div className="text-sm">
                 <a href="#" className="font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors">
-                  Forgot password?
+                  {t('common.auth.forgotPassword')}
                 </a>
               </div>
             </div>
@@ -182,11 +182,11 @@ export default function LoginPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  <span>Signing in...</span>
+                  <span>{t('common.auth.signingIn')}</span>
                 </>
               ) : (
                 <>
-                  <span>Sign in to Admin Portal</span>
+                  <span>{t('common.auth.signInToPortal')}</span>
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
                   </svg>
@@ -201,7 +201,7 @@ export default function LoginPage() {
               <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white/90 text-gray-500 font-medium">OR</span>
+              <span className="px-4 bg-white/90 text-gray-500 font-medium">{t('common.auth.or')}</span>
             </div>
           </div>
 
@@ -230,17 +230,17 @@ export default function LoginPage() {
                 fill="#EA4335"
               />
             </svg>
-            <span>Sign in with Google</span>
+            <span>{t('common.auth.signInWithGoogle')}</span>
           </button>
         </div>
 
         {/* Footer */}
         <div className="mt-6 text-center space-y-2">
           <p className="text-sm text-gray-600">
-            Protected by enterprise-grade security
+            {t('common.auth.securityMessage')}
           </p>
           <p className="text-xs text-gray-500">
-            Need help? Contact your system administrator
+            {t('common.auth.needHelp')}
           </p>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { tenantService } from '@/lib/api/services/tenant.service';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -69,6 +70,7 @@ const StatCard = ({ title, value, icon: Icon, color, delay = 0 }: StatCardProps)
 );
 
 export default function TenantTokensPage() {
+  const { t } = useTranslation();
   const [tokens, setTokens] = useState<Token[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -200,7 +202,7 @@ export default function TenantTokensPage() {
   };
 
   const handleRevoke = async (tokenId: string) => {
-    if (!confirm('Revoke this token? This action cannot be undone.')) return;
+    if (!confirm(t('tenant.tokens.confirmRevoke'))) return;
     setError('');
     setSuccess('');
     try {
@@ -214,7 +216,7 @@ export default function TenantTokensPage() {
   };
 
   const handleRotate = async (tokenId: string) => {
-    if (!confirm('Rotate this token? The old token will be invalidated.')) return;
+    if (!confirm(t('tenant.tokens.confirmRotate'))) return;
     setError('');
     setSuccess('');
     try {
@@ -625,7 +627,7 @@ export default function TenantTokensPage() {
       <Modal
         isOpen={showCreate}
         onClose={() => setShowCreate(false)}
-        title="Create New Token"
+        title={t('tenant.tokens.createNewToken')}
       >
         <form onSubmit={handleCreate} className="space-y-6">
           <div>

@@ -197,7 +197,7 @@ export default function TenantAccessReviewsPage() {
   };
 
   const handleCompleteReview = async (reviewId: string) => {
-    if (!tenantId || !confirm('Are you sure you want to complete this review? This action cannot be undone.')) return;
+    if (!tenantId || !confirm(t('tenant.accessReviews.confirmCompleteReview'))) return;
     setLoading(true);
     setError('');
     try {
@@ -530,7 +530,7 @@ export default function TenantAccessReviewsPage() {
       <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        title="Create Access Review"
+        title={t('tenant.accessReviews.createAccessReview')}
       >
         <div className="space-y-4">
           <div>
@@ -562,10 +562,10 @@ export default function TenantAccessReviewsPage() {
               onChange={(e) => setCreateForm({ ...createForm, reviewType: e.target.value as any })}
               className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-slate-700 dark:text-white"
             >
-              <option value="application">Application Access</option>
-              <option value="role">Role Assignments</option>
-              <option value="group">Group Memberships</option>
-              <option value="permission">Direct Permissions</option>
+              <option value="application">{t('tenant.accessReviews.reviewType.applicationAccess')}</option>
+              <option value="role">{t('tenant.accessReviews.reviewType.roleAssignments')}</option>
+              <option value="group">{t('tenant.accessReviews.reviewType.groupMemberships')}</option>
+              <option value="permission">{t('tenant.accessReviews.reviewType.directPermissions')}</option>
             </select>
           </div>
 

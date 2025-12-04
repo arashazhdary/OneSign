@@ -199,13 +199,13 @@ export default function GlobalSecurityPage() {
 
   // Chart data
   const threatTrendData = [
-    { name: 'شنبه', 'حملات': 45, 'مسدود شده': 42, 'هشدار': 12 },
-    { name: 'یکشنبه', 'حملات': 52, 'مسدود شده': 50, 'هشدار': 8 },
-    { name: 'دوشنبه', 'حملات': 78, 'مسدود شده': 75, 'هشدار': 15 },
-    { name: 'سه‌شنبه', 'حملات': 63, 'مسدود شده': 61, 'هشدار': 10 },
-    { name: 'چهارشنبه', 'حملات': 89, 'مسدود شده': 86, 'هشدار': 18 },
-    { name: 'پنج‌شنبه', 'حملات': 71, 'مسدود شده': 68, 'هشدار': 14 },
-    { name: 'جمعه', 'حملات': 34, 'مسدود شده': 33, 'هشدار': 5 },
+    { name: t('common.days.saturday'), [t('global.security.charts.attacks')]: 45, [t('global.security.charts.blocked')]: 42, [t('global.security.charts.warning')]: 12 },
+    { name: t('common.days.sunday'), [t('global.security.charts.attacks')]: 52, [t('global.security.charts.blocked')]: 50, [t('global.security.charts.warning')]: 8 },
+    { name: t('common.days.monday'), [t('global.security.charts.attacks')]: 78, [t('global.security.charts.blocked')]: 75, [t('global.security.charts.warning')]: 15 },
+    { name: t('common.days.tuesday'), [t('global.security.charts.attacks')]: 63, [t('global.security.charts.blocked')]: 61, [t('global.security.charts.warning')]: 10 },
+    { name: t('common.days.wednesday'), [t('global.security.charts.attacks')]: 89, [t('global.security.charts.blocked')]: 86, [t('global.security.charts.warning')]: 18 },
+    { name: t('common.days.thursday'), [t('global.security.charts.attacks')]: 71, [t('global.security.charts.blocked')]: 68, [t('global.security.charts.warning')]: 14 },
+    { name: t('common.days.friday'), [t('global.security.charts.attacks')]: 34, [t('global.security.charts.blocked')]: 33, [t('global.security.charts.warning')]: 5 },
   ];
 
   const threatTypeData = [
@@ -255,8 +255,8 @@ export default function GlobalSecurityPage() {
       setPolicies([
         {
           id: '1',
-          name: 'احراز هویت چند عاملی اجباری',
-          description: 'الزام MFA برای تمام حساب‌های دارای دسترسی بالا در همه tenant‌ها',
+          name: t('global.security.mockData.mfaPolicy'),
+          description: t('global.security.mockData.mfaPolicyDesc'),
           type: 'Security',
           severity: 'Critical',
           status: 'Active',
@@ -268,8 +268,8 @@ export default function GlobalSecurityPage() {
         },
         {
           id: '2',
-          name: 'استانداردهای پیچیدگی رمز عبور',
-          description: 'حداقل 12 کاراکتر، ترکیب حروف بزرگ و کوچک، اعداد و کاراکترهای خاص',
+          name: t('global.security.mockData.passwordPolicy'),
+          description: t('global.security.mockData.passwordPolicyDesc'),
           type: 'Security',
           severity: 'High',
           status: 'Active',
@@ -281,8 +281,8 @@ export default function GlobalSecurityPage() {
         },
         {
           id: '3',
-          name: 'حفاظت از داده‌های GDPR',
-          description: 'اطمینان از رمزنگاری داده‌های شخصی و کنترل دسترسی',
+          name: t('global.security.mockData.gdprPolicy'),
+          description: t('global.security.mockData.gdprPolicyDesc'),
           type: 'Compliance',
           severity: 'Critical',
           status: 'Active',
@@ -294,8 +294,8 @@ export default function GlobalSecurityPage() {
         },
         {
           id: '4',
-          name: 'سیاست پایان زمان نشست',
-          description: 'پایان خودکار نشست پس از 30 دقیقه عدم فعالیت',
+          name: t('global.security.mockData.sessionPolicy'),
+          description: t('global.security.mockData.sessionPolicyDesc'),
           type: 'Access',
           severity: 'Medium',
           status: 'Active',
@@ -307,8 +307,8 @@ export default function GlobalSecurityPage() {
         },
         {
           id: '5',
-          name: 'سیاست نگهداری داده',
-          description: 'لاگ‌های حسابرسی حداقل 1 سال نگهداری شوند',
+          name: t('global.security.mockData.retentionPolicy'),
+          description: t('global.security.mockData.retentionPolicyDesc'),
           type: 'Data',
           severity: 'High',
           status: 'Active',
@@ -326,57 +326,57 @@ export default function GlobalSecurityPage() {
     setThreats([
       {
         id: '1',
-        name: 'تلاش‌های ناموفق ورود',
+        name: t('global.security.mockData.failedLoginAttempts'),
         category: 'Brute Force',
         severity: 'Critical',
         enabled: true,
         detections: 234,
-        threshold: '5 تلاش در 10 دقیقه',
-        actions: ['مسدود کردن IP', 'هشدار به مدیر', 'درخواست MFA'],
+        threshold: t('global.security.mockData.failedLoginThreshold'),
+        actions: [t('global.security.actions.blockIp'), t('global.security.actions.alertAdmin'), t('global.security.actions.requireMfa')],
         createdAt: '2024-01-15T10:00:00Z',
       },
       {
         id: '2',
-        name: 'الگوی دسترسی غیرعادی به داده',
+        name: t('global.security.mockData.unusualDataAccess'),
         category: 'Anomaly',
         severity: 'High',
         enabled: true,
         detections: 89,
-        threshold: 'دسترسی به 100+ رکورد در 1 ساعت',
-        actions: ['هشدار به مدیر', 'محدود کردن دسترسی'],
+        threshold: t('global.security.mockData.unusualDataAccessThreshold'),
+        actions: [t('global.security.actions.alertAdmin'), t('global.security.actions.limitAccess')],
         createdAt: '2024-01-20T11:30:00Z',
       },
       {
         id: '3',
-        name: 'تلاش برای ارتقای دسترسی',
+        name: t('global.security.mockData.privilegeEscalation'),
         category: 'Privilege Escalation',
         severity: 'Critical',
         enabled: true,
         detections: 12,
-        threshold: 'تلاش غیرمجاز برای تغییر نقش',
-        actions: ['مسدود کردن کاربر', 'هشدار به مدیر', 'ایجاد حادثه'],
+        threshold: t('global.security.mockData.privilegeEscalationThreshold'),
+        actions: [t('global.security.actions.blockUser'), t('global.security.actions.alertAdmin'), t('global.security.actions.createIncident')],
         createdAt: '2024-02-01T09:00:00Z',
       },
       {
         id: '4',
-        name: 'صادرات داده حجیم',
+        name: t('global.security.mockData.bulkExport'),
         category: 'Data Exfiltration',
         severity: 'High',
         enabled: true,
         detections: 45,
-        threshold: 'صادرات بیش از 1GB در یک جلسه',
-        actions: ['هشدار به مدیر', 'درخواست تأیید'],
+        threshold: t('global.security.mockData.bulkExportThreshold'),
+        actions: [t('global.security.actions.alertAdmin'), t('global.security.actions.requireApproval')],
         createdAt: '2024-02-05T14:20:00Z',
       },
       {
         id: '5',
-        name: 'سفر غیرممکن',
+        name: t('global.security.mockData.impossibleTravel'),
         category: 'Anomaly',
         severity: 'High',
         enabled: true,
         detections: 67,
-        threshold: 'ورود از 2 مکان با فاصله کمتر از 1 ساعت',
-        actions: ['مسدود کردن جلسه', 'هشدار به کاربر', 'درخواست احراز مجدد'],
+        threshold: t('global.security.mockData.impossibleTravelThreshold'),
+        actions: [t('global.security.actions.blockSession'), t('global.security.actions.alertUser'), t('global.security.actions.requireReauth')],
         createdAt: '2024-01-25T16:45:00Z',
       },
     ]);
@@ -402,7 +402,7 @@ export default function GlobalSecurityPage() {
         {
           id: '1',
           name: 'SOC 2 Type II',
-          description: 'چارچوب انطباق کنترل سازمان خدمات 2',
+          description: t('global.security.mockData.soc2Desc'),
           type: 'SOC2',
           controls: 150,
           compliantControls: 147,
@@ -414,7 +414,7 @@ export default function GlobalSecurityPage() {
         {
           id: '2',
           name: 'ISO 27001:2022',
-          description: 'استاندارد سیستم مدیریت امنیت اطلاعات',
+          description: t('global.security.mockData.iso27001Desc'),
           type: 'ISO27001',
           controls: 114,
           compliantControls: 109,
@@ -426,7 +426,7 @@ export default function GlobalSecurityPage() {
         {
           id: '3',
           name: 'GDPR',
-          description: 'انطباق با مقررات عمومی حفاظت از داده',
+          description: t('global.security.mockData.gdprDesc'),
           type: 'GDPR',
           controls: 88,
           compliantControls: 86,
@@ -438,7 +438,7 @@ export default function GlobalSecurityPage() {
         {
           id: '4',
           name: 'HIPAA',
-          description: 'قانون قابلیت حمل و پاسخگویی بیمه سلامت',
+          description: t('global.security.mockData.hipaaDesc'),
           type: 'HIPAA',
           controls: 164,
           compliantControls: 155,
@@ -450,7 +450,7 @@ export default function GlobalSecurityPage() {
         {
           id: '5',
           name: 'PCI-DSS v4.0',
-          description: 'استاندارد امنیت داده صنعت کارت پرداخت',
+          description: t('global.security.mockData.pciDssDesc'),
           type: 'PCI-DSS',
           controls: 375,
           compliantControls: 348,
@@ -482,7 +482,7 @@ export default function GlobalSecurityPage() {
     setSuccess('');
 
     try {
-      setSuccess('سیاست با موفقیت ایجاد شد');
+      setSuccess(t('global.security.messages.policyCreated'));
       setShowCreatePolicyModal(false);
       resetPolicyForm();
       fetchPolicies();
@@ -498,7 +498,7 @@ export default function GlobalSecurityPage() {
     setSuccess('');
 
     try {
-      setSuccess('سیاست با موفقیت به‌روزرسانی شد');
+      setSuccess(t('global.security.messages.policyUpdated'));
       setShowEditPolicyModal(false);
       resetPolicyForm();
       fetchPolicies();
@@ -513,9 +513,9 @@ export default function GlobalSecurityPage() {
 
     try {
       if (currentStatus === 'Active') {
-        setSuccess('سیاست با موفقیت غیرفعال شد');
+        setSuccess(t('global.security.messages.policyDeactivated'));
       } else {
-        setSuccess('سیاست با موفقیت فعال شد');
+        setSuccess(t('global.security.messages.policyActivated'));
       }
       fetchPolicies();
     } catch (err: any) {
@@ -529,7 +529,7 @@ export default function GlobalSecurityPage() {
     setSuccess('');
 
     try {
-      setSuccess('قانون تشخیص تهدید با موفقیت ایجاد شد');
+      setSuccess(t('global.security.messages.threatRuleCreated'));
       setShowCreateThreatModal(false);
       resetThreatForm();
       fetchThreats();
@@ -543,7 +543,7 @@ export default function GlobalSecurityPage() {
     setSuccess('');
 
     try {
-      setSuccess(`قانون تشخیص تهدید با موفقیت ${enabled ? 'فعال' : 'غیرفعال'} شد`);
+      setSuccess(enabled ? t('global.security.messages.threatRuleEnabled') : t('global.security.messages.threatRuleDisabled'));
       fetchThreats();
     } catch (err: any) {
       setError(err?.message || t('common.errorTogglingThreatRule'));
@@ -553,26 +553,26 @@ export default function GlobalSecurityPage() {
   const handleApplyTemplate = (template: string) => {
     switch (template) {
       case 'soc2':
-        setPolicyName('کنترل‌های امنیتی SOC 2');
-        setPolicyDescription('پیاده‌سازی تمام کنترل‌های امنیتی مورد نیاز SOC 2 Type II');
+        setPolicyName(t('global.security.templates.soc2Name'));
+        setPolicyDescription(t('global.security.templates.soc2Desc'));
         setPolicyType('Compliance');
         setPolicySeverity('Critical');
         break;
       case 'iso27001':
-        setPolicyName('کنترل‌های ISMS ISO 27001');
-        setPolicyDescription('کنترل‌های سیستم مدیریت امنیت اطلاعات مطابق ISO 27001:2022');
+        setPolicyName(t('global.security.templates.iso27001Name'));
+        setPolicyDescription(t('global.security.templates.iso27001Desc'));
         setPolicyType('Compliance');
         setPolicySeverity('Critical');
         break;
       case 'gdpr':
-        setPolicyName('حفاظت از داده GDPR');
-        setPolicyDescription('الزامات حریم خصوصی و حفاظت از داده برای انطباق با GDPR');
+        setPolicyName(t('global.security.templates.gdprName'));
+        setPolicyDescription(t('global.security.templates.gdprDesc'));
         setPolicyType('Compliance');
         setPolicySeverity('Critical');
         break;
       case 'zero-trust':
-        setPolicyName('معماری Zero Trust');
-        setPolicyDescription('هرگز اعتماد نکن، همیشه تأیید کن - سیاست جامع Zero Trust');
+        setPolicyName(t('global.security.templates.zeroTrustName'));
+        setPolicyDescription(t('global.security.templates.zeroTrustDesc'));
         setPolicyType('Security');
         setPolicySeverity('Critical');
         break;
@@ -630,10 +630,10 @@ export default function GlobalSecurityPage() {
   };
 
   const tabs = [
-    { id: 'dashboard', label: 'داشبورد', icon: BarChart3 },
-    { id: 'policies', label: 'سیاست‌های امنیتی', icon: Shield },
-    { id: 'threats', label: 'تشخیص تهدید', icon: ShieldAlert },
-    { id: 'compliance', label: 'انطباق', icon: ShieldCheck },
+    { id: 'dashboard', label: t('global.security.tabs.dashboard'), icon: BarChart3 },
+    { id: 'policies', label: t('global.security.tabs.policies'), icon: Shield },
+    { id: 'threats', label: t('global.security.tabs.threats'), icon: ShieldAlert },
+    { id: 'compliance', label: t('global.security.tabs.compliance'), icon: ShieldCheck },
   ];
 
   if (loading) {
@@ -646,7 +646,7 @@ export default function GlobalSecurityPage() {
               <Shield className="w-6 h-6 text-red-500" />
             </div>
           </div>
-          <p className="text-slate-600 dark:text-slate-400 font-medium">{t('common.loading', 'در حال بارگذاری...')}</p>
+          <p className="text-slate-600 dark:text-slate-400 font-medium">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -655,7 +655,7 @@ export default function GlobalSecurityPage() {
   return (
     <>
       <Helmet>
-        <title>{t('global.security.title', 'امنیت سراسری')} | OneSign</title>
+        <title>{t('global.security.title')} | OneSign</title>
       </Helmet>
 
       <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-red-50/30 to-orange-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 min-h-screen" dir="rtl">
@@ -670,7 +670,7 @@ export default function GlobalSecurityPage() {
               <div className="p-2 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl text-white">
                 <Shield className="w-6 h-6" />
               </div>
-              {t('global.security.title', 'امنیت سراسری')}
+              {t('global.security.title')}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, x: -20 }}
@@ -678,7 +678,7 @@ export default function GlobalSecurityPage() {
               transition={{ delay: 0.1 }}
               className="text-slate-500 dark:text-slate-400 mt-1"
             >
-              {t('global.security.subtitle', 'مدیریت سیاست‌های امنیتی، تشخیص تهدید و چارچوب‌های انطباق')}
+              {t('global.security.subtitle')}
             </motion.p>
           </div>
           <motion.button
@@ -691,7 +691,7 @@ export default function GlobalSecurityPage() {
             className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-xl hover:from-red-700 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-            {t('common.refresh', 'بروزرسانی')}
+            {t('common.refresh')}
           </motion.button>
         </div>
 
@@ -749,37 +749,37 @@ export default function GlobalSecurityPage() {
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <StatCard
-                title="سیاست‌های فعال"
+                title={t('global.security.statCards.activePolicies')}
                 value={stats.activePolicies}
-                subtitle={`از ${stats.totalPolicies} سیاست`}
+                subtitle={t('global.security.statCards.activePoliciesSubtitle', { total: stats.totalPolicies })}
                 icon={<Shield className="w-6 h-6" />}
                 color="indigo"
                 delay={0}
               />
               <StatCard
-                title="نقض‌های فعال"
+                title={t('global.security.statCards.activeViolations')}
                 value={stats.totalViolations}
-                subtitle={`${stats.criticalViolations} بحرانی`}
+                subtitle={t('global.security.statCards.criticalViolations', { count: stats.criticalViolations })}
                 icon={<AlertTriangle className="w-6 h-6" />}
                 trend={-15}
-                trendLabel="نسبت به هفته قبل"
+                trendLabel={t('global.security.statCards.vsLastWeek')}
                 color="red"
                 delay={1}
               />
               <StatCard
-                title="تهدیدات تشخیص داده شده"
+                title={t('global.security.statCards.threatsDetected')}
                 value={stats.threatDetections}
-                subtitle="30 روز گذشته"
+                subtitle={t('global.security.statCards.last30Days')}
                 icon={<ShieldAlert className="w-6 h-6" />}
                 color="orange"
                 delay={2}
               />
               <StatCard
-                title="حملات مسدود شده"
+                title={t('global.security.statCards.blockedAttacks')}
                 value={stats.blockedAttacks}
                 icon={<ShieldCheck className="w-6 h-6" />}
                 trend={8}
-                trendLabel="نسبت به ماه قبل"
+                trendLabel={t('global.security.statCards.vsLastMonth')}
                 color="green"
                 delay={3}
               />
@@ -788,29 +788,29 @@ export default function GlobalSecurityPage() {
             {/* Second Row Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <StatCard
-                title="نرخ انطباق"
+                title={t('global.security.statCards.complianceRate')}
                 value={`${stats.complianceRate}%`}
                 icon={<CheckCircle className="w-6 h-6" />}
                 color="green"
                 delay={4}
               />
               <StatCard
-                title="Tenant‌های محافظت شده"
+                title={t('global.security.statCards.tenantsProtected')}
                 value={stats.tenantsProtected}
                 icon={<Globe className="w-6 h-6" />}
                 color="blue"
                 delay={5}
               />
               <StatCard
-                title="قوانین تشخیص تهدید"
+                title={t('global.security.statCards.threatDetectionRules')}
                 value={threats.filter(t => t.enabled).length}
-                subtitle={`از ${threats.length} قانون`}
+                subtitle={t('global.security.statCards.threatDetectionRulesSubtitle', { total: threats.length })}
                 icon={<Target className="w-6 h-6" />}
                 color="purple"
                 delay={6}
               />
               <StatCard
-                title="چارچوب‌های انطباق"
+                title={t('global.security.statCards.complianceFrameworks')}
                 value={frameworks.length}
                 icon={<FileWarning className="w-6 h-6" />}
                 color="cyan"
@@ -830,13 +830,13 @@ export default function GlobalSecurityPage() {
                 <div className="flex items-center gap-2 mb-4">
                   <Activity className="w-5 h-5 text-red-500" />
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                    روند تهدیدات (۷ روز گذشته)
+                    {t('global.security.charts.threatTrend')}
                   </h3>
                 </div>
                 <AdvancedChart
                   data={threatTrendData}
                   type="area"
-                  dataKeys={['حملات', 'مسدود شده', 'هشدار']}
+                  dataKeys={[t('global.security.charts.attacks'), t('global.security.charts.blocked'), t('global.security.charts.warning')]}
                   xAxisKey="name"
                   height={280}
                   colors={['#ef4444', '#22c55e', '#f59e0b']}
@@ -853,7 +853,7 @@ export default function GlobalSecurityPage() {
                 <div className="flex items-center gap-2 mb-4">
                   <PieChart className="w-5 h-5 text-purple-500" />
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                    توزیع انواع تهدید
+                    {t('global.security.charts.threatDistribution')}
                   </h3>
                 </div>
                 <AdvancedChart
@@ -877,7 +877,7 @@ export default function GlobalSecurityPage() {
               <div className="flex items-center gap-2 mb-6">
                 <ShieldCheck className="w-5 h-5 text-green-500" />
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                  وضعیت انطباق چارچوب‌ها
+                  {t('global.security.charts.complianceStatus')}
                 </h3>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
@@ -933,7 +933,7 @@ export default function GlobalSecurityPage() {
                 <div className="flex items-center gap-2 mb-4">
                   <AlertTriangle className="w-5 h-5 text-red-500" />
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                    نقض‌های اخیر سیاست‌ها
+                    {t('global.security.recentActivity.recentViolations')}
                   </h3>
                 </div>
                 <div className="space-y-3">
@@ -947,10 +947,10 @@ export default function GlobalSecurityPage() {
                     >
                       <div className="flex-1">
                         <p className="font-medium text-slate-900 dark:text-white">{policy.name}</p>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">{policy.violations} نقض</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">{t('global.security.violationsCount', { count: policy.violations })}</p>
                       </div>
                       <span className={`px-2 py-1 text-xs rounded-full ${getSeverityColor(policy.severity)}`}>
-                        {policy.severity === 'Critical' ? 'بحرانی' : policy.severity === 'High' ? 'بالا' : policy.severity === 'Medium' ? 'متوسط' : 'پایین'}
+                        {t(`global.security.severity.${policy.severity.toLowerCase()}`)}
                       </span>
                     </motion.div>
                   ))}
@@ -967,7 +967,7 @@ export default function GlobalSecurityPage() {
                 <div className="flex items-center gap-2 mb-4">
                   <Target className="w-5 h-5 text-purple-500" />
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                    قوانین تشخیص تهدید فعال
+                    {t('global.security.recentActivity.activeThreatRules')}
                   </h3>
                 </div>
                 <div className="space-y-3">
@@ -981,7 +981,7 @@ export default function GlobalSecurityPage() {
                     >
                       <div className="flex-1">
                         <p className="font-medium text-slate-900 dark:text-white">{threat.name}</p>
-                        <p className="text-sm text-slate-500 dark:text-slate-400">{threat.detections} تشخیص</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">{t('global.security.detectionsCount', { count: threat.detections })}</p>
                       </div>
                       <span className={`px-2 py-1 text-xs rounded-full ${getSeverityColor(threat.severity)}`}>
                         {threat.category}
@@ -1009,7 +1009,7 @@ export default function GlobalSecurityPage() {
                     <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <input
                       type="text"
-                      placeholder="جستجوی سیاست‌ها..."
+                      placeholder={t('global.security.search.policies')}
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="w-full pr-10 pl-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent"
@@ -1024,7 +1024,7 @@ export default function GlobalSecurityPage() {
                     className="flex items-center gap-2 px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-all"
                   >
                     <FileWarning className="w-4 h-4" />
-                    استفاده از قالب
+                    {t('global.security.buttons.useTemplate')}
                   </motion.button>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
@@ -1033,7 +1033,7 @@ export default function GlobalSecurityPage() {
                     className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-xl hover:from-red-700 hover:to-orange-700 transition-all shadow-lg"
                   >
                     <Plus className="w-4 h-4" />
-                    ایجاد سیاست
+                    {t('global.security.buttons.createPolicy')}
                   </motion.button>
                 </div>
               </div>
@@ -1057,22 +1057,22 @@ export default function GlobalSecurityPage() {
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{policy.name}</h3>
                         <span className={`px-2 py-1 text-xs rounded-full ${getSeverityColor(policy.severity)}`}>
-                          {policy.severity === 'Critical' ? 'بحرانی' : policy.severity === 'High' ? 'بالا' : policy.severity === 'Medium' ? 'متوسط' : 'پایین'}
+                          {t(`global.security.severity.${policy.severity.toLowerCase()}`)}
                         </span>
                         <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(policy.status)}`}>
-                          {policy.status === 'Active' ? 'فعال' : policy.status === 'Inactive' ? 'غیرفعال' : 'پیش‌نویس'}
+                          {t(`global.security.status.${policy.status.toLowerCase()}`)}
                         </span>
                       </div>
                       <p className="text-slate-500 dark:text-slate-400 mb-4">{policy.description}</p>
                       <div className="flex items-center gap-6 text-sm">
                         <div className="flex items-center gap-2">
                           <Globe className="w-4 h-4 text-slate-400" />
-                          <span className="text-slate-600 dark:text-slate-400">{policy.appliedTenants} سازمان</span>
+                          <span className="text-slate-600 dark:text-slate-400">{t('global.security.tenantsCount', { count: policy.appliedTenants })}
                         </div>
                         <div className="flex items-center gap-2">
                           <AlertTriangle className="w-4 h-4 text-slate-400" />
                           <span className={policy.violations > 0 ? 'text-red-600' : 'text-slate-600 dark:text-slate-400'}>
-                            {policy.violations} نقض
+                            {t('global.security.violationsCount', { count: policy.violations })}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -1126,7 +1126,7 @@ export default function GlobalSecurityPage() {
                   <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="جستجوی قوانین..."
+                    placeholder={t('global.security.search.rules')}
                     className="w-full pr-10 pl-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   />
                 </div>
@@ -1137,7 +1137,7 @@ export default function GlobalSecurityPage() {
                   className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-xl hover:from-red-700 hover:to-orange-700 transition-all shadow-lg"
                 >
                   <Plus className="w-4 h-4" />
-                  ایجاد قانون
+                  {t('global.security.buttons.createRule')}
                 </motion.button>
               </div>
             </motion.div>
@@ -1192,7 +1192,7 @@ export default function GlobalSecurityPage() {
                         {threat.severity}
                       </span>
                       <span className="text-sm text-slate-500 dark:text-slate-400">
-                        {threat.detections} تشخیص
+                        {t('global.security.detectionsCount', { count: threat.detections })}
                       </span>
                     </div>
                     <div className="flex gap-1">
@@ -1233,7 +1233,7 @@ export default function GlobalSecurityPage() {
                       <p className="text-sm text-slate-500 dark:text-slate-400">{framework.description}</p>
                     </div>
                     <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(framework.status)}`}>
-                      {framework.status === 'Compliant' ? 'منطبق' : framework.status === 'Non-Compliant' ? 'نامنطبق' : 'در حال بررسی'}
+                      {t(`global.security.complianceStatus.${framework.status.toLowerCase().replace(/\s+/g, '_').replace(/-/g, '_')}`)}
                     </span>
                   </div>
 
@@ -1271,7 +1271,7 @@ export default function GlobalSecurityPage() {
 
                   <div className="space-y-3">
                     <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-500 dark:text-slate-400">کنترل‌های منطبق</span>
+                      <span className="text-slate-500 dark:text-slate-400">{t('global.security.compliance.compliantControls')}</span>
                       <span className="font-medium text-slate-900 dark:text-white">
                         {framework.compliantControls} / {framework.controls}
                       </span>
@@ -1287,13 +1287,13 @@ export default function GlobalSecurityPage() {
                     </div>
                     <div className="flex items-center justify-between text-sm pt-2 border-t border-slate-200 dark:border-slate-700">
                       <div>
-                        <p className="text-slate-500 dark:text-slate-400">آخرین ممیزی</p>
+                        <p className="text-slate-500 dark:text-slate-400">{t('global.security.compliance.lastAudit')}</p>
                         <p className="font-medium text-slate-900 dark:text-white">
                           {new Date(framework.lastAudit).toLocaleDateString('fa-IR')}
                         </p>
                       </div>
                       <div className="text-left">
-                        <p className="text-slate-500 dark:text-slate-400">ممیزی بعدی</p>
+                        <p className="text-slate-500 dark:text-slate-400">{t('global.security.compliance.nextAudit')}</p>
                         <p className="font-medium text-slate-900 dark:text-white">
                           {new Date(framework.nextAudit).toLocaleDateString('fa-IR')}
                         </p>
@@ -1314,12 +1314,12 @@ export default function GlobalSecurityPage() {
             resetPolicyForm();
             setError('');
           }}
-          title="ایجاد سیاست جدید"
+          title={t('global.security.modals.createPolicy')}
           size="lg"
         >
           <form onSubmit={handleCreatePolicy} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">نام سیاست</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t('global.security.form.policyName')}</label>
               <input
                 type="text"
                 required
@@ -1330,7 +1330,7 @@ export default function GlobalSecurityPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">توضیحات</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t('global.security.form.description')}</label>
               <textarea
                 required
                 rows={3}
@@ -1342,29 +1342,29 @@ export default function GlobalSecurityPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">نوع</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t('global.security.form.type')}</label>
                 <select
                   className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-red-500"
                   value={policyType}
                   onChange={(e) => setPolicyType(e.target.value as any)}
                 >
-                  <option value="Security">امنیتی</option>
-                  <option value="Compliance">انطباق</option>
-                  <option value="Access">دسترسی</option>
-                  <option value="Data">داده</option>
+                  <option value="Security">{t('global.security.types.security')}</option>
+                  <option value="Compliance">{t('global.security.types.compliance')}</option>
+                  <option value="Access">{t('global.security.types.access')}</option>
+                  <option value="Data">{t('global.security.types.data')}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">شدت</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t('global.security.form.severity')}</label>
                 <select
                   className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-red-500"
                   value={policySeverity}
                   onChange={(e) => setPolicySeverity(e.target.value as any)}
                 >
-                  <option value="Critical">بحرانی</option>
-                  <option value="High">بالا</option>
-                  <option value="Medium">متوسط</option>
-                  <option value="Low">پایین</option>
+                  <option value="Critical">{t('global.security.severity.critical')}</option>
+                  <option value="High">{t('global.security.severity.high')}</option>
+                  <option value="Medium">{t('global.security.severity.medium')}</option>
+                  <option value="Low">{t('global.security.severity.low')}</option>
                 </select>
               </div>
             </div>
@@ -1379,13 +1379,13 @@ export default function GlobalSecurityPage() {
                 }}
                 className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               >
-                انصراف
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
                 className="px-4 py-2 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-xl hover:from-red-700 hover:to-orange-700 transition-all"
               >
-                ایجاد سیاست
+                {t('global.security.buttons.createPolicy')}
               </button>
             </div>
           </form>
@@ -1399,12 +1399,12 @@ export default function GlobalSecurityPage() {
             resetPolicyForm();
             setError('');
           }}
-          title="ویرایش سیاست"
+          title={t('global.security.modals.editPolicy')}
           size="lg"
         >
           <form onSubmit={handleUpdatePolicy} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">نام سیاست</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t('global.security.form.policyName')}</label>
               <input
                 type="text"
                 required
@@ -1415,7 +1415,7 @@ export default function GlobalSecurityPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">توضیحات</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t('global.security.form.description')}</label>
               <textarea
                 required
                 rows={3}
@@ -1427,29 +1427,29 @@ export default function GlobalSecurityPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">نوع</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t('global.security.form.type')}</label>
                 <select
                   className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-red-500"
                   value={policyType}
                   onChange={(e) => setPolicyType(e.target.value as any)}
                 >
-                  <option value="Security">امنیتی</option>
-                  <option value="Compliance">انطباق</option>
-                  <option value="Access">دسترسی</option>
-                  <option value="Data">داده</option>
+                  <option value="Security">{t('global.security.types.security')}</option>
+                  <option value="Compliance">{t('global.security.types.compliance')}</option>
+                  <option value="Access">{t('global.security.types.access')}</option>
+                  <option value="Data">{t('global.security.types.data')}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">شدت</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t('global.security.form.severity')}</label>
                 <select
                   className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-red-500"
                   value={policySeverity}
                   onChange={(e) => setPolicySeverity(e.target.value as any)}
                 >
-                  <option value="Critical">بحرانی</option>
-                  <option value="High">بالا</option>
-                  <option value="Medium">متوسط</option>
-                  <option value="Low">پایین</option>
+                  <option value="Critical">{t('global.security.severity.critical')}</option>
+                  <option value="High">{t('global.security.severity.high')}</option>
+                  <option value="Medium">{t('global.security.severity.medium')}</option>
+                  <option value="Low">{t('global.security.severity.low')}</option>
                 </select>
               </div>
             </div>
@@ -1464,13 +1464,13 @@ export default function GlobalSecurityPage() {
                 }}
                 className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               >
-                انصراف
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
                 className="px-4 py-2 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-xl hover:from-red-700 hover:to-orange-700 transition-all"
               >
-                ذخیره تغییرات
+                {t('common.saveChanges')}
               </button>
             </div>
           </form>
@@ -1480,15 +1480,15 @@ export default function GlobalSecurityPage() {
         <Modal
           isOpen={showTemplateModal}
           onClose={() => setShowTemplateModal(false)}
-          title="انتخاب قالب سیاست"
+          title={t('global.security.modals.selectTemplate')}
           size="lg"
         >
           <div className="grid grid-cols-2 gap-4">
             {[
-              { id: 'soc2', name: 'SOC 2 Type II', desc: 'امنیت، در دسترس بودن، یکپارچگی پردازش، محرمانگی، حریم خصوصی' },
-              { id: 'iso27001', name: 'ISO 27001', desc: 'کنترل‌های سیستم مدیریت امنیت اطلاعات (ISMS)' },
-              { id: 'gdpr', name: 'GDPR', desc: 'حریم خصوصی و حفاظت از داده برای مقررات اتحادیه اروپا' },
-              { id: 'zero-trust', name: 'Zero Trust', desc: 'هرگز اعتماد نکن، همیشه تأیید کن - اصول معماری' },
+              { id: 'soc2', name: 'SOC 2 Type II', desc: t('global.security.templates.soc2Short') },
+              { id: 'iso27001', name: 'ISO 27001', desc: t('global.security.templates.iso27001Short') },
+              { id: 'gdpr', name: 'GDPR', desc: t('global.security.templates.gdprShort') },
+              { id: 'zero-trust', name: 'Zero Trust', desc: t('global.security.templates.zeroTrustShort') },
             ].map((template) => (
               <motion.button
                 key={template.id}
@@ -1512,12 +1512,12 @@ export default function GlobalSecurityPage() {
             resetThreatForm();
             setError('');
           }}
-          title="ایجاد قانون تشخیص تهدید"
+          title={t('global.security.modals.createThreatRule')}
           size="lg"
         >
           <form onSubmit={handleCreateThreat} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">نام قانون</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t('global.security.form.ruleName')}</label>
               <input
                 type="text"
                 required
@@ -1529,42 +1529,42 @@ export default function GlobalSecurityPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">دسته‌بندی</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t('global.security.form.category')}</label>
                 <select
                   className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-red-500"
                   value={threatCategory}
                   onChange={(e) => setThreatCategory(e.target.value as any)}
                 >
-                  <option value="Anomaly">ناهنجاری</option>
-                  <option value="Brute Force">حمله Brute Force</option>
-                  <option value="Data Exfiltration">استخراج داده</option>
-                  <option value="Privilege Escalation">ارتقای دسترسی</option>
+                  <option value="Anomaly">{t('global.security.categories.anomaly')}</option>
+                  <option value="Brute Force">{t('global.security.categories.bruteForce')}</option>
+                  <option value="Data Exfiltration">{t('global.security.categories.dataExfiltration')}</option>
+                  <option value="Privilege Escalation">{t('global.security.categories.privilegeEscalation')}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">شدت</label>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t('global.security.form.severity')}</label>
                 <select
                   className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-red-500"
                   value={threatSeverity}
                   onChange={(e) => setThreatSeverity(e.target.value as any)}
                 >
-                  <option value="Critical">بحرانی</option>
-                  <option value="High">بالا</option>
-                  <option value="Medium">متوسط</option>
-                  <option value="Low">پایین</option>
+                  <option value="Critical">{t('global.security.severity.critical')}</option>
+                  <option value="High">{t('global.security.severity.high')}</option>
+                  <option value="Medium">{t('global.security.severity.medium')}</option>
+                  <option value="Low">{t('global.security.severity.low')}</option>
                 </select>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">آستانه تشخیص</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t('global.security.form.threshold')}</label>
               <input
                 type="text"
                 required
                 className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-red-500"
                 value={threatThreshold}
                 onChange={(e) => setThreatThreshold(e.target.value)}
-                placeholder="مثال: 5 تلاش در 10 دقیقه"
+                placeholder={t('global.security.form.thresholdPlaceholder')}
               />
             </div>
 
@@ -1578,13 +1578,13 @@ export default function GlobalSecurityPage() {
                 }}
                 className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               >
-                انصراف
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
                 className="px-4 py-2 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-xl hover:from-red-700 hover:to-orange-700 transition-all"
               >
-                ایجاد قانون
+                {t('global.security.buttons.createRule')}
               </button>
             </div>
           </form>

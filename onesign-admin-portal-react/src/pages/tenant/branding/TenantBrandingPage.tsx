@@ -53,29 +53,7 @@ interface LoginPageConfig {
   subtitle?: string;
 }
 
-const DEFAULT_EMAIL_TEMPLATES: EmailTemplate[] = [
-  {
-    id: 'welcome',
-    name: 'ایمیل خوش‌آمدگویی',
-    subject: 'به {{tenant_name}} خوش آمدید',
-    body: 'سلام {{user_name}}،\n\nبه پلتفرم ما خوش آمدید!\n\nبا احترام،\n{{tenant_name}}',
-    type: 'welcome',
-  },
-  {
-    id: 'password-reset',
-    name: 'بازنشانی رمز عبور',
-    subject: 'درخواست بازنشانی رمز عبور',
-    body: 'سلام {{user_name}}،\n\nبرای بازنشانی رمز عبور روی این لینک کلیک کنید: {{reset_link}}\n\nبا احترام،\n{{tenant_name}}',
-    type: 'password-reset',
-  },
-  {
-    id: 'invitation',
-    name: 'دعوتنامه کاربر',
-    subject: 'شما به {{tenant_name}} دعوت شده‌اید',
-    body: 'سلام،\n\nشما به {{tenant_name}} دعوت شده‌اید. برای پذیرش روی این لینک کلیک کنید: {{invitation_link}}\n\nبا احترام،\n{{tenant_name}}',
-    type: 'invitation',
-  },
-];
+const DEFAULT_EMAIL_TEMPLATES: EmailTemplate[] = [];
 
 type Tab = 'logos' | 'colors' | 'login' | 'emails' | 'domain';
 
@@ -88,8 +66,8 @@ export default function TenantBrandingPage() {
       gradientStart: '#6366f1',
       gradientEnd: '#8b5cf6',
       showLogo: true,
-      title: 'خوش آمدید',
-      subtitle: 'وارد حساب کاربری خود شوید',
+      title: '',
+      subtitle: '',
     },
     emailTemplates: DEFAULT_EMAIL_TEMPLATES,
   });
@@ -137,7 +115,7 @@ export default function TenantBrandingPage() {
     try {
       const data = await tenantService.updateBranding(branding);
       setBranding({ ...branding, ...data });
-      setSuccess('تنظیمات برند با موفقیت ذخیره شد');
+      setSuccess(t('tenant.branding.savedSuccessfully'));
     } catch (error: any) {
       setError(error?.message || t('common.failedToSaveBranding'));
       console.error('Error saving branding:', error);
@@ -158,7 +136,7 @@ export default function TenantBrandingPage() {
 
     setShowEmailEditor(false);
     setSelectedTemplate(null);
-    setSuccess('قالب ایمیل با موفقیت به‌روز شد');
+    setSuccess(t('tenant.branding.emailTemplateUpdated'));
   };
 
   const handleEditEmailTemplate = (template: EmailTemplate) => {
@@ -167,11 +145,11 @@ export default function TenantBrandingPage() {
   };
 
   const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
-    { id: 'logos', label: 'لوگو و آیکون', icon: Image },
-    { id: 'colors', label: 'رنگ‌بندی', icon: Palette },
-    { id: 'login', label: 'صفحه ورود', icon: Layout },
-    { id: 'emails', label: 'قالب ایمیل', icon: Mail },
-    { id: 'domain', label: 'دامنه اختصاصی', icon: Globe },
+    { id: 'logos', label: t('tenant.branding.tabs.logos'), icon: Image },
+    { id: 'colors', label: t('tenant.branding.tabs.colors'), icon: Palette },
+    { id: 'login', label: t('tenant.branding.tabs.login'), icon: Layout },
+    { id: 'emails', label: t('tenant.branding.tabs.emails'), icon: Mail },
+    { id: 'domain', label: t('tenant.branding.tabs.domain'), icon: Globe },
   ];
 
   const renderLoginPreview = () => {
@@ -210,21 +188,21 @@ export default function TenantBrandingPage() {
             />
           )}
           <h2 className="text-2xl font-bold text-center mb-2" style={{ color: branding.primaryColor }}>
-            {loginPageConfig.title || 'خوش آمدید'}
+            {loginPageConfig.title || t('tenant.branding.loginPreview.defaultTitle')}
           </h2>
           <p className="text-center text-slate-600 dark:text-slate-400 mb-6">
-            {loginPageConfig.subtitle || 'وارد حساب کاربری خود شوید'}
+            {loginPageConfig.subtitle || t('tenant.branding.loginPreview.defaultSubtitle')}
           </p>
           <div className="space-y-4">
             <input
               type="email"
-              placeholder="ایمیل"
+              placeholder={t('tenant.branding.loginPreview.emailPlaceholder')}
               className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700"
               disabled
             />
             <input
               type="password"
-              placeholder="رمز عبور"
+              placeholder={t('tenant.branding.loginPreview.passwordPlaceholder')}
               className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700"
               disabled
             />
@@ -233,7 +211,7 @@ export default function TenantBrandingPage() {
               style={{ backgroundColor: branding.primaryColor || '#6366f1' }}
               disabled
             >
-              ورود
+              {t('tenant.branding.loginPreview.loginButton')}
             </button>
           </div>
         </div>
@@ -256,7 +234,7 @@ export default function TenantBrandingPage() {
         </div>
         <div className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300">{selectedTemplate.body}</div>
         <div className="border-t border-slate-200 dark:border-slate-700 pt-4 mt-8 text-xs text-slate-500">
-          <p>این یک پیش‌نمایش است. متغیرها مثل user_name با مقادیر واقعی جایگزین می‌شوند.</p>
+          <p>{t('tenant.branding.emailPreview.disclaimer')}</p>
         </div>
       </div>
     );
@@ -272,7 +250,7 @@ export default function TenantBrandingPage() {
               <Palette className="w-6 h-6 text-purple-500" />
             </div>
           </div>
-          <p className="text-slate-600 dark:text-slate-400 font-medium">{t('common.loading', 'در حال بارگذاری...')}</p>
+          <p className="text-slate-600 dark:text-slate-400 font-medium">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -281,7 +259,7 @@ export default function TenantBrandingPage() {
   return (
     <>
       <Helmet>
-        <title>{t('tenant.branding.title', 'برند و سفارشی‌سازی')} | OneSign</title>
+        <title>{t('tenant.branding.title')} | OneSign</title>
       </Helmet>
 
       <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50/30 to-pink-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 min-h-screen" dir="rtl">
@@ -296,7 +274,7 @@ export default function TenantBrandingPage() {
               <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl text-white">
                 <Paintbrush className="w-6 h-6" />
               </div>
-              {t('tenant.branding.title', 'برند و سفارشی‌سازی')}
+              {t('tenant.branding.title')}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, x: -20 }}
@@ -304,7 +282,7 @@ export default function TenantBrandingPage() {
               transition={{ delay: 0.1 }}
               className="text-slate-500 dark:text-slate-400 mt-1"
             >
-              {t('tenant.branding.subtitle', 'سفارشی‌سازی ظاهر و برند سازمان')}
+              {t('tenant.branding.subtitle')}
             </motion.p>
           </div>
           <div className="flex gap-3">
@@ -320,7 +298,7 @@ export default function TenantBrandingPage() {
               className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
             >
               <Eye className="w-4 h-4" />
-              {t('common.preview', 'پیش‌نمایش')}
+              {t('common.preview')}
             </motion.button>
             <motion.button
               initial={{ opacity: 0, scale: 0.9 }}
@@ -332,7 +310,7 @@ export default function TenantBrandingPage() {
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
-              {saving ? 'در حال ذخیره...' : 'ذخیره تغییرات'}
+              {saving ? t('common.saving') : t('common.saveChanges')}
             </motion.button>
           </div>
         </div>
@@ -396,13 +374,13 @@ export default function TenantBrandingPage() {
             <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 space-y-6">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Image className="w-5 h-5 text-purple-600" />
-                لوگو و آیکون‌ها
+                {t('tenant.branding.logos.title')}
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    لوگو (حالت روشن)
+                    {t('tenant.branding.logos.logoLight')}
                   </label>
                   <input
                     type="url"
@@ -425,7 +403,7 @@ export default function TenantBrandingPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    لوگو (حالت تاریک)
+                    {t('tenant.branding.logos.logoDark')}
                   </label>
                   <input
                     type="url"
@@ -449,7 +427,7 @@ export default function TenantBrandingPage() {
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  فاویکون
+                  {t('tenant.branding.logos.favicon')}
                 </label>
                 <input
                   type="url"
@@ -477,13 +455,13 @@ export default function TenantBrandingPage() {
             <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 space-y-6">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Palette className="w-5 h-5 text-purple-600" />
-                رنگ‌بندی
+                {t('tenant.branding.colors.title')}
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    رنگ اصلی
+                    {t('tenant.branding.colors.primary')}
                   </label>
                   <div className="flex gap-4">
                     <input
@@ -503,7 +481,7 @@ export default function TenantBrandingPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    رنگ ثانویه
+                    {t('tenant.branding.colors.secondary')}
                   </label>
                   <div className="flex gap-4">
                     <input
@@ -523,7 +501,7 @@ export default function TenantBrandingPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    رنگ تاکیدی
+                    {t('tenant.branding.colors.accent')}
                   </label>
                   <div className="flex gap-4">
                     <input
@@ -543,25 +521,25 @@ export default function TenantBrandingPage() {
               </div>
 
               <div className="border-t border-slate-200 dark:border-slate-700 pt-6">
-                <h3 className="font-medium text-slate-900 dark:text-white mb-4">پیش‌نمایش رنگ‌ها</h3>
+                <h3 className="font-medium text-slate-900 dark:text-white mb-4">{t('tenant.branding.colors.previewTitle')}</h3>
                 <div className="flex gap-4">
                   <button
                     className="px-6 py-3 rounded-xl text-white font-medium"
                     style={{ backgroundColor: branding.primaryColor }}
                   >
-                    دکمه اصلی
+                    {t('tenant.branding.colors.primaryButton')}
                   </button>
                   <button
                     className="px-6 py-3 rounded-xl text-white font-medium"
                     style={{ backgroundColor: branding.secondaryColor }}
                   >
-                    دکمه ثانویه
+                    {t('tenant.branding.colors.secondaryButton')}
                   </button>
                   <button
                     className="px-6 py-3 rounded-xl text-white font-medium"
                     style={{ backgroundColor: branding.accentColor }}
                   >
-                    دکمه تاکیدی
+                    {t('tenant.branding.colors.accentButton')}
                   </button>
                 </div>
               </div>
@@ -574,12 +552,12 @@ export default function TenantBrandingPage() {
               <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 space-y-4">
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Layout className="w-5 h-5 text-purple-600" />
-                  تنظیمات صفحه ورود
+                  {t('tenant.branding.login.title')}
                 </h2>
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    نوع پس‌زمینه
+                    {t('tenant.branding.login.backgroundType')}
                   </label>
                   <select
                     value={branding.loginPageConfig?.backgroundType || 'gradient'}
@@ -594,16 +572,16 @@ export default function TenantBrandingPage() {
                     }
                     className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white"
                   >
-                    <option value="color">رنگ ساده</option>
-                    <option value="gradient">گرادیان</option>
-                    <option value="image">تصویر</option>
+                    <option value="color">{t('tenant.branding.login.backgroundTypes.color')}</option>
+                    <option value="gradient">{t('tenant.branding.login.backgroundTypes.gradient')}</option>
+                    <option value="image">{t('tenant.branding.login.backgroundTypes.image')}</option>
                   </select>
                 </div>
 
                 {branding.loginPageConfig?.backgroundType === 'color' && (
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                      رنگ پس‌زمینه
+                      {t('tenant.branding.login.backgroundColor')}
                     </label>
                     <input
                       type="color"
@@ -626,7 +604,7 @@ export default function TenantBrandingPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        شروع گرادیان
+                        {t('tenant.branding.login.gradientStart')}
                       </label>
                       <input
                         type="color"
@@ -645,7 +623,7 @@ export default function TenantBrandingPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        پایان گرادیان
+                        {t('tenant.branding.login.gradientEnd')}
                       </label>
                       <input
                         type="color"
@@ -668,7 +646,7 @@ export default function TenantBrandingPage() {
                 {branding.loginPageConfig?.backgroundType === 'image' && (
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                      آدرس تصویر پس‌زمینه
+                      {t('tenant.branding.login.backgroundImageUrl')}
                     </label>
                     <input
                       type="url"
@@ -704,13 +682,13 @@ export default function TenantBrandingPage() {
                       }
                       className="rounded border-slate-300 text-purple-600 focus:ring-purple-500"
                     />
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">نمایش لوگو</span>
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{t('tenant.branding.login.showLogo')}</span>
                   </label>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    عنوان
+                    {t('tenant.branding.login.titleLabel')}
                   </label>
                   <input
                     type="text"
@@ -725,13 +703,13 @@ export default function TenantBrandingPage() {
                       })
                     }
                     className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white"
-                    placeholder="خوش آمدید"
+                    placeholder={t('tenant.branding.login.titlePlaceholder')}
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                    زیرعنوان
+                    {t('tenant.branding.login.subtitleLabel')}
                   </label>
                   <input
                     type="text"
@@ -746,7 +724,7 @@ export default function TenantBrandingPage() {
                       })
                     }
                     className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white"
-                    placeholder="وارد حساب کاربری خود شوید"
+                    placeholder={t('tenant.branding.login.subtitlePlaceholder')}
                   />
                 </div>
               </div>
@@ -754,7 +732,7 @@ export default function TenantBrandingPage() {
               <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                   <Eye className="w-5 h-5 text-purple-600" />
-                  پیش‌نمایش زنده
+                  {t('tenant.branding.login.livePreview')}
                 </h3>
                 {renderLoginPreview()}
               </div>
@@ -766,7 +744,7 @@ export default function TenantBrandingPage() {
             <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 space-y-4">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Mail className="w-5 h-5 text-purple-600" />
-                قالب‌های ایمیل
+                {t('tenant.branding.emails.title')}
               </h2>
 
               <div className="space-y-3">
@@ -780,8 +758,8 @@ export default function TenantBrandingPage() {
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <h3 className="font-medium text-slate-900 dark:text-white">{template.name}</h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">موضوع: {template.subject}</p>
-                        <p className="text-xs text-slate-400 mt-1">نوع: {template.type}</p>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('tenant.branding.emails.subject')}: {template.subject}</p>
+                        <p className="text-xs text-slate-400 mt-1">{t('tenant.branding.emails.type')}: {template.type}</p>
                       </div>
                       <div className="flex gap-2">
                         <motion.button
@@ -794,7 +772,7 @@ export default function TenantBrandingPage() {
                           }}
                           className="px-3 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
                         >
-                          پیش‌نمایش
+                          {t('common.preview')}
                         </motion.button>
                         <motion.button
                           whileHover={{ scale: 1.05 }}
@@ -802,7 +780,7 @@ export default function TenantBrandingPage() {
                           onClick={() => handleEditEmailTemplate(template)}
                           className="px-3 py-1 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
                         >
-                          ویرایش
+                          {t('common.edit')}
                         </motion.button>
                       </div>
                     </div>
@@ -817,12 +795,12 @@ export default function TenantBrandingPage() {
             <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 space-y-6">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Globe className="w-5 h-5 text-purple-600" />
-                دامنه اختصاصی
+                {t('tenant.branding.domain.title')}
               </h2>
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  دامنه اختصاصی
+                  {t('tenant.branding.domain.customDomain')}
                 </label>
                 <input
                   type="text"
@@ -832,7 +810,7 @@ export default function TenantBrandingPage() {
                   placeholder="auth.yourdomain.com"
                 />
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
-                  دامنه اختصاصی برای صفحات ورود و رابط کاربری
+                  {t('tenant.branding.domain.description')}
                 </p>
               </div>
 
@@ -840,23 +818,23 @@ export default function TenantBrandingPage() {
                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
                   <h3 className="font-medium text-blue-900 dark:text-blue-300 mb-2 flex items-center gap-2">
                     <Lock className="w-4 h-4" />
-                    تنظیمات DNS
+                    {t('tenant.branding.domain.dnsSettings')}
                   </h3>
                   <p className="text-sm text-blue-800 dark:text-blue-400 mb-3">
-                    برای فعال‌سازی دامنه اختصاصی، رکورد زیر را به DNS دامنه خود اضافه کنید:
+                    {t('tenant.branding.domain.dnsInstructions')}
                   </p>
                   <div className="bg-white dark:bg-slate-800 rounded-lg p-4 font-mono text-sm">
                     <div className="grid grid-cols-3 gap-4 text-slate-600 dark:text-slate-400">
                       <div>
-                        <span className="text-slate-500 dark:text-slate-500">نوع:</span>
+                        <span className="text-slate-500 dark:text-slate-500">{t('tenant.branding.domain.dnsType')}:</span>
                         <span className="mr-2 text-slate-900 dark:text-white">CNAME</span>
                       </div>
                       <div>
-                        <span className="text-slate-500 dark:text-slate-500">نام:</span>
+                        <span className="text-slate-500 dark:text-slate-500">{t('tenant.branding.domain.dnsName')}:</span>
                         <span className="mr-2 text-slate-900 dark:text-white">{branding.customDomain}</span>
                       </div>
                       <div>
-                        <span className="text-slate-500 dark:text-slate-500">مقدار:</span>
+                        <span className="text-slate-500 dark:text-slate-500">{t('tenant.branding.domain.dnsValue')}:</span>
                         <span className="mr-2 text-slate-900 dark:text-white">auth.onesign.io</span>
                       </div>
                     </div>
@@ -874,14 +852,14 @@ export default function TenantBrandingPage() {
             setShowEmailEditor(false);
             setSelectedTemplate(null);
           }}
-          title="ویرایش قالب ایمیل"
+          title={t('tenant.branding.emails.editTemplate')}
           size="lg"
         >
           {selectedTemplate && (
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  نام قالب
+                  {t('tenant.branding.emails.templateName')}
                 </label>
                 <input
                   type="text"
@@ -895,7 +873,7 @@ export default function TenantBrandingPage() {
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  موضوع
+                  {t('tenant.branding.emails.subject')}
                 </label>
                 <input
                   type="text"
@@ -909,7 +887,7 @@ export default function TenantBrandingPage() {
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  متن ایمیل
+                  {t('tenant.branding.emails.body')}
                 </label>
                 <textarea
                   value={selectedTemplate.body}
@@ -921,7 +899,7 @@ export default function TenantBrandingPage() {
                   dir="ltr"
                 />
                 <p className="text-xs text-slate-500 mt-2">
-                  متغیرهای موجود: user_name, tenant_name, reset_link, invitation_link
+                  {t('tenant.branding.emails.availableVariables')}
                 </p>
               </div>
 
@@ -933,13 +911,13 @@ export default function TenantBrandingPage() {
                   }}
                   className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
                 >
-                  انصراف
+                  {t('common.cancel')}
                 </button>
                 <button
                   onClick={handleSaveEmailTemplate}
                   className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all"
                 >
-                  ذخیره
+                  {t('common.save')}
                 </button>
               </div>
             </div>
@@ -950,7 +928,7 @@ export default function TenantBrandingPage() {
         <Modal
           isOpen={showPreview}
           onClose={() => setShowPreview(false)}
-          title="پیش‌نمایش"
+          title={t('common.preview')}
           size="xl"
         >
           <div className="p-4">

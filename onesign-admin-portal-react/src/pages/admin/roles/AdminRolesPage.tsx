@@ -32,7 +32,7 @@ export default function AdminRolesPage() {
       setRoles(data);
     } catch (err) {
       console.error('Failed to fetch roles:', err);
-      setError('Failed to load platform roles');
+      setError(t('admin.roles.messages.failedToLoad'));
       setRoles([]);
     } finally {
       setLoading(false);
@@ -41,7 +41,7 @@ export default function AdminRolesPage() {
 
   const handleCreate = async () => {
     if (!newRoleName.trim()) {
-      setError('Role name is required');
+      setError(t('admin.roles.validation.nameRequired'));
       return;
     }
     setError('');
@@ -69,7 +69,7 @@ export default function AdminRolesPage() {
   };
 
   const handleDelete = async (roleId: string) => {
-    if (!confirm('Delete this role? Users with this role will lose their permissions.')) return;
+    if (!confirm(t('admin.roles.messages.confirmDelete'))) return;
     setError('');
     try {
       // Delete role via API
@@ -108,7 +108,7 @@ export default function AdminRolesPage() {
     { category: 'Analytics', perms: ['analytics:read', 'analytics:*'] },
   ];
 
-  if (loading) return <div className="p-6">Loading...</div>;
+  if (loading) return <div className="p-6">{t('admin.roles.messages.loading')}</div>;
 
   return (
     <>
@@ -126,37 +126,37 @@ export default function AdminRolesPage() {
 
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Platform Roles</h1>
-          <p className="text-gray-600 mt-1">Manage system-level roles and permissions</p>
+          <h1 className="text-2xl font-bold">{t('admin.roles.title')}</h1>
+          <p className="text-gray-600 mt-1">{t('admin.roles.description')}</p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
-          Create Role
+          {t('admin.roles.buttons.createRole')}
         </button>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-600">Total Roles</div>
+          <div className="text-sm text-gray-600">{t('admin.roles.stats.totalRoles')}</div>
           <div className="text-2xl font-bold">{roles.length}</div>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-600">System Roles</div>
+          <div className="text-sm text-gray-600">{t('admin.roles.stats.systemRoles')}</div>
           <div className="text-2xl font-bold text-purple-600">
             {roles.filter(r => r.type === 'system').length}
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-600">Custom Roles</div>
+          <div className="text-sm text-gray-600">{t('admin.roles.stats.customRoles')}</div>
           <div className="text-2xl font-bold text-blue-600">
             {roles.filter(r => r.type === 'custom').length}
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-600">Total Users</div>
+          <div className="text-sm text-gray-600">{t('admin.roles.stats.totalUsers')}</div>
           <div className="text-2xl font-bold">
             {roles.reduce((acc, r) => acc + r.usersCount, 0)}
           </div>
@@ -176,7 +176,7 @@ export default function AdminRolesPage() {
                   </span>
                   {role.isDefault && (
                     <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
-                      Default
+                      {t('admin.roles.labels.default')}
                     </span>
                   )}
                 </div>
@@ -184,13 +184,13 @@ export default function AdminRolesPage() {
 
                 {/* Users Count */}
                 <div className="mb-3 text-sm">
-                  <span className="text-gray-500">Users with this role:</span>
+                  <span className="text-gray-500">{t('admin.roles.labels.usersWithRole')}</span>
                   <span className="ml-2 font-semibold">{role.usersCount}</span>
                 </div>
 
                 {/* Permissions */}
                 <div>
-                  <span className="text-sm text-gray-500">Permissions ({role.permissions.length}):</span>
+                  <span className="text-sm text-gray-500">{t('admin.roles.labels.permissions', { count: role.permissions.length })}</span>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {role.permissions.slice(0, 6).map((perm, idx) => (
                       <span key={idx} className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded font-mono">
@@ -202,16 +202,16 @@ export default function AdminRolesPage() {
                         onClick={() => setSelectedRole(role)}
                         className="px-2 py-1 text-xs text-blue-600 hover:text-blue-800"
                       >
-                        +{role.permissions.length - 6} more
+                        {t('admin.roles.labels.morePermissions', { count: role.permissions.length - 6 })}
                       </button>
                     )}
                   </div>
                 </div>
 
                 <div className="mt-3 text-xs text-gray-500">
-                  Created: {new Date(role.createdAt).toLocaleDateString()}
+                  {t('admin.roles.labels.created')}: {new Date(role.createdAt).toLocaleDateString()}
                   {role.updatedAt !== role.createdAt && (
-                    <> | Updated: {new Date(role.updatedAt).toLocaleDateString()}</>
+                    <> | {t('admin.roles.labels.updated')}: {new Date(role.updatedAt).toLocaleDateString()}</>
                   )}
                 </div>
               </div>
@@ -221,18 +221,18 @@ export default function AdminRolesPage() {
                   onClick={() => setSelectedRole(role)}
                   className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
                 >
-                  View
+                  {t('admin.roles.buttons.view')}
                 </button>
                 {role.type === 'custom' && (
                   <>
                     <button className="px-3 py-1 text-sm border border-blue-300 text-blue-600 rounded hover:bg-blue-50">
-                      Edit
+                      {t('admin.roles.buttons.edit')}
                     </button>
                     <button
                       onClick={() => handleDelete(role.id)}
                       className="px-3 py-1 text-sm text-red-600 border border-red-300 rounded hover:bg-red-50"
                     >
-                      Delete
+                      {t('admin.roles.buttons.delete')}
                     </button>
                   </>
                 )}
@@ -266,29 +266,29 @@ export default function AdminRolesPage() {
 
             <div className="space-y-4">
               <div>
-                <h3 className="font-semibold mb-2">Role Information</h3>
+                <h3 className="font-semibold mb-2">{t('admin.roles.modal.roleInformation')}</h3>
                 <div className="bg-gray-50 rounded p-4 space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Type:</span>
+                    <span className="text-gray-600">{t('admin.roles.modal.type')}</span>
                     <span className="font-medium">{selectedRole.type}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Users:</span>
+                    <span className="text-gray-600">{t('admin.roles.modal.users')}</span>
                     <span className="font-medium">{selectedRole.usersCount}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Default Role:</span>
-                    <span className="font-medium">{selectedRole.isDefault ? 'Yes' : 'No'}</span>
+                    <span className="text-gray-600">{t('admin.roles.modal.defaultRole')}</span>
+                    <span className="font-medium">{selectedRole.isDefault ? t('admin.roles.modal.yes') : t('admin.roles.modal.no')}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Created:</span>
+                    <span className="text-gray-600">{t('admin.roles.modal.created')}</span>
                     <span className="font-medium">{new Date(selectedRole.createdAt).toLocaleDateString()}</span>
                   </div>
                 </div>
               </div>
 
               <div>
-                <h3 className="font-semibold mb-2">All Permissions ({selectedRole.permissions.length})</h3>
+                <h3 className="font-semibold mb-2">{t('admin.roles.modal.allPermissions', { count: selectedRole.permissions.length })}</h3>
                 <div className="bg-gray-50 rounded p-4 max-h-96 overflow-y-auto">
                   <div className="flex flex-wrap gap-2">
                     {selectedRole.permissions.map((perm, idx) => (
@@ -305,11 +305,11 @@ export default function AdminRolesPage() {
                   onClick={() => setSelectedRole(null)}
                   className="px-4 py-2 border border-gray-300 rounded-lg"
                 >
-                  Close
+                  {t('admin.roles.buttons.close')}
                 </button>
                 {selectedRole.type === 'custom' && (
                   <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    Edit Role
+                    {t('admin.roles.buttons.editRole')}
                   </button>
                 )}
               </div>
@@ -322,13 +322,13 @@ export default function AdminRolesPage() {
       {showCreate && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">Create Platform Role</h2>
+            <h2 className="text-xl font-bold mb-4">{t('admin.roles.createModal.title')}</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Role Name</label>
+                <label className="block text-sm font-medium mb-2">{t('admin.roles.createModal.roleName')}</label>
                 <input
                   type="text"
-                  placeholder="e.g., Integration Manager"
+                  placeholder={t('admin.roles.createModal.roleNamePlaceholder')}
                   className="w-full border border-gray-300 rounded-lg p-2"
                   value={newRoleName}
                   onChange={(e) => setNewRoleName(e.target.value)}
@@ -336,9 +336,9 @@ export default function AdminRolesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Description</label>
+                <label className="block text-sm font-medium mb-2">{t('admin.roles.createModal.description')}</label>
                 <textarea
-                  placeholder="Describe what this role can do"
+                  placeholder={t('admin.roles.createModal.descriptionPlaceholder')}
                   className="w-full border border-gray-300 rounded-lg p-2"
                   rows={3}
                   value={newRoleDescription}
@@ -347,7 +347,7 @@ export default function AdminRolesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Permissions</label>
+                <label className="block text-sm font-medium mb-2">{t('admin.roles.createModal.permissions')}</label>
                 <div className="border border-gray-300 rounded-lg p-4 max-h-96 overflow-y-auto">
                   {allPermissions.map((group, idx) => (
                     <div key={idx} className="mb-4">
@@ -378,7 +378,7 @@ export default function AdminRolesPage() {
                     checked={newRoleIsDefault}
                     onChange={(e) => setNewRoleIsDefault(e.target.checked)}
                   />
-                  <span className="text-sm">Set as default role for new admin users</span>
+                  <span className="text-sm">{t('admin.roles.createModal.setAsDefault')}</span>
                 </label>
               </div>
 
@@ -393,13 +393,13 @@ export default function AdminRolesPage() {
                   }}
                   className="px-4 py-2 border border-gray-300 rounded-lg"
                 >
-                  Cancel
+                  {t('admin.roles.buttons.cancel')}
                 </button>
                 <button
                   onClick={handleCreate}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
-                  Create Role
+                  {t('admin.roles.buttons.createRole')}
                 </button>
               </div>
             </div>

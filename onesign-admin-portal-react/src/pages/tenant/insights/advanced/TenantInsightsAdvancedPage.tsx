@@ -116,12 +116,12 @@ export default function TenantInsightsAdvancedPage() {
 
   // Dashboard configuration
   const [widgets, setWidgets] = useState<DashboardWidget[]>([
-    { id: '1', title: 'User Activity Trend', chartType: 'line', metric: 'users', position: 1, enabled: true },
-    { id: '2', title: 'Login Distribution', chartType: 'bar', metric: 'logins', position: 2, enabled: true },
-    { id: '3', title: 'Security Score', chartType: 'pie', metric: 'security', position: 3, enabled: true },
-    { id: '4', title: 'Application Usage', chartType: 'bar', metric: 'applications', position: 4, enabled: true },
-    { id: '5', title: 'MFA Adoption Trend', chartType: 'line', metric: 'mfa', position: 5, enabled: true },
-    { id: '6', title: 'Risk Events Heatmap', chartType: 'heatmap', metric: 'risk', position: 6, enabled: true },
+    { id: '1', title: t('insights.advanced.widgets.userActivityTrend'), chartType: 'line', metric: 'users', position: 1, enabled: true },
+    { id: '2', title: t('insights.advanced.widgets.loginDistribution'), chartType: 'bar', metric: 'logins', position: 2, enabled: true },
+    { id: '3', title: t('insights.advanced.widgets.securityScore'), chartType: 'pie', metric: 'security', position: 3, enabled: true },
+    { id: '4', title: t('insights.advanced.widgets.applicationUsage'), chartType: 'bar', metric: 'applications', position: 4, enabled: true },
+    { id: '5', title: t('insights.advanced.widgets.mfaAdoptionTrend'), chartType: 'line', metric: 'mfa', position: 5, enabled: true },
+    { id: '6', title: t('insights.advanced.widgets.riskEventsHeatmap'), chartType: 'heatmap', metric: 'risk', position: 6, enabled: true },
   ]);
 
   // Data
@@ -174,9 +174,9 @@ export default function TenantInsightsAdvancedPage() {
       setLoginDistribution(loginByDay);
 
       const securityData = [
-        { label: 'High Risk', value: overview.highRiskEvents, color: '#ef4444' },
-        { label: 'Medium Risk', value: overview.mediumRiskEvents, color: '#f59e0b' },
-        { label: 'Low Risk', value: overview.lowRiskEvents, color: '#10b981' },
+        { label: t('insights.advanced.securityRisk.high'), value: overview.highRiskEvents, color: '#ef4444' },
+        { label: t('insights.advanced.securityRisk.medium'), value: overview.mediumRiskEvents, color: '#f59e0b' },
+        { label: t('insights.advanced.securityRisk.low'), value: overview.lowRiskEvents, color: '#10b981' },
       ];
       setSecurityScore(securityData);
 
@@ -263,9 +263,9 @@ export default function TenantInsightsAdvancedPage() {
       if (day.count > avgLogins * 2) {
         anomalies.push({
           id: `anomaly-${index}`,
-          type: 'Login Spike',
+          type: t('insights.advanced.anomalies.loginSpike'),
           severity: 'medium',
-          description: `Unusual login activity detected: ${day.count} logins (${Math.round((day.count / avgLogins - 1) * 100)}% above average)`,
+          description: t('insights.advanced.anomalies.loginSpikeDescription', { count: day.count, percentage: Math.round((day.count / avgLogins - 1) * 100) }),
           detectedAt: day.date,
           affectedMetric: 'logins',
           deviation: (day.count / avgLogins - 1) * 100,
@@ -276,9 +276,9 @@ export default function TenantInsightsAdvancedPage() {
     if (overview.mfaAdoptionPercent < 70) {
       anomalies.push({
         id: 'anomaly-mfa',
-        type: 'Low MFA Adoption',
+        type: t('insights.advanced.anomalies.lowMfaAdoption'),
         severity: 'high',
-        description: `MFA adoption rate is ${overview.mfaAdoptionPercent}%, below recommended 70%`,
+        description: t('insights.advanced.anomalies.lowMfaAdoptionDescription', { percentage: overview.mfaAdoptionPercent }),
         detectedAt: new Date().toISOString(),
         affectedMetric: 'mfa',
         deviation: 70 - overview.mfaAdoptionPercent,
@@ -288,9 +288,9 @@ export default function TenantInsightsAdvancedPage() {
     if (overview.highRiskEvents > 10) {
       anomalies.push({
         id: 'anomaly-risk',
-        type: 'High Risk Events',
+        type: t('insights.advanced.anomalies.highRiskEvents'),
         severity: 'critical',
-        description: `${overview.highRiskEvents} high-risk security events detected`,
+        description: t('insights.advanced.anomalies.highRiskEventsDescription', { count: overview.highRiskEvents }),
         detectedAt: new Date().toISOString(),
         affectedMetric: 'risk',
         deviation: overview.highRiskEvents,
@@ -304,27 +304,27 @@ export default function TenantInsightsAdvancedPage() {
     return [
       {
         id: 'pattern-1',
-        pattern: 'Business Hours Users',
+        pattern: t('insights.advanced.patterns.businessHours'),
         userCount: Math.floor(overview.activeUsers * 0.7),
         avgSessionDuration: 240,
-        peakHours: ['9 AM', '2 PM', '4 PM'],
+        peakHours: [t('insights.advanced.patterns.time.9am'), t('insights.advanced.patterns.time.2pm'), t('insights.advanced.patterns.time.4pm')],
         commonApplications: overview.topApplications.slice(0, 3).map((app: any) => app.appName),
       },
       {
         id: 'pattern-2',
-        pattern: 'Night Shift Users',
+        pattern: t('insights.advanced.patterns.nightShift'),
         userCount: Math.floor(overview.activeUsers * 0.15),
         avgSessionDuration: 180,
-        peakHours: ['10 PM', '12 AM', '2 AM'],
+        peakHours: [t('insights.advanced.patterns.time.10pm'), t('insights.advanced.patterns.time.12am'), t('insights.advanced.patterns.time.2am')],
         commonApplications: overview.topApplications.slice(1, 4).map((app: any) => app.appName),
       },
       {
         id: 'pattern-3',
-        pattern: 'Mobile Users',
+        pattern: t('insights.advanced.patterns.mobileUsers'),
         userCount: Math.floor(overview.activeUsers * 0.4),
         avgSessionDuration: 45,
-        peakHours: ['8 AM', '12 PM', '6 PM'],
-        commonApplications: ['Mobile App', 'Email', 'Chat'],
+        peakHours: [t('insights.advanced.patterns.time.8am'), t('insights.advanced.patterns.time.12pm'), t('insights.advanced.patterns.time.6pm')],
+        commonApplications: [t('insights.advanced.patterns.apps.mobileApp'), t('insights.advanced.patterns.apps.email'), t('insights.advanced.patterns.apps.chat')],
       },
     ];
   };
@@ -340,9 +340,9 @@ export default function TenantInsightsAdvancedPage() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      setSuccess('Dashboard exported successfully');
+      setSuccess(t('insights.advanced.messages.exportSuccess'));
     } catch (err) {
-      setError('Failed to export dashboard');
+      setError(t('insights.advanced.messages.exportError'));
     }
   };
 
@@ -359,13 +359,13 @@ export default function TenantInsightsAdvancedPage() {
     setShowSaveViewModal(false);
     setNewViewName('');
     setNewViewDescription('');
-    setSuccess('Custom view saved successfully');
+    setSuccess(t('insights.advanced.messages.saveViewSuccess'));
   };
 
   const handleLoadView = (view: SavedView) => {
     setWidgets(view.widgets);
     setDateRange(view.dateRange);
-    setSuccess(`Loaded view: ${view.name}`);
+    setSuccess(t('insights.advanced.messages.loadViewSuccess', { name: view.name }));
   };
 
   const toggleWidget = (widgetId: string) => {
@@ -609,7 +609,7 @@ export default function TenantInsightsAdvancedPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
       <Helmet>
-        <title>Advanced Insights | OneSign</title>
+        <title>{t('insights.advanced.pageTitle')}</title>
       </Helmet>
 
       <div className="p-8 space-y-6">
@@ -625,9 +625,9 @@ export default function TenantInsightsAdvancedPage() {
             </div>
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Advanced Insights
+                {t('insights.advanced.title')}
               </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">AI-powered analytics and anomaly detection</p>
+              <p className="text-gray-600 dark:text-gray-400 mt-1">{t('insights.advanced.subtitle')}</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -638,7 +638,7 @@ export default function TenantInsightsAdvancedPage() {
               className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all shadow-lg"
             >
               <Save className="w-4 h-4" />
-              Save View
+              {t('insights.advanced.buttons.saveView')}
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -647,7 +647,7 @@ export default function TenantInsightsAdvancedPage() {
               className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-xl hover:from-green-600 hover:to-emerald-700 transition-all shadow-lg"
             >
               <Download className="w-4 h-4" />
-              Export Dashboard
+              {t('insights.advanced.buttons.exportDashboard')}
             </motion.button>
           </div>
         </motion.div>
@@ -685,25 +685,25 @@ export default function TenantInsightsAdvancedPage() {
         >
           <div className="flex flex-wrap gap-4 items-center">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date Range</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('insights.advanced.labels.dateRange')}</label>
               <select
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value)}
                 className="px-4 py-2 border border-gray-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"
               >
-                <option value="7">Last 7 days</option>
-                <option value="14">Last 14 days</option>
-                <option value="30">Last 30 days</option>
-                <option value="60">Last 60 days</option>
-                <option value="90">Last 90 days</option>
-                <option value="custom">Custom Range</option>
+                <option value="7">{t('insights.advanced.dateRanges.last7Days')}</option>
+                <option value="14">{t('insights.advanced.dateRanges.last14Days')}</option>
+                <option value="30">{t('insights.advanced.dateRanges.last30Days')}</option>
+                <option value="60">{t('insights.advanced.dateRanges.last60Days')}</option>
+                <option value="90">{t('insights.advanced.dateRanges.last90Days')}</option>
+                <option value="custom">{t('insights.advanced.dateRanges.customRange')}</option>
               </select>
             </div>
 
             {dateRange === 'custom' && (
               <>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">From</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('insights.advanced.labels.from')}</label>
                   <input
                     type="date"
                     value={customFrom}
@@ -712,7 +712,7 @@ export default function TenantInsightsAdvancedPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">To</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('insights.advanced.labels.to')}</label>
                   <input
                     type="date"
                     value={customTo}
@@ -724,7 +724,7 @@ export default function TenantInsightsAdvancedPage() {
             )}
 
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Visible Widgets</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('insights.advanced.labels.visibleWidgets')}</label>
               <div className="flex flex-wrap gap-2">
                 {widgets.map(widget => (
                   <motion.button
@@ -754,7 +754,7 @@ export default function TenantInsightsAdvancedPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Saved Views</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">{t('insights.advanced.sections.savedViews')}</h3>
             <div className="flex gap-2 flex-wrap">
               {savedViews.map(view => (
                 <motion.button
@@ -781,7 +781,7 @@ export default function TenantInsightsAdvancedPage() {
           >
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-yellow-500" />
-              Anomaly Detection
+              {t('insights.advanced.sections.anomalyDetection')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {anomalies.map((anomaly, index) => (
@@ -838,7 +838,7 @@ export default function TenantInsightsAdvancedPage() {
         >
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <Users className="w-5 h-5 text-purple-500" />
-            User Behavior Analysis
+            {t('insights.advanced.sections.userBehaviorAnalysis')}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {behaviorPatterns.map((pattern, index) => (
@@ -852,15 +852,15 @@ export default function TenantInsightsAdvancedPage() {
                 <h4 className="font-medium text-gray-900 dark:text-white mb-3">{pattern.pattern}</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">User Count:</span>
+                    <span className="text-gray-600 dark:text-gray-400">{t('insights.advanced.behaviorAnalysis.userCount')}</span>
                     <span className="font-medium text-gray-900 dark:text-white">{pattern.userCount}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">Avg Session:</span>
-                    <span className="font-medium text-gray-900 dark:text-white">{pattern.avgSessionDuration} min</span>
+                    <span className="text-gray-600 dark:text-gray-400">{t('insights.advanced.behaviorAnalysis.avgSession')}</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{pattern.avgSessionDuration} {t('insights.advanced.behaviorAnalysis.min')}</span>
                   </div>
                   <div>
-                    <span className="text-gray-600 dark:text-gray-400">Peak Hours:</span>
+                    <span className="text-gray-600 dark:text-gray-400">{t('insights.advanced.behaviorAnalysis.peakHours')}</span>
                     <div className="flex gap-1 mt-1 flex-wrap">
                       {pattern.peakHours.map(hour => (
                         <span key={hour} className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400 px-2 py-1 rounded-lg">
@@ -870,7 +870,7 @@ export default function TenantInsightsAdvancedPage() {
                     </div>
                   </div>
                   <div>
-                    <span className="text-gray-600 dark:text-gray-400">Common Apps:</span>
+                    <span className="text-gray-600 dark:text-gray-400">{t('insights.advanced.behaviorAnalysis.commonApps')}</span>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {pattern.commonApplications.map(app => (
                         <span key={app} className="text-xs bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-lg">
@@ -901,30 +901,30 @@ export default function TenantInsightsAdvancedPage() {
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="bg-white dark:bg-slate-800 p-6 rounded-2xl max-w-md w-full mx-4 shadow-2xl"
             >
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Save Custom View</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t('insights.advanced.modal.saveCustomView')}</h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">View Name</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('insights.advanced.modal.viewName')}</label>
                   <input
                     type="text"
                     value={newViewName}
                     onChange={(e) => setNewViewName(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"
-                    placeholder="e.g., Weekly Security Review"
+                    placeholder={t('insights.advanced.modal.viewNamePlaceholder')}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('insights.advanced.modal.description')}</label>
                   <textarea
                     value={newViewDescription}
                     onChange={(e) => setNewViewDescription(e.target.value)}
                     className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500"
                     rows={3}
-                    placeholder="Brief description of this view..."
+                    placeholder={t('insights.advanced.modal.descriptionPlaceholder')}
                   />
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">
-                  This will save the current widget configuration and date range.
+                  {t('insights.advanced.modal.saveInfo')}
                 </div>
               </div>
               <div className="flex gap-2 justify-end mt-6">
@@ -934,7 +934,7 @@ export default function TenantInsightsAdvancedPage() {
                   onClick={() => setShowSaveViewModal(false)}
                   className="px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
@@ -943,7 +943,7 @@ export default function TenantInsightsAdvancedPage() {
                   disabled={!newViewName}
                   className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 transition-all"
                 >
-                  Save View
+                  {t('insights.advanced.buttons.saveView')}
                 </motion.button>
               </div>
             </motion.div>

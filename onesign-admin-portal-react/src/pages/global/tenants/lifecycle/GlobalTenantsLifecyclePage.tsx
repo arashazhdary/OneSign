@@ -103,7 +103,7 @@ export default function GlobalTenantsLifecyclePage() {
 
   const getMigrationStatus = async () => {
     if (!tenantId || !migrationId) {
-      setError('Please enter both Tenant ID and Migration ID');
+      setError(t('global.lifecycle.validation.enterBothIds'));
       return;
     }
 
@@ -128,7 +128,7 @@ export default function GlobalTenantsLifecyclePage() {
 
   const getExportStatus = async () => {
     if (!tenantId || !exportId) {
-      setError('Please enter both Tenant ID and Export ID');
+      setError(t('global.lifecycle.validation.enterTenantAndExportId'));
       return;
     }
 
@@ -160,7 +160,7 @@ export default function GlobalTenantsLifecyclePage() {
 
   const handleSuspend = async () => {
     if (!tenantId) {
-      setError('Please enter a Tenant ID');
+      setError(t('global.lifecycle.validation.enterTenantId'));
       return;
     }
 
@@ -169,7 +169,7 @@ export default function GlobalTenantsLifecyclePage() {
     setSuccess('');
     try {
       await globalService.suspendTenant(tenantId);
-      setSuccess('Tenant suspended successfully');
+      setSuccess(t('global.lifecycle.messages.suspended'));
       fetchTenantHealth();
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -180,7 +180,7 @@ export default function GlobalTenantsLifecyclePage() {
 
   const handleResume = async () => {
     if (!tenantId) {
-      setError('Please enter a Tenant ID');
+      setError(t('global.lifecycle.validation.enterTenantId'));
       return;
     }
 
@@ -189,7 +189,7 @@ export default function GlobalTenantsLifecyclePage() {
     setSuccess('');
     try {
       await globalService.reactivateTenant(tenantId);
-      setSuccess('Tenant resumed successfully');
+      setSuccess(t('global.lifecycle.messages.resumed'));
       fetchTenantHealth();
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -200,7 +200,7 @@ export default function GlobalTenantsLifecyclePage() {
 
   const handleMigrate = async () => {
     if (!tenantId) {
-      setError('Please enter a Tenant ID');
+      setError(t('global.lifecycle.validation.enterTenantId'));
       return;
     }
 
@@ -219,7 +219,7 @@ export default function GlobalTenantsLifecyclePage() {
       };
       setMigrationStatus(data);
       setMigrationId(migrationId);
-      setSuccess('Migration started successfully');
+      setSuccess(t('global.lifecycle.messages.migrationStarted'));
     } catch (err: any) {
       setError(err.message || t('common.error'));
     } finally {
@@ -229,7 +229,7 @@ export default function GlobalTenantsLifecyclePage() {
 
   const handleExport = async () => {
     if (!tenantId) {
-      setError('Please enter a Tenant ID');
+      setError(t('global.lifecycle.validation.enterTenantId'));
       return;
     }
 
@@ -248,7 +248,7 @@ export default function GlobalTenantsLifecyclePage() {
       };
       setExportJobs([data, ...exportJobs]);
       setExportId(exportId);
-      setSuccess('Export started successfully');
+      setSuccess(t('global.lifecycle.messages.exportStarted'));
     } catch (err: any) {
       setError(err.message || t('common.error'));
     } finally {
@@ -258,7 +258,7 @@ export default function GlobalTenantsLifecyclePage() {
 
   const handleImport = async () => {
     if (!tenantId) {
-      setError('Please enter a Tenant ID');
+      setError(t('global.lifecycle.validation.enterTenantId'));
       return;
     }
 
@@ -269,7 +269,7 @@ export default function GlobalTenantsLifecyclePage() {
       // importTenantData method not available in globalService
       // Placeholder implementation for import functionality
       console.warn('importTenantData method not yet implemented');
-      setSuccess('Import started successfully');
+      setSuccess(t('global.lifecycle.messages.importStarted'));
     } catch (err: any) {
       setError(err.message || t('common.error'));
     } finally {
@@ -297,7 +297,7 @@ export default function GlobalTenantsLifecyclePage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold mb-6">Tenant Lifecycle Management</h1>
+      <h1 className="text-3xl font-bold mb-6">{t('global.lifecycle.title')}</h1>
 
       {error && (
         <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>
@@ -308,12 +308,12 @@ export default function GlobalTenantsLifecyclePage() {
       )}
 
       <div className="mb-6 bg-white rounded-lg shadow p-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Tenant ID</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">{t('global.lifecycle.tenantId')}</label>
         <input
           type="text"
           value={tenantId}
           onChange={(e) => setTenantId(e.target.value)}
-          placeholder="Enter Tenant ID"
+          placeholder={t('global.lifecycle.enterTenantId')}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
       </div>
@@ -330,9 +330,9 @@ export default function GlobalTenantsLifecyclePage() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              {tab === 'operations' ? 'Operations' :
-               tab === 'health' ? 'Health Monitor' :
-               'Data Management'}
+              {tab === 'operations' ? t('global.lifecycle.tabs.operations') :
+               tab === 'health' ? t('global.lifecycle.tabs.health') :
+               t('global.lifecycle.tabs.data')}
             </button>
           ))}
         </nav>
@@ -341,56 +341,56 @@ export default function GlobalTenantsLifecyclePage() {
       {activeTab === 'operations' && (
         <div className="space-y-4">
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">Tenant Operations</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('global.lifecycle.operations.title')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="border border-gray-200 rounded-lg p-4">
-                <h3 className="font-medium text-gray-900 mb-2">Suspend Tenant</h3>
-                <p className="text-sm text-gray-500 mb-4">Temporarily disable tenant access</p>
+                <h3 className="font-medium text-gray-900 mb-2">{t('global.lifecycle.operations.suspend')}</h3>
+                <p className="text-sm text-gray-500 mb-4">{t('global.lifecycle.operations.suspendDesc')}</p>
                 <button
                   onClick={handleSuspend}
                   disabled={loading || !tenantId}
                   className="w-full bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Suspend
+                  {t('global.lifecycle.operations.suspendButton')}
                 </button>
               </div>
 
               <div className="border border-gray-200 rounded-lg p-4">
-                <h3 className="font-medium text-gray-900 mb-2">Resume Tenant</h3>
-                <p className="text-sm text-gray-500 mb-4">Re-enable suspended tenant</p>
+                <h3 className="font-medium text-gray-900 mb-2">{t('global.lifecycle.operations.resume')}</h3>
+                <p className="text-sm text-gray-500 mb-4">{t('global.lifecycle.operations.resumeDesc')}</p>
                 <button
                   onClick={handleResume}
                   disabled={loading || !tenantId}
                   className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Resume
+                  {t('global.lifecycle.operations.resumeButton')}
                 </button>
               </div>
 
               <div className="border border-gray-200 rounded-lg p-4">
-                <h3 className="font-medium text-gray-900 mb-2">Migrate Tenant</h3>
-                <p className="text-sm text-gray-500 mb-4">Start tenant migration process</p>
+                <h3 className="font-medium text-gray-900 mb-2">{t('global.lifecycle.operations.migrate')}</h3>
+                <p className="text-sm text-gray-500 mb-4">{t('global.lifecycle.operations.migrateDesc')}</p>
                 <button
                   onClick={handleMigrate}
                   disabled={loading || !tenantId}
                   className="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Start Migration
+                  {t('global.lifecycle.operations.migrateButton')}
                 </button>
               </div>
 
               <div className="border border-gray-200 rounded-lg p-4">
-                <h3 className="font-medium text-gray-900 mb-2">Migration Status</h3>
+                <h3 className="font-medium text-gray-900 mb-2">{t('global.lifecycle.operations.migrationStatus')}</h3>
                 {migrationStatus ? (
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-500">Status</span>
+                      <span className="text-sm text-gray-500">{t('common.status')}</span>
                       <span className={`px-2 py-1 rounded text-xs ${getStatusColor(migrationStatus.status)}`}>
                         {migrationStatus.status}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-500">Progress</span>
+                      <span className="text-sm text-gray-500">{t('global.lifecycle.operations.progress')}</span>
                       <span className="text-sm font-medium">{migrationStatus.progress}%</span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
@@ -401,7 +401,7 @@ export default function GlobalTenantsLifecyclePage() {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500">No active migration</p>
+                  <p className="text-sm text-gray-500">{t('global.lifecycle.operations.noActiveMigration')}</p>
                 )}
               </div>
             </div>
@@ -413,17 +413,17 @@ export default function GlobalTenantsLifecyclePage() {
         <div className="space-y-6">
           {!tenantId ? (
             <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
-              Please enter a Tenant ID to view health information
+              {t('global.lifecycle.health.enterTenantPrompt')}
             </div>
           ) : (
             <>
               <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-xl font-semibold mb-4">Tenant Health</h2>
+                <h2 className="text-xl font-semibold mb-4">{t('global.lifecycle.health.title')}</h2>
                 {tenantHealth ? (
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       <div className="border border-gray-200 rounded-lg p-4">
-                        <div className="text-sm text-gray-500">Status</div>
+                        <div className="text-sm text-gray-500">{t('common.status')}</div>
                         <div className="mt-2">
                           <span className={`px-2 py-1 rounded text-xs ${getStatusColor(tenantHealth.status)}`}>
                             {tenantHealth.status}
@@ -431,25 +431,25 @@ export default function GlobalTenantsLifecyclePage() {
                         </div>
                       </div>
                       <div className="border border-gray-200 rounded-lg p-4">
-                        <div className="text-sm text-gray-500">Users</div>
+                        <div className="text-sm text-gray-500">{t('global.lifecycle.health.users')}</div>
                         <div className="text-2xl font-bold text-gray-900 mt-1">{tenantHealth.usersCount}</div>
                       </div>
                       <div className="border border-gray-200 rounded-lg p-4">
-                        <div className="text-sm text-gray-500">Active Sessions</div>
+                        <div className="text-sm text-gray-500">{t('global.lifecycle.health.activeSessions')}</div>
                         <div className="text-2xl font-bold text-gray-900 mt-1">{tenantHealth.activeSessionsCount}</div>
                       </div>
                       <div className="border border-gray-200 rounded-lg p-4">
-                        <div className="text-sm text-gray-500">Storage Used</div>
+                        <div className="text-sm text-gray-500">{t('global.lifecycle.health.storageUsed')}</div>
                         <div className="text-2xl font-bold text-gray-900 mt-1">{tenantHealth.storageUsed} MB</div>
                       </div>
                     </div>
                     <div>
-                      <div className="text-sm text-gray-500 mb-1">Last Activity</div>
+                      <div className="text-sm text-gray-500 mb-1">{t('global.lifecycle.health.lastActivity')}</div>
                       <div className="text-base">{new Date(tenantHealth.lastActivityAt).toLocaleString()}</div>
                     </div>
                     {tenantHealth.issues && tenantHealth.issues.length > 0 && (
                       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                        <h3 className="font-medium text-red-900 mb-2">Issues</h3>
+                        <h3 className="font-medium text-red-900 mb-2">{t('global.lifecycle.health.issues')}</h3>
                         <ul className="list-disc list-inside space-y-1">
                           {tenantHealth.issues.map((issue, index) => (
                             <li key={index} className="text-sm text-red-700">{issue}</li>
@@ -459,19 +459,19 @@ export default function GlobalTenantsLifecyclePage() {
                     )}
                   </div>
                 ) : loading ? (
-                  <p className="text-gray-500">Loading...</p>
+                  <p className="text-gray-500">{t('common.loading')}</p>
                 ) : (
                   <button
                     onClick={fetchTenantHealth}
                     className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
                   >
-                    Load Health Data
+                    {t('global.lifecycle.health.loadHealthData')}
                   </button>
                 )}
               </div>
 
               <div className="bg-white rounded-lg shadow p-6">
-                <h2 className="text-xl font-semibold mb-4">Tenant Metrics</h2>
+                <h2 className="text-xl font-semibold mb-4">{t('global.lifecycle.health.metrics')}</h2>
                 {tenantMetrics.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {tenantMetrics.map((metric, index) => (
@@ -495,9 +495,9 @@ export default function GlobalTenantsLifecyclePage() {
                     ))}
                   </div>
                 ) : loading ? (
-                  <p className="text-gray-500">Loading...</p>
+                  <p className="text-gray-500">{t('common.loading')}</p>
                 ) : (
-                  <p className="text-gray-500">No metrics available</p>
+                  <p className="text-gray-500">{t('global.lifecycle.health.noMetrics')}</p>
                 )}
               </div>
             </>
@@ -508,29 +508,29 @@ export default function GlobalTenantsLifecyclePage() {
       {activeTab === 'data' && (
         <div className="space-y-4">
           <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-4">Data Management</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('global.lifecycle.data.title')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="border border-gray-200 rounded-lg p-4">
-                <h3 className="font-medium text-gray-900 mb-2">Export Tenant Data</h3>
-                <p className="text-sm text-gray-500 mb-4">Export all tenant data for backup or migration</p>
+                <h3 className="font-medium text-gray-900 mb-2">{t('global.lifecycle.data.exportTitle')}</h3>
+                <p className="text-sm text-gray-500 mb-4">{t('global.lifecycle.data.exportDesc')}</p>
                 <button
                   onClick={handleExport}
                   disabled={loading || !tenantId}
                   className="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Start Export
+                  {t('global.lifecycle.data.startExport')}
                 </button>
               </div>
 
               <div className="border border-gray-200 rounded-lg p-4">
-                <h3 className="font-medium text-gray-900 mb-2">Import Tenant Data</h3>
-                <p className="text-sm text-gray-500 mb-4">Import previously exported tenant data</p>
+                <h3 className="font-medium text-gray-900 mb-2">{t('global.lifecycle.data.importTitle')}</h3>
+                <p className="text-sm text-gray-500 mb-4">{t('global.lifecycle.data.importDesc')}</p>
                 <button
                   onClick={handleImport}
                   disabled={loading || !tenantId}
                   className="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Start Import
+                  {t('global.lifecycle.data.startImport')}
                 </button>
               </div>
             </div>
@@ -539,16 +539,16 @@ export default function GlobalTenantsLifecyclePage() {
           {exportJobs.length > 0 && (
             <div className="bg-white rounded-lg shadow overflow-hidden">
               <div className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Export Jobs</h2>
+                <h2 className="text-xl font-semibold mb-4">{t('global.lifecycle.data.exportJobs')}</h2>
               </div>
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Export ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Progress</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created At</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.lifecycle.data.exportId')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.status')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.lifecycle.data.progress')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.lifecycle.data.createdAt')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.lifecycle.data.actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -581,7 +581,7 @@ export default function GlobalTenantsLifecyclePage() {
                             className="text-indigo-600 hover:text-indigo-900"
                             download
                           >
-                            Download
+                            {t('global.lifecycle.data.download')}
                           </a>
                         ) : (
                           <span className="text-gray-400">-</span>

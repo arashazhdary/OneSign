@@ -173,7 +173,7 @@ export default function TenantSecurityAnomalyDetectionPage() {
   const handleCreateDetection = async () => {
     setLoading(true);
     try {
-      setSuccess('Detection rule created successfully');
+      setSuccess(t('tenant.security.anomalyDetection.ruleCreatedSuccessfully', 'Detection rule created successfully'));
       setShowCreateModal(false);
       setCreateForm({ name: '', description: '', detectionType: 'behavioral_anomaly', severity: 'medium' });
       fetchDetections();
@@ -183,7 +183,9 @@ export default function TenantSecurityAnomalyDetectionPage() {
   };
 
   const handleToggleDetection = async (id: string, isEnabled: boolean) => {
-    setSuccess(`Detection ${!isEnabled ? 'enabled' : 'disabled'} successfully`);
+    setSuccess(!isEnabled
+      ? t('tenant.security.anomalyDetection.enabledSuccessfully', 'Detection enabled successfully')
+      : t('tenant.security.anomalyDetection.disabledSuccessfully', 'Detection disabled successfully'));
     fetchDetections();
   };
 
@@ -212,7 +214,7 @@ export default function TenantSecurityAnomalyDetectionPage() {
           </div>
         </div>
         <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setShowCreateModal(true)} className="flex items-center gap-2 bg-gradient-to-r from-red-600 to-orange-600 text-white px-6 py-3 rounded-xl hover:shadow-lg font-medium">
-          <Plus className="w-5 h-5" />Create Rule
+          <Plus className="w-5 h-5" />{t('tenant.security.anomalyDetection.createRule', 'Create Rule')}
         </motion.button>
       </motion.div>
 
@@ -294,8 +296,8 @@ export default function TenantSecurityAnomalyDetectionPage() {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 text-sm font-medium">Investigate</motion.button>
-                  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-medium">False Positive</motion.button>
+                  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 text-sm font-medium">{t('tenant.security.anomalyDetection.investigate', 'Investigate')}</motion.button>
+                  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-medium">{t('tenant.security.anomalyDetection.falsePositive', 'False Positive')}</motion.button>
                 </div>
               </div>
             </motion.div>
@@ -357,11 +359,11 @@ export default function TenantSecurityAnomalyDetectionPage() {
         </motion.div>
       )}
 
-      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="Create Detection Rule">
+      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title={t('tenant.security.anomalyDetection.createDetectionRule', 'Create Detection Rule')}>
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Rule Name</label>
-            <input type="text" value={createForm.name} onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })} className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white" placeholder="Unusual Access Pattern" />
+            <input type="text" value={createForm.name} onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })} className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white" placeholder={t('tenant.security.anomalyDetection.ruleNamePlaceholder', 'Unusual Access Pattern')} />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
@@ -387,7 +389,7 @@ export default function TenantSecurityAnomalyDetectionPage() {
           </div>
           <div className="flex gap-3 pt-4">
             <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={handleCreateDetection} className="flex-1 bg-gradient-to-r from-red-600 to-orange-600 text-white px-4 py-3 rounded-xl font-medium">Create Rule</motion.button>
-            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setShowCreateModal(false)} className="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 px-4 py-3 rounded-xl font-medium">Cancel</motion.button>
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setShowCreateModal(false)} className="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 px-4 py-3 rounded-xl font-medium">{t('common.cancel')}</motion.button>
           </div>
         </div>
       </Modal>

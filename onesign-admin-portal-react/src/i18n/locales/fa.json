@@ -117,7 +117,9 @@
       "minLength": "حداقل {{min}} کاراکتر",
       "maxLength": "حداکثر {{max}} کاراکتر",
       "passwordMismatch": "رمزهای عبور مطابقت ندارند",
-      "invalidFormat": "فرمت نامعتبر"
+      "invalidFormat": "فرمت نامعتبر",
+      "requiredFields": "لطفاً همه فیلدهای الزامی را پر کنید",
+      "fillRequired": "لطفاً همه فیلدهای الزامی را پر کنید"
     },
     "table": {
       "search": "جستجو...",
@@ -148,6 +150,15 @@
       "thisMonth": "این ماه",
       "never": "هرگز"
     },
+    "days": {
+      "saturday": "شنبه",
+      "sunday": "یکشنبه",
+      "monday": "دوشنبه",
+      "tuesday": "سه‌شنبه",
+      "wednesday": "چهارشنبه",
+      "thursday": "پنجشنبه",
+      "friday": "جمعه"
+    },
     "errors": {
       "generic": "مشکلی پیش آمد",
       "network": "خطای شبکه",
@@ -173,6 +184,8 @@
       "failedToSignOut": "خروج ناموفق بود",
       "failedToSetPassword": "تنظیم رمز عبور ناموفق بود",
       "failedToVerify": "تأیید ناموفق بود",
+      "failedToCompleteGoogleSignIn": "تکمیل ورود با گوگل ناموفق بود",
+      "failedToInitializeGoogleLogin": "راه‌اندازی ورود با گوگل ناموفق بود",
       "sessionExpired": "نشست منقضی شده",
       "invalidInput": "ورودی نامعتبر",
       "duplicateEntry": "مورد تکراری",
@@ -274,10 +287,46 @@
       "needHelp": "نیاز به کمک دارید؟ با مدیر سیستم تماس بگیرید",
       "invalidEmail": "لطفاً یک آدرس ایمیل معتبر وارد کنید",
       "passwordRequired": "رمز عبور الزامی است",
-      "signingIn": "در حال ورود..."
-    }
+      "signingIn": "در حال ورود...",
+      "completeSetup": "تکمیل راه‌اندازی",
+      "completeSetupDescription": "برای تکمیل ورود اولیه، رمز عبور خود را تنظیم کنید",
+      "confirmPasswordPlaceholder": "رمز عبور خود را تأیید کنید",
+      "settingUp": "در حال راه‌اندازی...",
+      "invalidSetupToken": "توکن راه‌اندازی نامعتبر یا موجود نیست",
+      "setupTokenMissing": "توکن راه‌اندازی موجود نیست",
+      "passwordSetSuccess": "رمز عبور با موفقیت تنظیم شد. لطفاً وارد شوید.",
+      "passwordRequirements": "الزامات رمز عبور:",
+      "googleAuthCancelled": "احراز هویت گوگل لغو شد یا ناموفق بود",
+      "invalidCallback": "درخواست بازگشت نامعتبر: کد مجوز موجود نیست",
+      "completingGoogleSignIn": "در حال تکمیل ورود با گوگل...",
+      "authenticationFailed": "احراز هویت ناموفق بود",
+      "redirectingToLogin": "در حال انتقال به صفحه ورود...",
+      "validation": {
+        "minLength": "رمز عبور باید حداقل ۸ کاراکتر باشد",
+        "requireUppercase": "رمز عبور باید حداقل یک حرف بزرگ داشته باشد",
+        "requireLowercase": "رمز عبور باید حداقل یک حرف کوچک داشته باشد",
+        "requireNumber": "رمز عبور باید حداقل یک عدد داشته باشد",
+        "requireSpecial": "رمز عبور باید حداقل یک کاراکتر خاص داشته باشد",
+        "passwordsMismatch": "رمزهای عبور مطابقت ندارند"
+      },
+      "requirements": {
+        "minLength": "حداقل ۸ کاراکتر",
+        "upperAndLowerCase": "شامل حروف بزرگ و کوچک",
+        "number": "حداقل یک عدد",
+        "specialChar": "حداقل یک کاراکتر خاص"
+      }
+    },
+    "saving": "در حال ذخیره...",
+    "creating": "در حال ایجاد...",
+    "updating": "در حال به‌روزرسانی...",
+    "deleting": "در حال حذف...",
+    "adding": "در حال افزودن...",
+    "loading": "در حال بارگذاری...",
+    "processing": "در حال پردازش...",
+    "saveChanges": "ذخیره تغییرات",
+    "copied": "کپی شد!",
+    "cannotBeUndone": "این عملیات قابل برگشت نیست."
   },
-
   "admin": {
     "portal": {
       "title": "پورتال مدیریت",
@@ -340,7 +389,12 @@
       "storageUsage": "میزان استفاده از فضا",
       "activeTenants": "سازمان‌های فعال",
       "pendingRequests": "درخواست‌های در انتظار",
-      "securityAlerts": "هشدارهای امنیتی"
+      "securityAlerts": "هشدارهای امنیتی",
+      "charts": {
+        "successfulLogins": "ورود موفق",
+        "failedLogins": "ورود ناموفق",
+        "mfaChallenges": "چالش MFA"
+      }
     },
     "users": {
       "title": "کاربران",
@@ -1449,7 +1503,6 @@
       "confirmRollback": "آیا از بازگشت این تغییر اطمینان دارید؟"
     }
   },
-
   "tenant": {
     "portal": {
       "title": "پورتال سازمان",
@@ -1553,7 +1606,34 @@
       "noRecentLogins": "ورود اخیری موجود نیست",
       "registered": "ثبت شده",
       "activeNow": "فعال الان",
-      "thisWeek": "این هفته"
+      "thisWeek": "این هفته",
+      "logins": "ورود",
+      "user": "کاربر",
+      "severityCritical": "بحرانی",
+      "severityMedium": "متوسط",
+      "severityLow": "کم",
+      "charts": {
+        "successfulLogins": "ورود موفق",
+        "failedLogins": "ورود ناموفق",
+        "mfaChallenges": "چالش MFA"
+      },
+      "roles": {
+        "user": "کاربر عادی",
+        "admin": "مدیر",
+        "auditor": "ناظر",
+        "guest": "مهمان"
+      },
+      "apps": {
+        "hrPortal": "پورتال منابع انسانی",
+        "financialSystem": "سیستم مالی",
+        "email": "پست الکترونیک",
+        "projectManagement": "مدیریت پروژه"
+      },
+      "devices": {
+        "windows": "ویندوز",
+        "mac": "مک",
+        "android": "اندروید"
+      }
     },
     "access": {
       "title": "مدیریت دسترسی",
@@ -3248,7 +3328,61 @@
       "confirmDelete": "آیا از حذف این قالب اطمینان دارید؟"
     }
   },
-
+  "global": {
+    "alerts": {
+      "title": "هشدارهای سراسری پلتفرم",
+      "subtitle": "نظارت و مدیریت هشدارهای سراسری پلتفرم",
+      "tabs": {
+        "activeAlerts": "هشدارهای فعال",
+        "history": "تاریخچه",
+        "alertRules": "قوانین هشدار"
+      },
+      "stats": {
+        "critical": "بحرانی",
+        "high": "بالا",
+        "medium": "متوسط",
+        "resolvedToday": "حل شده امروز",
+        "activeRules": "قوانین فعال"
+      },
+      "buttons": {
+        "createRule": "ایجاد قانون هشدار",
+        "acknowledge": "تأیید دریافت",
+        "resolve": "حل کردن",
+        "silence": "خاموش کردن",
+        "edit": "ویرایش",
+        "delete": "حذف"
+      },
+      "filters": {
+        "bySeverity": "فیلتر بر اساس شدت",
+        "allSeverities": "همه شدت‌ها",
+        "critical": "بحرانی",
+        "high": "بالا",
+        "medium": "متوسط",
+        "low": "پایین"
+      },
+      "fields": {
+        "triggered": "فعال شده",
+        "source": "منبع",
+        "category": "دسته‌بندی",
+        "affectedTenants": "مستأجران تحت تأثیر",
+        "acknowledgedBy": "تأیید شده توسط",
+        "at": "در"
+      },
+      "table": {
+        "alert": "هشدار",
+        "severity": "شدت",
+        "category": "دسته‌بندی",
+        "triggered": "فعال شده",
+        "resolved": "حل شده",
+        "status": "وضعیت",
+        "ruleName": "نام قانون",
+        "condition": "شرط",
+        "threshold": "آستانه",
+        "channels": "کانال‌ها",
+        "actions": "عملیات"
+      }
+    }
+  },
   "docs": {
     "title": "مستندات",
     "subtitle": "مستندات API",

@@ -119,7 +119,7 @@ interface UsageChartData {
 // Mock data for fallback
 const mockStatsFallback: ApiUsageStats[] = [
   {
-    period: 'امروز',
+    period: 'today',
     totalCalls: 12543,
     successCalls: 12389,
     errorCalls: 154,
@@ -127,7 +127,7 @@ const mockStatsFallback: ApiUsageStats[] = [
     totalCost: 25.08,
   },
   {
-    period: 'این هفته',
+    period: 'thisWeek',
     totalCalls: 87632,
     successCalls: 86421,
     errorCalls: 1211,
@@ -135,7 +135,7 @@ const mockStatsFallback: ApiUsageStats[] = [
     totalCost: 175.26,
   },
   {
-    period: 'این ماه',
+    period: 'thisMonth',
     totalCalls: 342156,
     successCalls: 337890,
     errorCalls: 4266,
@@ -189,25 +189,25 @@ const mockEndpointsFallback: EndpointUsage[] = [
 
 const mockRateLimitsFallback: RateLimit[] = [
   {
-    name: 'درخواست‌های ساعتی API',
+    name: 'hourlyApiRequests',
     limit: 10000,
     used: 3542,
     remaining: 6458,
     resetAt: '2025-11-23T12:00:00Z',
   },
   {
-    name: 'درخواست‌های روزانه API',
+    name: 'dailyApiRequests',
     limit: 100000,
     used: 12543,
     remaining: 87457,
     resetAt: '2025-11-24T00:00:00Z',
   },
   {
-    name: 'درخواست‌های همزمان',
+    name: 'concurrentRequests',
     limit: 100,
     used: 23,
     remaining: 77,
-    resetAt: 'بلادرنگ',
+    resetAt: 'realtime',
   },
 ];
 
@@ -261,7 +261,7 @@ export default function TenantApiUsagePage() {
       if (usageData) {
         const transformedStats: ApiUsageStats[] = [
           {
-            period: 'امروز',
+            period: 'today',
             totalCalls: usageData.apiCalls?.today || 0,
             successCalls: usageData.apiCalls?.today - (usageData.errors?.today || 0) || 0,
             errorCalls: usageData.errors?.today || 0,
@@ -269,7 +269,7 @@ export default function TenantApiUsagePage() {
             totalCost: usageData.cost?.today || 0,
           },
           {
-            period: 'این هفته',
+            period: 'thisWeek',
             totalCalls: usageData.apiCalls?.week || 0,
             successCalls: usageData.apiCalls?.week - (usageData.errors?.week || 0) || 0,
             errorCalls: usageData.errors?.week || 0,
@@ -277,7 +277,7 @@ export default function TenantApiUsagePage() {
             totalCost: usageData.cost?.week || 0,
           },
           {
-            period: 'این ماه',
+            period: 'thisMonth',
             totalCalls: usageData.apiCalls?.month || 0,
             successCalls: usageData.apiCalls?.month - (usageData.errors?.month || 0) || 0,
             errorCalls: usageData.errors?.month || 0,
@@ -323,7 +323,7 @@ export default function TenantApiUsagePage() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      setSuccess(`گزارش مصرف با فرمت ${format.toUpperCase()} دانلود شد`);
+      setSuccess(t('tenant.apiUsage.exportSuccess', { format: format.toUpperCase() }));
       setTimeout(() => setSuccess(''), 3000);
     } catch (error: any) {
       setError(error?.message || t('common.failedToExportReport'));
@@ -370,9 +370,9 @@ export default function TenantApiUsagePage() {
   };
 
   const tabs = [
-    { id: 'overview', label: 'نمای کلی', icon: BarChart3 },
-    { id: 'endpoints', label: 'Endpointها', icon: Server },
-    { id: 'limits', label: 'محدودیت‌ها', icon: Zap },
+    { id: 'overview', label: t('tenant.apiUsage.tabs.overview'), icon: BarChart3 },
+    { id: 'endpoints', label: t('tenant.apiUsage.tabs.endpoints'), icon: Server },
+    { id: 'limits', label: t('tenant.apiUsage.tabs.limits'), icon: Zap },
   ];
 
   if (loading) {
@@ -385,7 +385,7 @@ export default function TenantApiUsagePage() {
               <Activity className="w-6 h-6 text-indigo-500" />
             </div>
           </div>
-          <p className="text-slate-600 dark:text-slate-400 font-medium">{t('common.loading', 'در حال بارگذاری...')}</p>
+          <p className="text-slate-600 dark:text-slate-400 font-medium">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -394,7 +394,7 @@ export default function TenantApiUsagePage() {
   return (
     <>
       <Helmet>
-        <title>{t('tenant.apiUsage.title', 'مصرف API')} | OneSign</title>
+        <title>{t('tenant.apiUsage.title')} | OneSign</title>
       </Helmet>
 
       <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 min-h-screen" dir="rtl">
@@ -409,7 +409,7 @@ export default function TenantApiUsagePage() {
               <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl text-white">
                 <Activity className="w-6 h-6" />
               </div>
-              {t('tenant.apiUsage.title', 'مصرف و نظارت API')}
+              {t('tenant.apiUsage.title')}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, x: -20 }}
@@ -417,7 +417,7 @@ export default function TenantApiUsagePage() {
               transition={{ delay: 0.1 }}
               className="text-slate-500 dark:text-slate-400 mt-1"
             >
-              {t('tenant.apiUsage.subtitle', 'بررسی مصرف، عملکرد و هزینه‌های API')}
+              {t('tenant.apiUsage.subtitle')}
             </motion.p>
           </div>
           <div className="flex gap-3">
@@ -431,7 +431,7 @@ export default function TenantApiUsagePage() {
               className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-              {t('common.refresh', 'بروزرسانی')}
+              {t('common.refresh')}
             </motion.button>
 
             {/* Export Buttons */}
@@ -443,7 +443,7 @@ export default function TenantApiUsagePage() {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => handleExportReport('csv')}
                 className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all"
-                title="خروجی CSV"
+                title={t('tenant.apiUsage.exportCsv')}
               >
                 <FileText className="w-4 h-4" />
                 CSV
@@ -455,7 +455,7 @@ export default function TenantApiUsagePage() {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => handleExportReport('xlsx')}
                 className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all"
-                title="خروجی Excel"
+                title={t('tenant.apiUsage.exportExcel')}
               >
                 <FileSpreadsheet className="w-4 h-4" />
                 Excel
@@ -467,7 +467,7 @@ export default function TenantApiUsagePage() {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => handleExportReport('json')}
                 className="flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all"
-                title="خروجی JSON"
+                title={t('tenant.apiUsage.exportJson')}
               >
                 <FileJson className="w-4 h-4" />
                 JSON
@@ -506,28 +506,28 @@ export default function TenantApiUsagePage() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            title="کل درخواست‌های امروز"
+            title={t('tenant.apiUsage.stats.totalRequestsToday')}
             value={stats[0]?.totalCalls || 0}
             icon={<Globe className="w-6 h-6" />}
             color="indigo"
             delay={0}
           />
           <StatCard
-            title="درخواست‌های موفق"
+            title={t('tenant.apiUsage.stats.successfulRequests')}
             value={stats[0]?.successCalls || 0}
             icon={<CheckCircle className="w-6 h-6" />}
             color="green"
             delay={1}
           />
           <StatCard
-            title="میانگین زمان پاسخ"
+            title={t('tenant.apiUsage.stats.avgResponseTime')}
             value={`${stats[0]?.avgResponseTime || 0}ms`}
             icon={<Clock className="w-6 h-6" />}
             color="blue"
             delay={2}
           />
           <StatCard
-            title="هزینه امروز"
+            title={t('tenant.apiUsage.stats.costToday')}
             value={`$${stats[0]?.totalCost.toFixed(2) || '0.00'}`}
             icon={<DollarSign className="w-6 h-6" />}
             color="purple"
@@ -588,29 +588,29 @@ export default function TenantApiUsagePage() {
                         transition={{ delay: index * 0.1 }}
                         className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-6"
                       >
-                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">{stat.period}</h3>
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">{t(`tenant.apiUsage.periods.${stat.period}`)}</h3>
                         <div className="space-y-4">
                           <div>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">کل درخواست‌ها</p>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">{t('tenant.apiUsage.stats.totalRequests')}</p>
                             <p className="text-2xl font-bold text-slate-900 dark:text-white">{formatNumber(stat.totalCalls)}</p>
                           </div>
                           <div className="flex justify-between">
                             <div>
-                              <p className="text-xs text-slate-500 dark:text-slate-400">موفق</p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400">{t('tenant.apiUsage.stats.successful')}</p>
                               <p className="text-lg font-semibold text-green-600 dark:text-green-400">{formatNumber(stat.successCalls)}</p>
                             </div>
                             <div>
-                              <p className="text-xs text-slate-500 dark:text-slate-400">خطا</p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400">{t('tenant.apiUsage.stats.errors')}</p>
                               <p className="text-lg font-semibold text-red-600 dark:text-red-400">{formatNumber(stat.errorCalls)}</p>
                             </div>
                           </div>
                           <div className="flex justify-between pt-4 border-t border-slate-200 dark:border-slate-600">
                             <div>
-                              <p className="text-xs text-slate-500 dark:text-slate-400">زمان پاسخ</p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400">{t('tenant.apiUsage.stats.responseTime')}</p>
                               <p className="text-lg font-semibold text-slate-900 dark:text-white">{stat.avgResponseTime}ms</p>
                             </div>
                             <div>
-                              <p className="text-xs text-slate-500 dark:text-slate-400">هزینه</p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400">{t('tenant.apiUsage.stats.cost')}</p>
                               <p className="text-lg font-semibold text-indigo-600 dark:text-indigo-400">${stat.totalCost.toFixed(2)}</p>
                             </div>
                           </div>
@@ -622,7 +622,7 @@ export default function TenantApiUsagePage() {
                   {/* Chart */}
                   <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-6">
                     <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white">درخواست‌های API در طول زمان</h3>
+                      <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{t('tenant.apiUsage.chart.title')}</h3>
                       <div className="flex gap-2">
                         <button
                           onClick={() => setChartPeriod('7')}
@@ -632,7 +632,7 @@ export default function TenantApiUsagePage() {
                               : 'bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-500'
                           }`}
                         >
-                          ۷ روز گذشته
+                          {t('tenant.apiUsage.chart.last7Days')}
                         </button>
                         <button
                           onClick={() => setChartPeriod('30')}
@@ -642,7 +642,7 @@ export default function TenantApiUsagePage() {
                               : 'bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-500'
                           }`}
                         >
-                          ۳۰ روز گذشته
+                          {t('tenant.apiUsage.chart.last30Days')}
                         </button>
                       </div>
                     </div>
@@ -665,7 +665,7 @@ export default function TenantApiUsagePage() {
                               <div
                                 className="w-full bg-gradient-to-t from-indigo-600 to-indigo-400 rounded-t-lg hover:from-indigo-700 hover:to-indigo-500 transition-all cursor-pointer"
                                 style={{ height: '100%', minHeight: '20px' }}
-                                title={`${data.date}: ${formatNumber(data.calls)} درخواست، ${data.errors} خطا`}
+                                title={t('tenant.apiUsage.chart.tooltip', { date: data.date, calls: formatNumber(data.calls), errors: data.errors })}
                               />
                               <div className="text-xs text-slate-500 dark:text-slate-400 mt-2 whitespace-nowrap">
                                 {new Date(data.date).toLocaleDateString('fa-IR', { month: 'short', day: 'numeric' })}
@@ -691,12 +691,12 @@ export default function TenantApiUsagePage() {
                     <table className="min-w-full">
                       <thead>
                         <tr className="border-b border-slate-200 dark:border-slate-700">
-                          <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Endpoint</th>
-                          <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">متد</th>
-                          <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">تعداد</th>
-                          <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">زمان پاسخ</th>
-                          <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">نرخ خطا</th>
-                          <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">آخرین فراخوانی</th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">{t('tenant.apiUsage.endpoints.endpoint')}</th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">{t('tenant.apiUsage.endpoints.method')}</th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">{t('tenant.apiUsage.endpoints.count')}</th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">{t('tenant.apiUsage.endpoints.responseTime')}</th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">{t('tenant.apiUsage.endpoints.errorRate')}</th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">{t('tenant.apiUsage.endpoints.lastCalled')}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
@@ -757,15 +757,14 @@ export default function TenantApiUsagePage() {
                       >
                         <div className="flex justify-between items-center mb-4">
                           <div>
-                            <h3 className="font-semibold text-slate-900 dark:text-white">{limit.name}</h3>
+                            <h3 className="font-semibold text-slate-900 dark:text-white">{t(`tenant.apiUsage.rateLimits.${limit.name}`)}</h3>
                             <p className="text-sm text-slate-500 dark:text-slate-400">
-                              {formatNumber(limit.used)} / {formatNumber(limit.limit)} استفاده شده
-                              ({formatNumber(limit.remaining)} باقی‌مانده)
+                              {t('tenant.apiUsage.rateLimits.usage', { used: formatNumber(limit.used), limit: formatNumber(limit.limit), remaining: formatNumber(limit.remaining) })}
                             </p>
                           </div>
                           <div className="text-left">
                             <p className="text-sm text-slate-500 dark:text-slate-400">
-                              {limit.resetAt === 'بلادرنگ' ? 'بلادرنگ' : `بازنشانی: ${formatDate(limit.resetAt)}`}
+                              {limit.resetAt === 'realtime' ? t('tenant.apiUsage.rateLimits.realtime') : t('tenant.apiUsage.rateLimits.resetAt', { time: formatDate(limit.resetAt) })}
                             </p>
                           </div>
                         </div>
@@ -797,7 +796,7 @@ export default function TenantApiUsagePage() {
         >
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
             <DollarSign className="w-5 h-5 text-indigo-500" />
-            پیگیری هزینه‌ها
+            {t('tenant.apiUsage.costTracking.title')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {stats.map((stat, index) => (
@@ -808,10 +807,10 @@ export default function TenantApiUsagePage() {
                 transition={{ delay: index * 0.1 }}
                 className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-6 border border-slate-200 dark:border-slate-600"
               >
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">هزینه {stat.period}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">{t('tenant.apiUsage.costTracking.costFor', { period: t(`tenant.apiUsage.periods.${stat.period}`) })}</p>
                 <p className="text-3xl font-bold text-slate-900 dark:text-white">${stat.totalCost.toFixed(2)}</p>
                 <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">
-                  ${stat.totalCalls > 0 ? ((stat.totalCost / stat.totalCalls) * 1000).toFixed(4) : '0.0000'} به ازای هر ۱۰۰۰ درخواست
+                  {t('tenant.apiUsage.costTracking.perThousand', { cost: stat.totalCalls > 0 ? ((stat.totalCost / stat.totalCalls) * 1000).toFixed(4) : '0.0000' })}
                 </p>
               </motion.div>
             ))}

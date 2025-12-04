@@ -117,7 +117,9 @@
       "minLength": "Minimum {{min}} characters",
       "maxLength": "Maximum {{max}} characters",
       "passwordMismatch": "Passwords do not match",
-      "invalidFormat": "Invalid format"
+      "invalidFormat": "Invalid format",
+      "requiredFields": "Please fill in all required fields",
+      "fillRequired": "Please fill all required fields"
     },
     "table": {
       "search": "Search...",
@@ -148,6 +150,15 @@
       "thisMonth": "This month",
       "never": "Never"
     },
+    "days": {
+      "saturday": "Saturday",
+      "sunday": "Sunday",
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday"
+    },
     "errors": {
       "generic": "Something went wrong",
       "network": "Network error",
@@ -173,6 +184,8 @@
       "failedToSignOut": "Failed to sign out",
       "failedToSetPassword": "Failed to set password",
       "failedToVerify": "Failed to verify",
+      "failedToCompleteGoogleSignIn": "Failed to complete Google sign in",
+      "failedToInitializeGoogleLogin": "Failed to initialize Google login",
       "sessionExpired": "Session expired",
       "invalidInput": "Invalid input",
       "duplicateEntry": "Duplicate entry",
@@ -274,10 +287,46 @@
       "needHelp": "Need help? Contact your system administrator",
       "invalidEmail": "Please enter a valid email address",
       "passwordRequired": "Password is required",
-      "signingIn": "Signing in..."
-    }
+      "signingIn": "Signing in...",
+      "completeSetup": "Complete Setup",
+      "completeSetupDescription": "Set your password to complete your first login",
+      "confirmPasswordPlaceholder": "Confirm your password",
+      "settingUp": "Setting up...",
+      "invalidSetupToken": "Invalid or missing setup token",
+      "setupTokenMissing": "Setup token is missing",
+      "passwordSetSuccess": "Password set successfully. Please sign in.",
+      "passwordRequirements": "Password Requirements:",
+      "googleAuthCancelled": "Google authentication was cancelled or failed",
+      "invalidCallback": "Invalid callback: missing authorization code",
+      "completingGoogleSignIn": "Completing Google sign in...",
+      "authenticationFailed": "Authentication Failed",
+      "redirectingToLogin": "Redirecting to login...",
+      "validation": {
+        "minLength": "Password must be at least 8 characters long",
+        "requireUppercase": "Password must contain at least one uppercase letter",
+        "requireLowercase": "Password must contain at least one lowercase letter",
+        "requireNumber": "Password must contain at least one number",
+        "requireSpecial": "Password must contain at least one special character",
+        "passwordsMismatch": "Passwords do not match"
+      },
+      "requirements": {
+        "minLength": "At least 8 characters long",
+        "upperAndLowerCase": "Contains uppercase and lowercase letters",
+        "number": "Contains at least one number",
+        "specialChar": "Contains at least one special character"
+      }
+    },
+    "saving": "Saving...",
+    "creating": "Creating...",
+    "updating": "Updating...",
+    "deleting": "Deleting...",
+    "adding": "Adding...",
+    "loading": "Loading...",
+    "processing": "Processing...",
+    "saveChanges": "Save Changes",
+    "copied": "Copied!",
+    "cannotBeUndone": "This action cannot be undone."
   },
-
   "admin": {
     "portal": {
       "title": "Admin Portal",
@@ -340,7 +389,12 @@
       "storageUsage": "Storage Usage",
       "activeTenants": "Active Organizations",
       "pendingRequests": "Pending Requests",
-      "securityAlerts": "Security Alerts"
+      "securityAlerts": "Security Alerts",
+      "charts": {
+        "successfulLogins": "Successful Logins",
+        "failedLogins": "Failed Logins",
+        "mfaChallenges": "MFA Challenges"
+      }
     },
     "users": {
       "title": "Users",
@@ -1449,7 +1503,6 @@
       "confirmRollback": "Are you sure you want to rollback this change?"
     }
   },
-
   "tenant": {
     "portal": {
       "title": "Organization Portal",
@@ -1553,7 +1606,34 @@
       "noRecentLogins": "No recent logins",
       "registered": "registered",
       "activeNow": "active now",
-      "thisWeek": "this week"
+      "thisWeek": "this week",
+      "logins": "Logins",
+      "user": "User",
+      "severityCritical": "Critical",
+      "severityMedium": "Medium",
+      "severityLow": "Low",
+      "charts": {
+        "successfulLogins": "Successful Logins",
+        "failedLogins": "Failed Logins",
+        "mfaChallenges": "MFA Challenges"
+      },
+      "roles": {
+        "user": "User",
+        "admin": "Admin",
+        "auditor": "Auditor",
+        "guest": "Guest"
+      },
+      "apps": {
+        "hrPortal": "HR Portal",
+        "financialSystem": "Financial System",
+        "email": "Email",
+        "projectManagement": "Project Management"
+      },
+      "devices": {
+        "windows": "Windows",
+        "mac": "Mac",
+        "android": "Android"
+      }
     },
     "access": {
       "title": "Access Management",
@@ -2527,7 +2607,12 @@
       "impossibleTravel": "Impossible Travel",
       "suspiciousIp": "Suspicious IP",
       "newDevice": "New Device",
-      "settingsUpdated": "Settings updated"
+      "settingsUpdated": "Settings updated",
+      "modal": {
+        "editPolicy": "Edit Policy",
+        "createPolicy": "Create Policy",
+        "editRiskSignal": "Edit Risk Signal"
+      }
     },
     "privilegedAccess": {
       "title": "Privileged Access",
@@ -2605,7 +2690,8 @@
       "ipAdded": "IP address added",
       "ipUpdated": "IP address updated",
       "ipDeleted": "IP address deleted",
-      "confirmDelete": "Are you sure you want to delete this IP address?"
+      "confirmDelete": "Are you sure you want to delete this IP address?",
+      "placeholderFormat": "192.168.1.100 or 10.0.0.0/24"
     },
     "serviceAccounts": {
       "title": "Service Accounts",
@@ -2667,7 +2753,8 @@
       "tokenRevoked": "Token revoked",
       "allTokensRevoked": "All tokens revoked",
       "confirmRevoke": "Are you sure you want to revoke this token?",
-      "confirmRevokeAll": "Are you sure you want to revoke all tokens?"
+      "confirmRevokeAll": "Are you sure you want to revoke all tokens?",
+      "createNewToken": "Create New Token"
     },
     "incidents": {
       "title": "Incidents",
@@ -2764,7 +2851,8 @@
       "justification": "Justification",
       "dueDate": "Due Date",
       "overdue": "Overdue",
-      "reviewSubmitted": "Review submitted"
+      "reviewSubmitted": "Review submitted",
+      "createAccessReview": "Create Access Review"
     },
     "accessRequests": {
       "title": "Access Requests",
@@ -2787,6 +2875,9 @@
       "requestSubmitted": "Request submitted",
       "requestApproved": "Request approved",
       "requestDenied": "Request denied"
+    },
+    "accessCertifications": {
+      "createCertificationCampaign": "Create Certification Campaign"
     },
     "reports": {
       "title": "Reports",
@@ -2883,6 +2974,7 @@
       "subtitle": "Privacy settings",
       "dataSubjectRequests": "Data Subject Requests",
       "createRequest": "Create Request",
+      "createDataRequest": "Create Data Request",
       "requestType": "Request Type",
       "access": "Access",
       "deletion": "Deletion",
@@ -3030,7 +3122,11 @@
       "webhookUpdated": "Webhook updated",
       "webhookDeleted": "Webhook deleted",
       "testWebhook": "Test Webhook",
-      "confirmDelete": "Are you sure you want to delete this webhook?"
+      "confirmDelete": "Are you sure you want to delete this webhook?",
+      "modal": {
+        "createWebhook": "Create Webhook",
+        "editWebhook": "Edit Webhook"
+      }
     },
     "sessions": {
       "title": "Sessions",
@@ -3215,7 +3311,13 @@
       "pluginDeleted": "Plugin deleted",
       "hookConfigured": "Hook configured",
       "scriptExecuted": "Script executed",
-      "confirmDelete": "Are you sure you want to delete this plugin?"
+      "confirmDelete": "Are you sure you want to delete this plugin?",
+      "editWebhook": "Edit Webhook",
+      "createWebhook": "Create Webhook",
+      "editLoginHook": "Edit Login Hook",
+      "createLoginHook": "Create Login Hook",
+      "editTokenRule": "Edit Token Rule",
+      "createTokenRule": "Create Token Rule"
     },
     "templates": {
       "title": "Templates",
@@ -3248,7 +3350,61 @@
       "confirmDelete": "Are you sure you want to delete this template?"
     }
   },
-
+  "global": {
+    "alerts": {
+      "title": "Global Platform Alerts",
+      "subtitle": "Platform-wide alert monitoring and management",
+      "tabs": {
+        "activeAlerts": "Active Alerts",
+        "history": "History",
+        "alertRules": "Alert Rules"
+      },
+      "stats": {
+        "critical": "Critical",
+        "high": "High",
+        "medium": "Medium",
+        "resolvedToday": "Resolved Today",
+        "activeRules": "Active Rules"
+      },
+      "buttons": {
+        "createRule": "Create Alert Rule",
+        "acknowledge": "Acknowledge",
+        "resolve": "Resolve",
+        "silence": "Silence",
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "filters": {
+        "bySeverity": "Filter by Severity",
+        "allSeverities": "All Severities",
+        "critical": "Critical",
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "fields": {
+        "triggered": "Triggered",
+        "source": "Source",
+        "category": "Category",
+        "affectedTenants": "Affected Tenants",
+        "acknowledgedBy": "Acknowledged by",
+        "at": "at"
+      },
+      "table": {
+        "alert": "Alert",
+        "severity": "Severity",
+        "category": "Category",
+        "triggered": "Triggered",
+        "resolved": "Resolved",
+        "status": "Status",
+        "ruleName": "Rule Name",
+        "condition": "Condition",
+        "threshold": "Threshold",
+        "channels": "Channels",
+        "actions": "Actions"
+      }
+    }
+  },
   "docs": {
     "title": "Documentation",
     "subtitle": "API Documentation",

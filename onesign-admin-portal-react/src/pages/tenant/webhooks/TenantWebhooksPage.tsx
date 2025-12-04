@@ -243,7 +243,7 @@ export default function TenantWebhooksPage() {
         secret: formSecret,
         isActive: formIsActive,
       });
-      setSuccess('Webhook created successfully');
+      setSuccess(t('tenant.webhooks.messages.created'));
       setShowCreateModal(false);
       resetForm();
       fetchWebhooks();
@@ -267,7 +267,7 @@ export default function TenantWebhooksPage() {
         secret: formSecret,
         isActive: formIsActive,
       });
-      setSuccess('Webhook updated successfully');
+      setSuccess(t('tenant.webhooks.messages.updated'));
       setShowEditModal(false);
       setSelectedWebhook(null);
       resetForm();
@@ -280,14 +280,14 @@ export default function TenantWebhooksPage() {
 
   const handleDelete = async (webhookId: string) => {
     if (!tenantId) return;
-    if (!confirm('Are you sure you want to delete this webhook?')) return;
+    if (!confirm(t('tenant.webhooks.confirmDelete'))) return;
 
     setError('');
     setSuccess('');
 
     try {
       await tenantService.deleteWebhook(webhookId);
-      setSuccess('Webhook deleted successfully');
+      setSuccess(t('tenant.webhooks.messages.deleted'));
       fetchWebhooks();
     } catch (error: any) {
       setError(error?.message || t('common.failedToDeleteWebhook'));
@@ -304,9 +304,9 @@ export default function TenantWebhooksPage() {
     try {
       const result = await tenantService.testWebhook(webhookId);
       if (result.success) {
-        setSuccess('Test payload sent successfully');
+        setSuccess(t('tenant.webhooks.messages.testSuccess'));
       } else {
-        setError(result.message || 'Test failed');
+        setError(result.message || t('tenant.webhooks.messages.testFailed'));
       }
     } catch (error: any) {
       setError(error?.message || t('common.failedToTestWebhook'));
@@ -321,7 +321,7 @@ export default function TenantWebhooksPage() {
       await tenantService.updateWebhook(webhook.id, {
         isActive: !webhook.isActive,
       });
-      setSuccess(`Webhook ${!webhook.isActive ? 'enabled' : 'disabled'} successfully`);
+      setSuccess(!webhook.isActive ? t('tenant.webhooks.messages.enabled') : t('tenant.webhooks.messages.disabled'));
       fetchWebhooks();
     } catch (error: any) {
       setError(error?.message || t('common.failedToToggleWebhookStatus'));
@@ -336,7 +336,7 @@ export default function TenantWebhooksPage() {
 
     try {
       await tenantService.retryWebhookDelivery(tenantId, deliveryId);
-      setSuccess('Delivery retry initiated');
+      setSuccess(t('tenant.webhooks.messages.retryInitiated'));
     } catch (error: any) {
       setError(error?.message || t('common.failedToRetryDelivery'));
     }
@@ -418,7 +418,7 @@ export default function TenantWebhooksPage() {
           >
             <Webhook className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
           </motion.div>
-          <span className="ml-3 text-slate-600 dark:text-slate-400">Loading webhooks...</span>
+          <span className="ml-3 text-slate-600 dark:text-slate-400">{t('tenant.webhooks.loading')}</span>
         </div>
       </div>
     );
@@ -427,7 +427,7 @@ export default function TenantWebhooksPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
       <Helmet>
-        <title>Webhooks Management - OneSign</title>
+        <title>{t('tenant.webhooks.title')} - OneSign</title>
       </Helmet>
 
       <div className="p-8">
@@ -443,10 +443,10 @@ export default function TenantWebhooksPage() {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-                Webhooks Management
+                {t('tenant.webhooks.title')}
               </h1>
               <p className="text-slate-600 dark:text-slate-400 mt-1">
-                Configure event notifications and integrations
+                {t('tenant.webhooks.subtitle')}
               </p>
             </div>
           </div>
@@ -458,7 +458,7 @@ export default function TenantWebhooksPage() {
               className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm"
             >
               <RefreshCw className="w-4 h-4" />
-              Refresh
+              {t('common.refresh')}
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -467,7 +467,7 @@ export default function TenantWebhooksPage() {
               className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-500/25"
             >
               <Plus className="w-4 h-4" />
-              Create Webhook
+              {t('tenant.webhooks.createWebhook')}
             </motion.button>
           </div>
         </motion.div>
@@ -719,7 +719,7 @@ export default function TenantWebhooksPage() {
       <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        title="Create Webhook"
+        title={t('tenant.webhooks.modal.createWebhook')}
       >
         <form onSubmit={handleCreate} className="space-y-6">
           <div>
@@ -826,7 +826,7 @@ export default function TenantWebhooksPage() {
           setShowEditModal(false);
           setSelectedWebhook(null);
         }}
-        title="Edit Webhook"
+        title={t('tenant.webhooks.modal.editWebhook')}
       >
         <form onSubmit={handleUpdate} className="space-y-6">
           <div>

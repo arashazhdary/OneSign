@@ -115,8 +115,8 @@ const SettingsPage = () => {
                 <Dropdown
                   label={t('settings.language')}
                   options={[
-                    { value: 'en', label: 'English' },
-                    { value: 'fa', label: 'فارسی' },
+                    { value: 'en', label: t('common.languages.english') },
+                    { value: 'fa', label: t('common.languages.persian') },
                   ]}
                   value={settings.language}
                   onChange={(value) => setSettings({ ...settings, language: value })}

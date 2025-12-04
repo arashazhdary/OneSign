@@ -123,10 +123,11 @@ const mockScheduleFallback: BackupSchedule = {
   lastRun: new Date(Date.now() - 86400000).toISOString(),
 };
 
+// Note: Mock data backup names will use translation keys when rendered
 const mockBackupsFallback: Backup[] = [
   {
     id: '1',
-    name: 'پشتیبان‌گیری پیش از مهاجرت',
+    name: 'backup_pre_migration',
     type: 'Pre-Migration',
     status: 'Verified',
     size: 2048000,
@@ -140,12 +141,12 @@ const mockBackupsFallback: Backup[] = [
   },
   {
     id: '2',
-    name: 'پشتیبان‌گیری روزانه - ۱۴۰۳/۰۹/۲۴',
+    name: 'backup_daily_20231214',
     type: 'Scheduled',
     status: 'Completed',
     size: 1843200,
     createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
-    createdBy: 'سیستم',
+    createdBy: 'System',
     expiresAt: new Date(Date.now() + 86400000 * 27).toISOString(),
     includesUsers: true,
     includesApps: true,
@@ -153,7 +154,7 @@ const mockBackupsFallback: Backup[] = [
   },
   {
     id: '3',
-    name: 'پشتیبان‌گیری قبل از تغییرات',
+    name: 'backup_before_changes',
     type: 'Manual',
     status: 'Completed',
     size: 1920000,
@@ -165,12 +166,12 @@ const mockBackupsFallback: Backup[] = [
   },
   {
     id: '4',
-    name: 'پشتیبان‌گیری روزانه - ۱۴۰۳/۰۹/۲۵',
+    name: 'backup_daily_20231215',
     type: 'Scheduled',
     status: 'In Progress',
     size: 0,
     createdAt: new Date().toISOString(),
-    createdBy: 'سیستم',
+    createdBy: 'System',
     includesUsers: true,
     includesApps: true,
     includesSettings: true,
@@ -267,7 +268,7 @@ export default function TenantBackupsPage() {
   const handleCreateBackup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!tenantId || !backupName) {
-      setError('لطفاً نام پشتیبان را وارد کنید');
+      setError(t('tenant.backups.errors.nameRequired'));
       return;
     }
 
@@ -277,12 +278,12 @@ export default function TenantBackupsPage() {
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      setSuccess('پشتیبان‌گیری با موفقیت ایجاد شد');
+      setSuccess(t('tenant.backups.success.created'));
       setShowCreateModal(false);
       setBackupName('');
       fetchBackups();
     } catch (err) {
-      setError('خطا در ایجاد پشتیبان');
+      setError(t('tenant.backups.errors.createFailed'));
       console.error('Error creating backup:', err);
     } finally {
       setSubmitting(false);
@@ -298,11 +299,11 @@ export default function TenantBackupsPage() {
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      setSuccess('پشتیبان با موفقیت بازیابی شد');
+      setSuccess(t('tenant.backups.success.restored'));
       setShowRestoreModal(false);
       setSelectedBackup(null);
     } catch (err) {
-      setError('خطا در بازیابی پشتیبان');
+      setError(t('tenant.backups.errors.restoreFailed'));
       console.error('Error restoring backup:', err);
     } finally {
       setSubmitting(false);
@@ -318,10 +319,10 @@ export default function TenantBackupsPage() {
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setSuccess('پشتیبان با موفقیت تأیید شد');
+      setSuccess(t('tenant.backups.success.verified'));
       fetchBackups();
     } catch (err) {
-      setError('خطا در تأیید پشتیبان');
+      setError(t('tenant.backups.errors.verifyFailed'));
       console.error('Error verifying backup:', err);
     } finally {
       setSubmitting(false);
@@ -337,12 +338,12 @@ export default function TenantBackupsPage() {
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setSuccess('پشتیبان با موفقیت حذف شد');
+      setSuccess(t('tenant.backups.success.deleted'));
       setShowDeleteConfirm(false);
       setSelectedBackup(null);
       fetchBackups();
     } catch (err) {
-      setError('خطا در حذف پشتیبان');
+      setError(t('tenant.backups.errors.deleteFailed'));
       console.error('Error deleting backup:', err);
     } finally {
       setSubmitting(false);
@@ -359,11 +360,11 @@ export default function TenantBackupsPage() {
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      setSuccess('زمان‌بندی پشتیبان‌گیری با موفقیت بروزرسانی شد');
+      setSuccess(t('tenant.backups.success.scheduleUpdated'));
       setShowScheduleModal(false);
       fetchSchedule();
     } catch (err) {
-      setError('خطا در بروزرسانی زمان‌بندی');
+      setError(t('tenant.backups.errors.scheduleUpdateFailed'));
       console.error('Error updating schedule:', err);
     } finally {
       setSubmitting(false);
@@ -375,14 +376,19 @@ export default function TenantBackupsPage() {
     link.href = '#';
     link.download = `${backup.name}.backup`;
     link.click();
-    setSuccess('دانلود پشتیبان شروع شد');
+    setSuccess(t('tenant.backups.success.downloadStarted'));
     setTimeout(() => setSuccess(''), 3000);
   };
 
   const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '۰ بایت';
+    if (bytes === 0) return t('tenant.backups.size.zero');
     const k = 1024;
-    const sizes = ['بایت', 'کیلوبایت', 'مگابایت', 'گیگابایت'];
+    const sizes = [
+      t('tenant.backups.size.bytes'),
+      t('tenant.backups.size.kilobytes'),
+      t('tenant.backups.size.megabytes'),
+      t('tenant.backups.size.gigabytes')
+    ];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   };
@@ -428,13 +434,13 @@ export default function TenantBackupsPage() {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'Completed':
-        return 'تکمیل شده';
+        return t('tenant.backups.status.completed');
       case 'Verified':
-        return 'تأیید شده';
+        return t('tenant.backups.status.verified');
       case 'In Progress':
-        return 'در حال انجام';
+        return t('tenant.backups.status.inProgress');
       case 'Failed':
-        return 'ناموفق';
+        return t('tenant.backups.status.failed');
       default:
         return status;
     }
@@ -443,11 +449,11 @@ export default function TenantBackupsPage() {
   const getTypeLabel = (type: string) => {
     switch (type) {
       case 'Manual':
-        return 'دستی';
+        return t('tenant.backups.type.manual');
       case 'Scheduled':
-        return 'زمان‌بندی شده';
+        return t('tenant.backups.type.scheduled');
       case 'Pre-Migration':
-        return 'پیش از مهاجرت';
+        return t('tenant.backups.type.preMigration');
       default:
         return type;
     }
@@ -456,11 +462,11 @@ export default function TenantBackupsPage() {
   const getFrequencyLabel = (frequency: string) => {
     switch (frequency) {
       case 'Daily':
-        return 'روزانه';
+        return t('tenant.backups.frequency.daily');
       case 'Weekly':
-        return 'هفتگی';
+        return t('tenant.backups.frequency.weekly');
       case 'Monthly':
-        return 'ماهانه';
+        return t('tenant.backups.frequency.monthly');
       default:
         return frequency;
     }
@@ -484,7 +490,7 @@ export default function TenantBackupsPage() {
               <Database className="w-6 h-6 text-blue-500" />
             </div>
           </div>
-          <p className="text-slate-600 dark:text-slate-400 font-medium">{t('common.loading', 'در حال بارگذاری...')}</p>
+          <p className="text-slate-600 dark:text-slate-400 font-medium">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -493,7 +499,7 @@ export default function TenantBackupsPage() {
   return (
     <>
       <Helmet>
-        <title>{t('tenant.backups.title', 'مدیریت پشتیبان‌ها')} | OneSign</title>
+        <title>{t('tenant.backups.title')} | OneSign</title>
       </Helmet>
 
       <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 min-h-screen" dir="rtl">
@@ -508,7 +514,7 @@ export default function TenantBackupsPage() {
               <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl text-white">
                 <Database className="w-6 h-6" />
               </div>
-              {t('tenant.backups.title', 'مدیریت پشتیبان‌ها')}
+              {t('tenant.backups.title')}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, x: -20 }}
@@ -516,7 +522,7 @@ export default function TenantBackupsPage() {
               transition={{ delay: 0.1 }}
               className="text-slate-500 dark:text-slate-400 mt-1"
             >
-              {t('tenant.backups.subtitle', 'ایجاد، مدیریت و بازیابی پشتیبان‌های داده')}
+              {t('tenant.backups.subtitle')}
             </motion.p>
           </div>
           <div className="flex gap-3">
@@ -530,7 +536,7 @@ export default function TenantBackupsPage() {
               className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-              {t('common.refresh', 'بروزرسانی')}
+              {t('common.refresh')}
             </motion.button>
             <motion.button
               initial={{ opacity: 0, scale: 0.9 }}
@@ -541,7 +547,7 @@ export default function TenantBackupsPage() {
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl"
             >
               <Plus className="w-4 h-4" />
-              {t('tenant.backups.createBackup', 'ایجاد پشتیبان')}
+              {t('tenant.backups.createBackup')}
             </motion.button>
           </div>
         </div>
@@ -576,28 +582,28 @@ export default function TenantBackupsPage() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            title="کل پشتیبان‌ها"
+            title={t('tenant.backups.stats.total')}
             value={stats.total}
             icon={<Database className="w-6 h-6" />}
             color="blue"
             delay={0}
           />
           <StatCard
-            title="پشتیبان‌های تکمیل شده"
+            title={t('tenant.backups.stats.completed')}
             value={stats.completed}
             icon={<CheckCircle className="w-6 h-6" />}
             color="green"
             delay={1}
           />
           <StatCard
-            title="در حال انجام"
+            title={t('tenant.backups.stats.inProgress')}
             value={stats.inProgress}
             icon={<RefreshCw className="w-6 h-6" />}
             color="yellow"
             delay={2}
           />
           <StatCard
-            title="حجم کل"
+            title={t('tenant.backups.stats.totalSize')}
             value={formatBytes(stats.totalSize)}
             icon={<HardDrive className="w-6 h-6" />}
             color="purple"
@@ -616,7 +622,7 @@ export default function TenantBackupsPage() {
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-blue-600" />
-                زمان‌بندی پشتیبان‌گیری
+                {t('tenant.backups.schedule.title')}
               </h2>
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -625,46 +631,46 @@ export default function TenantBackupsPage() {
                 className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-all"
               >
                 <Settings className="w-4 h-4" />
-                تنظیمات
+                {t('tenant.backups.schedule.settings')}
               </motion.button>
             </div>
 
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">تناوب</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">{t('tenant.backups.schedule.frequencyLabel')}</p>
                   <p className="text-lg font-semibold text-slate-900 dark:text-white">{getFrequencyLabel(schedule.frequency)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">زمان</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">{t('tenant.backups.schedule.timeLabel')}</p>
                   <p className="text-lg font-semibold text-slate-900 dark:text-white">{schedule.time}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">نگهداری</p>
-                  <p className="text-lg font-semibold text-slate-900 dark:text-white">{schedule.retention} روز</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">{t('tenant.backups.schedule.retentionLabel')}</p>
+                  <p className="text-lg font-semibold text-slate-900 dark:text-white">{t('tenant.backups.schedule.retentionDays', { days: schedule.retention })}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">وضعیت</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">{t('tenant.backups.schedule.statusLabel')}</p>
                   <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${
                     schedule.enabled
                       ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                       : 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-400'
                   }`}>
-                    {schedule.enabled ? 'فعال' : 'غیرفعال'}
+                    {schedule.enabled ? t('tenant.backups.schedule.enabled') : t('tenant.backups.schedule.disabled')}
                   </span>
                 </div>
               </div>
 
               <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-6 text-sm">
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400">اجرای بعدی:</span>
+                  <span className="text-slate-500 dark:text-slate-400">{t('tenant.backups.schedule.nextRun')}:</span>
                   <span className="mr-2 font-medium text-slate-900 dark:text-white">
                     {formatDateTime(schedule.nextRun)}
                   </span>
                 </div>
                 {schedule.lastRun && (
                   <div>
-                    <span className="text-slate-500 dark:text-slate-400">آخرین اجرا:</span>
+                    <span className="text-slate-500 dark:text-slate-400">{t('tenant.backups.schedule.lastRun')}:</span>
                     <span className="mr-2 font-medium text-slate-900 dark:text-white">
                       {formatDateTime(schedule.lastRun)}
                     </span>
@@ -684,7 +690,7 @@ export default function TenantBackupsPage() {
         >
           <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <HardDrive className="w-5 h-5 text-blue-600" />
-            لیست پشتیبان‌ها
+            {t('tenant.backups.list.title')}
           </h2>
 
           {backups.length > 0 ? (
@@ -719,7 +725,7 @@ export default function TenantBackupsPage() {
                           {backup.name}
                         </h3>
                         <p className="text-sm text-slate-500 dark:text-slate-400">
-                          توسط {backup.createdBy}
+                          {t('tenant.backups.list.createdBy', { user: backup.createdBy })}
                         </p>
                       </div>
                       <span className={`flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full ${getStatusColor(backup.status)}`}>
@@ -735,7 +741,7 @@ export default function TenantBackupsPage() {
                       <div className="flex items-center gap-2">
                         <HardDrive className="w-4 h-4 text-slate-400" />
                         <div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">حجم</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">{t('tenant.backups.list.size')}</p>
                           <p className="text-sm font-medium text-slate-900 dark:text-white">
                             {formatBytes(backup.size)}
                           </p>
@@ -744,7 +750,7 @@ export default function TenantBackupsPage() {
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-slate-400" />
                         <div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">ایجاد شده</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">{t('tenant.backups.list.created')}</p>
                           <p className="text-sm font-medium text-slate-900 dark:text-white">
                             {formatDate(backup.createdAt)}
                           </p>
@@ -754,7 +760,7 @@ export default function TenantBackupsPage() {
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4 text-slate-400" />
                           <div>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">انقضا</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{t('tenant.backups.list.expires')}</p>
                             <p className="text-sm font-medium text-slate-900 dark:text-white">
                               {formatDate(backup.expiresAt)}
                             </p>
@@ -764,13 +770,13 @@ export default function TenantBackupsPage() {
                       <div className="flex items-center gap-2">
                         <Shield className="w-4 h-4 text-slate-400" />
                         <div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">شامل</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">{t('tenant.backups.list.includes')}</p>
                           <p className="text-sm font-medium text-slate-900 dark:text-white">
                             {[
-                              backup.includesUsers && 'کاربران',
-                              backup.includesApps && 'اپ‌ها',
-                              backup.includesSettings && 'تنظیمات',
-                            ].filter(Boolean).join('، ')}
+                              backup.includesUsers && t('tenant.backups.includes.users'),
+                              backup.includesApps && t('tenant.backups.includes.apps'),
+                              backup.includesSettings && t('tenant.backups.includes.settings'),
+                            ].filter(Boolean).join(t('common.separator'))}
                           </p>
                         </div>
                       </div>
@@ -787,7 +793,7 @@ export default function TenantBackupsPage() {
                           setShowRestoreModal(true);
                         }}
                         className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all"
-                        title="بازیابی"
+                        title={t('tenant.backups.actions.restore')}
                       >
                         <RotateCcw className="w-5 h-5" />
                       </motion.button>
@@ -796,7 +802,7 @@ export default function TenantBackupsPage() {
                         whileTap={{ scale: 0.9 }}
                         onClick={() => handleDownloadBackup(backup)}
                         className="p-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-all"
-                        title="دانلود"
+                        title={t('tenant.backups.actions.download')}
                       >
                         <Download className="w-5 h-5" />
                       </motion.button>
@@ -806,7 +812,7 @@ export default function TenantBackupsPage() {
                           whileTap={{ scale: 0.9 }}
                           onClick={() => handleVerifyBackup(backup)}
                           className="p-2 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-lg transition-all"
-                          title="تأیید"
+                          title={t('tenant.backups.actions.verify')}
                         >
                           <ShieldCheck className="w-5 h-5" />
                         </motion.button>
@@ -819,7 +825,7 @@ export default function TenantBackupsPage() {
                           setShowDeleteConfirm(true);
                         }}
                         className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all"
-                        title="حذف"
+                        title={t('tenant.backups.actions.delete')}
                       >
                         <Trash2 className="w-5 h-5" />
                       </motion.button>
@@ -829,7 +835,7 @@ export default function TenantBackupsPage() {
                   {backup.status === 'In Progress' && (
                     <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      در حال پردازش...
+                      {t('tenant.backups.list.processing')}
                     </div>
                   )}
                 </div>
@@ -845,10 +851,10 @@ export default function TenantBackupsPage() {
                 <Database className="w-8 h-8 text-blue-500" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-                پشتیبانی یافت نشد
+                {t('tenant.backups.list.noBackups')}
               </h3>
               <p className="text-slate-500 dark:text-slate-400 mb-4">
-                هنوز هیچ پشتیبانی ایجاد نشده است
+                {t('tenant.backups.list.noBackupsDescription')}
               </p>
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -856,7 +862,7 @@ export default function TenantBackupsPage() {
                 onClick={() => setShowCreateModal(true)}
                 className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all"
               >
-                ایجاد اولین پشتیبان
+                {t('tenant.backups.list.createFirst')}
               </motion.button>
             </motion.div>
           )}
@@ -869,19 +875,19 @@ export default function TenantBackupsPage() {
             setShowCreateModal(false);
             setBackupName('');
           }}
-          title="ایجاد پشتیبان دستی"
+          title={t('tenant.backups.modal.create.title')}
           size="md"
         >
           <form onSubmit={handleCreateBackup} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                نام پشتیبان <span className="text-red-500">*</span>
+                {t('tenant.backups.modal.create.nameLabel')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={backupName}
                 onChange={(e) => setBackupName(e.target.value)}
-                placeholder="یک نام توصیفی برای پشتیبان وارد کنید"
+                placeholder={t('tenant.backups.modal.create.namePlaceholder')}
                 className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                 required
               />
@@ -889,7 +895,7 @@ export default function TenantBackupsPage() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
-                محتویات پشتیبان
+                {t('tenant.backups.modal.create.contentsLabel')}
               </label>
               <div className="space-y-3">
                 <label className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-all">
@@ -899,7 +905,7 @@ export default function TenantBackupsPage() {
                     onChange={(e) => setIncludeUsers(e.target.checked)}
                     className="rounded text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="text-sm text-slate-700 dark:text-slate-300">کاربران</span>
+                  <span className="text-sm text-slate-700 dark:text-slate-300">{t('tenant.backups.includes.users')}</span>
                 </label>
                 <label className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-all">
                   <input
@@ -908,7 +914,7 @@ export default function TenantBackupsPage() {
                     onChange={(e) => setIncludeApps(e.target.checked)}
                     className="rounded text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="text-sm text-slate-700 dark:text-slate-300">اپلیکیشن‌ها</span>
+                  <span className="text-sm text-slate-700 dark:text-slate-300">{t('tenant.backups.includes.apps')}</span>
                 </label>
                 <label className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 cursor-pointer transition-all">
                   <input
@@ -917,7 +923,7 @@ export default function TenantBackupsPage() {
                     onChange={(e) => setIncludeSettings(e.target.checked)}
                     className="rounded text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="text-sm text-slate-700 dark:text-slate-300">تنظیمات</span>
+                  <span className="text-sm text-slate-700 dark:text-slate-300">{t('tenant.backups.includes.settings')}</span>
                 </label>
               </div>
             </div>
@@ -931,14 +937,14 @@ export default function TenantBackupsPage() {
                 }}
                 className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-slate-700 dark:text-slate-300"
               >
-                انصراف
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
                 disabled={submitting || !backupName}
                 className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50"
               >
-                {submitting ? 'در حال ایجاد...' : 'ایجاد پشتیبان'}
+                {submitting ? t('tenant.backups.modal.create.creating') : t('tenant.backups.modal.create.submit')}
               </button>
             </div>
           </form>
@@ -951,7 +957,7 @@ export default function TenantBackupsPage() {
             setShowRestoreModal(false);
             setSelectedBackup(null);
           }}
-          title="بازیابی پشتیبان"
+          title={t('tenant.backups.modal.restore.title')}
           size="md"
         >
           <div className="space-y-4">
@@ -959,9 +965,9 @@ export default function TenantBackupsPage() {
               <div className="flex gap-3">
                 <AlertCircle className="w-6 h-6 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
                 <div>
-                  <p className="font-medium text-yellow-800 dark:text-yellow-300 mb-1">هشدار</p>
+                  <p className="font-medium text-yellow-800 dark:text-yellow-300 mb-1">{t('tenant.backups.modal.restore.warningTitle')}</p>
                   <p className="text-sm text-yellow-700 dark:text-yellow-400">
-                    بازیابی این پشتیبان تمام داده‌های فعلی را جایگزین می‌کند. این عمل غیرقابل بازگشت است.
+                    {t('tenant.backups.modal.restore.warningMessage')}
                   </p>
                 </div>
               </div>
@@ -970,15 +976,15 @@ export default function TenantBackupsPage() {
             {selectedBackup && (
               <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4 space-y-3">
                 <div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">نام پشتیبان</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">{t('tenant.backups.modal.restore.backupName')}</p>
                   <p className="font-semibold text-slate-900 dark:text-white">{selectedBackup.name}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">تاریخ ایجاد</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">{t('tenant.backups.modal.restore.createdAt')}</p>
                   <p className="text-slate-900 dark:text-white">{formatDateTime(selectedBackup.createdAt)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500 dark:text-slate-400">حجم</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">{t('tenant.backups.modal.restore.size')}</p>
                   <p className="text-slate-900 dark:text-white">{formatBytes(selectedBackup.size)}</p>
                 </div>
               </div>
@@ -992,14 +998,14 @@ export default function TenantBackupsPage() {
                 }}
                 className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-slate-700 dark:text-slate-300"
               >
-                انصراف
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleRestoreBackup}
                 disabled={submitting}
                 className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all disabled:opacity-50"
               >
-                {submitting ? 'در حال بازیابی...' : 'بازیابی پشتیبان'}
+                {submitting ? t('tenant.backups.modal.restore.restoring') : t('tenant.backups.modal.restore.submit')}
               </button>
             </div>
           </div>
@@ -1009,28 +1015,28 @@ export default function TenantBackupsPage() {
         <Modal
           isOpen={showScheduleModal}
           onClose={() => setShowScheduleModal(false)}
-          title="تنظیمات زمان‌بندی پشتیبان‌گیری"
+          title={t('tenant.backups.modal.schedule.title')}
           size="md"
         >
           <form onSubmit={handleUpdateSchedule} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                تناوب
+                {t('tenant.backups.modal.schedule.frequencyLabel')}
               </label>
               <select
                 value={scheduleFrequency}
                 onChange={(e) => setScheduleFrequency(e.target.value as any)}
                 className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
               >
-                <option value="Daily">روزانه</option>
-                <option value="Weekly">هفتگی</option>
-                <option value="Monthly">ماهانه</option>
+                <option value="Daily">{t('tenant.backups.frequency.daily')}</option>
+                <option value="Weekly">{t('tenant.backups.frequency.weekly')}</option>
+                <option value="Monthly">{t('tenant.backups.frequency.monthly')}</option>
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                زمان اجرا
+                {t('tenant.backups.modal.schedule.timeLabel')}
               </label>
               <input
                 type="time"
@@ -1042,7 +1048,7 @@ export default function TenantBackupsPage() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                مدت نگهداری (روز)
+                {t('tenant.backups.modal.schedule.retentionLabel')}
               </label>
               <input
                 type="number"
@@ -1062,7 +1068,7 @@ export default function TenantBackupsPage() {
                   onChange={(e) => setScheduleEnabled(e.target.checked)}
                   className="rounded text-blue-600 focus:ring-blue-500"
                 />
-                <span className="text-sm text-slate-700 dark:text-slate-300">فعال‌سازی پشتیبان‌گیری خودکار</span>
+                <span className="text-sm text-slate-700 dark:text-slate-300">{t('tenant.backups.modal.schedule.enableLabel')}</span>
               </label>
             </div>
 
@@ -1072,14 +1078,14 @@ export default function TenantBackupsPage() {
                 onClick={() => setShowScheduleModal(false)}
                 className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-slate-700 dark:text-slate-300"
               >
-                انصراف
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
                 disabled={submitting}
                 className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50"
               >
-                {submitting ? 'در حال ذخیره...' : 'ذخیره تنظیمات'}
+                {submitting ? t('tenant.backups.modal.schedule.saving') : t('tenant.backups.modal.schedule.submit')}
               </button>
             </div>
           </form>
@@ -1092,7 +1098,7 @@ export default function TenantBackupsPage() {
             setShowDeleteConfirm(false);
             setSelectedBackup(null);
           }}
-          title="حذف پشتیبان"
+          title={t('tenant.backups.modal.delete.title')}
           size="sm"
         >
           <div className="space-y-4">
@@ -1101,10 +1107,10 @@ export default function TenantBackupsPage() {
                 <XCircle className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0" />
                 <div>
                   <p className="font-medium text-red-800 dark:text-red-300 mb-1">
-                    آیا از حذف این پشتیبان مطمئن هستید؟
+                    {t('tenant.backups.modal.delete.confirmMessage')}
                   </p>
                   <p className="text-sm text-red-700 dark:text-red-400">
-                    این عمل غیرقابل بازگشت است.
+                    {t('tenant.backups.modal.delete.irreversible')}
                   </p>
                 </div>
               </div>
@@ -1112,7 +1118,7 @@ export default function TenantBackupsPage() {
 
             {selectedBackup && (
               <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
-                <p className="text-sm text-slate-500 dark:text-slate-400">پشتیبان انتخاب شده:</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{t('tenant.backups.modal.delete.selectedBackup')}:</p>
                 <p className="font-medium text-slate-900 dark:text-white">{selectedBackup.name}</p>
               </div>
             )}
@@ -1125,14 +1131,14 @@ export default function TenantBackupsPage() {
                 }}
                 className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-slate-700 dark:text-slate-300"
               >
-                انصراف
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleDeleteBackup}
                 disabled={submitting}
                 className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all disabled:opacity-50"
               >
-                {submitting ? 'در حال حذف...' : 'حذف پشتیبان'}
+                {submitting ? t('tenant.backups.modal.delete.deleting') : t('tenant.backups.modal.delete.submit')}
               </button>
             </div>
           </div>

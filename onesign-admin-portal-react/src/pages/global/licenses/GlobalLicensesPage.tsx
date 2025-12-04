@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
@@ -29,6 +30,7 @@ interface License {
 }
 
 export default function GlobalLicensesPage() {
+  const { t } = useTranslation();
   const [licenses, setLicenses] = useState<License[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
@@ -168,7 +170,7 @@ export default function GlobalLicensesPage() {
   };
 
   const handleSuspend = async (licenseId: string) => {
-    if (!confirm('Suspend this license?')) return;
+    if (!confirm(t('licenses.confirmSuspend'))) return;
     try {
       await globalService.suspendLicense(licenseId);
       fetchLicenses();
@@ -178,7 +180,7 @@ export default function GlobalLicensesPage() {
   };
 
   const handleRevoke = async (licenseId: string) => {
-    if (!confirm('Revoke this license? This action cannot be undone.')) return;
+    if (!confirm(t('licenses.confirmRevoke'))) return;
     try {
       await globalService.revokeLicense(licenseId);
       fetchLicenses();
@@ -221,37 +223,37 @@ export default function GlobalLicensesPage() {
     return Math.min((used / limit) * 100, 100);
   };
 
-  if (loading) return <div className="p-6">Loading...</div>;
+  if (loading) return <div className="p-6">{t('common.loading')}...</div>;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold">License Management</h1>
-          <p className="text-gray-600 mt-1">Manage platform licenses and subscriptions</p>
+          <h1 className="text-2xl font-bold">{t('licenses.title')}</h1>
+          <p className="text-gray-600 mt-1">{t('licenses.subtitle')}</p>
         </div>
         <button
           onClick={() => setShowAdd(true)}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
-          Issue License
+          {t('licenses.issueLicense')}
         </button>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-600">Total Licenses</div>
+          <div className="text-sm text-gray-600">{t('licenses.totalLicenses')}</div>
           <div className="text-2xl font-bold">{licenses.length}</div>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-600">Active</div>
+          <div className="text-sm text-gray-600">{t('licenses.active')}</div>
           <div className="text-2xl font-bold text-green-600">
             {licenses.filter(l => l.status === 'active').length}
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-600">Expiring Soon</div>
+          <div className="text-sm text-gray-600">{t('licenses.expiringSoon')}</div>
           <div className="text-2xl font-bold text-yellow-600">
             {licenses.filter(l => {
               const daysUntilExpiry = Math.ceil((new Date(l.expiryDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
@@ -260,7 +262,7 @@ export default function GlobalLicensesPage() {
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-600">Total Revenue (Annual)</div>
+          <div className="text-sm text-gray-600">{t('licenses.totalRevenueAnnual')}</div>
           <div className="text-2xl font-bold">$2.5M</div>
         </div>
       </div>
@@ -285,7 +287,7 @@ export default function GlobalLicensesPage() {
                     </span>
                     {license.autoRenew && (
                       <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                        Auto-Renew
+                        {t('licenses.autoRenew')}
                       </span>
                     )}
                   </div>
@@ -297,18 +299,18 @@ export default function GlobalLicensesPage() {
                   {/* License Info */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
                     <div>
-                      <span className="text-gray-500">Issued:</span>
+                      <span className="text-gray-500">{t('licenses.issued')}:</span>
                       <span className="ml-2">{new Date(license.issuedDate).toLocaleDateString()}</span>
                     </div>
                     <div>
-                      <span className="text-gray-500">Expires:</span>
+                      <span className="text-gray-500">{t('licenses.expires')}:</span>
                       <span className="ml-2">{new Date(license.expiryDate).toLocaleDateString()}</span>
                       {isExpiringSoon && (
-                        <span className="ml-2 text-yellow-600">({daysUntilExpiry} days)</span>
+                        <span className="ml-2 text-yellow-600">({daysUntilExpiry} {t('licenses.days')})</span>
                       )}
                     </div>
                     <div>
-                      <span className="text-gray-500">Activations:</span>
+                      <span className="text-gray-500">{t('licenses.activations')}:</span>
                       <span className="ml-2">{license.activations} / {license.maxActivations}</span>
                     </div>
                   </div>
@@ -317,7 +319,7 @@ export default function GlobalLicensesPage() {
                   <div className="space-y-3 mb-4">
                     <div>
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-600">Tenants</span>
+                        <span className="text-gray-600">{t('licenses.tenants')}</span>
                         <span>
                           {license.usage.tenants.toLocaleString()}
                           {license.limits.tenants !== -1 && ` / ${license.limits.tenants.toLocaleString()}`}
@@ -335,7 +337,7 @@ export default function GlobalLicensesPage() {
 
                     <div>
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-600">Users</span>
+                        <span className="text-gray-600">{t('licenses.users')}</span>
                         <span>
                           {license.usage.users.toLocaleString()}
                           {license.limits.users !== -1 && ` / ${license.limits.users.toLocaleString()}`}
@@ -353,7 +355,7 @@ export default function GlobalLicensesPage() {
 
                     <div>
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-gray-600">API Calls</span>
+                        <span className="text-gray-600">{t('licenses.apiCalls')}</span>
                         <span>
                           {license.usage.apiCalls.toLocaleString()}
                           {license.limits.apiCalls !== -1 && ` / ${license.limits.apiCalls.toLocaleString()}`}
@@ -372,7 +374,7 @@ export default function GlobalLicensesPage() {
 
                   {/* Features */}
                   <div>
-                    <span className="text-sm text-gray-500">Features:</span>
+                    <span className="text-sm text-gray-500">{t('licenses.features')}:</span>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {license.features.map((feature, idx) => (
                         <span key={idx} className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
@@ -389,7 +391,7 @@ export default function GlobalLicensesPage() {
                       onClick={() => handleRenew(license.id)}
                       className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                     >
-                      Renew
+                      {t('licenses.renew')}
                     </button>
                   )}
                   {license.status === 'active' && (
@@ -397,14 +399,14 @@ export default function GlobalLicensesPage() {
                       onClick={() => handleSuspend(license.id)}
                       className="px-3 py-1 text-sm border border-orange-300 text-orange-600 rounded hover:bg-orange-50"
                     >
-                      Suspend
+                      {t('licenses.suspend')}
                     </button>
                   )}
                   <button
                     onClick={() => handleRevoke(license.id)}
                     className="px-3 py-1 text-sm text-red-600 border border-red-300 rounded hover:bg-red-50"
                   >
-                    Revoke
+                    {t('licenses.revoke')}
                   </button>
                 </div>
               </div>
@@ -412,8 +414,8 @@ export default function GlobalLicensesPage() {
               {/* Expiry Warning */}
               {isExpiringSoon && (
                 <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
-                  <strong>⚠️ Expiring Soon:</strong> This license will expire in {daysUntilExpiry} days.
-                  {license.autoRenew ? ' Auto-renewal is enabled.' : ' Please renew before expiry.'}
+                  <strong>⚠️ {t('licenses.expiringSoonWarning')}:</strong> {t('licenses.expiresInDays', { days: daysUntilExpiry })}
+                  {license.autoRenew ? t('licenses.autoRenewalEnabled') : t('licenses.pleaseRenewBeforeExpiry')}
                 </div>
               )}
             </div>
@@ -425,37 +427,37 @@ export default function GlobalLicensesPage() {
       {showAdd && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Issue New License</h2>
+            <h2 className="text-xl font-bold mb-4">{t('licenses.issueNewLicense')}</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Issued To</label>
+                <label className="block text-sm font-medium mb-2">{t('licenses.issuedTo')}</label>
                 <input
                   type="text"
-                  placeholder="Company Name"
+                  placeholder={t('licenses.companyNamePlaceholder')}
                   className="w-full border border-gray-300 rounded-lg p-2"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">License Type</label>
+                <label className="block text-sm font-medium mb-2">{t('licenses.licenseType')}</label>
                 <select className="w-full border border-gray-300 rounded-lg p-2">
-                  <option value="enterprise">Enterprise</option>
-                  <option value="professional">Professional</option>
-                  <option value="starter">Starter</option>
-                  <option value="trial">Trial</option>
+                  <option value="enterprise">{t('licenses.enterprise')}</option>
+                  <option value="professional">{t('licenses.professional')}</option>
+                  <option value="starter">{t('licenses.starter')}</option>
+                  <option value="trial">{t('licenses.trial')}</option>
                 </select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Start Date</label>
+                  <label className="block text-sm font-medium mb-2">{t('licenses.startDate')}</label>
                   <input
                     type="date"
                     className="w-full border border-gray-300 rounded-lg p-2"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Duration (Months)</label>
+                  <label className="block text-sm font-medium mb-2">{t('licenses.durationMonths')}</label>
                   <input
                     type="number"
                     defaultValue={12}
@@ -467,7 +469,7 @@ export default function GlobalLicensesPage() {
               <div>
                 <label className="flex items-center">
                   <input type="checkbox" className="mr-2" defaultChecked />
-                  <span className="text-sm">Enable auto-renewal</span>
+                  <span className="text-sm">{t('licenses.enableAutoRenewal')}</span>
                 </label>
               </div>
 
@@ -476,13 +478,13 @@ export default function GlobalLicensesPage() {
                   onClick={() => setShowAdd(false)}
                   className="px-4 py-2 border border-gray-300 rounded-lg"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   onClick={handleAdd}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
-                  Issue License
+                  {t('licenses.issueLicense')}
                 </button>
               </div>
             </div>

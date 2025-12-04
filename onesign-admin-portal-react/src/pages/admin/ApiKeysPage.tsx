@@ -181,7 +181,7 @@ const ApiKeysPage = () => {
     setApiKeys((prev) =>
       prev.map((k) => (k.id === apiKey.id ? { ...k, key: newKey } : k))
     );
-    toast.success('API key regenerated successfully');
+    toast.success(t('admin.apiKeys.messages.regenerated'));
   };
 
   const handleRevoke = async (apiKey: ApiKey) => {
@@ -204,7 +204,7 @@ const ApiKeysPage = () => {
       createdAt: new Date().toISOString(),
     };
     setApiKeys((prev) => [newKey, ...prev]);
-    toast.success('API key created successfully');
+    toast.success(t('admin.apiKeys.messages.created'));
     setIsAddModalOpen(false);
     setFormData({ name: '', environment: 'production' });
   };
@@ -248,7 +248,7 @@ const ApiKeysPage = () => {
               label={t('apiKeys.keyName')}
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Enter API key name"
+              placeholder={t('admin.apiKeys.placeholders.keyName')}
             />
             <Dropdown
               label={t('apiKeys.environment')}

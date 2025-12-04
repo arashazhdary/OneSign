@@ -146,7 +146,7 @@ export default function TenantApiKeysPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!tenantId || !form.name) {
-      setError('لطفاً نام کلید را وارد کنید');
+      setError(t('tenant.apiKeys.enterKeyName'));
       return;
     }
 
@@ -161,7 +161,7 @@ export default function TenantApiKeysPage() {
       });
       setNewKeyValue(data.key);
       setShowNewKey(true);
-      setSuccess('کلید API با موفقیت ایجاد شد');
+      setSuccess(t('tenant.apiKeys.keyCreatedSuccessfully'));
       setShowModal(false);
       fetchAPIKeys(true);
       setForm({ name: '', expiresAt: '' });
@@ -179,7 +179,7 @@ export default function TenantApiKeysPage() {
     setError('');
     try {
       await tenantService.revokeApiKey(selectedKey.id);
-      setSuccess('کلید API با موفقیت ابطال شد');
+      setSuccess(t('tenant.apiKeys.keyRevokedSuccessfully'));
       setShowRevokeConfirm(false);
       setSelectedKey(null);
       fetchAPIKeys(true);
@@ -192,7 +192,7 @@ export default function TenantApiKeysPage() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    setSuccess('کلید در کلیپ‌بورد کپی شد');
+    setSuccess(t('tenant.apiKeys.keyCopied'));
     setTimeout(() => setSuccess(''), 2000);
   };
 
@@ -236,7 +236,7 @@ export default function TenantApiKeysPage() {
               <Key className="w-6 h-6 text-purple-500" />
             </div>
           </div>
-          <p className="text-slate-600 dark:text-slate-400 font-medium">{t('common.loading', 'در حال بارگذاری...')}</p>
+          <p className="text-slate-600 dark:text-slate-400 font-medium">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -245,7 +245,7 @@ export default function TenantApiKeysPage() {
   return (
     <>
       <Helmet>
-        <title>{t('tenant.apiKeys.title', 'کلیدهای API')} | OneSign</title>
+        <title>{t('tenant.apiKeys.title')} | OneSign</title>
       </Helmet>
 
       <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-purple-50/30 to-indigo-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 min-h-screen" dir="rtl">
@@ -260,7 +260,7 @@ export default function TenantApiKeysPage() {
               <div className="p-2 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl text-white">
                 <Key className="w-6 h-6" />
               </div>
-              {t('tenant.apiKeys.title', 'کلیدهای API')}
+              {t('tenant.apiKeys.title')}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, x: -20 }}
@@ -268,7 +268,7 @@ export default function TenantApiKeysPage() {
               transition={{ delay: 0.1 }}
               className="text-slate-500 dark:text-slate-400 mt-1"
             >
-              {t('tenant.apiKeys.subtitle', 'مدیریت کلیدهای API برای دسترسی برنامه‌ای')}
+              {t('tenant.apiKeys.subtitle')}
             </motion.p>
           </div>
           <div className="flex gap-3">
@@ -282,7 +282,7 @@ export default function TenantApiKeysPage() {
               className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-              {t('common.refresh', 'بروزرسانی')}
+              {t('common.refresh')}
             </motion.button>
             <motion.button
               initial={{ opacity: 0, scale: 0.9 }}
@@ -293,7 +293,7 @@ export default function TenantApiKeysPage() {
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl"
             >
               <Plus className="w-4 h-4" />
-              {t('common.createApiKey', 'ایجاد کلید API')}
+              {t('common.createApiKey')}
             </motion.button>
           </div>
         </div>
@@ -331,8 +331,8 @@ export default function TenantApiKeysPage() {
             <div className="flex items-start gap-3">
               <AlertCircle className="w-6 h-6 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <h4 className="font-semibold mb-2">کلید API جدید شما ایجاد شد!</h4>
-                <p className="text-sm mb-3">این کلید فقط یک بار نمایش داده می‌شود. لطفاً آن را در جای امنی ذخیره کنید.</p>
+                <h4 className="font-semibold mb-2">{t('tenant.apiKeys.newKeyCreated')}</h4>
+                <p className="text-sm mb-3">{t('tenant.apiKeys.newKeyWarning')}</p>
                 <div className="flex items-center gap-2 bg-white dark:bg-slate-800 rounded-lg p-3">
                   <code className="text-sm flex-1 break-all font-mono text-slate-900 dark:text-white">{newKeyValue}</code>
                   <motion.button
@@ -351,7 +351,7 @@ export default function TenantApiKeysPage() {
                   }}
                   className="mt-3 text-sm text-yellow-700 dark:text-yellow-400 hover:underline"
                 >
-                  متوجه شدم، این پیام را ببند
+                  {t('tenant.apiKeys.closeMessage')}
                 </button>
               </div>
             </div>
@@ -361,30 +361,30 @@ export default function TenantApiKeysPage() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            title="کل کلیدها"
+            title={t('tenant.apiKeys.totalKeys')}
             value={stats.total}
             icon={<Key className="w-6 h-6" />}
             color="purple"
             delay={0}
           />
           <StatCard
-            title="کلیدهای فعال"
+            title={t('tenant.apiKeys.activeKeys')}
             value={stats.active}
             icon={<Unlock className="w-6 h-6" />}
             color="green"
             delay={1}
           />
           <StatCard
-            title="کلیدهای ابطال شده"
+            title={t('tenant.apiKeys.revokedKeys')}
             value={stats.revoked}
             icon={<Lock className="w-6 h-6" />}
             color="red"
             delay={2}
           />
           <StatCard
-            title="در حال انقضا"
+            title={t('tenant.apiKeys.expiringSoon')}
             value={stats.expiringSoon}
-            subtitle="۳۰ روز آینده"
+            subtitle={t('tenant.apiKeys.next30Days')}
             icon={<Clock className="w-6 h-6" />}
             color="yellow"
             delay={3}
@@ -402,7 +402,7 @@ export default function TenantApiKeysPage() {
             <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input
               type="text"
-              placeholder="جستجو در کلیدها..."
+              placeholder={t('tenant.apiKeys.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pr-10 pl-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
@@ -471,7 +471,7 @@ export default function TenantApiKeysPage() {
                           ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                           : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                       }`}>
-                        {apiKey.isRevoked ? 'ابطال شده' : 'فعال'}
+                        {apiKey.isRevoked ? t('tenant.apiKeys.revoked') : t('tenant.apiKeys.active')}
                       </span>
                     </div>
 
@@ -479,7 +479,7 @@ export default function TenantApiKeysPage() {
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-slate-400" />
                         <div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">ایجاد شده</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">{t('tenant.apiKeys.createdAt')}</p>
                           <p className="text-sm font-medium text-slate-900 dark:text-white">
                             {formatDate(apiKey.createdAt)}
                           </p>
@@ -488,18 +488,18 @@ export default function TenantApiKeysPage() {
                       <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4 text-slate-400" />
                         <div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">تاریخ انقضا</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">{t('tenant.apiKeys.expiresAt')}</p>
                           <p className="text-sm font-medium text-slate-900 dark:text-white">
-                            {apiKey.expiresAt ? formatDate(apiKey.expiresAt) : 'بدون انقضا'}
+                            {apiKey.expiresAt ? formatDate(apiKey.expiresAt) : t('tenant.apiKeys.noExpiry')}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <Activity className="w-4 h-4 text-slate-400" />
                         <div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">آخرین استفاده</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">{t('tenant.apiKeys.lastUsed')}</p>
                           <p className="text-sm font-medium text-slate-900 dark:text-white">
-                            {apiKey.lastUsedAt ? formatDate(apiKey.lastUsedAt) : 'استفاده نشده'}
+                            {apiKey.lastUsedAt ? formatDate(apiKey.lastUsedAt) : t('tenant.apiKeys.neverUsed')}
                           </p>
                         </div>
                       </div>
@@ -532,10 +532,10 @@ export default function TenantApiKeysPage() {
                 <Key className="w-8 h-8 text-purple-500" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-                کلید API یافت نشد
+                {t('tenant.apiKeys.noKeysFound')}
               </h3>
               <p className="text-slate-500 dark:text-slate-400 mb-4">
-                هنوز هیچ کلید API ایجاد نشده است
+                {t('tenant.apiKeys.noKeysDescription')}
               </p>
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -543,7 +543,7 @@ export default function TenantApiKeysPage() {
                 onClick={() => setShowModal(true)}
                 className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all"
               >
-                ایجاد اولین کلید
+                {t('tenant.apiKeys.createFirstKey')}
               </motion.button>
             </motion.div>
           )}
@@ -556,27 +556,27 @@ export default function TenantApiKeysPage() {
             setShowModal(false);
             setForm({ name: '', expiresAt: '' });
           }}
-          title="ایجاد کلید API جدید"
+          title={t('tenant.apiKeys.createNewKey')}
           size="md"
         >
           <form onSubmit={handleCreate} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                نام کلید <span className="text-red-500">*</span>
+                {t('tenant.apiKeys.keyName')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500"
-                placeholder="یک نام توصیفی برای کلید وارد کنید"
+                placeholder={t('tenant.apiKeys.keyNamePlaceholder')}
                 required
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                تاریخ انقضا (اختیاری)
+                {t('tenant.apiKeys.expiryDate')}
               </label>
               <input
                 type="datetime-local"
@@ -585,7 +585,7 @@ export default function TenantApiKeysPage() {
                 className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500"
               />
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                در صورت عدم تعیین، کلید بدون انقضا خواهد بود
+                {t('tenant.apiKeys.expiryDateHelp')}
               </p>
             </div>
 
@@ -593,8 +593,8 @@ export default function TenantApiKeysPage() {
               <div className="flex gap-2">
                 <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
                 <div className="text-sm text-yellow-800 dark:text-yellow-300">
-                  <p className="font-medium mb-1">توجه مهم:</p>
-                  <p>کلید API پس از ایجاد فقط یک بار نمایش داده می‌شود. مطمئن شوید که آن را در جای امنی ذخیره می‌کنید.</p>
+                  <p className="font-medium mb-1">{t('tenant.apiKeys.importantNote')}</p>
+                  <p>{t('tenant.apiKeys.oneTimeDisplay')}</p>
                 </div>
               </div>
             </div>
@@ -608,14 +608,14 @@ export default function TenantApiKeysPage() {
                 }}
                 className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               >
-                انصراف
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
                 disabled={submitting}
                 className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all disabled:opacity-50"
               >
-                {submitting ? 'در حال ایجاد...' : 'ایجاد کلید'}
+                {submitting ? t('tenant.apiKeys.creating') : t('tenant.apiKeys.createKey')}
               </button>
             </div>
           </form>
@@ -628,7 +628,7 @@ export default function TenantApiKeysPage() {
             setShowRevokeConfirm(false);
             setSelectedKey(null);
           }}
-          title="تأیید ابطال کلید"
+          title={t('tenant.apiKeys.confirmRevoke')}
           size="sm"
         >
           <div className="space-y-4">
@@ -637,10 +637,10 @@ export default function TenantApiKeysPage() {
                 <XCircle className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0" />
                 <div>
                   <p className="text-red-800 dark:text-red-300 font-medium mb-1">
-                    آیا از ابطال این کلید مطمئن هستید؟
+                    {t('tenant.apiKeys.revokeConfirmMessage')}
                   </p>
                   <p className="text-sm text-red-700 dark:text-red-400">
-                    این عمل غیرقابل بازگشت است و تمام برنامه‌هایی که از این کلید استفاده می‌کنند دیگر قادر به دسترسی نخواهند بود.
+                    {t('tenant.apiKeys.revokeWarning')}
                   </p>
                 </div>
               </div>
@@ -648,7 +648,7 @@ export default function TenantApiKeysPage() {
 
             {selectedKey && (
               <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
-                <p className="text-sm text-slate-500 dark:text-slate-400">کلید انتخاب شده:</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{t('tenant.apiKeys.selectedKey')}</p>
                 <p className="font-medium text-slate-900 dark:text-white">{selectedKey.name}</p>
               </div>
             )}
@@ -661,14 +661,14 @@ export default function TenantApiKeysPage() {
                 }}
                 className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               >
-                انصراف
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleRevoke}
                 disabled={submitting}
                 className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all disabled:opacity-50"
               >
-                {submitting ? 'در حال ابطال...' : 'ابطال کلید'}
+                {submitting ? t('tenant.apiKeys.revoking') : t('tenant.apiKeys.revokeKey')}
               </button>
             </div>
           </div>

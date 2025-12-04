@@ -18,28 +18,28 @@ export default function CompleteFirstLoginPage() {
   useEffect(() => {
     const token = searchParams.get('token');
     if (!token) {
-      setError('Invalid or missing setup token');
+      setError(t('common.auth.invalidSetupToken'));
     } else {
       setSetupToken(token);
     }
-  }, [searchParams]);
+  }, [searchParams, t]);
 
   const validatePassword = (password: string): string[] => {
     const errors: string[] = [];
     if (password.length < 8) {
-      errors.push('Password must be at least 8 characters long');
+      errors.push(t('common.auth.validation.minLength'));
     }
     if (!/[A-Z]/.test(password)) {
-      errors.push('Password must contain at least one uppercase letter');
+      errors.push(t('common.auth.validation.requireUppercase'));
     }
     if (!/[a-z]/.test(password)) {
-      errors.push('Password must contain at least one lowercase letter');
+      errors.push(t('common.auth.validation.requireLowercase'));
     }
     if (!/[0-9]/.test(password)) {
-      errors.push('Password must contain at least one number');
+      errors.push(t('common.auth.validation.requireNumber'));
     }
     if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      errors.push('Password must contain at least one special character');
+      errors.push(t('common.auth.validation.requireSpecial'));
     }
     return errors;
   };
@@ -50,7 +50,7 @@ export default function CompleteFirstLoginPage() {
 
     // Validate passwords match
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('common.auth.validation.passwordsMismatch'));
       return;
     }
 
@@ -62,7 +62,7 @@ export default function CompleteFirstLoginPage() {
     }
 
     if (!setupToken) {
-      setError('Setup token is missing');
+      setError(t('common.auth.setupTokenMissing'));
       return;
     }
 
@@ -73,7 +73,7 @@ export default function CompleteFirstLoginPage() {
       await authService.completeFirstLogin(setupToken, password);
 
       // Show success message and redirect to login
-      navigate('/login?message=Password set successfully. Please sign in.');
+      navigate(`/login?message=${encodeURIComponent(t('common.auth.passwordSetSuccess'))}`);
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || err.message || t('common.failedToSetPassword');
       setError(errorMessage);
@@ -98,10 +98,10 @@ export default function CompleteFirstLoginPage() {
                 </div>
               </div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-                Complete Setup
+                {t('common.auth.completeSetup')}
               </h1>
               <p className="text-gray-600 text-sm">
-                Set your password to complete your first login
+                {t('common.auth.completeSetupDescription')}
               </p>
             </div>
 
@@ -128,7 +128,7 @@ export default function CompleteFirstLoginPage() {
               {/* Password Input */}
               <div>
                 <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
-                  New Password
+                  {t('common.auth.newPassword')}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -148,7 +148,7 @@ export default function CompleteFirstLoginPage() {
                     autoComplete="new-password"
                     required
                     className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50"
-                    placeholder="Enter your password"
+                    placeholder={t('common.auth.passwordPlaceholder')}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
@@ -192,7 +192,7 @@ export default function CompleteFirstLoginPage() {
                   htmlFor="confirm-password"
                   className="block text-sm font-semibold text-gray-700 mb-2"
                 >
-                  Confirm Password
+                  {t('common.auth.confirmPassword')}
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -212,7 +212,7 @@ export default function CompleteFirstLoginPage() {
                     autoComplete="new-password"
                     required
                     className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50"
-                    placeholder="Confirm your password"
+                    placeholder={t('common.auth.confirmPasswordPlaceholder')}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                   />
@@ -252,7 +252,7 @@ export default function CompleteFirstLoginPage() {
 
               {/* Password Requirements */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm font-semibold text-blue-800 mb-2">Password Requirements:</p>
+                <p className="text-sm font-semibold text-blue-800 mb-2">{t('common.auth.passwordRequirements')}</p>
                 <ul className="text-xs text-blue-700 space-y-1">
                   <li className="flex items-center gap-2">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -262,7 +262,7 @@ export default function CompleteFirstLoginPage() {
                         clipRule="evenodd"
                       />
                     </svg>
-                    At least 8 characters long
+                    {t('common.auth.requirements.minLength')}
                   </li>
                   <li className="flex items-center gap-2">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -272,7 +272,7 @@ export default function CompleteFirstLoginPage() {
                         clipRule="evenodd"
                       />
                     </svg>
-                    Contains uppercase and lowercase letters
+                    {t('common.auth.requirements.upperAndLowerCase')}
                   </li>
                   <li className="flex items-center gap-2">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -282,7 +282,7 @@ export default function CompleteFirstLoginPage() {
                         clipRule="evenodd"
                       />
                     </svg>
-                    Contains at least one number
+                    {t('common.auth.requirements.number')}
                   </li>
                   <li className="flex items-center gap-2">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -292,7 +292,7 @@ export default function CompleteFirstLoginPage() {
                         clipRule="evenodd"
                       />
                     </svg>
-                    Contains at least one special character
+                    {t('common.auth.requirements.specialChar')}
                   </li>
                 </ul>
               </div>
@@ -325,11 +325,11 @@ export default function CompleteFirstLoginPage() {
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       ></path>
                     </svg>
-                    <span>Setting up...</span>
+                    <span>{t('common.auth.settingUp')}</span>
                   </>
                 ) : (
                   <>
-                    <span>Complete Setup</span>
+                    <span>{t('common.auth.completeSetup')}</span>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
@@ -346,9 +346,9 @@ export default function CompleteFirstLoginPage() {
 
           {/* Footer */}
           <div className="mt-6 text-center space-y-2">
-            <p className="text-sm text-gray-600">Protected by enterprise-grade security</p>
+            <p className="text-sm text-gray-600">{t('common.auth.securityMessage')}</p>
             <p className="text-xs text-gray-500">
-              Need help? Contact your system administrator
+              {t('common.auth.needHelp')}
             </p>
           </div>
         </div>

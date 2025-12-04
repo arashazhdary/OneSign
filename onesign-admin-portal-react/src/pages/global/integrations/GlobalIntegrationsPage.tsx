@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
@@ -34,6 +35,7 @@ interface WebhookEndpoint {
 }
 
 export default function GlobalIntegrationsPage() {
+  const { t } = useTranslation();
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [webhooks, setWebhooks] = useState<WebhookEndpoint[]>([]);
   const [loading, setLoading] = useState(true);
@@ -257,15 +259,15 @@ export default function GlobalIntegrationsPage() {
   const handleTestIntegration = async (integrationId: string) => {
     try {
       await globalService.testGlobalIntegration(integrationId);
-      alert('Integration test successful!');
+      alert(t('integrations.testSuccessful'));
     } catch (error) {
       console.error('Failed to test integration:', error);
-      alert('Integration test failed. Check console for details.');
+      alert(t('integrations.testFailed'));
     }
   };
 
   const handleDeleteIntegration = async (integrationId: string) => {
-    if (!confirm('Remove this integration?')) return;
+    if (!confirm(t('integrations.confirmRemove'))) return;
     try {
       await globalService.deleteGlobalIntegration(integrationId);
       fetchData();
@@ -297,7 +299,7 @@ export default function GlobalIntegrationsPage() {
     return colors[status as keyof typeof colors] || 'bg-gray-100';
   };
 
-  if (loading) return <div className="p-6">Loading...</div>;
+  if (loading) return <div className="p-6">{t('common.loading')}...</div>;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">

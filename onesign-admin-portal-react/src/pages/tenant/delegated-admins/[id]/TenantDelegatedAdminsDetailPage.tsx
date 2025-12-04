@@ -315,7 +315,7 @@ export default function TenantDelegatedAdminsDetailPage() {
     setSuccess('');
 
     try {
-      setSuccess('Delegated admin suspended successfully');
+      setSuccess(t('common.delegatedAdminSuspendedSuccessfully'));
       fetchData();
     } catch (err: any) {
       setError(err?.message || t('common.failedToSuspendDelegatedAdmin'));
@@ -329,7 +329,7 @@ export default function TenantDelegatedAdminsDetailPage() {
     setSuccess('');
 
     try {
-      setSuccess('Delegated admin activated successfully');
+      setSuccess(t('common.delegatedAdminActivatedSuccessfully'));
       fetchData();
     } catch (err: any) {
       setError(err?.message || t('common.failedToActivateDelegatedAdmin'));
@@ -343,7 +343,7 @@ export default function TenantDelegatedAdminsDetailPage() {
     setSuccess('');
 
     try {
-      setSuccess('Scopes updated successfully');
+      setSuccess(t('common.scopesUpdatedSuccessfully'));
       setShowEditScopesModal(false);
       fetchData();
     } catch (err: any) {
@@ -359,7 +359,7 @@ export default function TenantDelegatedAdminsDetailPage() {
 
     try {
       await tenantService.deleteDelegatedAdmin(id);
-      setSuccess('Delegated admin deleted successfully');
+      setSuccess(t('common.delegatedAdminDeletedSuccessfully'));
       setTimeout(() => {
         navigate('/tenant/delegated-admins');
       }, 1500);
@@ -376,7 +376,7 @@ export default function TenantDelegatedAdminsDetailPage() {
   const getStatusConfig = (status: string) => {
     switch (status) {
       case 'active':
-        return { text: 'Active', bgClass: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' };
+        return { text: t('common.active'), bgClass: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' };
       case 'suspended':
         return { text: 'Suspended', bgClass: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' };
       case 'pending':
@@ -405,8 +405,8 @@ export default function TenantDelegatedAdminsDetailPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-violet-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Delegated Admin Not Found</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">The delegated admin you're looking for doesn't exist.</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{t('delegatedAdmins.notFound')}</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">{t('delegatedAdmins.notFoundDescription')}</p>
           <motion.button
             whileHover={{ scale: 1.02 }}
             onClick={() => navigate('/tenant/delegated-admins')}
@@ -652,7 +652,7 @@ export default function TenantDelegatedAdminsDetailPage() {
                   Recent Activity
                 </h2>
                 {activityLogs.length === 0 ? (
-                  <p className="text-gray-500 dark:text-gray-400 text-center py-4">No activity recorded</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-4">{t('common.noActivityRecorded')}</p>
                 ) : (
                   <div className="space-y-3">
                     {activityLogs.slice(0, 3).map((log, index) => (
@@ -700,7 +700,7 @@ export default function TenantDelegatedAdminsDetailPage() {
               </div>
               <div className="p-6">
                 {admin.scopes.length === 0 ? (
-                  <p className="text-gray-500 dark:text-gray-400 text-center py-8">No scopes assigned</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-8">{t('common.noScopesAssigned')}</p>
                 ) : (
                   <div className="space-y-4">
                     {admin.scopes.map((scope, index) => (
@@ -764,7 +764,7 @@ export default function TenantDelegatedAdminsDetailPage() {
               </div>
               <div className="p-6">
                 {admin.permissions.length === 0 ? (
-                  <p className="text-gray-500 dark:text-gray-400 text-center py-8">No permissions assigned</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-8">{t('common.noPermissionsAssigned')}</p>
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                     {admin.permissions.map((perm, index) => (
@@ -801,7 +801,7 @@ export default function TenantDelegatedAdminsDetailPage() {
               </div>
               <div className="p-6">
                 {activityLogs.length === 0 ? (
-                  <p className="text-gray-500 dark:text-gray-400 text-center py-8">No activity recorded</p>
+                  <p className="text-gray-500 dark:text-gray-400 text-center py-8">{t('common.noActivityRecorded')}</p>
                 ) : (
                   <div className="space-y-4">
                     {activityLogs.map((log, index) => (
@@ -850,7 +850,7 @@ export default function TenantDelegatedAdminsDetailPage() {
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white dark:bg-slate-800 p-6 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
           >
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Manage Scopes</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">{t('common.manageScopes')}</h2>
 
             <div className="space-y-6">
               <div>
@@ -958,7 +958,7 @@ export default function TenantDelegatedAdminsDetailPage() {
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white dark:bg-slate-800 p-6 rounded-2xl max-w-md w-full shadow-2xl"
           >
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Delete Delegated Admin</h2>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t('common.deleteDelegatedAdmin')}</h2>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               Are you sure you want to delete this delegated admin? This will revoke all their administrative access. This action cannot be undone.
             </p>

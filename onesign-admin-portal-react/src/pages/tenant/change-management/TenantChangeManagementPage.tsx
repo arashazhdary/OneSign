@@ -371,7 +371,7 @@ export default function TenantChangeManagementPage() {
     try {
       const data = await changeManagementService.simulateTenantChangeSet(tenantId, id);
       setSimulationResult(data as any);
-      setSuccess('Simulation completed successfully');
+      setSuccess(t('tenant.changeManagement.messages.simulationCompleted'));
     } catch (err) {
       const mockResult: SimulationResult = {
         success: true,
@@ -385,7 +385,7 @@ export default function TenantChangeManagementPage() {
         estimatedDuration: '2 minutes',
       };
       setSimulationResult(mockResult);
-      setSuccess('Simulation completed (mock data)');
+      setSuccess(t('tenant.changeManagement.messages.simulationCompletedMock'));
     } finally {
       setLoading(false);
     }
@@ -436,11 +436,11 @@ export default function TenantChangeManagementPage() {
         userId,
         scheduleData
       );
-      setSuccess('Change set scheduled successfully');
+      setSuccess(t('tenant.changeManagement.messages.scheduled'));
       setShowScheduleModal(false);
       fetchData();
     } catch (err) {
-      setError('Failed to schedule change set');
+      setError(t('tenant.changeManagement.errors.failedToSchedule'));
     } finally {
       setLoading(false);
     }
@@ -452,11 +452,11 @@ export default function TenantChangeManagementPage() {
     setLoading(true);
     try {
       await changeManagementService.executeTenantChangeSet(tenantId, selectedChangeSet.id, userId);
-      setSuccess('Change set executed successfully');
+      setSuccess(t('tenant.changeManagement.messages.executed'));
       setShowExecuteModal(false);
       fetchData();
     } catch (err) {
-      setError('Failed to execute change set');
+      setError(t('tenant.changeManagement.errors.failedToExecute'));
     } finally {
       setLoading(false);
     }
@@ -468,11 +468,11 @@ export default function TenantChangeManagementPage() {
     setLoading(true);
     try {
       await changeManagementService.rollbackTenantChangeSet(tenantId, selectedChangeSet.id, userId);
-      setSuccess('Change set rolled back successfully');
+      setSuccess(t('tenant.changeManagement.messages.rolledBack'));
       setShowRollbackModal(false);
       fetchData();
     } catch (err) {
-      setError('Failed to rollback change set');
+      setError(t('tenant.changeManagement.errors.failedToRollback'));
     } finally {
       setLoading(false);
     }
@@ -489,12 +489,12 @@ export default function TenantChangeManagementPage() {
         userId,
         approvalComment
       );
-      setSuccess('Change set approved');
+      setSuccess(t('tenant.changeManagement.messages.approved'));
       setShowApprovalModal(false);
       setApprovalComment('');
       fetchData();
     } catch (err) {
-      setError('Failed to approve change set');
+      setError(t('tenant.changeManagement.errors.failedToApprove'));
     } finally {
       setLoading(false);
     }
@@ -502,7 +502,7 @@ export default function TenantChangeManagementPage() {
 
   const handleRejectChangeSet = async () => {
     if (!selectedChangeSet || !rejectReason.trim()) {
-      setError('Please provide a reason for rejection');
+      setError(t('tenant.changeManagement.errors.provideReason'));
       return;
     }
 
@@ -514,12 +514,12 @@ export default function TenantChangeManagementPage() {
         userId,
         rejectReason
       );
-      setSuccess('Change set rejected');
+      setSuccess(t('tenant.changeManagement.messages.rejected'));
       setShowRejectModal(false);
       setRejectReason('');
       fetchData();
     } catch (err) {
-      setError('Failed to reject change set');
+      setError(t('tenant.changeManagement.errors.failedToReject'));
     } finally {
       setLoading(false);
     }
@@ -580,7 +580,7 @@ export default function TenantChangeManagementPage() {
 
   const handleClone = async () => {
     if (!selectedChangeSet || !cloneName.trim()) {
-      setError('Please provide a name for the cloned change set');
+      setError(t('tenant.changeManagement.errors.provideCloneName'));
       return;
     }
 
@@ -592,12 +592,12 @@ export default function TenantChangeManagementPage() {
         userId,
         cloneName
       );
-      setSuccess('Change set cloned successfully');
+      setSuccess(t('tenant.changeManagement.messages.cloned'));
       setShowCloneModal(false);
       setCloneName('');
       fetchData();
     } catch (err) {
-      setError('Failed to clone change set');
+      setError(t('tenant.changeManagement.errors.failedToClone'));
     } finally {
       setLoading(false);
     }
@@ -661,7 +661,7 @@ export default function TenantChangeManagementPage() {
     setSuccess('');
     try {
       await changeManagementService.createTenantChangeSet(tenantId, userId, newChangeSet);
-      setSuccess('Change set created successfully');
+      setSuccess(t('tenant.changeManagement.messages.created'));
       setShowCreateModal(false);
       setNewChangeSet({
         name: '',
@@ -679,7 +679,7 @@ export default function TenantChangeManagementPage() {
   const handleSubmitForReview = async (changeSet: ChangeSet) => {
     try {
       await changeManagementService.submitTenantChangeSet(tenantId, changeSet.id, userId);
-      setSuccess('Change set submitted for review');
+      setSuccess(t('tenant.changeManagement.messages.submitted'));
       fetchData();
     } catch (err) {
       setError(t('common.error'));
@@ -687,11 +687,11 @@ export default function TenantChangeManagementPage() {
   };
 
   const handleDeleteChangeSet = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this change set?')) return;
+    if (!confirm(t('tenant.changeManagement.confirmDelete'))) return;
 
     try {
       await changeManagementService.deleteTenantChangeSet(tenantId, id);
-      setSuccess('Change set deleted');
+      setSuccess(t('tenant.changeManagement.messages.deleted'));
       fetchData();
     } catch (err) {
       setError(t('common.error'));
@@ -759,7 +759,7 @@ export default function TenantChangeManagementPage() {
                   className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   <Plus className="w-5 h-5" />
-                  Create Change Set
+                  {t('tenant.changeManagement.createChangeSet', 'Create Change Set')}
                 </motion.button>
               )}
               {selectedChangeSet && (
@@ -1509,7 +1509,7 @@ export default function TenantChangeManagementPage() {
         <Modal
           isOpen={showCreateModal}
           onClose={() => setShowCreateModal(false)}
-          title="Create Change Set"
+          title={t('tenant.changeManagement.createChangeSet', 'Create Change Set')}
           size="lg"
         >
           <form onSubmit={handleCreateChangeSet}>
@@ -1734,7 +1734,7 @@ export default function TenantChangeManagementPage() {
               <textarea
                 className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
                 rows={3}
-                placeholder="Add your approval comment..."
+                placeholder={t('tenant.changeManagement.placeholders.approvalComment')}
                 value={approvalComment}
                 onChange={(e) => setApprovalComment(e.target.value)}
               />
@@ -1775,7 +1775,7 @@ export default function TenantChangeManagementPage() {
               <textarea
                 className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
                 rows={4}
-                placeholder="Please provide a detailed reason for rejection..."
+                placeholder={t('tenant.changeManagement.placeholders.rejectReason')}
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 required

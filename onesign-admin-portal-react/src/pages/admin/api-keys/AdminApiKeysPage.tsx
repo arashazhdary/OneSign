@@ -61,7 +61,7 @@ export default function AdminApiKeysPage() {
       setApiKeys(mappedKeys);
     } catch (err) {
       console.error('Failed to fetch API keys:', err);
-      setError('Failed to load API keys');
+      setError(t('admin.apiKeys.messages.failedToLoad'));
       setApiKeys([]);
     } finally {
       setLoading(false);
@@ -70,7 +70,7 @@ export default function AdminApiKeysPage() {
 
   const handleCreate = async () => {
     if (!newKeyName.trim()) {
-      setError('Key name is required');
+      setError(t('admin.apiKeys.validation.nameRequired'));
       return;
     }
     setError('');
@@ -102,7 +102,7 @@ export default function AdminApiKeysPage() {
   };
 
   const handleRevoke = async (keyId: string) => {
-    if (!confirm('Revoke this API key? This action cannot be undone.')) return;
+    if (!confirm(t('admin.apiKeys.messages.confirmRevoke'))) return;
     setError('');
     try {
       // Revoke API key via backend
@@ -149,7 +149,7 @@ export default function AdminApiKeysPage() {
     return prefix + '•'.repeat(20) + key.slice(-8);
   };
 
-  if (loading) return <div className="p-6">Loading...</div>;
+  if (loading) return <div className="p-6">{t('admin.apiKeys.messages.loading')}</div>;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -163,11 +163,11 @@ export default function AdminApiKeysPage() {
       {createdKeyValue && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4 text-green-600">API Key Created!</h2>
+            <h2 className="text-xl font-bold mb-4 text-green-600">{t('admin.apiKeys.createdModal.title')}</h2>
             <div className="space-y-4">
               <div className="p-4 bg-yellow-50 border border-yellow-200 rounded">
                 <p className="text-sm text-yellow-800 mb-2">
-                  <strong>Important:</strong> Copy this key now. You won't be able to see it again!
+                  <strong>{t('admin.apiKeys.createdModal.important')}</strong> {t('admin.apiKeys.createdModal.copyNow')}
                 </p>
               </div>
               <div className="p-3 bg-gray-100 rounded font-mono text-sm break-all">
@@ -178,13 +178,13 @@ export default function AdminApiKeysPage() {
                   onClick={() => handleCopy(createdKeyValue)}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
-                  Copy Key
+                  {t('admin.apiKeys.buttons.copyKey')}
                 </button>
                 <button
                   onClick={() => setCreatedKeyValue(null)}
                   className="px-4 py-2 border border-gray-300 rounded-lg"
                 >
-                  Close
+                  {t('admin.apiKeys.buttons.close')}
                 </button>
               </div>
             </div>
@@ -194,14 +194,14 @@ export default function AdminApiKeysPage() {
 
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Platform API Keys</h1>
-          <p className="text-gray-600 mt-1">Manage admin-level API keys for platform operations</p>
+          <h1 className="text-2xl font-bold">{t('admin.apiKeys.title')}</h1>
+          <p className="text-gray-600 mt-1">{t('admin.apiKeys.description')}</p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
-          Create API Key
+          {t('admin.apiKeys.buttons.createApiKey')}
         </button>
       </div>
 
@@ -210,10 +210,9 @@ export default function AdminApiKeysPage() {
         <div className="flex items-start">
           <span className="text-2xl mr-3">⚠️</span>
           <div>
-            <h3 className="font-semibold text-yellow-800">Security Notice</h3>
+            <h3 className="font-semibold text-yellow-800">{t('admin.apiKeys.securityNotice.title')}</h3>
             <p className="text-sm text-yellow-700 mt-1">
-              Admin API keys have elevated privileges and can perform critical platform operations.
-              Store them securely and never commit them to version control. Regularly rotate keys and monitor usage.
+              {t('admin.apiKeys.securityNotice.description')}
             </p>
           </div>
         </div>
@@ -222,23 +221,23 @@ export default function AdminApiKeysPage() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-600">Total Keys</div>
+          <div className="text-sm text-gray-600">{t('admin.apiKeys.stats.totalKeys')}</div>
           <div className="text-2xl font-bold">{apiKeys.length}</div>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-600">Active</div>
+          <div className="text-sm text-gray-600">{t('admin.apiKeys.stats.active')}</div>
           <div className="text-2xl font-bold text-green-600">
             {apiKeys.filter(k => k.status === 'active').length}
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-600">Total API Calls</div>
+          <div className="text-sm text-gray-600">{t('admin.apiKeys.stats.totalApiCalls')}</div>
           <div className="text-2xl font-bold">
             {(apiKeys.reduce((acc, k) => acc + k.usageCount, 0) / 1000).toFixed(0)}K
           </div>
         </div>
         <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-gray-600">Expiring Soon</div>
+          <div className="text-sm text-gray-600">{t('admin.apiKeys.stats.expiringSoon')}</div>
           <div className="text-2xl font-bold text-yellow-600">
             {apiKeys.filter(k => {
               if (!k.expiresAt) return false;
@@ -282,13 +281,13 @@ export default function AdminApiKeysPage() {
                           onClick={() => setShowKey(showKey === apiKey.id ? null : apiKey.id)}
                           className="text-blue-600 hover:text-blue-800 text-xs"
                         >
-                          {showKey === apiKey.id ? 'Hide' : 'Show'}
+                          {showKey === apiKey.id ? t('admin.apiKeys.buttons.hide') : t('admin.apiKeys.buttons.show')}
                         </button>
                         <button
                           onClick={() => handleCopy(apiKey.key)}
                           className="text-blue-600 hover:text-blue-800 text-xs"
                         >
-                          Copy
+                          {t('admin.apiKeys.buttons.copy')}
                         </button>
                       </div>
                     </div>
@@ -296,7 +295,7 @@ export default function AdminApiKeysPage() {
 
                   {/* Permissions */}
                   <div className="mb-3">
-                    <span className="text-sm text-gray-500">Permissions:</span>
+                    <span className="text-sm text-gray-500">{t('admin.apiKeys.labels.permissions')}</span>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {apiKey.permissions.map((perm, idx) => (
                         <span key={idx} className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
@@ -309,34 +308,34 @@ export default function AdminApiKeysPage() {
                   {/* Key Info */}
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div>
-                      <span className="text-gray-500">Created:</span>
+                      <span className="text-gray-500">{t('admin.apiKeys.labels.created')}</span>
                       <span className="ml-2">{new Date(apiKey.createdAt).toLocaleDateString()}</span>
                     </div>
                     {apiKey.expiresAt && (
                       <div>
-                        <span className="text-gray-500">Expires:</span>
+                        <span className="text-gray-500">{t('admin.apiKeys.labels.expires')}</span>
                         <span className="ml-2">{new Date(apiKey.expiresAt).toLocaleDateString()}</span>
                         {isExpiringSoon && (
-                          <span className="ml-2 text-yellow-600">({daysUntilExpiry} days)</span>
+                          <span className="ml-2 text-yellow-600">{t('admin.apiKeys.labels.daysRemaining', { count: daysUntilExpiry })}</span>
                         )}
                       </div>
                     )}
                     {apiKey.lastUsed && (
                       <div>
-                        <span className="text-gray-500">Last Used:</span>
+                        <span className="text-gray-500">{t('admin.apiKeys.labels.lastUsed')}</span>
                         <span className="ml-2">{new Date(apiKey.lastUsed).toLocaleString()}</span>
                       </div>
                     )}
                     <div>
-                      <span className="text-gray-500">Usage:</span>
-                      <span className="ml-2 font-semibold">{apiKey.usageCount.toLocaleString()} calls</span>
+                      <span className="text-gray-500">{t('admin.apiKeys.labels.usage')}</span>
+                      <span className="ml-2 font-semibold">{t('admin.apiKeys.labels.usageCount', { count: apiKey.usageCount })}</span>
                     </div>
                   </div>
 
                   {/* IP Whitelist */}
                   {apiKey.ipWhitelist && apiKey.ipWhitelist.length > 0 && (
                     <div className="mt-3">
-                      <span className="text-sm text-gray-500">IP Whitelist:</span>
+                      <span className="text-sm text-gray-500">{t('admin.apiKeys.labels.ipWhitelist')}</span>
                       <div className="flex flex-wrap gap-2 mt-1">
                         {apiKey.ipWhitelist.map((ip, idx) => (
                           <span key={idx} className="px-2 py-1 text-xs bg-gray-100 rounded font-mono">
@@ -348,7 +347,7 @@ export default function AdminApiKeysPage() {
                   )}
 
                   <div className="mt-3 text-xs text-gray-500">
-                    Created by: {apiKey.createdBy}
+                    {t('admin.apiKeys.labels.createdBy', { name: apiKey.createdBy })}
                   </div>
                 </div>
 
@@ -357,7 +356,7 @@ export default function AdminApiKeysPage() {
                     onClick={() => handleRevoke(apiKey.id)}
                     className="px-3 py-1 text-sm text-red-600 border border-red-300 rounded hover:bg-red-50 ml-4"
                   >
-                    Revoke
+                    {t('admin.apiKeys.buttons.revoke')}
                   </button>
                 )}
               </div>
@@ -365,8 +364,7 @@ export default function AdminApiKeysPage() {
               {/* Expiry Warning */}
               {isExpiringSoon && (
                 <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded text-sm">
-                  <strong>⚠️ Expiring Soon:</strong> This API key will expire in {daysUntilExpiry} days.
-                  Consider creating a new key before expiry.
+                  <strong>⚠️ {t('admin.apiKeys.messages.expiringSoon')}</strong> {t('admin.apiKeys.messages.expiryWarning', { days: daysUntilExpiry })}
                 </div>
               )}
             </div>
@@ -378,13 +376,13 @@ export default function AdminApiKeysPage() {
       {showCreate && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Create Admin API Key</h2>
+            <h2 className="text-xl font-bold mb-4">{t('admin.apiKeys.createModal.title')}</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Key Name</label>
+                <label className="block text-sm font-medium mb-2">{t('admin.apiKeys.createModal.keyName')}</label>
                 <input
                   type="text"
-                  placeholder="e.g., Platform Management Key"
+                  placeholder={t('admin.apiKeys.createModal.keyNamePlaceholder')}
                   className="w-full border border-gray-300 rounded-lg p-2"
                   value={newKeyName}
                   onChange={(e) => setNewKeyName(e.target.value)}
@@ -392,7 +390,7 @@ export default function AdminApiKeysPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Permissions</label>
+                <label className="block text-sm font-medium mb-2">{t('admin.apiKeys.createModal.permissions')}</label>
                 <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
                   {['tenants:read', 'tenants:write', 'tenants:delete', 'users:read', 'users:write', 'system:read', 'analytics:read', 'integrations:manage'].map((perm) => (
                     <label key={perm} className="flex items-center">
@@ -409,7 +407,7 @@ export default function AdminApiKeysPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Expiration (Optional)</label>
+                <label className="block text-sm font-medium mb-2">{t('admin.apiKeys.createModal.expiration')}</label>
                 <input
                   type="date"
                   className="w-full border border-gray-300 rounded-lg p-2"
@@ -417,13 +415,12 @@ export default function AdminApiKeysPage() {
                   onChange={(e) => setNewKeyExpiration(e.target.value)}
                 />
                 <p className="mt-1 text-xs text-gray-500">
-                  Leave empty for no expiration
+                  {t('admin.apiKeys.createModal.expirationHint')}
                 </p>
               </div>
 
               <div className="p-3 bg-red-50 border border-red-200 rounded text-sm">
-                <strong>⚠️ Important:</strong> The API key will be displayed only once after creation.
-                Make sure to copy and store it securely.
+                <strong>⚠️ {t('admin.apiKeys.createModal.important')}</strong> {t('admin.apiKeys.createModal.oneTimeWarning')}
               </div>
 
               <div className="flex justify-end space-x-2 pt-4">
@@ -436,13 +433,13 @@ export default function AdminApiKeysPage() {
                   }}
                   className="px-4 py-2 border border-gray-300 rounded-lg"
                 >
-                  Cancel
+                  {t('admin.apiKeys.buttons.cancel')}
                 </button>
                 <button
                   onClick={handleCreate}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
-                  Create Key
+                  {t('admin.apiKeys.buttons.createKey')}
                 </button>
               </div>
             </div>

@@ -257,11 +257,11 @@ export default function TenantUsersPage() {
 
   const getStatusBadge = (status: string) => {
     const statusLower = status?.toLowerCase() || '';
-    if (statusLower === 'active' || statusLower === 'فعال') {
+    if (statusLower === 'active') {
       return 'bg-green-100 text-green-800 border-green-200';
-    } else if (statusLower === 'suspended' || statusLower === 'معلق') {
+    } else if (statusLower === 'suspended') {
       return 'bg-red-100 text-red-800 border-red-200';
-    } else if (statusLower === 'pending' || statusLower === 'در انتظار') {
+    } else if (statusLower === 'pending') {
       return 'bg-yellow-100 text-yellow-800 border-yellow-200';
     }
     return 'bg-gray-100 text-gray-800 border-gray-200';
@@ -275,8 +275,8 @@ export default function TenantUsersPage() {
 
   // Calculate stats
   const totalUsers = users.length;
-  const activeUsers = users.filter(u => u.status?.toLowerCase() === 'active' || u.status === 'فعال').length;
-  const suspendedUsers = users.filter(u => u.status?.toLowerCase() === 'suspended' || u.status === 'معلق').length;
+  const activeUsers = users.filter(u => u.status?.toLowerCase() === 'active').length;
+  const suspendedUsers = users.filter(u => u.status?.toLowerCase() === 'suspended').length;
   const adminUsers = users.filter(u => u.roles?.includes('admin')).length;
 
   if (loading || scopeLoading) {
@@ -319,7 +319,7 @@ export default function TenantUsersPage() {
                 transition={{ delay: 0.1 }}
                 className="text-gray-600 mt-2"
               >
-                {t('tenant.users.subtitle', 'مدیریت کاربران سازمان')}
+                {t('tenant.users.subtitle')}
               </motion.p>
             </div>
             <div className="flex gap-3">
@@ -376,28 +376,28 @@ export default function TenantUsersPage() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <StatCard
-            title={t('tenant.users.totalUsers', 'کل کاربران')}
+            title={t('tenant.users.totalUsers')}
             value={totalUsers}
             icon={<Users className="w-6 h-6" />}
             color="blue"
             delay={0}
           />
           <StatCard
-            title={t('tenant.users.activeUsers', 'کاربران فعال')}
+            title={t('tenant.users.activeUsers')}
             value={activeUsers}
             icon={<UserCheck className="w-6 h-6" />}
             color="green"
             delay={1}
           />
           <StatCard
-            title={t('tenant.users.suspendedUsers', 'کاربران معلق')}
+            title={t('tenant.users.suspendedUsers')}
             value={suspendedUsers}
             icon={<UserX className="w-6 h-6" />}
             color="red"
             delay={2}
           />
           <StatCard
-            title={t('tenant.users.adminUsers', 'مدیران')}
+            title={t('tenant.users.adminUsers')}
             value={adminUsers}
             icon={<Shield className="w-6 h-6" />}
             color="purple"
@@ -418,7 +418,7 @@ export default function TenantUsersPage() {
                 <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder={t('common.search', 'جستجو...')}
+                  placeholder={t('common.search')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pr-10 pl-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -456,7 +456,7 @@ export default function TenantUsersPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('tenant.users.user', 'کاربر')}
+                    {t('tenant.users.user')}
                   </th>
                   <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     {t('tenant.users.email')}
@@ -465,7 +465,7 @@ export default function TenantUsersPage() {
                     {t('tenant.users.status')}
                   </th>
                   <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('tenant.users.role', 'نقش')}
+                    {t('tenant.users.role')}
                   </th>
                   <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     {t('tenant.users.lastLogin')}
@@ -513,11 +513,11 @@ export default function TenantUsersPage() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       {user.roles?.includes('admin') ? (
                         <span className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 border border-purple-200">
-                          {t('tenant.users.admin', 'مدیر')}
+                          {t('tenant.users.admin')}
                         </span>
                       ) : (
                         <span className="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800 border border-gray-200">
-                          {t('tenant.users.user', 'کاربر')}
+                          {t('tenant.users.user')}
                         </span>
                       )}
                     </td>
@@ -533,7 +533,7 @@ export default function TenantUsersPage() {
                           onClick={() => handleAssignOrgUnits(user)}
                           className="px-3 py-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors font-medium"
                         >
-                          {t('tenant.userOrgUnits.assignOrgUnits', 'واحد سازمانی')}
+                          {t('tenant.userOrgUnits.assignOrgUnits')}
                         </button>
                         {user.status !== t('common.disabled') && (
                           <button
@@ -551,7 +551,7 @@ export default function TenantUsersPage() {
                   <tr>
                     <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                       <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                      <p>{t('tenant.users.noUsers', 'کاربری یافت نشد')}</p>
+                      <p>{t('tenant.users.noUsers')}</p>
                     </td>
                   </tr>
                 )}
@@ -683,7 +683,7 @@ export default function TenantUsersPage() {
                         <option key={node.id} value={node.id}>{node.name}</option>
                       ))}
                   </select>
-                  <p className="text-xs text-gray-500 mt-1">{t('common.holdCtrl') || 'Hold Ctrl/Cmd to select multiple'}</p>
+                  <p className="text-xs text-gray-500 mt-1">{t('common.holdCtrl')}</p>
                 </div>
               </div>
 

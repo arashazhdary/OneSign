@@ -168,7 +168,7 @@ export default function AdminSettingsPage() {
 
     try {
       await adminService.updateGlobalSettings('platform', platformSettings);
-      setSuccess('Platform settings saved successfully');
+      setSuccess(t('admin.settings.messages.platformSettingsSaved'));
     } catch (err: any) {
       setError(err.message || t('common.failedToSavePlatformSettings'));
     }
@@ -181,7 +181,7 @@ export default function AdminSettingsPage() {
 
     try {
       await adminService.updateGlobalSettings('email', emailSettings);
-      setSuccess('Email settings saved successfully');
+      setSuccess(t('admin.settings.messages.emailSettingsSaved'));
     } catch (err: any) {
       setError(err.message || t('common.failedToSaveEmailSettings'));
     }
@@ -193,7 +193,7 @@ export default function AdminSettingsPage() {
 
     try {
       await adminService.testEmailConfiguration(emailSettings);
-      setSuccess('Test email sent successfully');
+      setSuccess(t('admin.settings.messages.testEmailSent'));
     } catch (err: any) {
       setError(err.message || t('common.failedToSendTestEmail'));
     }
@@ -206,7 +206,7 @@ export default function AdminSettingsPage() {
 
     try {
       await adminService.updateGlobalSettings('sms', smsSettings);
-      setSuccess('SMS settings saved successfully');
+      setSuccess(t('admin.settings.messages.smsSettingsSaved'));
     } catch (err: any) {
       setError(err.message || t('common.failedToSaveSMSSettings'));
     }
@@ -218,7 +218,7 @@ export default function AdminSettingsPage() {
 
     try {
       await adminService.testSMSConfiguration(smsSettings);
-      setSuccess('Test SMS sent successfully');
+      setSuccess(t('admin.settings.messages.testSmsSent'));
     } catch (err: any) {
       setError(err.message || t('common.failedToSendTestSMS'));
     }
@@ -239,7 +239,7 @@ export default function AdminSettingsPage() {
 
     try {
       await adminService.updateGlobalSettings('maintenance', maintenanceSettings);
-      setSuccess('Maintenance settings saved successfully');
+      setSuccess(t('admin.settings.messages.maintenanceSettingsSaved'));
     } catch (err: any) {
       setError(err.message || t('common.failedToSaveMaintenanceSettings'));
     }
@@ -269,7 +269,7 @@ export default function AdminSettingsPage() {
   if (loading) {
     return (
       <div className="p-8">
-        <div className="text-gray-600">Loading settings...</div>
+        <div className="text-gray-600">{t('admin.settings.messages.loading')}</div>
       </div>
     );
   }
@@ -277,8 +277,8 @@ export default function AdminSettingsPage() {
   return (
     <div className="p-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Platform Settings</h1>
-        <p className="mt-2 text-gray-600">Configure platform-wide settings and integrations</p>
+        <h1 className="text-3xl font-bold text-gray-900">{t('admin.settings.title')}</h1>
+        <p className="mt-2 text-gray-600">{t('admin.settings.description')}</p>
       </div>
 
       {error && (
@@ -304,7 +304,7 @@ export default function AdminSettingsPage() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            Platform
+            {t('admin.settings.tabs.platform')}
           </button>
           <button
             onClick={() => setActiveTab('email')}
@@ -314,7 +314,7 @@ export default function AdminSettingsPage() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            Email
+            {t('admin.settings.tabs.email')}
           </button>
           <button
             onClick={() => setActiveTab('sms')}
@@ -324,7 +324,7 @@ export default function AdminSettingsPage() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            SMS
+            {t('admin.settings.tabs.sms')}
           </button>
           <button
             onClick={() => setActiveTab('oauth')}
@@ -334,7 +334,7 @@ export default function AdminSettingsPage() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            OAuth
+            {t('admin.settings.tabs.oauth')}
           </button>
           <button
             onClick={() => setActiveTab('maintenance')}
@@ -344,7 +344,7 @@ export default function AdminSettingsPage() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            Maintenance
+            {t('admin.settings.tabs.maintenance')}
           </button>
           <button
             onClick={() => setActiveTab('license')}
@@ -354,7 +354,7 @@ export default function AdminSettingsPage() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
             }`}
           >
-            License
+            {t('admin.settings.tabs.license')}
           </button>
         </nav>
       </div>
@@ -363,11 +363,11 @@ export default function AdminSettingsPage() {
       {activeTab === 'platform' && (
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Platform Configuration</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{t('admin.settings.platform.title')}</h2>
           </div>
           <form onSubmit={handleSavePlatformSettings} className="p-6 space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Platform Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.settings.platform.platformName')}</label>
               <input
                 type="text"
                 required
@@ -377,7 +377,7 @@ export default function AdminSettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Platform URL</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.settings.platform.platformUrl')}</label>
               <input
                 type="url"
                 required
@@ -387,7 +387,7 @@ export default function AdminSettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Support Email</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.settings.platform.supportEmail')}</label>
               <input
                 type="email"
                 required
@@ -398,7 +398,7 @@ export default function AdminSettingsPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Max Tenants per Region</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.settings.platform.maxTenantsPerRegion')}</label>
                 <input
                   type="number"
                   required
@@ -409,7 +409,7 @@ export default function AdminSettingsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Default Session Timeout (minutes)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.settings.platform.defaultSessionTimeout')}</label>
                 <input
                   type="number"
                   required
@@ -428,7 +428,7 @@ export default function AdminSettingsPage() {
                   onChange={(e) => setPlatformSettings({ ...platformSettings, enableRegistration: e.target.checked })}
                   className="rounded"
                 />
-                <span className="text-sm text-gray-700">Enable user registration</span>
+                <span className="text-sm text-gray-700">{t('admin.settings.platform.enableRegistration')}</span>
               </label>
               <label className="flex items-center gap-2">
                 <input
@@ -437,14 +437,14 @@ export default function AdminSettingsPage() {
                   onChange={(e) => setPlatformSettings({ ...platformSettings, enableTenantCreation: e.target.checked })}
                   className="rounded"
                 />
-                <span className="text-sm text-gray-700">Enable tenant creation</span>
+                <span className="text-sm text-gray-700">{t('admin.settings.platform.enableTenantCreation')}</span>
               </label>
             </div>
             <button
               type="submit"
               className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
             >
-              Save Platform Settings
+              {t('admin.settings.platform.saveButton')}
             </button>
           </form>
         </div>
@@ -454,11 +454,11 @@ export default function AdminSettingsPage() {
       {activeTab === 'email' && (
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Email Server Configuration</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{t('admin.settings.email.title')}</h2>
           </div>
           <form onSubmit={handleSaveEmailSettings} className="p-6 space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Email Provider</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.settings.email.provider')}</label>
               <select
                 className="w-full border border-gray-300 rounded-md px-3 py-2"
                 value={emailSettings.provider}
@@ -473,7 +473,7 @@ export default function AdminSettingsPage() {
               <>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">SMTP Host</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.settings.email.smtpHost')}</label>
                     <input
                       type="text"
                       required
@@ -483,7 +483,7 @@ export default function AdminSettingsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">SMTP Port</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.settings.email.smtpPort')}</label>
                     <input
                       type="number"
                       required
@@ -495,7 +495,7 @@ export default function AdminSettingsPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">SMTP Username</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.settings.email.smtpUsername')}</label>
                     <input
                       type="text"
                       className="w-full border border-gray-300 rounded-md px-3 py-2"
@@ -504,7 +504,7 @@ export default function AdminSettingsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">SMTP Password</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.settings.email.smtpPassword')}</label>
                     <input
                       type="password"
                       className="w-full border border-gray-300 rounded-md px-3 py-2"
@@ -520,13 +520,13 @@ export default function AdminSettingsPage() {
                     onChange={(e) => setEmailSettings({ ...emailSettings, useTLS: e.target.checked })}
                     className="rounded"
                   />
-                  <span className="text-sm text-gray-700">Use TLS</span>
+                  <span className="text-sm text-gray-700">{t('admin.settings.email.useTls')}</span>
                 </label>
               </>
             )}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">From Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.settings.email.fromEmail')}</label>
                 <input
                   type="email"
                   required
@@ -536,7 +536,7 @@ export default function AdminSettingsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">From Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.settings.email.fromName')}</label>
                 <input
                   type="text"
                   required
@@ -551,14 +551,14 @@ export default function AdminSettingsPage() {
                 type="submit"
                 className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
               >
-                Save Email Settings
+                {t('admin.settings.email.saveButton')}
               </button>
               <button
                 type="button"
                 onClick={handleTestEmailConfig}
                 className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
               >
-                Test Configuration
+                {t('admin.settings.email.testButton')}
               </button>
             </div>
           </form>
@@ -569,11 +569,11 @@ export default function AdminSettingsPage() {
       {activeTab === 'sms' && (
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">SMS Gateway Configuration</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{t('admin.settings.sms.title')}</h2>
           </div>
           <form onSubmit={handleSaveSMSSettings} className="p-6 space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">SMS Provider</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.settings.sms.provider')}</label>
               <select
                 className="w-full border border-gray-300 rounded-md px-3 py-2"
                 value={smsSettings.provider}
@@ -585,7 +585,7 @@ export default function AdminSettingsPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Account SID</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.settings.sms.accountSid')}</label>
               <input
                 type="text"
                 className="w-full border border-gray-300 rounded-md px-3 py-2"
@@ -594,7 +594,7 @@ export default function AdminSettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Auth Token</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.settings.sms.authToken')}</label>
               <input
                 type="password"
                 className="w-full border border-gray-300 rounded-md px-3 py-2"
@@ -603,7 +603,7 @@ export default function AdminSettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">From Number</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.settings.sms.fromNumber')}</label>
               <input
                 type="text"
                 className="w-full border border-gray-300 rounded-md px-3 py-2"
@@ -619,21 +619,21 @@ export default function AdminSettingsPage() {
                 onChange={(e) => setSmsSettings({ ...smsSettings, enabled: e.target.checked })}
                 className="rounded"
               />
-              <span className="text-sm text-gray-700">Enable SMS notifications</span>
+              <span className="text-sm text-gray-700">{t('admin.settings.sms.enableSmsNotifications')}</span>
             </label>
             <div className="flex gap-3">
               <button
                 type="submit"
                 className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
               >
-                Save SMS Settings
+                {t('admin.settings.sms.saveButton')}
               </button>
               <button
                 type="button"
                 onClick={handleTestSMSConfig}
                 className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
               >
-                Test Configuration
+                {t('admin.settings.sms.testButton')}
               </button>
             </div>
           </form>
@@ -644,7 +644,7 @@ export default function AdminSettingsPage() {
       {activeTab === 'oauth' && (
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">OAuth Providers</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{t('admin.settings.oauth.title')}</h2>
           </div>
           <div className="p-6 space-y-4">
             {oauthProviders.map((provider) => (
@@ -653,19 +653,19 @@ export default function AdminSettingsPage() {
                   <div className="flex items-center gap-3">
                     <h3 className="text-lg font-medium text-gray-900">{provider.name}</h3>
                     <span className={`px-2 py-1 text-xs rounded ${provider.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                      {provider.enabled ? 'Enabled' : 'Disabled'}
+                      {provider.enabled ? t('admin.settings.oauth.enabled') : t('admin.settings.oauth.disabled')}
                     </span>
                   </div>
                   <button
                     onClick={() => handleToggleOAuthProvider(provider.id)}
                     className={`px-4 py-2 rounded-md ${provider.enabled ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' : 'bg-green-600 text-white hover:bg-green-700'}`}
                   >
-                    {provider.enabled ? 'Disable' : 'Enable'}
+                    {provider.enabled ? t('admin.settings.oauth.disableButton') : t('admin.settings.oauth.enableButton')}
                   </button>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Client ID</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.settings.oauth.clientId')}</label>
                     <input
                       type="text"
                       className="w-full border border-gray-300 rounded-md px-3 py-2"
@@ -677,11 +677,11 @@ export default function AdminSettingsPage() {
                           )
                         );
                       }}
-                      placeholder="Enter client ID"
+                      placeholder={t('admin.settings.oauth.clientIdPlaceholder')}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Client Secret</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.settings.oauth.clientSecret')}</label>
                     <input
                       type="password"
                       className="w-full border border-gray-300 rounded-md px-3 py-2"
@@ -693,7 +693,7 @@ export default function AdminSettingsPage() {
                           )
                         );
                       }}
-                      placeholder="Enter client secret"
+                      placeholder={t('admin.settings.oauth.clientSecretPlaceholder')}
                     />
                   </div>
                 </div>
@@ -707,7 +707,7 @@ export default function AdminSettingsPage() {
       {activeTab === 'maintenance' && (
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Maintenance Mode</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{t('admin.settings.maintenance.title')}</h2>
           </div>
           <form onSubmit={handleSaveMaintenanceSettings} className="p-6 space-y-4">
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
@@ -719,13 +719,13 @@ export default function AdminSettingsPage() {
                   className="rounded"
                 />
                 <div>
-                  <span className="text-sm font-medium text-gray-900">Enable Maintenance Mode</span>
-                  <p className="text-xs text-gray-600">Platform will be inaccessible except for allowed IPs</p>
+                  <span className="text-sm font-medium text-gray-900">{t('admin.settings.maintenance.enableMaintenanceMode')}</span>
+                  <p className="text-xs text-gray-600">{t('admin.settings.maintenance.maintenanceModeDescription')}</p>
                 </div>
               </label>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Maintenance Message</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.settings.maintenance.maintenanceMessage')}</label>
               <textarea
                 className="w-full border border-gray-300 rounded-md px-3 py-2"
                 rows={3}
@@ -734,7 +734,7 @@ export default function AdminSettingsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Allowed IPs</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.settings.maintenance.allowedIps')}</label>
               <div className="flex gap-2 mb-2">
                 <input
                   type="text"
@@ -748,7 +748,7 @@ export default function AdminSettingsPage() {
                   onClick={handleAddAllowedIP}
                   className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
                 >
-                  Add
+                  {t('admin.settings.maintenance.addButton')}
                 </button>
               </div>
               <div className="space-y-2">
@@ -760,7 +760,7 @@ export default function AdminSettingsPage() {
                       onClick={() => handleRemoveAllowedIP(ip)}
                       className="text-red-600 hover:text-red-900 text-sm"
                     >
-                      Remove
+                      {t('admin.settings.maintenance.removeButton')}
                     </button>
                   </div>
                 ))}
@@ -770,7 +770,7 @@ export default function AdminSettingsPage() {
               type="submit"
               className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
             >
-              Save Maintenance Settings
+              {t('admin.settings.maintenance.saveButton')}
             </button>
           </form>
         </div>
@@ -780,20 +780,20 @@ export default function AdminSettingsPage() {
       {activeTab === 'license' && (
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">License Information</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{t('admin.settings.license.title')}</h2>
           </div>
           <div className="p-6 space-y-6">
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <label className="text-sm font-medium text-gray-500">License Key</label>
+                <label className="text-sm font-medium text-gray-500">{t('admin.settings.license.licenseKey')}</label>
                 <div className="mt-1 text-gray-900 font-mono">{licenseInfo.licenseKey}</div>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Licensed To</label>
+                <label className="text-sm font-medium text-gray-500">{t('admin.settings.license.licensedTo')}</label>
                 <div className="mt-1 text-gray-900">{licenseInfo.licensedTo}</div>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Status</label>
+                <label className="text-sm font-medium text-gray-500">{t('admin.settings.license.status')}</label>
                 <div className="mt-1">
                   <span className={`px-2 py-1 text-xs rounded ${
                     licenseInfo.status === 'Active' ? 'bg-green-100 text-green-800' :
@@ -805,20 +805,20 @@ export default function AdminSettingsPage() {
                 </div>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Expires At</label>
+                <label className="text-sm font-medium text-gray-500">{t('admin.settings.license.expiresAt')}</label>
                 <div className="mt-1 text-gray-900">{formatDate(licenseInfo.expiresAt)}</div>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Max Tenants</label>
+                <label className="text-sm font-medium text-gray-500">{t('admin.settings.license.maxTenants')}</label>
                 <div className="mt-1 text-gray-900">{licenseInfo.maxTenants.toLocaleString()}</div>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-500">Max Users</label>
+                <label className="text-sm font-medium text-gray-500">{t('admin.settings.license.maxUsers')}</label>
                 <div className="mt-1 text-gray-900">{licenseInfo.maxUsers.toLocaleString()}</div>
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-500">Licensed Features</label>
+              <label className="text-sm font-medium text-gray-500">{t('admin.settings.license.licensedFeatures')}</label>
               <div className="mt-2 flex flex-wrap gap-2">
                 {licenseInfo.features.map((feature) => (
                   <span key={feature} className="px-3 py-1 bg-indigo-100 text-indigo-800 text-sm rounded-full">

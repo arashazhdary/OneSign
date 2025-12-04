@@ -98,7 +98,7 @@ export default function GlobalEnvironmentsPage() {
 
   const handleBootstrap = async () => {
     if (!bootstrapConfig.name || !bootstrapConfig.region || !bootstrapConfig.version) {
-      setError('Please fill all required fields');
+      setError(t('global.environments.fillAllFields'));
       return;
     }
 
@@ -107,7 +107,7 @@ export default function GlobalEnvironmentsPage() {
     setSuccess('');
     try {
       await globalService.bootstrapEnvironment(bootstrapConfig as any);
-      setSuccess('Environment bootstrapped successfully');
+      setSuccess(t('global.environments.messages.bootstrapped'));
       setShowBootstrapModal(false);
       setBootstrapConfig({ name: '', type: 'Development', region: '', version: '' });
       fetchEnvironments();
@@ -119,7 +119,7 @@ export default function GlobalEnvironmentsPage() {
   };
 
   const handleRestart = async (environmentId: string) => {
-    if (!confirm('Are you sure you want to restart this environment?')) {
+    if (!confirm(t('global.environments.confirmRestart'))) {
       return;
     }
 
@@ -128,7 +128,7 @@ export default function GlobalEnvironmentsPage() {
     setSuccess('');
     try {
       await globalService.restartEnvironment(environmentId);
-      setSuccess('Environment restart initiated successfully');
+      setSuccess(t('global.environments.messages.restartInitiated'));
       fetchEnvironments();
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -189,7 +189,7 @@ export default function GlobalEnvironmentsPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold mb-6">Environment Management</h1>
+      <h1 className="text-3xl font-bold mb-6">{t('global.environments.title')}</h1>
 
       {error && (
         <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>
@@ -211,7 +211,7 @@ export default function GlobalEnvironmentsPage() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              {tab === 'environments' ? 'Environments' : 'Monitoring'}
+              {tab === 'environments' ? t('global.environments.environments') : t('global.environments.monitoring')}
             </button>
           ))}
         </nav>
@@ -224,7 +224,7 @@ export default function GlobalEnvironmentsPage() {
               onClick={() => setShowBootstrapModal(true)}
               className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
             >
-              Bootstrap Environment
+              {t('global.environments.bootstrapButton')}
             </button>
           </div>
 
@@ -504,11 +504,11 @@ export default function GlobalEnvironmentsPage() {
             </>
           ) : selectedEnvironment ? (
             <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
-              {loading ? 'Loading monitoring data...' : 'No monitoring data available'}
+              {loading ? t('global.environments.loading.monitoringData') : t('global.environments.empty.noMonitoringData')}
             </div>
           ) : (
             <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
-              Please select an environment to view monitoring data
+              {t('global.environments.messages.selectEnvironment')}
             </div>
           )}
         </div>

@@ -960,7 +960,7 @@ export default function TenantUsersDetailPage() {
       <Modal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
-        title="Edit Profile"
+        title={t('tenant.users.modal.editProfile')}
         size="lg"
         footer={
           <div className="flex gap-3">
@@ -980,7 +980,7 @@ export default function TenantUsersDetailPage() {
               className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all disabled:opacity-50 flex items-center gap-2"
             >
               {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? t('common.saving') : t('common.saveChanges')}
             </motion.button>
           </div>
         }

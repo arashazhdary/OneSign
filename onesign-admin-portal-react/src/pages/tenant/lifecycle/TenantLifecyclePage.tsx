@@ -389,7 +389,7 @@ export default function TenantLifecyclePage() {
                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 <Plus className="w-5 h-5" />
-                Create Package
+                {t('tenant.lifecycle.createPackage')}
               </motion.button>
             )}
             {activeTab === 'policies' && (
@@ -400,7 +400,7 @@ export default function TenantLifecyclePage() {
                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 <Plus className="w-5 h-5" />
-                Create Policy
+                {t('tenant.lifecycle.createPolicy')}
               </motion.button>
             )}
           </div>
@@ -435,28 +435,28 @@ export default function TenantLifecyclePage() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <StatCard
-            title="Access Packages"
+            title={t('common.accessPackages')}
             value={accessPackages.length}
             icon={<Package className="w-6 h-6 text-white" />}
             color="from-blue-500 to-indigo-600"
             delay={0}
           />
           <StatCard
-            title="Active Policies"
+            title={t('tenant.lifecycle.activePolicies')}
             value={lifecyclePolicies.filter(p => p.enabled).length}
             icon={<FileText className="w-6 h-6 text-white" />}
             color="from-green-500 to-emerald-600"
             delay={1}
           />
           <StatCard
-            title="Records Synced"
+            title={t('tenant.lifecycle.recordsSynced')}
             value={hrSyncStatus?.recordsSynced || 0}
             icon={<Users className="w-6 h-6 text-white" />}
             color="from-purple-500 to-violet-600"
             delay={2}
           />
           <StatCard
-            title="Recent Events"
+            title={t('tenant.lifecycle.recentEvents')}
             value={lifecycleEvents.length}
             icon={<Activity className="w-6 h-6 text-white" />}
             color="from-orange-500 to-red-600"
@@ -527,21 +527,21 @@ export default function TenantLifecyclePage() {
 
                 <div className="space-y-3 mb-4">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500 dark:text-gray-400">Duration</span>
-                    <span className="font-medium text-gray-900 dark:text-white">{pkg.duration} days</span>
+                    <span className="text-gray-500 dark:text-gray-400">{t('tenant.lifecycle.duration')}</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{pkg.duration} {t('tenant.lifecycle.days')}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-500 dark:text-gray-400">Approval</span>
+                    <span className="text-gray-500 dark:text-gray-400">{t('tenant.lifecycle.approval')}</span>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       pkg.approvalRequired
                         ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
                         : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
                     }`}>
-                      {pkg.approvalRequired ? 'Required' : 'Not Required'}
+                      {pkg.approvalRequired ? t('tenant.lifecycle.required') : t('tenant.lifecycle.notRequired')}
                     </span>
                   </div>
                   <div>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">Roles:</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">{t('tenant.lifecycle.roles')}:</span>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {pkg.roles.map((role, idx) => (
                         <span key={idx} className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded text-xs">
@@ -559,7 +559,7 @@ export default function TenantLifecyclePage() {
                     className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg text-sm font-medium"
                   >
                     <Edit className="w-4 h-4" />
-                    Edit
+                    {t('common.edit')}
                   </motion.button>
                   <motion.button
                     whileHover={{ scale: 1.05 }}
@@ -567,7 +567,7 @@ export default function TenantLifecyclePage() {
                     className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-sm font-medium"
                   >
                     <Trash2 className="w-4 h-4" />
-                    Delete
+                    {t('common.delete')}
                   </motion.button>
                 </div>
               </motion.div>
@@ -575,7 +575,7 @@ export default function TenantLifecyclePage() {
             {accessPackages.length === 0 && (
               <div className="col-span-3 text-center py-12 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700">
                 <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 dark:text-gray-400">No access packages found</p>
+                <p className="text-gray-500 dark:text-gray-400">{t('tenant.lifecycle.noAccessPackages')}</p>
               </div>
             )}
           </motion.div>
@@ -592,11 +592,11 @@ export default function TenantLifecyclePage() {
               <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
                 <thead className="bg-gray-50 dark:bg-slate-700/50">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Policy Name</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Trigger</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('tenant.lifecycle.policyName')}</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('tenant.lifecycle.trigger')}</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.status')}</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
@@ -638,7 +638,7 @@ export default function TenantLifecyclePage() {
                             : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-300'
                         }`}>
                           {policy.enabled ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
-                          {policy.enabled ? 'Enabled' : 'Disabled'}
+                          {policy.enabled ? t('tenant.lifecycle.enabled') : t('tenant.lifecycle.disabled')}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -648,14 +648,14 @@ export default function TenantLifecyclePage() {
                             whileTap={{ scale: 0.95 }}
                             className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 font-medium text-sm"
                           >
-                            Edit
+                            {t('common.edit')}
                           </motion.button>
                           <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             className="text-red-600 dark:text-red-400 hover:text-red-900 font-medium text-sm"
                           >
-                            Delete
+                            {t('common.delete')}
                           </motion.button>
                         </div>
                       </td>
@@ -666,7 +666,7 @@ export default function TenantLifecyclePage() {
               {lifecyclePolicies.length === 0 && (
                 <div className="text-center py-12">
                   <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500 dark:text-gray-400">No lifecycle policies found</p>
+                  <p className="text-gray-500 dark:text-gray-400">{t('tenant.lifecycle.noPolicies')}</p>
                 </div>
               )}
             </div>
@@ -685,32 +685,32 @@ export default function TenantLifecyclePage() {
                 <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
                   <div className="flex items-center gap-3 mb-2">
                     <Clock className="w-5 h-5 text-gray-400" />
-                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Last Sync</h3>
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('tenant.lifecycle.lastSync')}</h3>
                   </div>
                   <p className="text-lg font-bold text-gray-900 dark:text-white">
-                    {hrSyncStatus.lastSyncAt ? new Date(hrSyncStatus.lastSyncAt).toLocaleString(locale) : 'Never'}
+                    {hrSyncStatus.lastSyncAt ? new Date(hrSyncStatus.lastSyncAt).toLocaleString(locale) : t('tenant.lifecycle.never')}
                   </p>
                 </div>
                 <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
                   <div className="flex items-center gap-3 mb-2">
                     <Calendar className="w-5 h-5 text-gray-400" />
-                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Next Sync</h3>
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('tenant.lifecycle.nextSync')}</h3>
                   </div>
                   <p className="text-lg font-bold text-gray-900 dark:text-white">
-                    {hrSyncStatus.nextSyncAt ? new Date(hrSyncStatus.nextSyncAt).toLocaleString(locale) : 'Not Scheduled'}
+                    {hrSyncStatus.nextSyncAt ? new Date(hrSyncStatus.nextSyncAt).toLocaleString(locale) : t('tenant.lifecycle.notScheduled')}
                   </p>
                 </div>
                 <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
                   <div className="flex items-center gap-3 mb-2">
                     <CheckCircle className="w-5 h-5 text-green-500" />
-                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Records Synced</h3>
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('tenant.lifecycle.recordsSynced')}</h3>
                   </div>
                   <p className="text-lg font-bold text-green-600 dark:text-green-400">{hrSyncStatus.recordsSynced.toLocaleString()}</p>
                 </div>
                 <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
                   <div className="flex items-center gap-3 mb-2">
                     <AlertTriangle className="w-5 h-5 text-red-500" />
-                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Errors</h3>
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">{t('tenant.lifecycle.errors')}</h3>
                   </div>
                   <p className="text-lg font-bold text-red-600 dark:text-red-400">{hrSyncStatus.errors}</p>
                 </div>
@@ -718,7 +718,7 @@ export default function TenantLifecyclePage() {
             )}
 
             <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Sync Actions</h3>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">{t('tenant.lifecycle.syncActions')}</h3>
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -727,7 +727,7 @@ export default function TenantLifecyclePage() {
                 className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-lg shadow-lg hover:shadow-xl disabled:opacity-50 transition-all"
               >
                 <RefreshCw className={`w-5 h-5 ${isSyncing ? 'animate-spin' : ''}`} />
-                {isSyncing ? 'Syncing...' : 'Trigger HR Sync'}
+                {isSyncing ? t('tenant.lifecycle.syncing') : t('tenant.lifecycle.triggerHRSync')}
               </motion.button>
             </div>
           </motion.div>
@@ -746,7 +746,7 @@ export default function TenantLifecyclePage() {
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Enter User ID to view timeline..."
+                    placeholder={t('tenant.lifecycle.enterUserIdPlaceholder')}
                     className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
                     value={selectedUserId}
                     onChange={(e) => setSelectedUserId(e.target.value)}
@@ -758,14 +758,14 @@ export default function TenantLifecyclePage() {
                   onClick={fetchUserTimeline}
                   className="px-6 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-lg hover:shadow-xl"
                 >
-                  Load Timeline
+                  {t('tenant.lifecycle.loadTimeline')}
                 </motion.button>
               </div>
             </div>
 
             {userTimeline.length > 0 && (
               <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">User Timeline</h3>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">{t('tenant.lifecycle.userTimeline')}</h3>
                 <div className="space-y-4">
                   {userTimeline.map((event, index) => (
                     <motion.div
@@ -795,7 +795,7 @@ export default function TenantLifecyclePage() {
             {selectedUserId && userTimeline.length === 0 && (
               <div className="text-center py-12 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700">
                 <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 dark:text-gray-400">No timeline events found for this user</p>
+                <p className="text-gray-500 dark:text-gray-400">{t('tenant.lifecycle.noTimelineEvents')}</p>
               </div>
             )}
           </motion.div>
@@ -812,10 +812,10 @@ export default function TenantLifecyclePage() {
               <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
                 <thead className="bg-gray-50 dark:bg-slate-700/50">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Event Type</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">User ID</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Timestamp</th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Details</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('tenant.lifecycle.eventType')}</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('tenant.lifecycle.userId')}</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('tenant.lifecycle.timestamp')}</th>
+                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('tenant.lifecycle.details')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
@@ -851,7 +851,7 @@ export default function TenantLifecyclePage() {
               {lifecycleEvents.length === 0 && (
                 <div className="text-center py-12">
                   <Activity className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500 dark:text-gray-400">No lifecycle events found</p>
+                  <p className="text-gray-500 dark:text-gray-400">{t('tenant.lifecycle.noEvents')}</p>
                 </div>
               )}
             </div>
@@ -862,13 +862,13 @@ export default function TenantLifecyclePage() {
         <Modal
           isOpen={showPackageModal}
           onClose={() => setShowPackageModal(false)}
-          title="Create Access Package"
+          title={t('tenant.lifecycle.createAccessPackage')}
           size="lg"
         >
           <form onSubmit={handleCreateAccessPackage}>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Name *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('tenant.lifecycle.name')} *</label>
                 <input
                   type="text"
                   required
@@ -878,7 +878,7 @@ export default function TenantLifecyclePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('tenant.lifecycle.description')}</label>
                 <textarea
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
                   rows={3}
@@ -887,17 +887,17 @@ export default function TenantLifecyclePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Roles (comma-separated)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('tenant.lifecycle.rolesCommaSeparated')}</label>
                 <input
                   type="text"
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
                   value={packageRoles}
                   onChange={(e) => setPackageRoles(e.target.value)}
-                  placeholder="Role1, Role2, Role3"
+                  placeholder={t('tenant.lifecycle.rolesPlaceholder')}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Duration (days)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('tenant.lifecycle.durationDays')}</label>
                 <input
                   type="number"
                   min="1"
@@ -914,7 +914,7 @@ export default function TenantLifecyclePage() {
                     checked={packageApprovalRequired}
                     onChange={(e) => setPackageApprovalRequired(e.target.checked)}
                   />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Requires Approval</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('tenant.lifecycle.requiresApproval')}</span>
                 </label>
               </div>
             </div>
@@ -924,13 +924,13 @@ export default function TenantLifecyclePage() {
                 onClick={() => setShowPackageModal(false)}
                 className="flex-1 px-6 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
                 className="flex-1 px-6 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl"
               >
-                Create Package
+                {t('tenant.lifecycle.createPackage')}
               </button>
             </div>
           </form>
@@ -940,13 +940,13 @@ export default function TenantLifecyclePage() {
         <Modal
           isOpen={showPolicyModal}
           onClose={() => setShowPolicyModal(false)}
-          title="Create Lifecycle Policy"
+          title={t('tenant.lifecycle.createLifecyclePolicy')}
           size="lg"
         >
           <form onSubmit={handleCreateLifecyclePolicy}>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Name *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('tenant.lifecycle.name')} *</label>
                 <input
                   type="text"
                   required
@@ -956,27 +956,27 @@ export default function TenantLifecyclePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Trigger Event *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('tenant.lifecycle.triggerEvent')} *</label>
                 <select
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
                   value={policyTrigger}
                   onChange={(e) => setPolicyTrigger(e.target.value)}
                 >
-                  <option value="OnHire">On Hire</option>
-                  <option value="OnTermination">On Termination</option>
-                  <option value="OnTransfer">On Transfer</option>
-                  <option value="OnLeave">On Leave</option>
-                  <option value="OnReturn">On Return</option>
+                  <option value="OnHire">{t('tenant.lifecycle.onHire')}</option>
+                  <option value="OnTermination">{t('tenant.lifecycle.onTermination')}</option>
+                  <option value="OnTransfer">{t('tenant.lifecycle.onTransfer')}</option>
+                  <option value="OnLeave">{t('tenant.lifecycle.onLeave')}</option>
+                  <option value="OnReturn">{t('tenant.lifecycle.onReturn')}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Actions (comma-separated)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('tenant.lifecycle.actionsCommaSeparated')}</label>
                 <input
                   type="text"
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
                   value={policyActions}
                   onChange={(e) => setPolicyActions(e.target.value)}
-                  placeholder="GrantAccess, SendNotification, CreateTicket"
+                  placeholder={t('tenant.lifecycle.actionsPlaceholder')}
                 />
               </div>
               <div>
@@ -987,7 +987,7 @@ export default function TenantLifecyclePage() {
                     checked={policyEnabled}
                     onChange={(e) => setPolicyEnabled(e.target.checked)}
                   />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">Enabled</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('tenant.lifecycle.enabled')}</span>
                 </label>
               </div>
             </div>
@@ -997,13 +997,13 @@ export default function TenantLifecyclePage() {
                 onClick={() => setShowPolicyModal(false)}
                 className="flex-1 px-6 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
                 className="flex-1 px-6 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg font-medium shadow-lg hover:shadow-xl"
               >
-                Create Policy
+                {t('tenant.lifecycle.createPolicy')}
               </button>
             </div>
           </form>

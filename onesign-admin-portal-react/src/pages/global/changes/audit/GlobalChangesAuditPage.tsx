@@ -150,7 +150,7 @@ export default function GlobalChangesAuditPage() {
       }
     } catch (err: any) {
       console.error('Error fetching audit logs:', err);
-      setError('Failed to load audit logs');
+      setError(t('global.changes.audit.messages.failedToLoadAuditLogs'));
     } finally {
       setLoading(false);
     }
@@ -193,7 +193,7 @@ export default function GlobalChangesAuditPage() {
         },
       ]);
     } catch (err) {
-      setError('Failed to load tenant metrics');
+      setError(t('global.changes.audit.messages.failedToLoadTenantMetrics'));
     } finally {
       setLoading(false);
     }
@@ -234,7 +234,7 @@ export default function GlobalChangesAuditPage() {
         },
       ]);
     } catch (err) {
-      setError('Failed to load impact analyses');
+      setError(t('global.changes.audit.messages.failedToLoadImpactAnalyses'));
     } finally {
       setLoading(false);
     }
@@ -249,9 +249,9 @@ export default function GlobalChangesAuditPage() {
     setLoading(true);
     try {
       // Implement export functionality
-      setSuccess(`Audit log exported as ${format.toUpperCase()}`);
+      setSuccess(t('global.changes.audit.messages.auditLogExported', { format: format.toUpperCase() }));
     } catch (err) {
-      setError('Failed to export audit log');
+      setError(t('global.changes.audit.messages.failedToExportAuditLog'));
     } finally {
       setLoading(false);
     }
@@ -260,15 +260,15 @@ export default function GlobalChangesAuditPage() {
   const auditColumns: Column<GlobalChangeAudit>[] = [
     {
       key: 'appliedAt',
-      label: 'Time',
+      label: t('global.changes.audit.labels.time'),
       render: (audit) => new Date(audit.appliedAt).toLocaleString(),
     },
-    { key: 'tenantName', label: 'Tenant' },
-    { key: 'changeSetName', label: 'Change Set' },
-    { key: 'module', label: 'Module' },
+    { key: 'tenantName', label: t('global.changes.audit.labels.tenant') },
+    { key: 'changeSetName', label: t('global.changes.audit.labels.changeSet') },
+    { key: 'module', label: t('global.changes.audit.labels.module') },
     {
       key: 'status',
-      label: 'Status',
+      label: t('common.status'),
       render: (audit) => (
         <StatusBadge
           status={audit.status}
@@ -284,44 +284,44 @@ export default function GlobalChangesAuditPage() {
     },
     {
       key: 'affectedResources',
-      label: 'Affected',
-      render: (audit) => `${audit.affectedResources} resources`,
+      label: t('global.changes.audit.labels.affected'),
+      render: (audit) => `${audit.affectedResources} ${t('global.changes.audit.labels.resources')}`,
     },
-    { key: 'duration', label: 'Duration' },
+    { key: 'duration', label: t('global.changes.audit.labels.duration') },
   ];
 
   const metricsColumns: Column<TenantChangeMetrics>[] = [
-    { key: 'tenantName', label: 'Tenant' },
+    { key: 'tenantName', label: t('global.changes.audit.labels.tenant') },
     {
       key: 'totalChanges',
-      label: 'Total Changes',
+      label: t('global.changes.audit.labels.totalChanges'),
       render: (metrics) => (
         <span className="font-medium">{metrics.totalChanges}</span>
       ),
     },
     {
       key: 'successfulChanges',
-      label: 'Successful',
+      label: t('global.changes.audit.labels.successful'),
       render: (metrics) => (
         <span className="text-green-600 font-medium">{metrics.successfulChanges}</span>
       ),
     },
     {
       key: 'failedChanges',
-      label: 'Failed',
+      label: t('global.changes.audit.labels.failed'),
       render: (metrics) => (
         <span className="text-red-600 font-medium">{metrics.failedChanges}</span>
       ),
     },
     {
       key: 'successRate',
-      label: 'Success Rate',
+      label: t('global.changes.audit.labels.successRate'),
       render: (metrics) => {
         const rate = ((metrics.successfulChanges / metrics.totalChanges) * 100).toFixed(1);
         return <span className="font-medium">{rate}%</span>;
       },
     },
-    { key: 'averageDuration', label: 'Avg Duration' },
+    { key: 'averageDuration', label: t('global.changes.audit.labels.avgDuration') },
   ];
 
   return (
@@ -331,10 +331,10 @@ export default function GlobalChangesAuditPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-          Global Changes Audit
+          {t('global.changes.audit.title')}
         </h1>
         <p className="text-gray-600">
-          Platform-wide change tracking and compliance monitoring across all tenants
+          {t('global.changes.audit.description')}
         </p>
       </div>
 
@@ -360,7 +360,7 @@ export default function GlobalChangesAuditPage() {
               : 'text-gray-600 hover:text-gray-800'
           }`}
         >
-          Audit Log
+          {t('global.changes.audit.tabs.auditLog')}
         </button>
         <button
           onClick={() => setActiveTab('tenant-metrics')}
@@ -370,7 +370,7 @@ export default function GlobalChangesAuditPage() {
               : 'text-gray-600 hover:text-gray-800'
           }`}
         >
-          Tenant Metrics
+          {t('global.changes.audit.tabs.tenantMetrics')}
         </button>
         <button
           onClick={() => setActiveTab('impact-analysis')}
@@ -380,7 +380,7 @@ export default function GlobalChangesAuditPage() {
               : 'text-gray-600 hover:text-gray-800'
           }`}
         >
-          Impact Analysis
+          {t('global.changes.audit.tabs.impactAnalysis')}
         </button>
         <button
           onClick={() => setActiveTab('compliance')}
@@ -390,7 +390,7 @@ export default function GlobalChangesAuditPage() {
               : 'text-gray-600 hover:text-gray-800'
           }`}
         >
-          Compliance Reports
+          {t('global.changes.audit.tabs.complianceReports')}
         </button>
       </div>
 

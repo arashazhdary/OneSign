@@ -76,14 +76,14 @@ interface AuditLogEntry {
 
 type Tab = 'overview' | 'redirect-uris' | 'client-secrets' | 'permissions' | 'org-units' | 'audit-log' | 'usage-stats';
 
-const tabs = [
-  { key: 'overview', label: 'Overview', icon: <AppWindow className="w-4 h-4" /> },
-  { key: 'redirect-uris', label: 'Redirect URIs', icon: <Link2 className="w-4 h-4" /> },
-  { key: 'client-secrets', label: 'Secrets', icon: <Key className="w-4 h-4" /> },
-  { key: 'permissions', label: 'Permissions', icon: <Shield className="w-4 h-4" /> },
-  { key: 'org-units', label: 'Org Units', icon: <Building2 className="w-4 h-4" /> },
-  { key: 'audit-log', label: 'Audit', icon: <FileText className="w-4 h-4" /> },
-  { key: 'usage-stats', label: 'Usage', icon: <BarChart3 className="w-4 h-4" /> },
+const tabsData = [
+  { key: 'overview', labelKey: 'common.overview', icon: <AppWindow className="w-4 h-4" /> },
+  { key: 'redirect-uris', labelKey: 'common.redirectUris', icon: <Link2 className="w-4 h-4" /> },
+  { key: 'client-secrets', labelKey: 'common.secrets', icon: <Key className="w-4 h-4" /> },
+  { key: 'permissions', labelKey: 'common.permissions', icon: <Shield className="w-4 h-4" /> },
+  { key: 'org-units', labelKey: 'common.orgUnits', icon: <Building2 className="w-4 h-4" /> },
+  { key: 'audit-log', labelKey: 'common.audit', icon: <FileText className="w-4 h-4" /> },
+  { key: 'usage-stats', labelKey: 'common.usage', icon: <BarChart3 className="w-4 h-4" /> },
 ];
 
 interface StatCardProps {
@@ -300,7 +300,7 @@ export default function TenantAppsDetailPage() {
     setSuccess('');
     try {
       await applicationsService.updateApplication(tenantId, applicationId, editForm);
-      setSuccess('Application updated successfully');
+      setSuccess(t('common.applicationUpdatedSuccessfully'));
       setShowEditModal(false);
       fetchApplication();
     } catch (err: any) {
@@ -315,7 +315,7 @@ export default function TenantAppsDetailPage() {
     setError('');
     try {
       await applicationsService.addRedirectUri(tenantId, applicationId, newURI.uri);
-      setSuccess('Redirect URI added successfully');
+      setSuccess(t('common.redirectUriAddedSuccessfully'));
       setShowAddURIModal(false);
       setNewURI({ uri: '', type: 'web' });
       fetchRedirectURIs();
@@ -327,10 +327,10 @@ export default function TenantAppsDetailPage() {
   };
 
   const handleDeleteRedirectURI = async (uriId: string) => {
-    if (!confirm('Are you sure you want to delete this redirect URI?')) return;
+    if (!confirm(t('common.confirmDeleteRedirectUri'))) return;
     try {
       await applicationsService.removeRedirectUri(tenantId, uriId);
-      setSuccess('Redirect URI deleted successfully');
+      setSuccess(t('common.redirectUriDeletedSuccessfully'));
       fetchRedirectURIs();
     } catch (err: any) {
       setError(err.message || t('common.failedToDeleteRedirectUri'));
@@ -354,10 +354,10 @@ export default function TenantAppsDetailPage() {
   };
 
   const handleDeleteSecret = async (secretId: string) => {
-    if (!confirm('Are you sure you want to delete this client secret? This action cannot be undone.')) return;
+    if (!confirm(t('common.confirmDeleteClientSecret'))) return;
     try {
       await applicationsService.regenerateSecret(tenantId, applicationId);
-      setSuccess('Client secret regenerated successfully');
+      setSuccess(t('common.clientSecretRegeneratedSuccessfully'));
       fetchClientSecrets();
     } catch (err: any) {
       setError(err.message || t('common.failedToDeleteSecret'));
@@ -365,7 +365,7 @@ export default function TenantAppsDetailPage() {
   };
 
   const formatDate = (dateString: string | null | undefined) => {
-    if (!dateString) return 'Never';
+    if (!dateString) return t('common.never');
     const date = new Date(dateString);
     return date.toLocaleString();
   };
@@ -391,7 +391,7 @@ export default function TenantAppsDetailPage() {
           className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-6 py-4 rounded-xl flex items-center gap-3"
         >
           <AlertCircle className="w-6 h-6" />
-          Application not found
+          {t('applications.notFound')}
         </motion.div>
       </div>
     );
@@ -430,7 +430,7 @@ export default function TenantAppsDetailPage() {
             className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-xl hover:shadow-lg transition-all font-medium"
           >
             <Edit className="w-5 h-5" />
-            Edit Application
+            {t('common.editApplication')}
           </motion.button>
         </div>
       </motion.div>
@@ -470,7 +470,7 @@ export default function TenantAppsDetailPage() {
         className="mb-6 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl p-2 shadow-lg border border-gray-200 dark:border-slate-700 overflow-x-auto"
       >
         <nav className="flex space-x-2 min-w-max">
-          {tabs.map((tab) => (
+          {tabsData.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as Tab)}
@@ -489,7 +489,7 @@ export default function TenantAppsDetailPage() {
               )}
               <span className="relative z-10 flex items-center gap-2">
                 {tab.icon}
-                {tab.label}
+                {t(tab.labelKey)}
               </span>
             </button>
           ))}
@@ -506,47 +506,47 @@ export default function TenantAppsDetailPage() {
           <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
               <AppWindow className="w-5 h-5 text-green-500" />
-              Application Information
+              {t('common.applicationInformation')}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Name</label>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t('common.name')}</label>
                 <div className="text-gray-900 dark:text-white font-medium">{application.name}</div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Type</label>
-                <div className="text-gray-900 dark:text-white capitalize">{(application as any).type || (application as any).applicationType || 'N/A'}</div>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t('common.type')}</label>
+                <div className="text-gray-900 dark:text-white capitalize">{(application as any).type || (application as any).applicationType || t('common.notAvailable')}</div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Category</label>
-                <div className="text-gray-900 dark:text-white">{(application as any).category || 'N/A'}</div>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t('common.category')}</label>
+                <div className="text-gray-900 dark:text-white">{(application as any).category || t('common.notAvailable')}</div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Status</label>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t('common.status')}</label>
                 <StatusBadge status={(application as any).status || ((application as any).isEnabled ? 'active' : 'inactive')} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">URL</label>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t('common.url')}</label>
                 <div className="text-gray-900 dark:text-white flex items-center gap-2">
-                  {(application as any).url || 'N/A'}
+                  {(application as any).url || t('common.notAvailable')}
                   {(application as any).url && (
                     <ExternalLink className="w-4 h-4 text-gray-400 cursor-pointer hover:text-green-500" />
                   )}
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Critical Application</label>
-                <div className="text-gray-900 dark:text-white">{(application as any).isCritical ? 'Yes' : 'No'}</div>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t('common.criticalApplication')}</label>
+                <div className="text-gray-900 dark:text-white">{(application as any).isCritical ? t('common.yes') : t('common.no')}</div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Created At</label>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t('common.createdAt')}</label>
                 <div className="text-gray-900 dark:text-white flex items-center gap-2">
                   <Clock className="w-4 h-4 text-gray-400" />
                   {formatDate((application as any).createdAt || application.createdAt)}
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Updated At</label>
+                <label className="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{t('common.updatedAt')}</label>
                 <div className="text-gray-900 dark:text-white flex items-center gap-2">
                   <Clock className="w-4 h-4 text-gray-400" />
                   {formatDate((application as any).updatedAt || application.updatedAt)}
@@ -567,7 +567,7 @@ export default function TenantAppsDetailPage() {
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
               <Link2 className="w-5 h-5 text-green-500" />
-              Redirect URIs
+              {t('common.redirectUris')}
             </h3>
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -576,13 +576,13 @@ export default function TenantAppsDetailPage() {
               className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-xl hover:shadow-lg transition-all font-medium"
             >
               <Plus className="w-4 h-4" />
-              Add URI
+              {t('common.addUri')}
             </motion.button>
           </div>
           {redirectURIs.length === 0 ? (
             <div className="text-center py-12">
               <Link2 className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400">No redirect URIs configured</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('common.noRedirectUrisConfigured')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -597,7 +597,7 @@ export default function TenantAppsDetailPage() {
                   <div>
                     <div className="font-medium text-gray-900 dark:text-white font-mono text-sm">{uri.uri}</div>
                     <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      Type: <span className="capitalize">{uri.type}</span> • Added: {formatDate(uri.createdAt)}
+                      {t('common.type')}: <span className="capitalize">{uri.type}</span> • {t('common.added')}: {formatDate(uri.createdAt)}
                     </div>
                   </div>
                   <motion.button
@@ -625,7 +625,7 @@ export default function TenantAppsDetailPage() {
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
               <Key className="w-5 h-5 text-green-500" />
-              Client Secrets
+              {t('common.clientSecrets')}
             </h3>
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -634,13 +634,13 @@ export default function TenantAppsDetailPage() {
               className="flex items-center gap-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-xl hover:shadow-lg transition-all font-medium"
             >
               <Plus className="w-4 h-4" />
-              Generate Secret
+              {t('common.generateSecret')}
             </motion.button>
           </div>
           {clientSecrets.length === 0 ? (
             <div className="text-center py-12">
               <Key className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400">No client secrets configured</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('common.noClientSecretsConfigured')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -655,8 +655,8 @@ export default function TenantAppsDetailPage() {
                   <div>
                     <div className="font-medium text-gray-900 dark:text-white">{secret.name}</div>
                     <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      Hint: <span className="font-mono">{secret.hint}</span> • Created: {formatDate(secret.createdAt)}
-                      {secret.lastUsedAt && ` • Last used: ${formatDate(secret.lastUsedAt)}`}
+                      {t('common.hint')}: <span className="font-mono">{secret.hint}</span> • {t('common.created')}: {formatDate(secret.createdAt)}
+                      {secret.lastUsedAt && ` • ${t('common.lastUsed')}: ${formatDate(secret.lastUsedAt)}`}
                     </div>
                   </div>
                   <motion.button
@@ -683,12 +683,12 @@ export default function TenantAppsDetailPage() {
         >
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
             <Shield className="w-5 h-5 text-green-500" />
-            Permissions & Scopes
+            {t('common.permissionsAndScopes')}
           </h3>
           {permissions.length === 0 ? (
             <div className="text-center py-12">
               <Shield className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400">No permissions configured</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('common.noPermissionsConfigured')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -706,7 +706,7 @@ export default function TenantAppsDetailPage() {
                     {permission.isGranted && (
                       <div className="text-xs text-green-600 dark:text-green-400 mt-2 flex items-center gap-1">
                         <CheckCircle className="w-3 h-3" />
-                        Granted: {formatDate(permission.grantedAt)}
+                        {t('common.granted')}: {formatDate(permission.grantedAt)}
                       </div>
                     )}
                   </div>
@@ -717,7 +717,7 @@ export default function TenantAppsDetailPage() {
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
                     }`}
                   >
-                    {permission.isGranted ? 'Granted' : 'Not Granted'}
+                    {permission.isGranted ? t('common.granted') : t('common.notGranted')}
                   </span>
                 </motion.div>
               ))}
@@ -735,12 +735,12 @@ export default function TenantAppsDetailPage() {
         >
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
             <Building2 className="w-5 h-5 text-green-500" />
-            Organizational Unit Assignments
+            {t('common.organizationalUnitAssignments')}
           </h3>
           {orgUnits.length === 0 ? (
             <div className="text-center py-12">
               <Building2 className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400">No org unit assignments</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('common.noOrgUnitAssignments')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -755,7 +755,7 @@ export default function TenantAppsDetailPage() {
                   <div className="font-medium text-gray-900 dark:text-white">{assignment.orgUnitName}</div>
                   <div className="text-sm text-gray-600 dark:text-gray-400 mt-1 font-mono">{assignment.orgUnitPath}</div>
                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                    Assigned: {formatDate(assignment.assignedAt)}
+                    {t('common.assigned')}: {formatDate(assignment.assignedAt)}
                   </div>
                 </motion.div>
               ))}
@@ -773,12 +773,12 @@ export default function TenantAppsDetailPage() {
         >
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
             <FileText className="w-5 h-5 text-green-500" />
-            Audit Log
+            {t('common.auditLog')}
           </h3>
           {auditLog.length === 0 ? (
             <div className="text-center py-12">
               <FileText className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400">No audit entries found</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('common.noAuditEntriesFound')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -791,10 +791,10 @@ export default function TenantAppsDetailPage() {
                   className="border-l-4 border-green-500 pl-4 py-3 bg-gray-50 dark:bg-slate-700/50 rounded-r-xl"
                 >
                   <div className="font-medium text-gray-900 dark:text-white">{entry.action}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">By: {entry.actorName}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">{t('common.by')}: {entry.actorName}</div>
                   <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-2">
                     <Clock className="w-3 h-3" />
-                    {formatDate(entry.timestamp)} • IP: {entry.ipAddress}
+                    {formatDate(entry.timestamp)} • {t('common.ip')}: {entry.ipAddress}
                   </div>
                 </motion.div>
               ))}
@@ -813,34 +813,34 @@ export default function TenantAppsDetailPage() {
           {!usageStats ? (
             <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6 text-center">
               <BarChart3 className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400">Loading statistics...</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('common.loadingStatistics')}</p>
             </div>
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <StatCard
-                  title="Total Users"
+                  title={t('common.totalUsers')}
                   value={usageStats.totalUsers.toLocaleString()}
                   icon={<Users className="w-6 h-6 text-white" />}
                   color="from-blue-500 to-blue-600"
                   delay={0}
                 />
                 <StatCard
-                  title="Active Users"
+                  title={t('common.activeUsers')}
                   value={usageStats.activeUsers.toLocaleString()}
                   icon={<Activity className="w-6 h-6 text-white" />}
                   color="from-green-500 to-emerald-600"
                   delay={1}
                 />
                 <StatCard
-                  title="Total Sessions"
+                  title={t('common.totalSessions')}
                   value={usageStats.totalSessions.toLocaleString()}
                   icon={<BarChart3 className="w-6 h-6 text-white" />}
                   color="from-purple-500 to-purple-600"
                   delay={2}
                 />
                 <StatCard
-                  title="Avg Session"
+                  title={t('common.avgSession')}
                   value={`${usageStats.avgSessionDuration}m`}
                   icon={<Clock className="w-6 h-6 text-white" />}
                   color="from-orange-500 to-amber-600"
@@ -855,7 +855,7 @@ export default function TenantAppsDetailPage() {
                   transition={{ delay: 0.4 }}
                   className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6"
                 >
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Daily Statistics</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('common.dailyStatistics')}</h3>
                   <div className="space-y-3">
                     {usageStats.stats.map((stat: any, index: number) => (
                       <motion.div
@@ -869,11 +869,11 @@ export default function TenantAppsDetailPage() {
                         <div className="flex gap-6">
                           <span className="text-sm">
                             <span className="font-medium text-gray-900 dark:text-white">{stat.users}</span>
-                            <span className="text-gray-500 dark:text-gray-400 ml-1">users</span>
+                            <span className="text-gray-500 dark:text-gray-400 ml-1">{t('common.users')}</span>
                           </span>
                           <span className="text-sm">
                             <span className="font-medium text-gray-900 dark:text-white">{stat.sessions}</span>
-                            <span className="text-gray-500 dark:text-gray-400 ml-1">sessions</span>
+                            <span className="text-gray-500 dark:text-gray-400 ml-1">{t('common.sessions')}</span>
                           </span>
                         </div>
                       </motion.div>
@@ -900,7 +900,7 @@ export default function TenantAppsDetailPage() {
               onClick={() => setShowEditModal(false)}
               className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-slate-700 rounded-xl hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors"
             >
-              Cancel
+              {t('common.cancel')}
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -909,14 +909,14 @@ export default function TenantAppsDetailPage() {
               disabled={saving}
               className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:shadow-lg transition-all disabled:opacity-50"
             >
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? t('common.saving') : t('common.saveChanges')}
             </motion.button>
           </>
         }
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Name</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('common.name')}</label>
             <input
               type="text"
               value={editForm.name}
@@ -925,7 +925,7 @@ export default function TenantAppsDetailPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('common.description')}</label>
             <textarea
               value={editForm.description}
               onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
@@ -934,7 +934,7 @@ export default function TenantAppsDetailPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('common.category')}</label>
             <input
               type="text"
               value={editForm.category}
@@ -943,7 +943,7 @@ export default function TenantAppsDetailPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">URL</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('common.url')}</label>
             <input
               type="url"
               value={editForm.url}
@@ -967,7 +967,7 @@ export default function TenantAppsDetailPage() {
               onClick={() => setShowAddURIModal(false)}
               className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-slate-700 rounded-xl hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors"
             >
-              Cancel
+              {t('common.cancel')}
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -976,14 +976,14 @@ export default function TenantAppsDetailPage() {
               disabled={saving || !newURI.uri}
               className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:shadow-lg transition-all disabled:opacity-50"
             >
-              {saving ? 'Adding...' : 'Add URI'}
+              {saving ? t('common.adding') : t('common.addUri')}
             </motion.button>
           </>
         }
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">URI</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('common.uri')}</label>
             <input
               type="url"
               value={newURI.uri}
@@ -993,15 +993,15 @@ export default function TenantAppsDetailPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Type</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('common.type')}</label>
             <select
               value={newURI.type}
               onChange={(e) => setNewURI({ ...newURI, type: e.target.value as 'web' | 'mobile' | 'desktop' })}
               className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
             >
-              <option value="web">Web</option>
-              <option value="mobile">Mobile</option>
-              <option value="desktop">Desktop</option>
+              <option value="web">{t('common.web')}</option>
+              <option value="mobile">{t('common.mobile')}</option>
+              <option value="desktop">{t('common.desktop')}</option>
             </select>
           </div>
         </div>
@@ -1011,7 +1011,7 @@ export default function TenantAppsDetailPage() {
       <Modal
         isOpen={showAddSecretModal}
         onClose={() => setShowAddSecretModal(false)}
-        title="Generate Client Secret"
+        title={t('common.generateClientSecret')}
         footer={
           <>
             <motion.button
@@ -1020,7 +1020,7 @@ export default function TenantAppsDetailPage() {
               onClick={() => setShowAddSecretModal(false)}
               className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-200 dark:bg-slate-700 rounded-xl hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors"
             >
-              Cancel
+              {t('common.cancel')}
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -1029,18 +1029,18 @@ export default function TenantAppsDetailPage() {
               disabled={saving || !newSecretName}
               className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:shadow-lg transition-all disabled:opacity-50"
             >
-              {saving ? 'Generating...' : 'Generate Secret'}
+              {saving ? t('common.generating') : t('common.generateSecret')}
             </motion.button>
           </>
         }
       >
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Secret Name</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('common.secretName')}</label>
           <input
             type="text"
             value={newSecretName}
             onChange={(e) => setNewSecretName(e.target.value)}
-            placeholder="e.g., Production Secret"
+            placeholder={t('common.secretNamePlaceholder')}
             className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
           />
         </div>
@@ -1050,7 +1050,7 @@ export default function TenantAppsDetailPage() {
       <Modal
         isOpen={!!showGeneratedSecret}
         onClose={() => setShowGeneratedSecret('')}
-        title="Client Secret Generated"
+        title={t('common.clientSecretGenerated')}
         footer={
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -1058,7 +1058,7 @@ export default function TenantAppsDetailPage() {
             onClick={() => setShowGeneratedSecret('')}
             className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:shadow-lg transition-all"
           >
-            I've Saved the Secret
+            {t('common.savedSecret')}
           </motion.button>
         }
       >
@@ -1066,11 +1066,11 @@ export default function TenantAppsDetailPage() {
           <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-4 rounded-xl">
             <p className="text-sm text-yellow-800 dark:text-yellow-300 font-medium flex items-center gap-2">
               <AlertCircle className="w-5 h-5" />
-              Make sure to copy your client secret now. You won't be able to see it again!
+              {t('common.copySecretWarning')}
             </p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Client Secret</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('common.clientSecret')}</label>
             <div className="bg-gray-100 dark:bg-slate-700 p-4 rounded-xl font-mono text-sm break-all text-gray-900 dark:text-white">
               {showGeneratedSecret}
             </div>
@@ -1080,12 +1080,12 @@ export default function TenantAppsDetailPage() {
             whileTap={{ scale: 0.98 }}
             onClick={() => {
               navigator.clipboard.writeText(showGeneratedSecret);
-              setSuccess('Secret copied to clipboard');
+              setSuccess(t('common.secretCopiedToClipboard'));
             }}
             className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-300 dark:hover:bg-slate-500 transition-colors"
           >
             <Copy className="w-4 h-4" />
-            Copy to Clipboard
+            {t('common.copyToClipboard')}
           </motion.button>
         </div>
       </Modal>

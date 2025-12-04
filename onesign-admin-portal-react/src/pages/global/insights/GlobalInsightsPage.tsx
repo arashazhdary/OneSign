@@ -184,7 +184,7 @@ export default function GlobalInsightsPage() {
 
     try {
       await insightsApi.acknowledgeGlobalSystemAlert(alertId);
-      setSuccess('Alert acknowledged');
+      setSuccess(t('global.insights.messages.alertAcknowledged'));
       fetchSystemHealth();
     } catch (err) {
       setError(t('common.error'));
@@ -233,9 +233,9 @@ export default function GlobalInsightsPage() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      setSuccess('Tenants exported successfully');
+      setSuccess(t('global.insights.messages.tenantsExportedSuccessfully'));
     } catch (err) {
-      setError('Failed to export tenants');
+      setError(t('global.insights.messages.failedToExportTenants'));
     } finally {
       setLoading(false);
     }
@@ -264,10 +264,10 @@ export default function GlobalInsightsPage() {
 
       if (editingSubscription) {
         await insightsApi.updateGlobalReportSubscription(editingSubscription.id, payload);
-        setSuccess('Subscription updated successfully');
+        setSuccess(t('global.insights.messages.subscriptionUpdatedSuccessfully'));
       } else {
         await insightsApi.createGlobalReportSubscription(payload);
-        setSuccess('Subscription created successfully');
+        setSuccess(t('global.insights.messages.subscriptionCreatedSuccessfully'));
       }
 
       setShowSubscriptionModal(false);
@@ -281,18 +281,18 @@ export default function GlobalInsightsPage() {
       });
       fetchReportSubscriptions();
     } catch (err) {
-      setError('Failed to save subscription');
+      setError(t('global.insights.messages.failedToSaveSubscription'));
     }
   };
 
   const handleDeleteSubscription = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this subscription?')) return;
+    if (!confirm(t('global.insights.messages.confirmDeleteSubscription'))) return;
     try {
       await insightsApi.deleteGlobalReportSubscription(id);
-      setSuccess('Subscription deleted successfully');
+      setSuccess(t('global.insights.messages.subscriptionDeletedSuccessfully'));
       fetchReportSubscriptions();
     } catch (err) {
-      setError('Failed to delete subscription');
+      setError(t('global.insights.messages.failedToDeleteSubscription'));
     }
   };
 
@@ -338,7 +338,7 @@ export default function GlobalInsightsPage() {
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Global Insights</h1>
+        <h1 className="text-3xl font-bold">{t('global.insights.title')}</h1>
       </div>
 
       {error && (
@@ -371,14 +371,14 @@ export default function GlobalInsightsPage() {
               }`}
             >
               {tab === 'platform-overview'
-                ? 'Platform Overview'
+                ? t('global.insights.tabs.platformOverview')
                 : tab === 'high-risk-users'
-                ? 'High Risk Users'
+                ? t('global.insights.tabs.highRiskUsers')
                 : tab === 'risky-tenants'
-                ? 'Risky Tenants'
+                ? t('global.insights.tabs.riskyTenants')
                 : tab === 'report-subscriptions'
-                ? 'Report Subscriptions'
-                : 'System Health'}
+                ? t('global.insights.tabs.reportSubscriptions')
+                : t('global.insights.tabs.systemHealth')}
             </button>
           ))}
         </nav>
@@ -390,32 +390,32 @@ export default function GlobalInsightsPage() {
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-2">Total Tenants</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('global.insights.labels.totalTenants')}</h3>
               <p className="text-3xl font-bold text-indigo-600">{platformStats.totalTenants}</p>
-              <p className="text-sm text-gray-500">{platformStats.activeTenants} active</p>
+              <p className="text-sm text-gray-500">{platformStats.activeTenants} {t('global.insights.labels.active')}</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-2">Total Users</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('global.insights.labels.totalUsers')}</h3>
               <p className="text-3xl font-bold text-indigo-600">{platformStats.totalUsers}</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-2">Applications</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('global.insights.labels.applications')}</h3>
               <p className="text-3xl font-bold text-indigo-600">{platformStats.totalApplications}</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-2">Logins Today</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('global.insights.labels.loginsToday')}</h3>
               <p className="text-3xl font-bold text-indigo-600">{platformStats.totalLoginsToday}</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-2">Avg MFA Adoption</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('global.insights.labels.avgMfaAdoption')}</h3>
               <p className="text-3xl font-bold text-indigo-600">{platformStats.averageMfaAdoptionRate}%</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-semibold mb-2">Risk Events (Week)</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('global.insights.labels.riskEventsWeek')}</h3>
               <p className="text-3xl font-bold text-orange-600">{platformStats.totalRiskEventsThisWeek}</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow col-span-2">
-              <h3 className="text-lg font-semibold mb-2">System Uptime</h3>
+              <h3 className="text-lg font-semibold mb-2">{t('global.insights.labels.systemUptime')}</h3>
               <p className="text-3xl font-bold text-green-600">{platformStats.systemUptime}%</p>
             </div>
           </div>
@@ -423,25 +423,25 @@ export default function GlobalInsightsPage() {
           {/* Tenant Usage Table */}
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold">Tenant Usage Breakdown</h3>
+              <h3 className="text-lg font-semibold">{t('global.insights.labels.tenantUsageBreakdown')}</h3>
             </div>
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Tenant
+                    {t('global.insights.labels.tenant')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Users
+                    {t('global.insights.labels.users')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Active Users
+                    {t('global.insights.labels.activeUsers')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    MFA Adoption
+                    {t('global.insights.labels.mfaAdoption')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Risk Events (Month)
+                    {t('global.insights.labels.riskEventsMonth')}
                   </th>
                 </tr>
               </thead>
@@ -468,7 +468,7 @@ export default function GlobalInsightsPage() {
                 {tenantUsageStats.length === 0 && (
                   <tr>
                     <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                      No tenant usage data available
+                      {t('global.insights.messages.noTenantUsageData')}
                     </td>
                   </tr>
                 )}
@@ -483,7 +483,7 @@ export default function GlobalInsightsPage() {
         <div>
           {/* Filter */}
           <div className="mb-4">
-            <label className="text-sm font-medium mr-2">Filter by Risk Level:</label>
+            <label className="text-sm font-medium mr-2">{t('global.insights.labels.filterByRiskLevel')}:</label>
             <select
               value={riskLevelFilter}
               onChange={(e) => {
@@ -492,9 +492,9 @@ export default function GlobalInsightsPage() {
               }}
               className="px-3 py-2 border rounded"
             >
-              <option value="all">All</option>
-              <option value="High">High</option>
-              <option value="Critical">Critical</option>
+              <option value="all">{t('common.all')}</option>
+              <option value="High">{t('common.high')}</option>
+              <option value="Critical">{t('common.critical')}</option>
             </select>
           </div>
 
@@ -506,28 +506,28 @@ export default function GlobalInsightsPage() {
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
                     onClick={() => handleRiskSort('email')}
                   >
-                    User {riskSortBy === 'email' && (riskSortDesc ? '↓' : '↑')}
+                    {t('global.insights.labels.user')} {riskSortBy === 'email' && (riskSortDesc ? '↓' : '↑')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Tenant
+                    {t('global.insights.labels.tenant')}
                   </th>
                   <th
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
                     onClick={() => handleRiskSort('riskLevel')}
                   >
-                    Risk Level {riskSortBy === 'riskLevel' && (riskSortDesc ? '↓' : '↑')}
+                    {t('global.insights.labels.riskLevel')} {riskSortBy === 'riskLevel' && (riskSortDesc ? '↓' : '↑')}
                   </th>
                   <th
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase cursor-pointer hover:bg-gray-100"
                     onClick={() => handleRiskSort('riskScore')}
                   >
-                    Risk Score {riskSortBy === 'riskScore' && (riskSortDesc ? '↓' : '↑')}
+                    {t('global.insights.labels.riskScore')} {riskSortBy === 'riskScore' && (riskSortDesc ? '↓' : '↑')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Risk Factors
+                    {t('global.insights.labels.riskFactors')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Account Status
+                    {t('global.insights.labels.accountStatus')}
                   </th>
                 </tr>
               </thead>
@@ -560,7 +560,7 @@ export default function GlobalInsightsPage() {
                         ))}
                         {user.riskFactors.length > 3 && (
                           <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
-                            +{user.riskFactors.length - 3} more
+                            +{user.riskFactors.length - 3} {t('common.more')}
                           </span>
                         )}
                       </div>
@@ -573,7 +573,7 @@ export default function GlobalInsightsPage() {
                 {highRiskUsers.length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                      No high risk users found
+                      {t('global.insights.messages.noHighRiskUsers')}
                     </td>
                   </tr>
                 )}
@@ -585,8 +585,8 @@ export default function GlobalInsightsPage() {
           {totalPages > 1 && (
             <div className="mt-4 flex items-center justify-between">
               <p className="text-sm text-gray-500">
-                Showing {(riskPageNumber - 1) * pageSize + 1} to{' '}
-                {Math.min(riskPageNumber * pageSize, riskTotalCount)} of {riskTotalCount} users
+                {t('common.showing')} {(riskPageNumber - 1) * pageSize + 1} {t('common.to')}{' '}
+                {Math.min(riskPageNumber * pageSize, riskTotalCount)} {t('common.of')} {riskTotalCount} {t('global.insights.labels.users')}
               </p>
               <div className="flex gap-2">
                 <button
@@ -594,17 +594,17 @@ export default function GlobalInsightsPage() {
                   disabled={riskPageNumber === 1}
                   className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-50"
                 >
-                  Previous
+                  {t('common.previous')}
                 </button>
                 <span className="px-3 py-1">
-                  Page {riskPageNumber} of {totalPages}
+                  {t('common.page')} {riskPageNumber} {t('common.of')} {totalPages}
                 </span>
                 <button
                   onClick={() => setRiskPageNumber(Math.min(totalPages, riskPageNumber + 1))}
                   disabled={riskPageNumber === totalPages}
                   className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-50"
                 >
-                  Next
+                  {t('common.next')}
                 </button>
               </div>
             </div>
@@ -618,7 +618,7 @@ export default function GlobalInsightsPage() {
           {/* System Alerts */}
           {systemAlerts.length > 0 && (
             <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-3">Active Alerts</h3>
+              <h3 className="text-lg font-semibold mb-3">{t('global.insights.labels.activeAlerts')}</h3>
               <div className="space-y-3">
                 {systemAlerts.map((alert) => (
                   <div
@@ -639,7 +639,7 @@ export default function GlobalInsightsPage() {
                         onClick={() => handleAcknowledgeAlert(alert.id)}
                         className="text-sm px-3 py-1 bg-white rounded border hover:bg-gray-50"
                       >
-                        Acknowledge
+                        {t('global.insights.actions.acknowledge')}
                       </button>
                     </div>
                   </div>
@@ -651,28 +651,28 @@ export default function GlobalInsightsPage() {
           {/* Health Metrics */}
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold">Service Health</h3>
+              <h3 className="text-lg font-semibold">{t('global.insights.labels.serviceHealth')}</h3>
             </div>
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Service
+                    {t('global.insights.labels.service')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Status
+                    {t('common.status')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Response Time
+                    {t('global.insights.labels.responseTime')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Uptime
+                    {t('global.insights.labels.uptime')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Errors (24h)
+                    {t('global.insights.labels.errors24h')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Last Checked
+                    {t('global.insights.labels.lastChecked')}
                   </th>
                 </tr>
               </thead>
@@ -715,7 +715,7 @@ export default function GlobalInsightsPage() {
                 {healthMetrics.length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                      No health metrics available
+                      {t('global.insights.messages.noHealthMetrics')}
                     </td>
                   </tr>
                 )}
@@ -729,32 +729,32 @@ export default function GlobalInsightsPage() {
       {activeTab === 'risky-tenants' && (
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Risky Tenants</h3>
+            <h3 className="text-lg font-semibold">{t('global.insights.labels.riskyTenants')}</h3>
             <button
               onClick={handleExportTenants}
               disabled={loading}
               className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
             >
-              Export to Excel
+              {t('global.insights.actions.exportToExcel')}
             </button>
           </div>
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Tenant
+                  {t('global.insights.labels.tenant')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Risk Level
+                  {t('global.insights.labels.riskLevel')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Risk Score
+                  {t('global.insights.labels.riskScore')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Issues
+                  {t('global.insights.labels.issues')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Last Assessed
+                  {t('global.insights.labels.lastAssessed')}
                 </th>
               </tr>
             </thead>
@@ -784,7 +784,7 @@ export default function GlobalInsightsPage() {
                       ))}
                       {tenant.issues.length > 3 && (
                         <span className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs">
-                          +{tenant.issues.length - 3} more
+                          +{tenant.issues.length - 3} {t('common.more')}
                         </span>
                       )}
                     </div>
@@ -797,7 +797,7 @@ export default function GlobalInsightsPage() {
               {riskyTenants.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                    No risky tenants found
+                    {t('global.insights.messages.noRiskyTenants')}
                   </td>
                 </tr>
               )}
@@ -810,7 +810,7 @@ export default function GlobalInsightsPage() {
       {activeTab === 'report-subscriptions' && (
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Report Subscriptions</h3>
+            <h3 className="text-lg font-semibold">{t('global.insights.labels.reportSubscriptions')}</h3>
             <button
               onClick={() => {
                 setEditingSubscription(null);
@@ -825,18 +825,18 @@ export default function GlobalInsightsPage() {
               }}
               className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
             >
-              Create Subscription
+              {t('global.insights.actions.createSubscription')}
             </button>
           </div>
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Report Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Frequency</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Recipients</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.name')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.insights.labels.reportType')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.insights.labels.frequency')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.insights.labels.recipients')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -854,11 +854,11 @@ export default function GlobalInsightsPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-500">
-                    {subscription.recipients.length} recipient(s)
+                    {subscription.recipients.length} {t('global.insights.labels.recipientCount')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 rounded text-xs ${subscription.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                      {subscription.isActive ? 'Active' : 'Inactive'}
+                      {subscription.isActive ? t('common.active') : t('common.inactive')}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -877,13 +877,13 @@ export default function GlobalInsightsPage() {
                         }}
                         className="text-indigo-600 hover:text-indigo-900"
                       >
-                        Edit
+                        {t('common.edit')}
                       </button>
                       <button
                         onClick={() => handleDeleteSubscription(subscription.id)}
                         className="text-red-600 hover:text-red-900"
                       >
-                        Delete
+                        {t('common.delete')}
                       </button>
                     </div>
                   </td>
@@ -892,7 +892,7 @@ export default function GlobalInsightsPage() {
               {reportSubscriptions.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                    No report subscriptions. Create one to receive automated reports.
+                    {t('global.insights.messages.noReportSubscriptions')}
                   </td>
                 </tr>
               )}
@@ -906,11 +906,11 @@ export default function GlobalInsightsPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">
-              {editingSubscription ? 'Edit Report Subscription' : 'Create Report Subscription'}
+              {editingSubscription ? t('global.insights.labels.editReportSubscription') : t('global.insights.labels.createReportSubscription')}
             </h2>
             <form onSubmit={handleCreateSubscription}>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Name</label>
+                <label className="block text-sm font-medium mb-2">{t('common.name')}</label>
                 <input
                   type="text"
                   required
@@ -920,32 +920,32 @@ export default function GlobalInsightsPage() {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Report Type</label>
+                <label className="block text-sm font-medium mb-2">{t('global.insights.labels.reportType')}</label>
                 <select
                   className="w-full px-3 py-2 border rounded"
                   value={subscriptionForm.reportType}
                   onChange={(e) => setSubscriptionForm({ ...subscriptionForm, reportType: e.target.value })}
                 >
-                  <option value="Platform Overview">Platform Overview</option>
-                  <option value="High Risk Users">High Risk Users</option>
-                  <option value="Risky Tenants">Risky Tenants</option>
-                  <option value="System Health">System Health</option>
+                  <option value="Platform Overview">{t('global.insights.reportTypes.platformOverview')}</option>
+                  <option value="High Risk Users">{t('global.insights.reportTypes.highRiskUsers')}</option>
+                  <option value="Risky Tenants">{t('global.insights.reportTypes.riskyTenants')}</option>
+                  <option value="System Health">{t('global.insights.reportTypes.systemHealth')}</option>
                 </select>
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Frequency</label>
+                <label className="block text-sm font-medium mb-2">{t('global.insights.labels.frequency')}</label>
                 <select
                   className="w-full px-3 py-2 border rounded"
                   value={subscriptionForm.frequency}
                   onChange={(e) => setSubscriptionForm({ ...subscriptionForm, frequency: e.target.value as 'Daily' | 'Weekly' | 'Monthly' })}
                 >
-                  <option value="Daily">Daily</option>
-                  <option value="Weekly">Weekly</option>
-                  <option value="Monthly">Monthly</option>
+                  <option value="Daily">{t('common.daily')}</option>
+                  <option value="Weekly">{t('common.weekly')}</option>
+                  <option value="Monthly">{t('common.monthly')}</option>
                 </select>
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Recipients (one email per line)</label>
+                <label className="block text-sm font-medium mb-2">{t('global.insights.labels.recipientsHelp')}</label>
                 <textarea
                   required
                   className="w-full px-3 py-2 border rounded"
@@ -963,7 +963,7 @@ export default function GlobalInsightsPage() {
                     checked={subscriptionForm.isActive}
                     onChange={(e) => setSubscriptionForm({ ...subscriptionForm, isActive: e.target.checked })}
                   />
-                  Active
+                  {t('common.active')}
                 </label>
               </div>
               <div className="flex gap-2 justify-end">
@@ -975,13 +975,13 @@ export default function GlobalInsightsPage() {
                   }}
                   className="px-4 py-2 border rounded"
                 >
-                  Cancel
+                  {t('common.cancel')}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
                 >
-                  {editingSubscription ? 'Update' : 'Create'}
+                  {editingSubscription ? t('common.update') : t('common.create')}
                 </button>
               </div>
             </form>

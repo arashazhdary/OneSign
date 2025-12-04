@@ -213,10 +213,10 @@ export default function GlobalHuntingPage() {
     try {
       if (editingTemplate) {
         // await huntingService.updateGlobalTemplate(editingTemplate.id, { userId, ...templateForm });
-        setSuccess('Template updated successfully');
+        setSuccess(t('hunting.templateUpdatedSuccessfully'));
       } else {
         // await huntingService.createGlobalTemplate({ userId, ...templateForm });
-        setSuccess('Template created successfully');
+        setSuccess(t('hunting.templateCreatedSuccessfully'));
       }
 
       setShowTemplateModal(false);
@@ -252,10 +252,10 @@ export default function GlobalHuntingPage() {
 
       if (editingSchedule) {
         // await huntingService.updateGlobalScheduled(editingSchedule.id, data);
-        setSuccess('Schedule updated successfully');
+        setSuccess(t('hunting.scheduleUpdatedSuccessfully'));
       } else {
         // await huntingService.createGlobalScheduledHunt(data);
-        setSuccess('Schedule created successfully');
+        setSuccess(t('hunting.scheduleCreatedSuccessfully'));
       }
 
       setShowScheduleModal(false);
@@ -276,10 +276,10 @@ export default function GlobalHuntingPage() {
   };
 
   const handleDeleteTemplate = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this template?')) return;
+    if (!confirm(t('hunting.confirmDeleteTemplate'))) return;
     try {
       // await huntingService.deleteGlobalTemplate(id);
-      setSuccess('Template deleted successfully');
+      setSuccess(t('hunting.templateDeletedSuccessfully'));
       fetchData();
     } catch (err) {
       setError(t('common.error'));
@@ -287,10 +287,10 @@ export default function GlobalHuntingPage() {
   };
 
   const handleDeleteSchedule = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this scheduled hunt?')) return;
+    if (!confirm(t('hunting.confirmDeleteScheduledHunt'))) return;
     try {
       // await huntingService.deleteGlobalScheduled(id);
-      setSuccess('Scheduled hunt deleted successfully');
+      setSuccess(t('hunting.scheduledHuntDeletedSuccessfully'));
       fetchData();
     } catch (err) {
       setError(t('common.error'));
@@ -301,10 +301,10 @@ export default function GlobalHuntingPage() {
     try {
       if (template.isPublished) {
         // await huntingService.unpublishGlobalTemplate(template.id, userId);
-        setSuccess('Template unpublished');
+        setSuccess(t('hunting.templateUnpublished'));
       } else {
         // await huntingService.publishGlobalTemplate(template.id, userId);
-        setSuccess('Template published');
+        setSuccess(t('hunting.templatePublished'));
       }
       fetchData();
     } catch (err) {
@@ -328,7 +328,7 @@ export default function GlobalHuntingPage() {
   const handleRunNow = async (huntId: string) => {
     try {
       // await huntingService.runGlobalScheduledHuntNow(huntId, userId);
-      setSuccess('Cross-tenant hunt triggered successfully');
+      setSuccess(t('hunting.crossTenantHuntTriggered'));
       setActiveTab('results');
       fetchData();
     } catch (err) {
@@ -348,10 +348,10 @@ export default function GlobalHuntingPage() {
 
       if (editingSavedQuery) {
         // await huntingService.updateGlobalSavedQuery(editingSavedQuery.id, data);
-        setSuccess('Query updated successfully');
+        setSuccess(t('hunting.queryUpdatedSuccessfully'));
       } else {
         // await huntingService.createGlobalSavedQuery(data);
-        setSuccess('Query saved successfully');
+        setSuccess(t('hunting.querySavedSuccessfully'));
       }
 
       setShowSavedQueryModal(false);
@@ -369,10 +369,10 @@ export default function GlobalHuntingPage() {
   };
 
   const handleDeleteSavedQuery = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this saved query?')) return;
+    if (!confirm(t('hunting.confirmDeleteSavedQuery'))) return;
     try {
       // await huntingService.deleteGlobalSavedQuery(id);
-      setSuccess('Saved query deleted successfully');
+      setSuccess(t('hunting.savedQueryDeletedSuccessfully'));
       fetchData();
     } catch (err) {
       setError(t('common.error'));
@@ -394,7 +394,7 @@ export default function GlobalHuntingPage() {
       //   targetAllTenants: queryExecutorForm.targetAllTenants,
       // });
       // setQueryResults(data);
-      setSuccess('Query executed successfully');
+      setSuccess(t('hunting.queryExecutedSuccessfully'));
     } catch (err) {
       setError(t('common.error'));
     } finally {
@@ -474,7 +474,7 @@ export default function GlobalHuntingPage() {
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Threat Hunting - Global</h1>
+        <h1 className="text-3xl font-bold">{t('hunting.threatHuntingGlobal')}</h1>
         {activeTab === 'templates' && (
           <button
             onClick={() => {
@@ -491,7 +491,7 @@ export default function GlobalHuntingPage() {
             }}
             className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
           >
-            Create Template
+            {t('hunting.createTemplate')}
           </button>
         )}
         {activeTab === 'scheduled' && (
@@ -511,7 +511,7 @@ export default function GlobalHuntingPage() {
             }}
             className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
           >
-            Create Cross-Tenant Hunt
+            {t('hunting.createCrossTenantHunt')}
           </button>
         )}
       </div>
@@ -535,11 +535,11 @@ export default function GlobalHuntingPage() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              {tab === 'templates' ? 'Global Query Templates' :
-               tab === 'scheduled' ? 'Scheduled Hunts' :
-               tab === 'saved-queries' ? 'Saved Queries' :
-               tab === 'query-executor' ? 'Query Executor' :
-               tab === 'hunt-runs' ? 'Hunt Runs' : 'Global Hunt Results'}
+              {tab === 'templates' ? t('hunting.globalQueryTemplates') :
+               tab === 'scheduled' ? t('hunting.scheduledHunts') :
+               tab === 'saved-queries' ? t('hunting.savedQueries') :
+               tab === 'query-executor' ? t('hunting.queryExecutor') :
+               tab === 'hunt-runs' ? t('hunting.huntRuns') : t('hunting.globalHuntResults')}
             </button>
           ))}
         </nav>
@@ -551,12 +551,12 @@ export default function GlobalHuntingPage() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dataset</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usage</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.name')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('hunting.category')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('hunting.dataset')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('hunting.usage')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -580,11 +580,11 @@ export default function GlobalHuntingPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 rounded text-xs ${template.isPublished ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                      {template.isPublished ? 'Published' : 'Draft'}
+                      {template.isPublished ? t('hunting.published') : t('hunting.draft')}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {template.usageCount} tenants
+                    {template.usageCount} {t('hunting.tenants')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <div className="flex gap-2">
@@ -592,19 +592,19 @@ export default function GlobalHuntingPage() {
                         onClick={() => handleTogglePublish(template)}
                         className="text-green-600 hover:text-green-900"
                       >
-                        {template.isPublished ? 'Unpublish' : 'Publish'}
+                        {template.isPublished ? t('hunting.unpublish') : t('hunting.publish')}
                       </button>
                       <button
                         onClick={() => handleEditTemplate(template)}
                         className="text-indigo-600 hover:text-indigo-900"
                       >
-                        Edit
+                        {t('common.edit')}
                       </button>
                       <button
                         onClick={() => handleDeleteTemplate(template.id)}
                         className="text-red-600 hover:text-red-900"
                       >
-                        Delete
+                        {t('common.delete')}
                       </button>
                     </div>
                   </td>
@@ -613,7 +613,7 @@ export default function GlobalHuntingPage() {
               {templates.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                    No global query templates. Create one to share with tenants.
+                    {t('hunting.noGlobalQueryTemplates')}
                   </td>
                 </tr>
               )}
@@ -628,13 +628,13 @@ export default function GlobalHuntingPage() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Template</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Schedule</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Target</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Next Run</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.name')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('hunting.template')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('hunting.schedule')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('hunting.target')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.status')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('hunting.nextRun')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -653,12 +653,12 @@ export default function GlobalHuntingPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 rounded text-xs ${hunt.targetAllTenants ? 'bg-purple-100 text-purple-800' : 'bg-orange-100 text-orange-800'}`}>
-                      {hunt.targetAllTenants ? 'All Tenants' : `${hunt.targetTenantIds.length} Tenants`}
+                      {hunt.targetAllTenants ? t('hunting.allTenants') : `${hunt.targetTenantIds.length} ${t('hunting.tenants')}`}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 rounded text-xs ${hunt.isEnabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                      {hunt.isEnabled ? 'Enabled' : 'Disabled'}
+                      {hunt.isEnabled ? t('common.enabled') : t('common.disabled')}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -670,25 +670,25 @@ export default function GlobalHuntingPage() {
                         onClick={() => handleRunNow(hunt.id)}
                         className="text-green-600 hover:text-green-900"
                       >
-                        Run Now
+                        {t('hunting.runNow')}
                       </button>
                       <button
                         onClick={() => handleToggleSchedule(hunt)}
                         className="text-indigo-600 hover:text-indigo-900"
                       >
-                        {hunt.isEnabled ? 'Disable' : 'Enable'}
+                        {hunt.isEnabled ? t('common.disable') : t('common.enable')}
                       </button>
                       <button
                         onClick={() => handleEditSchedule(hunt)}
                         className="text-indigo-600 hover:text-indigo-900"
                       >
-                        Edit
+                        {t('common.edit')}
                       </button>
                       <button
                         onClick={() => handleDeleteSchedule(hunt.id)}
                         className="text-red-600 hover:text-red-900"
                       >
-                        Delete
+                        {t('common.delete')}
                       </button>
                     </div>
                   </td>
@@ -697,7 +697,7 @@ export default function GlobalHuntingPage() {
               {scheduledHunts.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
-                    No cross-tenant scheduled hunts. Create one to run hunts across all tenants.
+                    {t('hunting.noCrossTenantScheduledHunts')}
                   </td>
                 </tr>
               )}
@@ -713,27 +713,27 @@ export default function GlobalHuntingPage() {
           <div className="bg-white rounded-lg shadow p-4 mb-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t('common.status')}</label>
                 <select
                   className="w-full border border-gray-300 rounded-md px-3 py-2"
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
                 >
-                  <option value="">All Statuses</option>
-                  <option value="Running">Running</option>
-                  <option value="Succeeded">Succeeded</option>
-                  <option value="Failed">Failed</option>
-                  <option value="Cancelled">Cancelled</option>
+                  <option value="">{t('hunting.allStatuses')}</option>
+                  <option value="Running">{t('hunting.statusRunning')}</option>
+                  <option value="Succeeded">{t('hunting.statusSucceeded')}</option>
+                  <option value="Failed">{t('hunting.statusFailed')}</option>
+                  <option value="Cancelled">{t('hunting.statusCancelled')}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tenant</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t('hunting.tenant')}</label>
                 <input
                   type="text"
                   className="w-full border border-gray-300 rounded-md px-3 py-2"
                   value={tenantFilter}
                   onChange={(e) => setTenantFilter(e.target.value)}
-                  placeholder="Filter by tenant ID or name"
+                  placeholder={t('hunting.filterByTenantIdOrName')}
                 />
               </div>
             </div>
@@ -743,13 +743,13 @@ export default function GlobalHuntingPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hunt</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tenant</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dataset</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Started</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Matches</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Details</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('hunting.hunt')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('hunting.tenant')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('hunting.dataset')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('hunting.started')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.status')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('hunting.matches')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('hunting.details')}</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -783,9 +783,9 @@ export default function GlobalHuntingPage() {
                       {result.errorMessage ? (
                         <span className="text-red-600">{result.errorMessage}</span>
                       ) : result.completedAt ? (
-                        `Completed: ${formatDate(result.completedAt)}`
+                        `${t('hunting.completed')}: ${formatDate(result.completedAt)}`
                       ) : (
-                        'In progress...'
+                        t('hunting.inProgress')
                       )}
                     </td>
                   </tr>
@@ -793,7 +793,7 @@ export default function GlobalHuntingPage() {
                 {results.length === 0 && (
                   <tr>
                     <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
-                      No hunt results yet. Run a cross-tenant hunt to see results here.
+                      {t('hunting.noHuntResults')}
                     </td>
                   </tr>
                 )}
@@ -828,7 +828,7 @@ export default function GlobalHuntingPage() {
       {activeTab === 'saved-queries' && (
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Saved Queries</h3>
+            <h3 className="text-lg font-semibold">{t('hunting.savedQueries')}</h3>
             <button
               onClick={() => {
                 setEditingSavedQuery(null);
@@ -842,17 +842,17 @@ export default function GlobalHuntingPage() {
               }}
               className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
             >
-              Create Saved Query
+              {t('hunting.createSavedQuery')}
             </button>
           </div>
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dataset</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usage Count</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Used</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.name')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('hunting.dataset')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('hunting.usageCount')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('hunting.lastUsed')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -873,7 +873,7 @@ export default function GlobalHuntingPage() {
                     {query.usageCount}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {query.lastUsedAt ? formatDate(query.lastUsedAt) : 'Never'}
+                    {query.lastUsedAt ? formatDate(query.lastUsedAt) : t('hunting.never')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <div className="flex gap-2">
@@ -881,13 +881,13 @@ export default function GlobalHuntingPage() {
                         onClick={() => handleEditSavedQuery(query)}
                         className="text-indigo-600 hover:text-indigo-900"
                       >
-                        Edit
+                        {t('common.edit')}
                       </button>
                       <button
                         onClick={() => handleDeleteSavedQuery(query.id)}
                         className="text-red-600 hover:text-red-900"
                       >
-                        Delete
+                        {t('common.delete')}
                       </button>
                     </div>
                   </td>
@@ -896,7 +896,7 @@ export default function GlobalHuntingPage() {
               {savedQueries.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                    No saved queries. Create one to reuse your queries.
+                    {t('hunting.noSavedQueries')}
                   </td>
                 </tr>
               )}
@@ -908,10 +908,10 @@ export default function GlobalHuntingPage() {
       {/* Query Executor Tab */}
       {activeTab === 'query-executor' && (
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4">Execute Global Query</h3>
+          <h3 className="text-lg font-semibold mb-4">{t('hunting.executeGlobalQuery')}</h3>
           <form onSubmit={handleExecuteQuery} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Dataset Type</label>
+              <label className="block text-sm font-medium mb-2">{t('hunting.datasetType')}</label>
               <select
                 className="w-full px-3 py-2 border rounded"
                 value={queryExecutorForm.datasetType}
@@ -923,14 +923,14 @@ export default function GlobalHuntingPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">OQL Expression</label>
+              <label className="block text-sm font-medium mb-2">{t('hunting.oqlExpression')}</label>
               <textarea
                 required
                 className="w-full px-3 py-2 border rounded font-mono text-sm"
                 rows={6}
                 value={queryExecutorForm.oqlExpression}
                 onChange={(e) => setQueryExecutorForm({ ...queryExecutorForm, oqlExpression: e.target.value })}
-                placeholder='e.g., riskLevel > 5 AND eventType == "FailedLogin"'
+                placeholder={t('hunting.oqlExpressionPlaceholder')}
               />
             </div>
             <div>
@@ -941,12 +941,12 @@ export default function GlobalHuntingPage() {
                   checked={queryExecutorForm.targetAllTenants}
                   onChange={(e) => setQueryExecutorForm({ ...queryExecutorForm, targetAllTenants: e.target.checked })}
                 />
-                Target all tenants
+                {t('hunting.targetAllTenants')}
               </label>
             </div>
             {!queryExecutorForm.targetAllTenants && (
               <div>
-                <label className="block text-sm font-medium mb-2">Target Tenant IDs</label>
+                <label className="block text-sm font-medium mb-2">{t('hunting.targetTenantIds')}</label>
                 <textarea
                   className="w-full px-3 py-2 border rounded font-mono text-sm"
                   rows={3}
@@ -955,7 +955,7 @@ export default function GlobalHuntingPage() {
                     ...queryExecutorForm,
                     tenantIds: e.target.value.split('\n').filter(id => id.trim())
                   })}
-                  placeholder="Enter one tenant ID per line"
+                  placeholder={t('hunting.enterOneTenantIdPerLine')}
                 />
               </div>
             )}
@@ -964,13 +964,13 @@ export default function GlobalHuntingPage() {
               disabled={loading}
               className="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
             >
-              {loading ? 'Executing...' : 'Execute Query'}
+              {loading ? t('hunting.executing') : t('hunting.executeQuery')}
             </button>
           </form>
 
           {queryResults && (
             <div className="mt-6 border-t pt-6">
-              <h4 className="text-md font-semibold mb-3">Query Results</h4>
+              <h4 className="text-md font-semibold mb-3">{t('hunting.queryResults')}</h4>
               <div className="bg-gray-50 p-4 rounded">
                 <pre className="text-sm overflow-auto max-h-96">
                   {JSON.stringify(queryResults, null, 2)}
@@ -985,7 +985,7 @@ export default function GlobalHuntingPage() {
       {activeTab === 'hunt-runs' && (
         <div>
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">Select Scheduled Hunt</label>
+            <label className="block text-sm font-medium mb-2">{t('hunting.selectScheduledHunt')}</label>
             <select
               className="w-full md:w-1/2 px-3 py-2 border rounded"
               value={selectedScheduledHunt}
@@ -994,7 +994,7 @@ export default function GlobalHuntingPage() {
                 fetchData();
               }}
             >
-              <option value="">Select a scheduled hunt...</option>
+              <option value="">{t('hunting.selectScheduledHuntPlaceholder')}</option>
               {scheduledHunts.map((hunt) => (
                 <option key={hunt.id} value={hunt.id}>{hunt.name}</option>
               ))}
@@ -1006,11 +1006,11 @@ export default function GlobalHuntingPage() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Run ID</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Started</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Progress</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Matches</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('hunting.runId')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.status')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('hunting.started')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('hunting.progress')}</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('hunting.matches')}</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -1028,7 +1028,7 @@ export default function GlobalHuntingPage() {
                         {formatDate(run.startedAt)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {run.completedTenants} / {run.totalTenants} tenants
+                        {run.completedTenants} / {run.totalTenants} {t('hunting.tenants')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`text-sm font-semibold ${run.totalMatches > 0 ? 'text-orange-600' : 'text-gray-500'}`}>
@@ -1040,7 +1040,7 @@ export default function GlobalHuntingPage() {
                   {huntRuns.length === 0 && (
                     <tr>
                       <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                        No hunt runs found for this scheduled hunt.
+                        {t('hunting.noHuntRunsFound')}
                       </td>
                     </tr>
                   )}
@@ -1056,11 +1056,11 @@ export default function GlobalHuntingPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">
-              {editingTemplate ? 'Edit Template' : 'Create Global Query Template'}
+              {editingTemplate ? t('hunting.editTemplate') : t('hunting.createGlobalQueryTemplate')}
             </h2>
             <form onSubmit={handleCreateTemplate}>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Name</label>
+                <label className="block text-sm font-medium mb-2">{t('common.name')}</label>
                 <input
                   type="text"
                   required
@@ -1070,7 +1070,7 @@ export default function GlobalHuntingPage() {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Description</label>
+                <label className="block text-sm font-medium mb-2">{t('common.description')}</label>
                 <textarea
                   className="w-full px-3 py-2 border rounded"
                   value={templateForm.description}
@@ -1078,7 +1078,7 @@ export default function GlobalHuntingPage() {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Category</label>
+                <label className="block text-sm font-medium mb-2">{t('hunting.category')}</label>
                 <select
                   className="w-full px-3 py-2 border rounded"
                   value={templateForm.category}
@@ -1090,7 +1090,7 @@ export default function GlobalHuntingPage() {
                 </select>
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Dataset</label>
+                <label className="block text-sm font-medium mb-2">{t('hunting.dataset')}</label>
                 <select
                   className="w-full px-3 py-2 border rounded"
                   value={templateForm.datasetType}
@@ -1102,14 +1102,14 @@ export default function GlobalHuntingPage() {
                 </select>
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">OQL Expression</label>
+                <label className="block text-sm font-medium mb-2">{t('hunting.oqlExpression')}</label>
                 <textarea
                   required
                   className="w-full px-3 py-2 border rounded font-mono text-sm"
                   rows={4}
                   value={templateForm.oqlExpression}
                   onChange={(e) => setTemplateForm({ ...templateForm, oqlExpression: e.target.value })}
-                  placeholder='e.g., riskLevel > 5 AND eventType == "FailedLogin"'
+                  placeholder={t('hunting.oqlExpressionPlaceholder')}
                 />
               </div>
               <div className="mb-4">
@@ -1120,7 +1120,7 @@ export default function GlobalHuntingPage() {
                     checked={templateForm.isPublished}
                     onChange={(e) => setTemplateForm({ ...templateForm, isPublished: e.target.checked })}
                   />
-                  Publish immediately (make available to tenants)
+                  {t('hunting.publishImmediately')}
                 </label>
               </div>
               <div className="flex gap-2 justify-end">
@@ -1138,7 +1138,7 @@ export default function GlobalHuntingPage() {
                   type="submit"
                   className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
                 >
-                  {editingTemplate ? 'Update' : 'Create'}
+                  {editingTemplate ? t('common.update') : t('common.create')}
                 </button>
               </div>
             </form>
@@ -1151,11 +1151,11 @@ export default function GlobalHuntingPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">
-              {editingSchedule ? 'Edit Cross-Tenant Hunt' : 'Create Cross-Tenant Scheduled Hunt'}
+              {editingSchedule ? t('hunting.editCrossTenantHunt') : t('hunting.createCrossTenantScheduledHunt')}
             </h2>
             <form onSubmit={handleCreateSchedule}>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Name</label>
+                <label className="block text-sm font-medium mb-2">{t('common.name')}</label>
                 <input
                   type="text"
                   required
@@ -1165,21 +1165,21 @@ export default function GlobalHuntingPage() {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Template</label>
+                <label className="block text-sm font-medium mb-2">{t('hunting.template')}</label>
                 <select
                   required
                   className="w-full px-3 py-2 border rounded"
                   value={scheduleForm.templateId}
                   onChange={(e) => setScheduleForm({ ...scheduleForm, templateId: e.target.value })}
                 >
-                  <option value="">Select a template...</option>
+                  <option value="">{t('hunting.selectTemplatePlaceholder')}</option>
                   {templates.filter(t => t.isPublished).map((t) => (
                     <option key={t.id} value={t.id}>{t.name}</option>
                   ))}
                 </select>
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Schedule</label>
+                <label className="block text-sm font-medium mb-2">{t('hunting.schedule')}</label>
                 <select
                   className="w-full px-3 py-2 border rounded"
                   value={scheduleForm.scheduleSpec}
@@ -1192,17 +1192,17 @@ export default function GlobalHuntingPage() {
               </div>
               {scheduleForm.scheduleSpec === 'Custom' && (
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">Custom Cron Expression</label>
+                  <label className="block text-sm font-medium mb-2">{t('hunting.customCronExpression')}</label>
                   <input
                     type="text"
                     required
                     className="w-full px-3 py-2 border rounded font-mono"
                     value={scheduleForm.customCron}
                     onChange={(e) => setScheduleForm({ ...scheduleForm, customCron: e.target.value })}
-                    placeholder="0 */6 * * *"
+                    placeholder={t('hunting.customCronPlaceholder')}
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    Cron format: minute hour day month weekday
+                    {t('hunting.cronFormatHelp')}
                   </p>
                 </div>
               )}
@@ -1214,12 +1214,12 @@ export default function GlobalHuntingPage() {
                     checked={scheduleForm.targetAllTenants}
                     onChange={(e) => setScheduleForm({ ...scheduleForm, targetAllTenants: e.target.checked })}
                   />
-                  Target all tenants
+                  {t('hunting.targetAllTenants')}
                 </label>
               </div>
               {!scheduleForm.targetAllTenants && (
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">Target Tenant IDs</label>
+                  <label className="block text-sm font-medium mb-2">{t('hunting.targetTenantIds')}</label>
                   <textarea
                     className="w-full px-3 py-2 border rounded font-mono text-sm"
                     rows={3}
@@ -1228,7 +1228,7 @@ export default function GlobalHuntingPage() {
                       ...scheduleForm,
                       targetTenantIds: e.target.value.split('\n').filter(id => id.trim())
                     })}
-                    placeholder="Enter one tenant ID per line"
+                    placeholder={t('hunting.enterOneTenantIdPerLine')}
                   />
                 </div>
               )}
@@ -1240,7 +1240,7 @@ export default function GlobalHuntingPage() {
                     checked={scheduleForm.isEnabled}
                     onChange={(e) => setScheduleForm({ ...scheduleForm, isEnabled: e.target.checked })}
                   />
-                  Enable immediately
+                  {t('hunting.enableImmediately')}
                 </label>
               </div>
               <div className="flex gap-2 justify-end">
@@ -1258,7 +1258,7 @@ export default function GlobalHuntingPage() {
                   type="submit"
                   className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
                 >
-                  {editingSchedule ? 'Update' : 'Create'}
+                  {editingSchedule ? t('common.update') : t('common.create')}
                 </button>
               </div>
             </form>
@@ -1271,11 +1271,11 @@ export default function GlobalHuntingPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">
-              {editingSavedQuery ? 'Edit Saved Query' : 'Create Saved Query'}
+              {editingSavedQuery ? t('hunting.editSavedQuery') : t('hunting.createSavedQuery')}
             </h2>
             <form onSubmit={handleCreateSavedQuery}>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Name</label>
+                <label className="block text-sm font-medium mb-2">{t('common.name')}</label>
                 <input
                   type="text"
                   required
@@ -1285,7 +1285,7 @@ export default function GlobalHuntingPage() {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Description</label>
+                <label className="block text-sm font-medium mb-2">{t('common.description')}</label>
                 <textarea
                   className="w-full px-3 py-2 border rounded"
                   value={savedQueryForm.description}
@@ -1293,7 +1293,7 @@ export default function GlobalHuntingPage() {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Dataset</label>
+                <label className="block text-sm font-medium mb-2">{t('hunting.dataset')}</label>
                 <select
                   className="w-full px-3 py-2 border rounded"
                   value={savedQueryForm.datasetType}
@@ -1305,14 +1305,14 @@ export default function GlobalHuntingPage() {
                 </select>
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">OQL Expression</label>
+                <label className="block text-sm font-medium mb-2">{t('hunting.oqlExpression')}</label>
                 <textarea
                   required
                   className="w-full px-3 py-2 border rounded font-mono text-sm"
                   rows={4}
                   value={savedQueryForm.oqlExpression}
                   onChange={(e) => setSavedQueryForm({ ...savedQueryForm, oqlExpression: e.target.value })}
-                  placeholder='e.g., riskLevel > 5 AND eventType == "FailedLogin"'
+                  placeholder={t('hunting.oqlExpressionPlaceholder')}
                 />
               </div>
               <div className="flex gap-2 justify-end">
@@ -1330,7 +1330,7 @@ export default function GlobalHuntingPage() {
                   type="submit"
                   className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
                 >
-                  {editingSavedQuery ? 'Update' : 'Create'}
+                  {editingSavedQuery ? t('common.update') : t('common.create')}
                 </button>
               </div>
             </form>

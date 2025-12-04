@@ -136,11 +136,11 @@ export default function TenantPrivacyPage() {
     setLoading(true);
     try {
       await governanceService.updateRetentionPolicy(tenantId, category, data);
-      setSuccess('Retention policy updated successfully');
+      setSuccess(t('tenant.privacy.retentionPolicyUpdateSuccess'));
       fetchRetentionPolicies();
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
-      setError('Failed to update retention policy');
+      setError(t('tenant.privacy.retentionPolicyUpdateError'));
       setTimeout(() => setError(''), 3000);
     } finally {
       setLoading(false);
@@ -153,13 +153,13 @@ export default function TenantPrivacyPage() {
     setLoading(true);
     try {
       await governanceService.createDataSubjectRequest(tenantId, requestForm);
-      setSuccess('Data request created successfully');
+      setSuccess(t('tenant.privacy.dataRequestCreateSuccess'));
       setShowRequestModal(false);
       fetchDataRequests();
       setRequestForm({ subjectId: '', type: 'Access', reason: '' });
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
-      setError('Failed to create data request');
+      setError(t('tenant.privacy.dataRequestCreateError'));
       setTimeout(() => setError(''), 3000);
     } finally {
       setLoading(false);
@@ -167,15 +167,15 @@ export default function TenantPrivacyPage() {
   };
 
   const handleExecuteRequest = async (id: string) => {
-    if (!tenantId || !confirm('Are you sure you want to execute this request?')) return;
+    if (!tenantId || !confirm(t('tenant.privacy.confirmExecuteRequest'))) return;
     setLoading(true);
     try {
       await governanceService.executeDataSubjectRequest(tenantId, id);
-      setSuccess('Data request executed successfully');
+      setSuccess(t('tenant.privacy.dataRequestExecuteSuccess'));
       fetchDataRequests();
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
-      setError('Failed to execute data request');
+      setError(t('tenant.privacy.dataRequestExecuteError'));
       setTimeout(() => setError(''), 3000);
     } finally {
       setLoading(false);
@@ -507,7 +507,7 @@ export default function TenantPrivacyPage() {
       </div>
 
       {/* Create Request Modal */}
-      <Modal isOpen={showRequestModal} onClose={() => setShowRequestModal(false)} title="Create Data Request">
+      <Modal isOpen={showRequestModal} onClose={() => setShowRequestModal(false)} title={t('tenant.privacy.createDataRequest')}>
         <form onSubmit={handleCreateRequest} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject ID</label>
@@ -515,7 +515,7 @@ export default function TenantPrivacyPage() {
               type="text"
               value={requestForm.subjectId}
               onChange={(e) => setRequestForm({ ...requestForm, subjectId: e.target.value })}
-              placeholder="e.g., user@example.com"
+              placeholder={t('tenant.privacy.placeholders.subjectId')}
               className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               required
             />
@@ -538,7 +538,7 @@ export default function TenantPrivacyPage() {
             <textarea
               value={requestForm.reason}
               onChange={(e) => setRequestForm({ ...requestForm, reason: e.target.value })}
-              placeholder="Describe the reason for this request..."
+              placeholder={t('tenant.privacy.placeholders.reason')}
               className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               rows={3}
               required

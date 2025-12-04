@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
@@ -23,6 +24,7 @@ interface MaintenanceWindow {
 }
 
 export default function GlobalMaintenancePage() {
+  const { t } = useTranslation();
   const [windows, setWindows] = useState<MaintenanceWindow[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'upcoming' | 'history' | 'calendar'>('upcoming');
@@ -39,7 +41,7 @@ export default function GlobalMaintenancePage() {
         {
           id: '1',
           title: 'Database Upgrade',
-          description: 'Upgrading PostgreSQL to version 15 for improved performance',
+          description: t('maintenance.databaseUpgradeDesc'),
           type: 'scheduled',
           status: 'upcoming',
           startTime: '2024-11-25T02:00:00Z',
@@ -51,13 +53,13 @@ export default function GlobalMaintenancePage() {
           notificationSent: true,
           createdBy: 'admin@example.com',
           createdAt: '2024-11-20T10:00:00Z',
-          notes: 'Users will experience service interruption during this window',
+          notes: t('maintenance.serviceInterruptionNote'),
           recurring: false,
         },
         {
           id: '2',
           title: 'Security Patches',
-          description: 'Applying critical security patches to all servers',
+          description: t('maintenance.securityPatchesDesc'),
           type: 'scheduled',
           status: 'upcoming',
           startTime: '2024-11-24T03:00:00Z',
@@ -69,13 +71,13 @@ export default function GlobalMaintenancePage() {
           notificationSent: false,
           createdBy: 'admin@example.com',
           createdAt: '2024-11-22T14:00:00Z',
-          notes: 'Rolling deployment, minimal impact expected',
+          notes: t('maintenance.rollingDeploymentNote'),
           recurring: false,
         },
         {
           id: '3',
           title: 'Weekly Backup Maintenance',
-          description: 'Regular backup system maintenance and verification',
+          description: t('maintenance.backupMaintenanceDesc'),
           type: 'planned',
           status: 'upcoming',
           startTime: '2024-11-24T01:00:00Z',
@@ -87,14 +89,14 @@ export default function GlobalMaintenancePage() {
           notificationSent: false,
           createdBy: 'system',
           createdAt: '2024-01-01T00:00:00Z',
-          notes: 'Automated weekly maintenance',
+          notes: t('maintenance.automatedWeeklyNote'),
           recurring: true,
           recurrencePattern: 'Every Sunday at 1:00 AM',
         },
         {
           id: '4',
           title: 'Emergency Network Repair',
-          description: 'Fixing network connectivity issues in US-East datacenter',
+          description: t('maintenance.networkRepairDesc'),
           type: 'emergency',
           status: 'completed',
           startTime: '2024-11-22T10:00:00Z',
@@ -106,13 +108,13 @@ export default function GlobalMaintenancePage() {
           notificationSent: true,
           createdBy: 'ops@example.com',
           createdAt: '2024-11-22T09:45:00Z',
-          notes: 'Unplanned maintenance due to network failure',
+          notes: t('maintenance.unplannedMaintenanceNote'),
           recurring: false,
         },
         {
           id: '5',
           title: 'Load Balancer Configuration',
-          description: 'Updating load balancer rules and health checks',
+          description: t('maintenance.loadBalancerConfigDesc'),
           type: 'scheduled',
           status: 'completed',
           startTime: '2024-11-20T02:00:00Z',
@@ -124,7 +126,7 @@ export default function GlobalMaintenancePage() {
           notificationSent: false,
           createdBy: 'admin@example.com',
           createdAt: '2024-11-18T10:00:00Z',
-          notes: 'Completed successfully',
+          notes: t('maintenance.completedSuccessfullyNote'),
           recurring: false,
         },
       ];
@@ -157,7 +159,7 @@ export default function GlobalMaintenancePage() {
   };
 
   const handleCancel = async (id: string) => {
-    if (!confirm('Cancel this maintenance window?')) return;
+    if (!confirm(t('maintenance.confirmCancel'))) return;
     try {
       await globalService.cancelMaintenanceWindow(id);
       fetchWindows();
@@ -207,20 +209,20 @@ export default function GlobalMaintenancePage() {
   const upcomingWindows = windows.filter(w => w.status === 'upcoming' || w.status === 'in_progress');
   const historicalWindows = windows.filter(w => w.status === 'completed' || w.status === 'cancelled');
 
-  if (loading) return <div className="p-6">Loading...</div>;
+  if (loading) return <div className="p-6">{t('common.loading')}...</div>;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Maintenance Scheduler</h1>
-          <p className="text-gray-600 mt-1">Schedule and manage platform maintenance windows</p>
+          <h1 className="text-2xl font-bold">{t('maintenance.title')}</h1>
+          <p className="text-gray-600 mt-1">{t('maintenance.subtitle')}</p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
         >
-          Schedule Maintenance
+          {t('maintenance.scheduleMaintenance')}
         </button>
       </div>
 

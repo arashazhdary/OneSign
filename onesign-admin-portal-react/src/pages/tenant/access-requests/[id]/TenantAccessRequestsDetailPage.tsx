@@ -291,7 +291,7 @@ export default function TenantAccessRequestsDetailPage() {
 
   const handleApproval = async () => {
     if (!approvalDecision) {
-      setError('Please select a decision');
+      setError(t('tenant.accessRequests.errors.selectDecision'));
       return;
     }
 
@@ -304,14 +304,14 @@ export default function TenantAccessRequestsDetailPage() {
       } else {
         await accessService.rejectRequest(requestId, approvalComment);
       }
-      setSuccess(`Request ${approvalDecision} successfully`);
+      setSuccess(t('tenant.accessRequests.messages.requestProcessed', { decision: approvalDecision }));
       setShowApprovalModal(false);
       setApprovalDecision('');
       setApprovalComment('');
       fetchRequest();
       if (activeTab === 'timeline') fetchTimeline();
     } catch (err) {
-      setError(t('common.error'));
+      setError(t('tenant.accessRequests.messages.failed'));
     } finally {
       setProcessing(false);
     }
@@ -319,7 +319,7 @@ export default function TenantAccessRequestsDetailPage() {
 
   const handleAddComment = async () => {
     if (!newComment.trim()) {
-      setError('Please enter a comment');
+      setError(t('tenant.accessRequests.errors.enterComment'));
       return;
     }
 
@@ -327,28 +327,28 @@ export default function TenantAccessRequestsDetailPage() {
     setError('');
     setSuccess('');
     try {
-      setSuccess('Comment added successfully');
+      setSuccess(t('tenant.accessRequests.messages.commentAdded'));
       setShowCommentModal(false);
       setNewComment('');
     } catch (err) {
-      setError(t('common.error'));
+      setError(t('tenant.accessRequests.messages.failed'));
     } finally {
       setProcessing(false);
     }
   };
 
   const handleWithdraw = async () => {
-    if (!confirm('Are you sure you want to withdraw this request?')) return;
+    if (!confirm(t('tenant.accessRequests.confirmWithdraw'))) return;
 
     setProcessing(true);
     setError('');
     setSuccess('');
     try {
       await accessService.cancelRequest(requestId);
-      setSuccess('Request withdrawn successfully');
+      setSuccess(t('tenant.accessRequests.messages.withdrawn'));
       fetchRequest();
     } catch (err) {
-      setError(t('common.error'));
+      setError(t('tenant.accessRequests.messages.failed'));
     } finally {
       setProcessing(false);
     }
@@ -471,7 +471,7 @@ export default function TenantAccessRequestsDetailPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-green-50 to-teal-50 dark:from-slate-900 dark:via-green-900/20 dark:to-teal-900/20">
       <Helmet>
-        <title>Access Request - {request.resourceName}</title>
+        <title>{t('tenant.accessRequests.pageTitle', { resource: request.resourceName })}</title>
       </Helmet>
 
       <div className="p-8">
@@ -488,7 +488,7 @@ export default function TenantAccessRequestsDetailPage() {
             className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 mb-4 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
-            Back to Access Requests
+            {t('tenant.accessRequests.buttons.back')}
           </motion.button>
 
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -497,9 +497,13 @@ export default function TenantAccessRequestsDetailPage() {
                 <Key className="w-8 h-8 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Access Request</h1>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('tenant.accessRequests.title')}</h1>
                 <p className="text-gray-600 dark:text-gray-400 mt-1">
-                  {request.requesterName} requesting {request.requestedAccessLevel} access to {request.resourceName}
+                  {t('tenant.accessRequests.subtitle', {
+                    requester: request.requesterName,
+                    level: request.requestedAccessLevel,
+                    resource: request.resourceName
+                  })}
                 </p>
               </div>
             </div>
@@ -589,7 +593,7 @@ export default function TenantAccessRequestsDetailPage() {
                 className="px-6 py-3 bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-xl font-medium hover:from-green-600 hover:to-teal-700 flex items-center gap-2 transition-all"
               >
                 <UserCheck className="w-5 h-5" />
-                Review Request
+                {t('tenant.accessRequests.buttons.review')}
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.02 }}
@@ -599,7 +603,7 @@ export default function TenantAccessRequestsDetailPage() {
                 className="px-6 py-3 bg-red-500 text-white rounded-xl font-medium hover:bg-red-600 flex items-center gap-2 disabled:opacity-50 transition-all"
               >
                 <XCircle className="w-5 h-5" />
-                Withdraw
+                {t('tenant.accessRequests.buttons.withdraw')}
               </motion.button>
             </>
           )}
@@ -610,7 +614,7 @@ export default function TenantAccessRequestsDetailPage() {
             className="px-6 py-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-slate-700 flex items-center gap-2 transition-all"
           >
             <MessageSquare className="w-5 h-5" />
-            Add Comment
+            {t('tenant.accessRequests.buttons.addComment')}
           </motion.button>
         </motion.div>
 
@@ -1016,7 +1020,7 @@ export default function TenantAccessRequestsDetailPage() {
                       onChange={(e) => setApprovalComment(e.target.value)}
                       rows={4}
                       className="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                      placeholder="Add your comments..."
+                      placeholder={t('tenant.accessRequests.placeholders.approvalComment')}
                     />
                   </div>
                 </div>
@@ -1085,7 +1089,7 @@ export default function TenantAccessRequestsDetailPage() {
                     onChange={(e) => setNewComment(e.target.value)}
                     rows={4}
                     className="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="Enter your comment..."
+                    placeholder={t('tenant.accessRequests.placeholders.comment')}
                   />
                 </div>
                 <div className="flex gap-3 mt-6">
@@ -1097,7 +1101,7 @@ export default function TenantAccessRequestsDetailPage() {
                     className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-medium hover:from-blue-600 hover:to-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2 transition-all"
                   >
                     <Send className="w-5 h-5" />
-                    {processing ? 'Adding...' : 'Add Comment'}
+                    {processing ? t('tenant.accessRequests.actions.adding') : t('tenant.accessRequests.actions.addComment')}
                   </motion.button>
                   <motion.button
                     whileHover={{ scale: 1.02 }}

@@ -108,7 +108,7 @@ export default function GlobalCryptoPage() {
     setSuccess('');
     try {
       await globalService.rolloverKeySet(id);
-      setSuccess('Keyset rollover initiated successfully');
+      setSuccess(t('global.crypto.messages.keysetRolloverInitiated'));
       fetchKeySets();
     } catch (err) {
       setError(t('common.error'));
@@ -164,7 +164,7 @@ export default function GlobalCryptoPage() {
     setSuccess('');
     try {
       await globalService.createKeySet(newKeySet);
-      setSuccess('Key set created successfully');
+      setSuccess(t('global.crypto.messages.keySetCreated'));
       setShowCreateKeySetModal(false);
       setNewKeySet({ name: '', algorithm: 'RSA', keySize: 2048, purpose: '' });
       fetchKeySets();
@@ -176,7 +176,7 @@ export default function GlobalCryptoPage() {
   };
 
   const handleRotateKey = async (keySetId: string) => {
-    if (!confirm('Are you sure you want to rotate this key set?')) {
+    if (!confirm(t('global.crypto.confirmRotateKey'))) {
       return;
     }
 
@@ -185,7 +185,7 @@ export default function GlobalCryptoPage() {
     setSuccess('');
     try {
       await globalService.rolloverKeySet(keySetId);
-      setSuccess('Key rotation started successfully');
+      setSuccess(t('global.crypto.messages.keyRotationStarted'));
       fetchKeySets();
     } catch (err) {
       setError(t('common.error'));
@@ -210,7 +210,7 @@ export default function GlobalCryptoPage() {
         rotationIntervalDays: newPolicy.rotationInterval,
         isEnabled: newPolicy.autoRotate,
       } as any);
-      setSuccess('Rotation policy updated successfully');
+      setSuccess(t('global.crypto.messages.rotationPolicyUpdated'));
       setShowCreatePolicyModal(false);
       setNewPolicy({
         name: '',
@@ -251,7 +251,7 @@ export default function GlobalCryptoPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold mb-6">Cryptography Management</h1>
+      <h1 className="text-3xl font-bold mb-6">{t('global.crypto.title')}</h1>
 
       {error && (
         <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>
@@ -273,7 +273,7 @@ export default function GlobalCryptoPage() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              {tab === 'keysets' ? 'Key Sets' : tab === 'versions' ? 'Key Versions' : 'Rotation Policies'}
+              {tab === 'keysets' ? t('global.crypto.keySets') : tab === 'versions' ? t('global.crypto.keyVersions') : t('global.crypto.rotationPolicies')}
             </button>
           ))}
         </nav>
@@ -286,14 +286,14 @@ export default function GlobalCryptoPage() {
               onClick={() => setShowCreateKeySetModal(true)}
               className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
             >
-              Create Key Set
+              {t('global.crypto.createKeySet')}
             </button>
           </div>
 
           {showCreateKeySetModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="bg-white rounded-lg p-6 max-w-md w-full">
-                <h2 className="text-xl font-bold mb-4">Create New Key Set</h2>
+                <h2 className="text-xl font-bold mb-4">{t('global.crypto.createNewKeySet')}</h2>
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
@@ -305,7 +305,7 @@ export default function GlobalCryptoPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Algorithm *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('global.crypto.algorithm')} *</label>
                     <select
                       value={newKeySet.algorithm}
                       onChange={(e) => setNewKeySet({ ...newKeySet, algorithm: e.target.value })}
@@ -318,7 +318,7 @@ export default function GlobalCryptoPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Key Size *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('global.crypto.keySize')} *</label>
                     <select
                       value={newKeySet.keySize}
                       onChange={(e) => setNewKeySet({ ...newKeySet, keySize: parseInt(e.target.value) })}
@@ -331,7 +331,7 @@ export default function GlobalCryptoPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Purpose *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('global.crypto.purpose')} *</label>
                     <input
                       type="text"
                       value={newKeySet.purpose}
@@ -346,14 +346,14 @@ export default function GlobalCryptoPage() {
                     onClick={() => setShowCreateKeySetModal(false)}
                     className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50"
                   >
-                    Cancel
+                    {t('common.cancel')}
                   </button>
                   <button
                     onClick={handleCreateKeySet}
                     disabled={loading}
                     className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
                   >
-                    Create
+                    {t('common.create')}
                   </button>
                 </div>
               </div>
@@ -364,14 +364,14 @@ export default function GlobalCryptoPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Algorithm</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Key Size</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Purpose</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Rotated</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Expires</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.name')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.crypto.algorithm')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.crypto.keySize')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.status')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.crypto.purpose')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.crypto.lastRotated')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.crypto.expires')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('common.actions')}</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">

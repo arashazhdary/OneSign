@@ -245,7 +245,7 @@ export default function TenantExtensibilityPage() {
   };
 
   const handleDeleteWebhook = async (id: string) => {
-    if (!tenantId || !confirm('Are you sure you want to delete this webhook?')) return;
+    if (!tenantId || !confirm(t('tenant.extensibility.confirmDeleteWebhook', 'Are you sure you want to delete this webhook?'))) return;
     setLoading(true);
     try {
       await tenantService.deleteWebhook(id);
@@ -287,7 +287,7 @@ export default function TenantExtensibilityPage() {
   };
 
   const handleDeleteLoginHook = async (id: string) => {
-    if (!tenantId || !confirm('Are you sure you want to delete this login hook?')) return;
+    if (!tenantId || !confirm(t('tenant.extensibility.confirmDeleteLoginHook', 'Are you sure you want to delete this login hook?'))) return;
     setLoading(true);
     try {
       setSuccess('Login hook deleted successfully');
@@ -315,7 +315,7 @@ export default function TenantExtensibilityPage() {
   };
 
   const handleDeleteTokenRule = async (id: string) => {
-    if (!tenantId || !confirm('Are you sure you want to delete this token rule?')) return;
+    if (!tenantId || !confirm(t('tenant.extensibility.confirmDeleteTokenRule', 'Are you sure you want to delete this token rule?'))) return;
     setLoading(true);
     try {
       setSuccess('Token rule deleted successfully');
@@ -845,7 +845,7 @@ export default function TenantExtensibilityPage() {
       <Modal
         isOpen={showWebhookModal}
         onClose={() => setShowWebhookModal(false)}
-        title={editingWebhook ? 'Edit Webhook' : 'Create Webhook'}
+        title={editingWebhook ? t('tenant.extensibility.editWebhook') : t('tenant.extensibility.createWebhook')}
       >
         <form onSubmit={editingWebhook ? (e) => { e.preventDefault(); handleUpdateWebhook(editingWebhook.id, webhookForm); } : handleCreateWebhook} className="space-y-4">
           <div>
@@ -855,7 +855,7 @@ export default function TenantExtensibilityPage() {
               value={webhookForm.url}
               onChange={(e) => setWebhookForm({ ...webhookForm, url: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-slate-700 dark:text-white"
-              placeholder="https://example.com/webhook"
+              placeholder={t('tenant.extensibility.webhookUrlPlaceholder', 'https://example.com/webhook')}
               required
             />
           </div>
@@ -866,7 +866,7 @@ export default function TenantExtensibilityPage() {
               value={webhookForm.eventTypes.join(', ')}
               onChange={(e) => setWebhookForm({ ...webhookForm, eventTypes: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
               className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-slate-700 dark:text-white"
-              placeholder="user.created, user.updated"
+              placeholder={t('tenant.extensibility.eventTypesPlaceholder', 'user.created, user.updated')}
             />
             <p className="text-xs text-gray-500 mt-1">Comma-separated list of event types</p>
           </div>
@@ -906,7 +906,7 @@ export default function TenantExtensibilityPage() {
       <Modal
         isOpen={showLoginHookModal}
         onClose={() => setShowLoginHookModal(false)}
-        title={editingLoginHook ? 'Edit Login Hook' : 'Create Login Hook'}
+        title={editingLoginHook ? t('tenant.extensibility.editLoginHook') : t('tenant.extensibility.createLoginHook')}
       >
         <form onSubmit={handleCreateLoginHook} className="space-y-4">
           <div>
@@ -916,7 +916,7 @@ export default function TenantExtensibilityPage() {
               value={loginHookForm.name}
               onChange={(e) => setLoginHookForm({ ...loginHookForm, name: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:text-white"
-              placeholder="My Login Hook"
+              placeholder={t('tenant.extensibility.loginHookNamePlaceholder', 'My Login Hook')}
               required
             />
           </div>
@@ -938,7 +938,7 @@ export default function TenantExtensibilityPage() {
               value={loginHookForm.scriptUrl}
               onChange={(e) => setLoginHookForm({ ...loginHookForm, scriptUrl: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:text-white"
-              placeholder="https://example.com/hook-script"
+              placeholder={t('tenant.extensibility.scriptUrlPlaceholder', 'https://example.com/hook-script')}
               required
             />
           </div>
@@ -989,7 +989,7 @@ export default function TenantExtensibilityPage() {
       <Modal
         isOpen={showTokenRuleModal}
         onClose={() => setShowTokenRuleModal(false)}
-        title={editingTokenRule ? 'Edit Token Rule' : 'Create Token Rule'}
+        title={editingTokenRule ? t('tenant.extensibility.editTokenRule') : t('tenant.extensibility.createTokenRule')}
       >
         <form onSubmit={handleCreateTokenRule} className="space-y-4">
           <div>
@@ -999,7 +999,7 @@ export default function TenantExtensibilityPage() {
               value={tokenRuleForm.name}
               onChange={(e) => setTokenRuleForm({ ...tokenRuleForm, name: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-slate-700 dark:text-white"
-              placeholder="Custom Claim Rule"
+              placeholder={t('tenant.extensibility.tokenRuleNamePlaceholder', 'Custom Claim Rule')}
               required
             />
           </div>
@@ -1023,7 +1023,7 @@ export default function TenantExtensibilityPage() {
               onChange={(e) => setTokenRuleForm({ ...tokenRuleForm, conditions: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-emerald-500 dark:bg-slate-700 dark:text-white font-mono text-sm"
               rows={3}
-              placeholder='{"groups": ["admins"]}'
+              placeholder={t('tenant.extensibility.conditionsPlaceholder', '{"groups": ["admins"]}')}
             />
           </div>
           <div className="flex items-center gap-2">
