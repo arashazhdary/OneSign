@@ -1020,7 +1020,7 @@ export default function TenantAccessRequestsDetailPage() {
                       onChange={(e) => setApprovalComment(e.target.value)}
                       rows={4}
                       className="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                      placeholder="Add your comments..."
+                      placeholder={t('tenant.accessRequests.placeholders.approvalComment')}
                     />
                   </div>
                 </div>
@@ -1089,7 +1089,7 @@ export default function TenantAccessRequestsDetailPage() {
                     onChange={(e) => setNewComment(e.target.value)}
                     rows={4}
                     className="w-full px-4 py-3 border border-gray-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="Enter your comment..."
+                    placeholder={t('tenant.accessRequests.placeholders.comment')}
                   />
                 </div>
                 <div className="flex gap-3 mt-6">
@@ -1101,7 +1101,7 @@ export default function TenantAccessRequestsDetailPage() {
                     className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-medium hover:from-blue-600 hover:to-indigo-700 disabled:opacity-50 flex items-center justify-center gap-2 transition-all"
                   >
                     <Send className="w-5 h-5" />
-                    {processing ? 'Adding...' : 'Add Comment'}
+                    {processing ? t('tenant.accessRequests.actions.adding') : t('tenant.accessRequests.actions.addComment')}
                   </motion.button>
                   <motion.button
                     whileHover={{ scale: 1.02 }}

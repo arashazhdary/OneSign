@@ -919,7 +919,7 @@ export default function TenantReportsCompliancePage() {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => {
-                        if (confirm('Are you sure you want to delete this scheduled report?')) {
+                        if (confirm(t('tenant.reports.compliance.confirmDeleteScheduledReport', 'Are you sure you want to delete this scheduled report?'))) {
                           setScheduledReports(scheduledReports.filter(r => r.id !== report.id));
                         }
                       }}

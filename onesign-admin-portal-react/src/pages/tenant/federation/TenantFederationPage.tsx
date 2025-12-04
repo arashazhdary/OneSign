@@ -910,7 +910,7 @@ export default function TenantFederationPage() {
               setShowCreateModal(false);
               resetSAMLForm();
             }}
-            title="Create SAML Provider"
+            title={t('tenant.federation.createSAMLProvider', 'Create SAML Provider')}
             size="lg"
             footer={
               <div className="flex justify-end gap-3">
@@ -1023,7 +1023,7 @@ export default function TenantFederationPage() {
               setShowCreateModal(false);
               resetOIDCForm();
             }}
-            title="Create OIDC Provider"
+            title={t('tenant.federation.createOIDCProvider', 'Create OIDC Provider')}
             size="xl"
             footer={
               <div className="flex justify-end gap-3">
@@ -1193,7 +1193,7 @@ export default function TenantFederationPage() {
               setShowCreateModal(false);
               resetSCIMForm();
             }}
-            title="Create SCIM Token"
+            title={t('tenant.federation.createSCIMToken', 'Create SCIM Token')}
             footer={
               <div className="flex justify-end gap-3">
                 <button

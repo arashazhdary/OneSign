@@ -504,11 +504,11 @@ export default function GlobalEnvironmentsPage() {
             </>
           ) : selectedEnvironment ? (
             <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
-              {loading ? 'Loading monitoring data...' : 'No monitoring data available'}
+              {loading ? t('global.environments.loading.monitoringData') : t('global.environments.empty.noMonitoringData')}
             </div>
           ) : (
             <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
-              Please select an environment to view monitoring data
+              {t('global.environments.messages.selectEnvironment')}
             </div>
           )}
         </div>

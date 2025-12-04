@@ -530,7 +530,7 @@ export default function TenantAccessReviewsPage() {
       <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        title="Create Access Review"
+        title={t('tenant.accessReviews.createAccessReview')}
       >
         <div className="space-y-4">
           <div>

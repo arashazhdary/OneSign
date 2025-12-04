@@ -507,7 +507,7 @@ export default function TenantPrivacyPage() {
       </div>
 
       {/* Create Request Modal */}
-      <Modal isOpen={showRequestModal} onClose={() => setShowRequestModal(false)} title="Create Data Request">
+      <Modal isOpen={showRequestModal} onClose={() => setShowRequestModal(false)} title={t('tenant.privacy.createDataRequest')}>
         <form onSubmit={handleCreateRequest} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subject ID</label>

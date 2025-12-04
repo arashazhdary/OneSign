@@ -891,7 +891,7 @@ export default function GlobalRegionsPage() {
             </>
           ) : (
             <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
-              {loading ? 'Loading DR status...' : 'No DR configuration found'}
+              {loading ? t('global.regions.loading.drStatus') : t('global.regions.empty.noDrConfig')}
             </div>
           )}
         </div>
@@ -909,7 +909,7 @@ export default function GlobalRegionsPage() {
                   value={selectedTenant}
                   onChange={(e) => setSelectedTenant(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  placeholder="Enter tenant ID"
+                  placeholder={t('global.regions.placeholders.enterTenantId')}
                 />
               </div>
               <div className="pt-6">

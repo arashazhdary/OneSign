@@ -321,7 +321,7 @@ export default function TenantDataRetentionPage() {
             className="mt-4 md:mt-0 flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
           >
             <Plus className="w-5 h-5" />
-            <span>Create Policy</span>
+            <span>{t('tenant.dataRetention.createPolicy', 'Create Policy')}</span>
           </motion.button>
         </motion.div>
 
@@ -532,7 +532,7 @@ export default function TenantDataRetentionPage() {
       </div>
 
       {/* Create Policy Modal */}
-      <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title="Create Retention Policy">
+      <Modal isOpen={showCreate} onClose={() => setShowCreate(false)} title={t('tenant.dataRetention.createRetentionPolicy', 'Create Retention Policy')}>
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Policy Name</label>

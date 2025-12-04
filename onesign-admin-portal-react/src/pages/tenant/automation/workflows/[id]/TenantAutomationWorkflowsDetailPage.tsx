@@ -850,7 +850,7 @@ export default function TenantAutomationWorkflowsDetailPage() {
       <Modal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
-        title="Edit Workflow"
+        title={t('tenant.automation.workflow.modal.editWorkflow')}
         footer={
           <>
             <motion.button

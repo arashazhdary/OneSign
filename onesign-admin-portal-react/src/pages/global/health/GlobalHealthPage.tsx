@@ -399,7 +399,7 @@ export default function GlobalHealthPage() {
               )) || (
                 <tr>
                   <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                    {loading ? 'Loading components...' : 'No component data available'}
+                    {loading ? t('global.health.loading.components') : t('global.health.empty.noComponentData')}
                   </td>
                 </tr>
               )}
@@ -485,7 +485,7 @@ export default function GlobalHealthPage() {
               {regionsHealth.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                    {loading ? 'Loading regions...' : 'No region data available'}
+                    {loading ? t('global.health.loading.regions') : t('global.health.empty.noRegionData')}
                   </td>
                 </tr>
               )}

@@ -758,7 +758,7 @@ export default function TenantExportsPage() {
           setShowCreateModal(false);
           resetForm();
         }}
-        title="Create Export"
+        title={t('tenant.exports.createExport')}
         size="lg"
       >
         <form onSubmit={handleCreateExport} className="space-y-4">

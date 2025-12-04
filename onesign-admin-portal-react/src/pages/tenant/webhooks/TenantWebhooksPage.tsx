@@ -719,7 +719,7 @@ export default function TenantWebhooksPage() {
       <Modal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        title="Create Webhook"
+        title={t('tenant.webhooks.modal.createWebhook')}
       >
         <form onSubmit={handleCreate} className="space-y-6">
           <div>
@@ -826,7 +826,7 @@ export default function TenantWebhooksPage() {
           setShowEditModal(false);
           setSelectedWebhook(null);
         }}
-        title="Edit Webhook"
+        title={t('tenant.webhooks.modal.editWebhook')}
       >
         <form onSubmit={handleUpdate} className="space-y-6">
           <div>

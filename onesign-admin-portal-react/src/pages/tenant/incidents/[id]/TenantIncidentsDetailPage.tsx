@@ -815,7 +815,7 @@ export default function TenantIncidentsDetailPage() {
               disabled={processing || !newNoteContent.trim()}
               className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
             >
-              {processing ? 'Adding...' : 'Add Note'}
+              {processing ? t('tenant.incidents.actions.adding') : t('tenant.incidents.actions.addNote')}
             </button>
           </>
         }
@@ -857,7 +857,7 @@ export default function TenantIncidentsDetailPage() {
               disabled={processing}
               className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
             >
-              {processing ? 'Adding...' : 'Link Entity'}
+              {processing ? t('tenant.incidents.actions.adding') : t('tenant.incidents.actions.linkEntity')}
             </button>
           </>
         }

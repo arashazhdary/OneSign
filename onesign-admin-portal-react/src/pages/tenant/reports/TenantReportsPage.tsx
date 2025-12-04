@@ -315,7 +315,7 @@ export default function TenantReportsPage() {
               className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
             >
               <Plus className="w-5 h-5" />
-              <span>Generate Report</span>
+              <span>{t('tenant.reports.generateReport', 'Generate Report')}</span>
             </motion.button>
           </div>
         </motion.div>
@@ -536,7 +536,7 @@ export default function TenantReportsPage() {
       </div>
 
       {/* Create Report Modal */}
-      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="Generate Report">
+      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title={t('tenant.reports.generateReport', 'Generate Report')}>
         <form onSubmit={handleCreateReport} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Report Type</label>
@@ -565,7 +565,7 @@ export default function TenantReportsPage() {
       </Modal>
 
       {/* Schedule Subscription Modal */}
-      <Modal isOpen={showSubscriptionModal} onClose={() => setShowSubscriptionModal(false)} title="Schedule Report">
+      <Modal isOpen={showSubscriptionModal} onClose={() => setShowSubscriptionModal(false)} title={t('tenant.reports.scheduleReport', 'Schedule Report')}>
         <form onSubmit={handleCreateSubscription} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Report Type</label>

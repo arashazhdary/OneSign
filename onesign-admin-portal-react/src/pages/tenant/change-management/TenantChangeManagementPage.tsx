@@ -759,7 +759,7 @@ export default function TenantChangeManagementPage() {
                   className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   <Plus className="w-5 h-5" />
-                  Create Change Set
+                  {t('tenant.changeManagement.createChangeSet', 'Create Change Set')}
                 </motion.button>
               )}
               {selectedChangeSet && (
@@ -1509,7 +1509,7 @@ export default function TenantChangeManagementPage() {
         <Modal
           isOpen={showCreateModal}
           onClose={() => setShowCreateModal(false)}
-          title="Create Change Set"
+          title={t('tenant.changeManagement.createChangeSet', 'Create Change Set')}
           size="lg"
         >
           <form onSubmit={handleCreateChangeSet}>

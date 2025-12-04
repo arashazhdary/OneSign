@@ -359,7 +359,7 @@ export default function TenantSecurityAnomalyDetectionPage() {
         </motion.div>
       )}
 
-      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title="Create Detection Rule">
+      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} title={t('tenant.security.anomalyDetection.createDetectionRule', 'Create Detection Rule')}>
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Rule Name</label>

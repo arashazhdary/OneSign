@@ -1068,7 +1068,7 @@ export default function TenantAdaptiveSecurityPage() {
       <Modal
         isOpen={showPolicyModal}
         onClose={() => setShowPolicyModal(false)}
-        title={editingPolicy ? 'Edit Policy' : 'Create Policy'}
+        title={editingPolicy ? t('tenant.adaptiveSecurity.modal.editPolicy') : t('tenant.adaptiveSecurity.modal.createPolicy')}
       >
         <form onSubmit={handleCreatePolicy} className="space-y-4">
           <div>
@@ -1157,7 +1157,7 @@ export default function TenantAdaptiveSecurityPage() {
       <Modal
         isOpen={showSignalModal}
         onClose={() => setShowSignalModal(false)}
-        title="Edit Risk Signal"
+        title={t('tenant.adaptiveSecurity.modal.editRiskSignal')}
       >
         {selectedSignal && (
           <div className="space-y-4">

@@ -845,7 +845,7 @@ export default function TenantExtensibilityPage() {
       <Modal
         isOpen={showWebhookModal}
         onClose={() => setShowWebhookModal(false)}
-        title={editingWebhook ? 'Edit Webhook' : 'Create Webhook'}
+        title={editingWebhook ? t('tenant.extensibility.editWebhook') : t('tenant.extensibility.createWebhook')}
       >
         <form onSubmit={editingWebhook ? (e) => { e.preventDefault(); handleUpdateWebhook(editingWebhook.id, webhookForm); } : handleCreateWebhook} className="space-y-4">
           <div>
@@ -906,7 +906,7 @@ export default function TenantExtensibilityPage() {
       <Modal
         isOpen={showLoginHookModal}
         onClose={() => setShowLoginHookModal(false)}
-        title={editingLoginHook ? 'Edit Login Hook' : 'Create Login Hook'}
+        title={editingLoginHook ? t('tenant.extensibility.editLoginHook') : t('tenant.extensibility.createLoginHook')}
       >
         <form onSubmit={handleCreateLoginHook} className="space-y-4">
           <div>
@@ -989,7 +989,7 @@ export default function TenantExtensibilityPage() {
       <Modal
         isOpen={showTokenRuleModal}
         onClose={() => setShowTokenRuleModal(false)}
-        title={editingTokenRule ? 'Edit Token Rule' : 'Create Token Rule'}
+        title={editingTokenRule ? t('tenant.extensibility.editTokenRule') : t('tenant.extensibility.createTokenRule')}
       >
         <form onSubmit={handleCreateTokenRule} className="space-y-4">
           <div>

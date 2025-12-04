@@ -656,7 +656,7 @@ export default function GlobalTemplatesPage() {
           <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <h2 className="text-2xl font-bold mb-4">
-                {showEditModal ? 'Edit Global Template' : 'Create Global Template'}
+                {showEditModal ? t('global.templates.modal.editTemplate') : t('global.templates.modal.createTemplate')}
               </h2>
               <form onSubmit={showEditModal ? handleUpdateTemplate : handleCreateTemplate}>
                 <div className="grid grid-cols-2 gap-4 mb-4">
