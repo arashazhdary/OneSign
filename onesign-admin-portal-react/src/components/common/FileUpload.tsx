@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { Upload, X, File, Image as ImageIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/utils/cn';
 import Button from './Button';
 
@@ -35,6 +36,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
   showPreview = true,
   className,
 }) => {
+  const { t } = useTranslation();
   const [files, setFiles] = useState<FileWithPreview[]>([]);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -42,7 +44,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
     // Check file size
     const fileSizeInMB = file.size / (1024 * 1024);
     if (fileSizeInMB > maxSize) {
-      return `File size exceeds ${maxSize}MB`;
+      return t('common.fileUpload.errors.fileSizeExceeds', { maxSize });
     }
 
     // Check file type
@@ -58,7 +60,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
       });
 
       if (!isAccepted) {
-        return `File type not accepted. Accepted types: ${accept}`;
+        return t('common.fileUpload.errors.fileTypeNotAccepted', { accept });
       }
     }
 
@@ -84,7 +86,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
       // Check max files limit
       const totalFiles = files.length + newFiles.length;
       if (totalFiles > maxFiles) {
-        onError?.(`Maximum ${maxFiles} files allowed`);
+        onError?.(t('common.fileUpload.errors.maxFilesExceeded', { maxFiles }));
         return;
       }
 
@@ -198,7 +200,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
             )}
           />
           <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-            {isDragging ? 'Drop files here' : 'Drop files here or click to browse'}
+            {isDragging ? t('common.fileUpload.dropFiles') : t('common.fileUpload.dropFilesOrBrowse')}
           </p>
           {description && (
             <p className="text-xs text-slate-500 dark:text-slate-400">{description}</p>

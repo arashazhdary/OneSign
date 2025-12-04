@@ -184,7 +184,7 @@ export default function TenantAdaptiveSecurityPage() {
       setPolicies([]);
     } catch (err) {
       console.error('Error fetching policies:', err);
-      setError('Failed to fetch policies');
+      setError(t('tenant.adaptiveSecurity.messages.failedToFetchPolicies'));
     } finally {
       setLoading(false);
     }
@@ -197,7 +197,7 @@ export default function TenantAdaptiveSecurityPage() {
       setSignals([]);
     } catch (err) {
       console.error('Error fetching signals:', err);
-      setError('Failed to fetch signals');
+      setError(t('tenant.adaptiveSecurity.messages.failedToFetchSignals'));
     } finally {
       setLoading(false);
     }
@@ -210,7 +210,7 @@ export default function TenantAdaptiveSecurityPage() {
       setContexts([]);
     } catch (err) {
       console.error('Error fetching contexts:', err);
-      setError('Failed to fetch contexts');
+      setError(t('tenant.adaptiveSecurity.messages.failedToFetchContexts'));
     } finally {
       setLoading(false);
     }
@@ -229,7 +229,7 @@ export default function TenantAdaptiveSecurityPage() {
       });
     } catch (err) {
       console.error('Error fetching dashboard:', err);
-      setError('Failed to fetch dashboard');
+      setError(t('tenant.adaptiveSecurity.messages.failedToFetchDashboard'));
     } finally {
       setLoading(false);
     }
@@ -242,7 +242,7 @@ export default function TenantAdaptiveSecurityPage() {
       setHighRiskUsers([]);
     } catch (err) {
       console.error('Error fetching high-risk users:', err);
-      setError('Failed to fetch high-risk users');
+      setError(t('tenant.adaptiveSecurity.messages.failedToFetchHighRisk'));
     } finally {
       setLoading(false);
     }
@@ -266,24 +266,24 @@ export default function TenantAdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      setSuccess('Policy updated successfully');
+      setSuccess(t('tenant.adaptiveSecurity.messages.policyUpdated'));
       fetchPolicies();
       setEditingPolicy(null);
     } catch (err) {
-      setError('Failed to update policy');
+      setError(t('tenant.adaptiveSecurity.messages.failedToUpdatePolicy'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeletePolicy = async (policyId: string) => {
-    if (!tenantId || !confirm('Are you sure you want to delete this policy?')) return;
+    if (!tenantId || !confirm(t('tenant.adaptiveSecurity.confirmDeletePolicy'))) return;
     setLoading(true);
     try {
-      setSuccess('Policy deleted successfully');
+      setSuccess(t('tenant.adaptiveSecurity.messages.policyDeleted'));
       fetchPolicies();
     } catch (err) {
-      setError('Failed to delete policy');
+      setError(t('tenant.adaptiveSecurity.messages.failedToDeletePolicy'));
     } finally {
       setLoading(false);
     }
@@ -293,10 +293,10 @@ export default function TenantAdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      setSuccess('Policy enabled successfully');
+      setSuccess(t('tenant.adaptiveSecurity.messages.policyEnabled'));
       fetchPolicies();
     } catch (err) {
-      setError('Failed to enable policy');
+      setError(t('tenant.adaptiveSecurity.messages.failedToEnablePolicy'));
     } finally {
       setLoading(false);
     }
@@ -306,10 +306,10 @@ export default function TenantAdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      setSuccess('Policy disabled successfully');
+      setSuccess(t('tenant.adaptiveSecurity.messages.policyDisabled'));
       fetchPolicies();
     } catch (err) {
-      setError('Failed to disable policy');
+      setError(t('tenant.adaptiveSecurity.messages.failedToDisablePolicy'));
     } finally {
       setLoading(false);
     }
@@ -332,11 +332,11 @@ export default function TenantAdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      setSuccess('Signal updated successfully');
+      setSuccess(t('tenant.adaptiveSecurity.messages.signalUpdated'));
       fetchSignals();
       setShowSignalModal(false);
     } catch (err) {
-      setError('Failed to update signal');
+      setError(t('tenant.adaptiveSecurity.messages.failedToUpdateSignal'));
     } finally {
       setLoading(false);
     }
@@ -346,10 +346,10 @@ export default function TenantAdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      setSuccess('Context refreshed successfully');
+      setSuccess(t('tenant.adaptiveSecurity.messages.contextRefreshed'));
       fetchContexts();
     } catch (err) {
-      setError('Failed to refresh context');
+      setError(t('tenant.adaptiveSecurity.messages.failedToRefreshContext'));
     } finally {
       setLoading(false);
     }
@@ -360,12 +360,12 @@ export default function TenantAdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      setSuccess('Policy created successfully');
+      setSuccess(t('tenant.adaptiveSecurity.messages.policyCreated'));
       setShowPolicyModal(false);
       setPolicyForm({ name: '', policyType: 'RiskBased', riskLevel: 'Medium', action: 'RequireMFA', isEnabled: true });
       fetchPolicies();
     } catch (err) {
-      setError('Failed to create policy');
+      setError(t('tenant.adaptiveSecurity.messages.failedToCreatePolicy'));
     } finally {
       setLoading(false);
     }
@@ -394,7 +394,7 @@ export default function TenantAdaptiveSecurityPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 p-6">
       <Helmet>
-        <title>Adaptive Security</title>
+        <title>{t('tenant.adaptiveSecurity.pageTitle')}</title>
       </Helmet>
 
       {/* Header */}
@@ -409,10 +409,10 @@ export default function TenantAdaptiveSecurityPage() {
           </div>
           <div>
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
-              Adaptive Security
+              {t('tenant.adaptiveSecurity.title')}
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Manage adaptive security policies, risk signals, and user security contexts
+              {t('tenant.adaptiveSecurity.subtitle')}
             </p>
           </div>
         </div>
@@ -630,7 +630,7 @@ export default function TenantAdaptiveSecurityPage() {
               className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-500 to-orange-600 text-white rounded-xl hover:shadow-lg transition-all duration-200"
             >
               <Plus className="w-5 h-5" />
-              Create Policy
+              {t('tenant.adaptiveSecurity.buttons.createPolicy')}
             </motion.button>
           </div>
 
@@ -641,8 +641,8 @@ export default function TenantAdaptiveSecurityPage() {
               className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-12 text-center"
             >
               <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Policies Configured</h3>
-              <p className="text-gray-600 dark:text-gray-400">Create adaptive security policies to protect your organization.</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('tenant.adaptiveSecurity.empty.noPolicies')}</h3>
+              <p className="text-gray-600 dark:text-gray-400">{t('tenant.adaptiveSecurity.empty.noPoliciesDescription')}</p>
             </motion.div>
           ) : (
             <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 overflow-hidden">
@@ -760,8 +760,8 @@ export default function TenantAdaptiveSecurityPage() {
               className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-12 text-center"
             >
               <Activity className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Risk Signals Configured</h3>
-              <p className="text-gray-600 dark:text-gray-400">Risk signals help detect suspicious activity and behavior.</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('tenant.adaptiveSecurity.empty.noSignals')}</h3>
+              <p className="text-gray-600 dark:text-gray-400">{t('tenant.adaptiveSecurity.empty.noSignalsDescription')}</p>
             </motion.div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -997,8 +997,8 @@ export default function TenantAdaptiveSecurityPage() {
               className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-12 text-center"
             >
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No High Risk Users</h3>
-              <p className="text-gray-600 dark:text-gray-400">Great! No users are currently flagged as high risk.</p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('tenant.adaptiveSecurity.empty.noHighRisk')}</h3>
+              <p className="text-gray-600 dark:text-gray-400">{t('tenant.adaptiveSecurity.empty.noHighRiskDescription')}</p>
             </motion.div>
           ) : (
             <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 overflow-hidden">

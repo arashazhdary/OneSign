@@ -420,7 +420,7 @@ export default function GlobalAccessReviewsPage() {
         startDate: campaignStartDate,
         endDate: campaignEndDate,
       });
-      setSuccess('Access review campaign created successfully');
+      setSuccess(t('global.accessReviews.messages.campaignCreated'));
       setShowCreateCampaignModal(false);
       resetCampaignForm();
       fetchCampaigns();
@@ -443,7 +443,7 @@ export default function GlobalAccessReviewsPage() {
         reviewDecision === 'approve' ? 'approve' : 'revoke',
         reviewJustification
       );
-      setSuccess(`Access ${reviewDecision === 'approve' ? 'approved' : 'revoked'} successfully`);
+      setSuccess(reviewDecision === 'approve' ? t('global.accessReviews.messages.accessApproved') : t('global.accessReviews.messages.accessRevoked'));
       setShowReviewModal(false);
       setSelectedReviewItem(null);
       setReviewJustification('');
@@ -460,7 +460,7 @@ export default function GlobalAccessReviewsPage() {
 
     try {
       await governanceService.closeCampaign(campaignId);
-      setSuccess('Campaign cancelled successfully');
+      setSuccess(t('global.accessReviews.messages.campaignCancelled'));
       fetchCampaigns();
     } catch (err: any) {
       setError(err?.message || t('common.errorCancellingCampaign'));
@@ -488,7 +488,7 @@ export default function GlobalAccessReviewsPage() {
   const campaignColumns: Column<AccessReviewCampaign>[] = [
     {
       key: 'name',
-      label: 'Campaign Name',
+      label: t('global.accessReviews.campaignName'),
       render: (campaign) => (
         <div>
           <div className="font-medium">{campaign.name}</div>
@@ -498,7 +498,7 @@ export default function GlobalAccessReviewsPage() {
     },
     {
       key: 'type',
-      label: 'Type',
+      label: t('common.type'),
       render: (campaign) => (
         <StatusBadge
           status={campaign.type}
@@ -534,14 +534,14 @@ export default function GlobalAccessReviewsPage() {
             <span className="text-sm font-medium">{campaign.progress.toFixed(1)}%</span>
           </div>
           <div className="text-xs text-gray-500 mt-1">
-            {campaign.reviewedItems} / {campaign.totalItems} items
+            {t('global.accessReviews.itemsProgress', { reviewed: campaign.reviewedItems, total: campaign.totalItems })}
           </div>
         </div>
       ),
     },
     {
       key: 'riskScore',
-      label: 'Risk Score',
+      label: t('global.accessReviews.riskScoreLabel'),
       render: (campaign) => (
         <div className="flex items-center gap-2">
           <div
@@ -558,7 +558,7 @@ export default function GlobalAccessReviewsPage() {
     },
     {
       key: 'deadline',
-      label: 'Deadline',
+      label: t('global.accessReviews.deadline'),
       render: (campaign) => {
         const deadline = new Date(campaign.deadline);
         const today = new Date();
@@ -573,7 +573,7 @@ export default function GlobalAccessReviewsPage() {
                   daysLeft < 14 ? 'text-orange-600' : 'text-gray-500'
                 }`}
               >
-                {daysLeft > 0 ? `${daysLeft} days left` : 'Overdue'}
+                {daysLeft > 0 ? t('global.accessReviews.daysLeft', { days: daysLeft }) : t('global.accessReviews.overdue')}
               </div>
             )}
           </div>
@@ -585,7 +585,7 @@ export default function GlobalAccessReviewsPage() {
   const reviewerColumns: Column<CampaignReviewer>[] = [
     {
       key: 'reviewerName',
-      label: 'Reviewer',
+      label: t('global.accessReviews.reviewer'),
       render: (reviewer) => (
         <div>
           <div className="font-medium">{reviewer.reviewerName}</div>
@@ -595,17 +595,17 @@ export default function GlobalAccessReviewsPage() {
     },
     {
       key: 'assignedItems',
-      label: 'Assigned',
+      label: t('global.accessReviews.assigned'),
       render: (reviewer) => <div className="font-medium">{reviewer.assignedItems}</div>,
     },
     {
       key: 'reviewedItems',
-      label: 'Reviewed',
+      label: t('global.accessReviews.reviewed'),
       render: (reviewer) => <div className="text-green-600">{reviewer.reviewedItems}</div>,
     },
     {
       key: 'pendingItems',
-      label: 'Pending',
+      label: t('global.accessReviews.pending'),
       render: (reviewer) => <div className="text-orange-600">{reviewer.pendingItems}</div>,
     },
     {
@@ -628,15 +628,15 @@ export default function GlobalAccessReviewsPage() {
     },
     {
       key: 'lastActivity',
-      label: 'Last Activity',
+      label: t('global.accessReviews.lastActivity'),
       render: (reviewer) => {
         const lastActivity = new Date(reviewer.lastActivity);
         const now = new Date();
         const hoursAgo = Math.floor((now.getTime() - lastActivity.getTime()) / (1000 * 60 * 60));
         return (
           <div className="text-sm text-gray-600">
-            {hoursAgo < 1 ? 'Just now' :
-             hoursAgo < 24 ? `${hoursAgo}h ago` :
+            {hoursAgo < 1 ? t('global.accessReviews.justNow') :
+             hoursAgo < 24 ? t('global.accessReviews.hoursAgo', { hours: hoursAgo }) :
              lastActivity.toLocaleDateString()}
           </div>
         );
@@ -647,7 +647,7 @@ export default function GlobalAccessReviewsPage() {
   const reviewItemColumns: Column<AccessReviewItem>[] = [
     {
       key: 'userName',
-      label: 'User',
+      label: t('common.user'),
       render: (item) => (
         <div>
           <div className="font-medium">{item.userName}</div>
@@ -657,12 +657,12 @@ export default function GlobalAccessReviewsPage() {
     },
     {
       key: 'tenantName',
-      label: 'Tenant',
+      label: t('common.tenant'),
       render: (item) => <div className="text-sm">{item.tenantName}</div>,
     },
     {
       key: 'accessType',
-      label: 'Access Type',
+      label: t('global.accessReviews.accessType'),
       render: (item) => (
         <div>
           <div className="font-medium text-sm">{item.accessType}</div>
@@ -672,7 +672,7 @@ export default function GlobalAccessReviewsPage() {
     },
     {
       key: 'riskLevel',
-      label: 'Risk',
+      label: t('global.accessReviews.risk'),
       render: (item) => (
         <StatusBadge
           status={item.riskLevel}
@@ -692,7 +692,7 @@ export default function GlobalAccessReviewsPage() {
     },
     {
       key: 'reviewedBy',
-      label: 'Reviewed By',
+      label: t('global.accessReviews.reviewedBy'),
       render: (item) => (
         <div className="text-sm">
           {item.reviewedBy ? (
@@ -705,7 +705,7 @@ export default function GlobalAccessReviewsPage() {
               )}
             </div>
           ) : (
-            <span className="text-gray-400">Not reviewed</span>
+            <span className="text-gray-400">{t('global.accessReviews.notReviewed')}</span>
           )}
         </div>
       ),
@@ -713,41 +713,41 @@ export default function GlobalAccessReviewsPage() {
   ];
 
   if (loading) {
-    return <div className="p-8">Loading...</div>;
+    return <div className="p-8">{t('common.loading')}</div>;
   }
 
   return (
     <div className="p-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-          Global Access Reviews
+          {t('global.accessReviews.title')}
         </h1>
         <p className="text-gray-600 mt-2">
-          Manage access review campaigns and certifications across all tenants
+          {t('global.accessReviews.subtitle')}
         </p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg shadow-lg p-6">
-          <div className="text-sm opacity-90">Active Campaigns</div>
+          <div className="text-sm opacity-90">{t('global.accessReviews.activeCampaigns')}</div>
           <div className="text-3xl font-bold">{stats.activeCampaigns}</div>
-          <div className="text-xs mt-1">of {stats.totalCampaigns} total</div>
+          <div className="text-xs mt-1">{t('global.accessReviews.ofTotal', { total: stats.totalCampaigns })}</div>
         </div>
         <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg shadow-lg p-6">
-          <div className="text-sm opacity-90">Pending Reviews</div>
+          <div className="text-sm opacity-90">{t('global.accessReviews.pendingReviews')}</div>
           <div className="text-3xl font-bold">{stats.pendingReviews.toLocaleString()}</div>
-          <div className="text-xs mt-1">{stats.completedReviews.toLocaleString()} completed</div>
+          <div className="text-xs mt-1">{t('global.accessReviews.completedCount', { count: stats.completedReviews.toLocaleString() })}</div>
         </div>
         <div className="bg-gradient-to-br from-red-500 to-red-600 text-white rounded-lg shadow-lg p-6">
-          <div className="text-sm opacity-90">Revoked Access</div>
+          <div className="text-sm opacity-90">{t('global.accessReviews.revokedAccess')}</div>
           <div className="text-3xl font-bold">{stats.revokedAccess}</div>
-          <div className="text-xs mt-1">Security improvement</div>
+          <div className="text-xs mt-1">{t('global.accessReviews.securityImprovement')}</div>
         </div>
         <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg shadow-lg p-6">
-          <div className="text-sm opacity-90">Compliance Rate</div>
+          <div className="text-sm opacity-90">{t('global.accessReviews.complianceRate')}</div>
           <div className="text-3xl font-bold">{stats.complianceRate}%</div>
-          <div className="text-xs mt-1">Risk score: {stats.averageRiskScore.toFixed(1)}/10</div>
+          <div className="text-xs mt-1">{t('global.accessReviews.riskScore', { score: stats.averageRiskScore.toFixed(1) })}</div>
         </div>
       </div>
 
@@ -761,7 +761,7 @@ export default function GlobalAccessReviewsPage() {
               : 'text-gray-600 hover:text-gray-800'
           }`}
         >
-          Campaigns
+          {t('global.accessReviews.campaigns')}
         </button>
         <button
           onClick={() => setActiveTab('reviews')}
@@ -771,7 +771,7 @@ export default function GlobalAccessReviewsPage() {
               : 'text-gray-600 hover:text-gray-800'
           }`}
         >
-          Review Items
+          {t('global.accessReviews.reviewItems')}
         </button>
         <button
           onClick={() => setActiveTab('reviewers')}
@@ -781,7 +781,7 @@ export default function GlobalAccessReviewsPage() {
               : 'text-gray-600 hover:text-gray-800'
           }`}
         >
-          Reviewers
+          {t('global.accessReviews.reviewers')}
         </button>
         <button
           onClick={() => setActiveTab('analytics')}
@@ -791,7 +791,7 @@ export default function GlobalAccessReviewsPage() {
               : 'text-gray-600 hover:text-gray-800'
           }`}
         >
-          Analytics
+          {t('global.accessReviews.analytics')}
         </button>
       </div>
 
@@ -811,12 +811,12 @@ export default function GlobalAccessReviewsPage() {
       {activeTab === 'campaigns' && (
         <div>
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Access Review Campaigns</h2>
+            <h2 className="text-xl font-semibold">{t('global.accessReviews.accessReviewCampaigns')}</h2>
             <button
               onClick={() => setShowCreateCampaignModal(true)}
               className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700"
             >
-              Create Campaign
+              {t('global.accessReviews.createCampaign')}
             </button>
           </div>
           <DataTable
@@ -825,14 +825,14 @@ export default function GlobalAccessReviewsPage() {
             actions={(campaign) => (
               <div className="flex gap-2">
                 <button className="text-blue-600 hover:text-blue-800 text-sm">
-                  View
+                  {t('common.view')}
                 </button>
                 {campaign.status === 'Active' && (
                   <button
                     onClick={() => handleCancelCampaign(campaign.id)}
                     className="text-red-600 hover:text-red-800 text-sm"
                   >
-                    Cancel
+                    {t('common.cancel')}
                   </button>
                 )}
               </div>
@@ -845,14 +845,14 @@ export default function GlobalAccessReviewsPage() {
       {activeTab === 'reviews' && (
         <div>
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Review Items</h2>
+            <h2 className="text-xl font-semibold">{t('global.accessReviews.reviewItems')}</h2>
             <div className="flex gap-2">
               <select
                 className="px-3 py-2 border rounded"
                 value={selectedCampaign}
                 onChange={(e) => setSelectedCampaign(e.target.value)}
               >
-                <option value="">All Campaigns</option>
+                <option value="">{t('global.accessReviews.allCampaigns')}</option>
                 {campaigns.map(campaign => (
                   <option key={campaign.id} value={campaign.id}>
                     {campaign.name}
@@ -871,11 +871,11 @@ export default function GlobalAccessReviewsPage() {
                     onClick={() => openReviewModal(item)}
                     className="text-purple-600 hover:text-purple-800 text-sm"
                   >
-                    Review
+                    {t('global.accessReviews.review')}
                   </button>
                 )}
                 <button className="text-blue-600 hover:text-blue-800 text-sm">
-                  Details
+                  {t('common.details')}
                 </button>
               </div>
             )}
@@ -886,13 +886,13 @@ export default function GlobalAccessReviewsPage() {
       {/* Reviewers Tab */}
       {activeTab === 'reviewers' && (
         <div>
-          <h2 className="text-xl font-semibold mb-4">Campaign Reviewers</h2>
+          <h2 className="text-xl font-semibold mb-4">{t('global.accessReviews.campaignReviewers')}</h2>
           <DataTable
             data={reviewers}
             columns={reviewerColumns}
             actions={(reviewer) => (
               <button className="text-blue-600 hover:text-blue-800 text-sm">
-                Send Reminder
+                {t('global.accessReviews.sendReminder')}
               </button>
             )}
           />

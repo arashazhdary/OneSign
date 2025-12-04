@@ -182,6 +182,8 @@
       "failedToSignOut": "خروج ناموفق بود",
       "failedToSetPassword": "تنظیم رمز عبور ناموفق بود",
       "failedToVerify": "تأیید ناموفق بود",
+      "failedToCompleteGoogleSignIn": "تکمیل ورود با گوگل ناموفق بود",
+      "failedToInitializeGoogleLogin": "راه‌اندازی ورود با گوگل ناموفق بود",
       "sessionExpired": "نشست منقضی شده",
       "invalidInput": "ورودی نامعتبر",
       "duplicateEntry": "مورد تکراری",
@@ -283,7 +285,34 @@
       "needHelp": "نیاز به کمک دارید؟ با مدیر سیستم تماس بگیرید",
       "invalidEmail": "لطفاً یک آدرس ایمیل معتبر وارد کنید",
       "passwordRequired": "رمز عبور الزامی است",
-      "signingIn": "در حال ورود..."
+      "signingIn": "در حال ورود...",
+      "completeSetup": "تکمیل راه‌اندازی",
+      "completeSetupDescription": "برای تکمیل ورود اولیه، رمز عبور خود را تنظیم کنید",
+      "confirmPasswordPlaceholder": "رمز عبور خود را تأیید کنید",
+      "settingUp": "در حال راه‌اندازی...",
+      "invalidSetupToken": "توکن راه‌اندازی نامعتبر یا موجود نیست",
+      "setupTokenMissing": "توکن راه‌اندازی موجود نیست",
+      "passwordSetSuccess": "رمز عبور با موفقیت تنظیم شد. لطفاً وارد شوید.",
+      "passwordRequirements": "الزامات رمز عبور:",
+      "googleAuthCancelled": "احراز هویت گوگل لغو شد یا ناموفق بود",
+      "invalidCallback": "درخواست بازگشت نامعتبر: کد مجوز موجود نیست",
+      "completingGoogleSignIn": "در حال تکمیل ورود با گوگل...",
+      "authenticationFailed": "احراز هویت ناموفق بود",
+      "redirectingToLogin": "در حال انتقال به صفحه ورود...",
+      "validation": {
+        "minLength": "رمز عبور باید حداقل ۸ کاراکتر باشد",
+        "requireUppercase": "رمز عبور باید حداقل یک حرف بزرگ داشته باشد",
+        "requireLowercase": "رمز عبور باید حداقل یک حرف کوچک داشته باشد",
+        "requireNumber": "رمز عبور باید حداقل یک عدد داشته باشد",
+        "requireSpecial": "رمز عبور باید حداقل یک کاراکتر خاص داشته باشد",
+        "passwordsMismatch": "رمزهای عبور مطابقت ندارند"
+      },
+      "requirements": {
+        "minLength": "حداقل ۸ کاراکتر",
+        "upperAndLowerCase": "شامل حروف بزرگ و کوچک",
+        "number": "حداقل یک عدد",
+        "specialChar": "حداقل یک کاراکتر خاص"
+      }
     }
   },
 

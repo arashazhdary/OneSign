@@ -193,7 +193,7 @@ export default function GlobalRegionsPage() {
 
   const handleCreateRegion = async () => {
     if (!newRegion.name || !newRegion.code || !newRegion.location) {
-      setError('Please fill all required fields');
+      setError(t('common.validation.fillRequired'));
       return;
     }
 
@@ -202,7 +202,7 @@ export default function GlobalRegionsPage() {
     setSuccess('');
     try {
       await globalService.createRegion(newRegion);
-      setSuccess('Region created successfully');
+      setSuccess(t('global.regions.messages.created'));
       setShowCreateModal(false);
       setNewRegion({ name: '', code: '', location: '', dataCenter: '' });
       fetchRegions();
@@ -219,7 +219,7 @@ export default function GlobalRegionsPage() {
     setSuccess('');
     try {
       // await globalService.activateRegion(regionId);
-      setSuccess('Region activated successfully');
+      setSuccess(t('global.regions.messages.activated'));
       fetchRegions();
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -234,7 +234,7 @@ export default function GlobalRegionsPage() {
     setSuccess('');
     try {
       // await globalService.deactivateRegion(regionId);
-      setSuccess('Region deactivated successfully');
+      setSuccess(t('global.regions.messages.deactivated'));
       fetchRegions();
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -244,7 +244,7 @@ export default function GlobalRegionsPage() {
   };
 
   const handleDeleteRegion = async (regionId: string) => {
-    if (!confirm('Are you sure you want to delete this region?')) {
+    if (!confirm(t('global.regions.confirmDelete'))) {
       return;
     }
 
@@ -253,7 +253,7 @@ export default function GlobalRegionsPage() {
     setSuccess('');
     try {
       // await globalService.deleteRegion(regionId);
-      setSuccess('Region deleted successfully');
+      setSuccess(t('global.regions.messages.deleted'));
       fetchRegions();
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -264,7 +264,7 @@ export default function GlobalRegionsPage() {
 
   const handleCreateBackup = async () => {
     if (!selectedRegion) {
-      setError('Please select a region');
+      setError(t('global.regions.validation.selectRegion'));
       return;
     }
 
@@ -273,7 +273,7 @@ export default function GlobalRegionsPage() {
     setSuccess('');
     try {
       // await globalService.createRegionBackup(selectedRegion);
-      setSuccess('Backup created successfully');
+      setSuccess(t('global.regions.messages.backupCreated'));
       fetchBackups();
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -283,7 +283,7 @@ export default function GlobalRegionsPage() {
   };
 
   const handleRestoreBackup = async (backupId: string) => {
-    if (!confirm('Are you sure you want to restore this backup?')) {
+    if (!confirm(t('global.regions.confirmRestoreBackup'))) {
       return;
     }
 
@@ -292,7 +292,7 @@ export default function GlobalRegionsPage() {
     setSuccess('');
     try {
       // await globalService.restoreRegionBackup(backupId);
-      setSuccess('Backup restore started successfully');
+      setSuccess(t('global.regions.messages.backupRestoreStarted'));
     } catch (err: any) {
       setError(err.message || t('common.error'));
     } finally {
@@ -302,7 +302,7 @@ export default function GlobalRegionsPage() {
 
   const handleUpdateRegion = async () => {
     if (!updateRegionData.id || !updateRegionData.name) {
-      setError('Please fill all required fields');
+      setError(t('common.validation.fillRequired'));
       return;
     }
 
@@ -315,7 +315,7 @@ export default function GlobalRegionsPage() {
         cloudProvider: updateRegionData.code,
         location: updateRegionData.location,
       } as any);
-      setSuccess('Region updated successfully');
+      setSuccess(t('global.regions.messages.updated'));
       setShowUpdateRegionModal(false);
       setUpdateRegionData({ id: '', name: '', code: '', location: '', dataCenter: '' });
       fetchRegions();
@@ -349,7 +349,7 @@ export default function GlobalRegionsPage() {
       // Note: createRegionBackupById is not available in globalService
       // Using createBackup instead
       await globalService.createBackup({ name: `Region-${regionId}`, type: 'region', retentionDays: 30 });
-      setSuccess('Region backup created successfully');
+      setSuccess(t('global.regions.messages.regionBackupCreated'));
       fetchRegionBackups(regionId);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -390,7 +390,7 @@ export default function GlobalRegionsPage() {
 
   const handleCreateTenantBackup = async () => {
     if (!selectedTenant) {
-      setError('Please select a tenant');
+      setError(t('global.regions.validation.selectTenant'));
       return;
     }
 
@@ -401,7 +401,7 @@ export default function GlobalRegionsPage() {
       // Note: createTenantBackup is not available in globalService
       // Using createBackup instead
       await globalService.createBackup({ name: `Tenant-${selectedTenant}`, type: 'tenant', retentionDays: 30 });
-      setSuccess('Tenant backup created successfully');
+      setSuccess(t('global.regions.messages.tenantBackupCreated'));
       fetchTenantBackups();
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -411,7 +411,7 @@ export default function GlobalRegionsPage() {
   };
 
   const handleRestoreTenant = async (tenantId: string) => {
-    if (!confirm('Are you sure you want to restore this tenant?')) {
+    if (!confirm(t('global.regions.confirmRestoreTenant'))) {
       return;
     }
 
@@ -422,7 +422,7 @@ export default function GlobalRegionsPage() {
       // Note: restoreTenant is not available in globalService
       // Using restoreBackup instead
       await globalService.restoreBackup(tenantId);
-      setSuccess('Tenant restore started successfully');
+      setSuccess(t('global.regions.messages.tenantRestoreStarted'));
     } catch (err: any) {
       setError(err.message || t('common.error'));
     } finally {
@@ -468,7 +468,7 @@ export default function GlobalRegionsPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold mb-6">Multi-Region Management</h1>
+      <h1 className="text-3xl font-bold mb-6">{t('global.regions.title')}</h1>
 
       {error && (
         <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>
@@ -490,12 +490,12 @@ export default function GlobalRegionsPage() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              {tab === 'regions' ? 'Regions' :
-               tab === 'backups' ? 'Region Backups' :
-               tab === 'tenant-backups' ? 'Tenant Backups' :
-               tab === 'residency' ? 'Data Residency' :
-               tab === 'tenant-residency' ? 'Tenant Residency' :
-               'DR Dashboard'}
+              {tab === 'regions' ? t('global.regions.tabs.regions') :
+               tab === 'backups' ? t('global.regions.tabs.regionBackups') :
+               tab === 'tenant-backups' ? t('global.regions.tabs.tenantBackups') :
+               tab === 'residency' ? t('global.regions.tabs.dataResidency') :
+               tab === 'tenant-residency' ? t('global.regions.tabs.tenantResidency') :
+               t('global.regions.tabs.dr')}
             </button>
           ))}
         </nav>
@@ -508,17 +508,17 @@ export default function GlobalRegionsPage() {
               onClick={() => setShowCreateModal(true)}
               className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
             >
-              Create Region
+              {t('global.regions.createButton')}
             </button>
           </div>
 
           {showCreateModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
               <div className="bg-white rounded-lg p-6 max-w-md w-full">
-                <h2 className="text-xl font-bold mb-4">Create New Region</h2>
+                <h2 className="text-xl font-bold mb-4">{t('global.regions.createModal.title')}</h2>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('global.regions.createModal.name')}</label>
                     <input
                       type="text"
                       value={newRegion.name}
@@ -527,7 +527,7 @@ export default function GlobalRegionsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Code *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('global.regions.createModal.code')}</label>
                     <input
                       type="text"
                       value={newRegion.code}
@@ -536,7 +536,7 @@ export default function GlobalRegionsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Location *</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('global.regions.createModal.location')}</label>
                     <input
                       type="text"
                       value={newRegion.location}
@@ -545,7 +545,7 @@ export default function GlobalRegionsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Data Center</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t('global.regions.createModal.dataCenter')}</label>
                     <input
                       type="text"
                       value={newRegion.dataCenter}
@@ -559,14 +559,14 @@ export default function GlobalRegionsPage() {
                     onClick={() => setShowCreateModal(false)}
                     className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50"
                   >
-                    Cancel
+                    {t('common.cancel')}
                   </button>
                   <button
                     onClick={handleCreateRegion}
                     disabled={loading}
                     className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
                   >
-                    Create
+                    {t('global.regions.createModal.createButton')}
                   </button>
                 </div>
               </div>
@@ -577,12 +577,12 @@ export default function GlobalRegionsPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Code</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tenants</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.regions.table.name')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.regions.table.code')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.regions.table.location')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.regions.table.status')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.regions.table.tenants')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.regions.table.actions')}</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -609,28 +609,28 @@ export default function GlobalRegionsPage() {
                           }}
                           className="text-indigo-600 hover:text-indigo-900"
                         >
-                          Health
+                          {t('global.regions.actions.health')}
                         </button>
                         {region.status === 'Active' ? (
                           <button
                             onClick={() => handleDeactivateRegion(region.id)}
                             className="text-yellow-600 hover:text-yellow-900"
                           >
-                            Deactivate
+                            {t('global.regions.actions.deactivate')}
                           </button>
                         ) : (
                           <button
                             onClick={() => handleActivateRegion(region.id)}
                             className="text-green-600 hover:text-green-900"
                           >
-                            Activate
+                            {t('global.regions.actions.activate')}
                           </button>
                         )}
                         <button
                           onClick={() => handleDeleteRegion(region.id)}
                           className="text-red-600 hover:text-red-900"
                         >
-                          Delete
+                          {t('global.regions.actions.delete')}
                         </button>
                       </div>
                     </td>
@@ -639,7 +639,7 @@ export default function GlobalRegionsPage() {
                 {regions.length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                      No regions found
+                      {t('global.regions.noRegionsFound')}
                     </td>
                   </tr>
                 )}
@@ -649,24 +649,24 @@ export default function GlobalRegionsPage() {
 
           {regionHealth && selectedRegion && (
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4">Region Health</h2>
+              <h2 className="text-xl font-semibold mb-4">{t('global.regions.health.title')}</h2>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="border border-gray-200 rounded-lg p-4">
-                  <div className="text-sm text-gray-500">Status</div>
+                  <div className="text-sm text-gray-500">{t('common.status')}</div>
                   <span className={`inline-block mt-2 px-2 py-1 rounded text-xs ${getStatusColor(regionHealth.status)}`}>
                     {regionHealth.status}
                   </span>
                 </div>
                 <div className="border border-gray-200 rounded-lg p-4">
-                  <div className="text-sm text-gray-500">Latency</div>
+                  <div className="text-sm text-gray-500">{t('global.regions.health.latency')}</div>
                   <div className="text-2xl font-bold text-gray-900 mt-1">{regionHealth.latency}ms</div>
                 </div>
                 <div className="border border-gray-200 rounded-lg p-4">
-                  <div className="text-sm text-gray-500">Uptime</div>
+                  <div className="text-sm text-gray-500">{t('global.regions.health.uptime')}</div>
                   <div className="text-2xl font-bold text-gray-900 mt-1">{regionHealth.uptime}%</div>
                 </div>
                 <div className="border border-gray-200 rounded-lg p-4">
-                  <div className="text-sm text-gray-500">Last Checked</div>
+                  <div className="text-sm text-gray-500">{t('global.regions.health.lastChecked')}</div>
                   <div className="text-sm font-medium text-gray-900 mt-1">
                     {new Date(regionHealth.lastChecked).toLocaleTimeString()}
                   </div>

@@ -189,7 +189,7 @@ export default function GlobalCopilotPage() {
     setError('');
     try {
       const data = await copilotService.analyzeTenants({} as any);
-      setSuccess(`Analysis completed: ${data.summary}`);
+      setSuccess(t('global.copilot.messages.analysisCompleted', { summary: data.summary }));
       setActiveTab('insights');
       fetchData();
     } catch (err) {
@@ -202,7 +202,7 @@ export default function GlobalCopilotPage() {
   const handleAcknowledgeAlert = async (alertId: string) => {
     try {
       await copilotService.acknowledgeGlobalAlert(alertId);
-      setSuccess('Alert acknowledged');
+      setSuccess(t('global.copilot.messages.alertAcknowledged'));
       fetchData();
     } catch (err) {
       setError(t('common.error'));
@@ -283,7 +283,7 @@ export default function GlobalCopilotPage() {
     setSuccess('');
     try {
       await copilotService.updateGlobalSettings(settings);
-      setSuccess('Settings saved successfully');
+      setSuccess(t('global.copilot.messages.settingsSavedSuccessfully'));
     } catch (err) {
       setError(t('common.error'));
     }
@@ -308,13 +308,13 @@ export default function GlobalCopilotPage() {
         <title>Copilot - Global Management</title>
       </Helmet>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Copilot - Global Management</h1>
+        <h1 className="text-3xl font-bold">{t('global.copilot.title')}</h1>
         <button
           onClick={handleAnalyzeTenants}
           disabled={analyzingTenants}
           className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 disabled:opacity-50"
         >
-          {analyzingTenants ? 'Analyzing Tenants...' : 'Analyze All Tenants'}
+          {analyzingTenants ? t('global.copilot.actions.analyzingTenants') : t('global.copilot.actions.analyzeAllTenants')}
         </button>
       </div>
 

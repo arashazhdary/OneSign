@@ -269,11 +269,11 @@ export default function TenantRolesDetailPage() {
         description: editDescription,
       });
 
-      setSuccess('Role updated successfully');
+      setSuccess(t('tenant.roles.messages.updated'));
       setShowEditModal(false);
       fetchData();
     } catch (err: any) {
-      setError(err?.message || t('common.failedToUpdateRole'));
+      setError(err?.message || t('tenant.roles.messages.failedToUpdate'));
     }
   };
 
@@ -288,11 +288,11 @@ export default function TenantRolesDetailPage() {
         permissions: selectedPermissions,
       });
 
-      setSuccess('Permissions updated successfully');
+      setSuccess(t('tenant.roles.messages.permissionsUpdated'));
       setShowPermissionModal(false);
       fetchData();
     } catch (err: any) {
-      setError(err?.message || t('common.failedToUpdatePermissions'));
+      setError(err?.message || t('tenant.roles.messages.failedToUpdatePermissions'));
     }
   };
 
@@ -304,12 +304,12 @@ export default function TenantRolesDetailPage() {
 
     try {
       await tenantService.deleteRole(id);
-      setSuccess('Role deleted successfully');
+      setSuccess(t('tenant.roles.messages.deleted'));
       setTimeout(() => {
         navigate('/tenant/roles');
       }, 1500);
     } catch (err: any) {
-      setError(err?.message || t('common.failedToDeleteRole'));
+      setError(err?.message || t('tenant.roles.messages.failedToDelete'));
       setShowDeleteConfirm(false);
     }
   };
@@ -346,7 +346,7 @@ export default function TenantRolesDetailPage() {
           className="flex items-center gap-3 text-gray-600 dark:text-gray-400"
         >
           <RefreshCw className="w-6 h-6 animate-spin" />
-          <span>Loading role details...</span>
+          <span>{t('tenant.roles.loading')}</span>
         </motion.div>
       </div>
     );
@@ -361,15 +361,15 @@ export default function TenantRolesDetailPage() {
           className="text-center py-12"
         >
           <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Role Not Found</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">The role you're looking for doesn't exist.</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{t('tenant.roles.notFound.title')}</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">{t('tenant.roles.notFound.description')}</p>
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => navigate('/tenant/roles')}
             className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-teal-600 text-white rounded-xl hover:from-cyan-600 hover:to-teal-700 transition-all"
           >
-            Back to Roles
+            {t('tenant.roles.buttons.backToRoles')}
           </motion.button>
         </motion.div>
       </div>
@@ -401,7 +401,7 @@ export default function TenantRolesDetailPage() {
             className="flex items-center gap-2 text-cyan-600 dark:text-cyan-400 hover:text-cyan-800 dark:hover:text-cyan-300 transition-colors w-fit"
           >
             <ArrowLeft className="w-5 h-5" />
-            Back to Roles
+            {t('tenant.roles.buttons.backToRoles')}
           </motion.button>
 
           <div className="flex items-start justify-between">
@@ -426,7 +426,7 @@ export default function TenantRolesDetailPage() {
                     className="flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-slate-700 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors text-gray-700 dark:text-gray-300"
                   >
                     <Edit className="w-4 h-4" />
-                    Edit Role
+                    {t('tenant.roles.buttons.edit')}
                   </motion.button>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
@@ -435,7 +435,7 @@ export default function TenantRolesDetailPage() {
                     className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-xl hover:from-red-600 hover:to-rose-700 transition-all"
                   >
                     <Trash2 className="w-4 h-4" />
-                    Delete
+                    {t('common.delete')}
                   </motion.button>
                 </>
               )}

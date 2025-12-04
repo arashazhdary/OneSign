@@ -295,7 +295,7 @@ export default function GlobalChangeManagementPage() {
     try {
       const data = await changeManagementService.simulateGlobalChangeSet(id);
       setSimulationResult(data);
-      setSuccess('Simulation completed successfully');
+      setSuccess(t('global.changeManagement.messages.simulationCompleted'));
     } catch (err) {
       // Mock data on error
       const mockResult: SimulationResult = {
@@ -344,7 +344,7 @@ export default function GlobalChangeManagementPage() {
         userId,
         ...scheduleData,
       });
-      setSuccess('Change set scheduled successfully');
+      setSuccess(t('global.changeManagement.messages.scheduled'));
       setShowScheduleModal(false);
       fetchData();
     } catch (err) {
@@ -360,7 +360,7 @@ export default function GlobalChangeManagementPage() {
     setLoading(true);
     try {
       await changeManagementService.applyGlobalChangeSet(selectedChangeSet.id);
-      setSuccess('Change set applied successfully');
+      setSuccess(t('global.changeManagement.messages.applied'));
       setShowExecuteModal(false);
       fetchData();
     } catch (err) {
@@ -376,7 +376,7 @@ export default function GlobalChangeManagementPage() {
     setLoading(true);
     try {
       await changeManagementService.rollbackGlobalChangeSet(selectedChangeSet.id);
-      setSuccess('Change set rolled back successfully');
+      setSuccess(t('global.changeManagement.messages.rolledBack'));
       setShowRollbackModal(false);
       fetchData();
     } catch (err) {
@@ -392,7 +392,7 @@ export default function GlobalChangeManagementPage() {
     setLoading(true);
     try {
       await changeManagementService.approveGlobalChangeSet(selectedChangeSet.id, approvalComment);
-      setSuccess('Change set approved');
+      setSuccess(t('global.changeManagement.messages.approved'));
       setShowApprovalModal(false);
       setApprovalComment('');
       fetchData();
@@ -412,7 +412,7 @@ export default function GlobalChangeManagementPage() {
     setLoading(true);
     try {
       await changeManagementService.rejectGlobalChangeSet(selectedChangeSet.id, rejectReason);
-      setSuccess('Change set rejected');
+      setSuccess(t('global.changeManagement.messages.rejected'));
       setShowRejectModal(false);
       setRejectReason('');
       fetchData();
@@ -429,7 +429,7 @@ export default function GlobalChangeManagementPage() {
     setLoading(true);
     try {
       await changeManagementService.submitGlobalChangeSet(selectedChangeSet.id);
-      setSuccess('Change set submitted for review');
+      setSuccess(t('global.changeManagement.messages.submitted'));
       fetchData();
     } catch (err) {
       setError('Failed to submit change set');
@@ -565,7 +565,7 @@ export default function GlobalChangeManagementPage() {
         userId,
         ...newRule,
       });
-      setSuccess('Global approval rule created successfully');
+      setSuccess(t('global.changeManagement.messages.ruleCreated'));
       setShowRuleModal(false);
       setNewRule({
         name: '',
@@ -645,9 +645,9 @@ export default function GlobalChangeManagementPage() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              Change Management - Global
+              {t('global.changeManagement.title')}
             </h1>
-            <p className="text-gray-600 mt-2">Manage changes across all tenants</p>
+            <p className="text-gray-600 mt-2">{t('global.changeManagement.subtitle')}</p>
           </div>
           <div className="flex gap-3">
             {activeTab === 'globalRules' && (
@@ -656,7 +656,7 @@ export default function GlobalChangeManagementPage() {
                 className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-200 flex items-center gap-2"
               >
                 <span>+</span>
-                Create Global Rule
+                {t('global.changeManagement.createGlobalRule')}
               </button>
             )}
             {selectedChangeSet && (
@@ -667,7 +667,7 @@ export default function GlobalChangeManagementPage() {
                 }}
                 className="bg-white text-gray-700 px-6 py-3 rounded-xl font-semibold border-2 border-gray-200 hover:border-indigo-300 transition-all duration-200"
               >
-                Back to List
+                {t('global.changeManagement.backToList')}
               </button>
             )}
           </div>
@@ -701,9 +701,7 @@ export default function GlobalChangeManagementPage() {
                       : 'text-gray-600 hover:bg-gray-50'
                   }`}
                 >
-                  {tab === 'list' ? 'All Change Sets' :
-                   tab === 'globalRules' ? 'Global Rules' :
-                   tab === 'history' ? 'Change History' : 'Templates'}
+                  {t(`global.changeManagement.tabs.${tab}`)}
                 </button>
               ))}
             </nav>

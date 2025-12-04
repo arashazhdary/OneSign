@@ -328,12 +328,12 @@ export default function TenantExportsPage() {
         emailOnComplete,
         emailAddress: emailOnComplete ? emailAddress : undefined,
       });
-      setSuccess('Export job created successfully');
+      setSuccess(t('tenant.exports.messages.created'));
       setShowCreateModal(false);
       resetForm();
       fetchExports();
     } catch (error: any) {
-      setError(error?.message || t('common.failedToCreateExport'));
+      setError(error?.message || t('tenant.exports.messages.failedToCreate'));
       console.error('Error creating export:', error);
     }
   };
@@ -342,15 +342,15 @@ export default function TenantExportsPage() {
     if (!exportJob.downloadUrl) return;
 
     try {
-      setSuccess(`Downloading ${exportJob.name}...`);
+      setSuccess(t('tenant.exports.messages.downloading', { name: exportJob.name }));
       window.open(exportJob.downloadUrl, '_blank');
     } catch (error: any) {
-      setError(error?.message || t('common.failedToDownloadExport'));
+      setError(error?.message || t('tenant.exports.messages.failedToDownload'));
     }
   };
 
   const handleDeleteExport = async (exportId: string) => {
-    if (!confirm('Are you sure you want to delete this export?')) return;
+    if (!confirm(t('tenant.exports.confirmDelete'))) return;
     if (!tenantId) return;
 
     setError('');
@@ -358,10 +358,10 @@ export default function TenantExportsPage() {
 
     try {
       await tenantService.deleteExportJob(tenantId, exportId);
-      setSuccess('Export deleted successfully');
+      setSuccess(t('tenant.exports.messages.deleted'));
       fetchExports();
     } catch (error: any) {
-      setError(error?.message || t('common.failedToDeleteExport'));
+      setError(error?.message || t('tenant.exports.messages.failedToDelete'));
     }
   };
 
@@ -378,11 +378,11 @@ export default function TenantExportsPage() {
         fields: selectedFields,
         filters: filters.length > 0 ? filters : undefined,
       });
-      setSuccess('Template saved successfully');
+      setSuccess(t('tenant.exports.messages.templateSaved'));
       setShowTemplateModal(false);
       fetchTemplates();
     } catch (error: any) {
-      setError(error?.message || t('common.failedToSaveTemplate'));
+      setError(error?.message || t('tenant.exports.messages.failedToSaveTemplate'));
     }
   };
 
@@ -393,10 +393,10 @@ export default function TenantExportsPage() {
 
     try {
       await tenantService.toggleScheduledExport(tenantId, scheduleId);
-      setSuccess('Schedule updated successfully');
+      setSuccess(t('tenant.exports.messages.scheduleUpdated'));
       fetchScheduledExports();
     } catch (error: any) {
-      setError(error?.message || t('common.failedToUpdateSchedule'));
+      setError(error?.message || t('tenant.exports.messages.failedToUpdateSchedule'));
     }
   };
 
@@ -476,7 +476,7 @@ export default function TenantExportsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 p-8">
       <Helmet>
-        <title>Data Export - Management</title>
+        <title>{t('tenant.exports.pageTitle')}</title>
       </Helmet>
 
       {/* Header */}
@@ -490,8 +490,8 @@ export default function TenantExportsPage() {
             <Download className="w-8 h-8 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Data Export</h1>
-            <p className="text-gray-500 dark:text-gray-400">Export and schedule data extractions</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('tenant.exports.title')}</h1>
+            <p className="text-gray-500 dark:text-gray-400">{t('tenant.exports.subtitle')}</p>
           </div>
         </div>
         <div className="flex gap-3">
@@ -502,7 +502,7 @@ export default function TenantExportsPage() {
             className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-300"
           >
             <Calendar className="w-5 h-5 text-green-600 dark:text-green-400" />
-            <span className="text-gray-700 dark:text-gray-300">Scheduled</span>
+            <span className="text-gray-700 dark:text-gray-300">{t('tenant.exports.buttons.scheduled')}</span>
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -511,7 +511,7 @@ export default function TenantExportsPage() {
             className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
           >
             <Plus className="w-5 h-5" />
-            Create Export
+            {t('tenant.exports.buttons.create')}
           </motion.button>
         </div>
       </motion.div>

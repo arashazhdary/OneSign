@@ -167,7 +167,7 @@ export default function GlobalTenantsPage() {
 
   const handleCreateTenant = async () => {
     if (!newTenant.name || !newTenant.subdomain || !newTenant.adminEmail) {
-      setError('Please fill all required fields');
+      setError(t('common.validation.fillRequired'));
       return;
     }
 
@@ -183,7 +183,7 @@ export default function GlobalTenantsPage() {
         adminEmail: newTenant.adminEmail,
         plan: newTenant.tier,
       });
-      setSuccess('Tenant created successfully');
+      setSuccess(t('global.tenants.messages.created'));
       setShowCreateModal(false);
       setNewTenant({
         name: '',
@@ -211,7 +211,7 @@ export default function GlobalTenantsPage() {
     try {
       // POST /api/global/tenants/{id}/suspend
       await globalService.suspendTenant(tenantToSuspend, suspendReason);
-      setSuccess('Tenant suspended successfully');
+      setSuccess(t('global.tenants.messages.suspended'));
       setShowSuspendModal(false);
       setTenantToSuspend('');
       setSuspendReason('');
@@ -230,7 +230,7 @@ export default function GlobalTenantsPage() {
     try {
       // POST /api/global/tenants/{id}/reactivate
       await globalService.reactivateTenant(tenantId);
-      setSuccess('Tenant activated successfully');
+      setSuccess(t('global.tenants.messages.activated'));
       fetchTenants();
     } catch (err: any) {
       setError(err.message || t('common.failedToActivateTenant'));
@@ -240,7 +240,7 @@ export default function GlobalTenantsPage() {
   };
 
   const handleDeleteTenant = async (tenantId: string) => {
-    if (!confirm('Are you sure you want to delete this tenant? This action cannot be undone.')) {
+    if (!confirm(t('global.tenants.confirmDelete'))) {
       return;
     }
 
@@ -250,7 +250,7 @@ export default function GlobalTenantsPage() {
     try {
       // DELETE /api/global/tenants/{id}
       await globalService.deleteTenant(tenantId);
-      setSuccess('Tenant deleted successfully');
+      setSuccess(t('global.tenants.messages.deleted'));
       fetchTenants();
     } catch (err: any) {
       setError(err.message || t('common.failedToDeleteTenant'));
@@ -318,24 +318,24 @@ export default function GlobalTenantsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-8">
       <Helmet>
-        <title>Global Tenant Management</title>
+        <title>{t('global.tenants.pageTitle')}</title>
       </Helmet>
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Global Tenant Management
+              {t('global.tenants.title')}
             </h1>
             <p className="text-gray-600 mt-2">
-              Manage all tenants across the platform
+              {t('global.tenants.subtitle')}
             </p>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
             className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl font-medium"
           >
-            Create New Tenant
+            {t('global.tenants.createButton')}
           </button>
         </div>
       </div>
@@ -366,7 +366,7 @@ export default function GlobalTenantsPage() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              {tab === 'tenants' ? 'All Tenants' : 'Tenant Health'}
+              {tab === 'tenants' ? t('global.tenants.tabs.allTenants') : t('global.tenants.tabs.health')}
             </button>
           ))}
         </nav>
@@ -380,7 +380,7 @@ export default function GlobalTenantsPage() {
             <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Tenants</p>
+                  <p className="text-sm font-medium text-gray-600">{t('global.tenants.stats.totalTenants')}</p>
                   <p className="text-3xl font-bold text-gray-900 mt-2">{tenants.length}</p>
                 </div>
                 <div className="p-3 bg-blue-100 rounded-lg">
@@ -394,7 +394,7 @@ export default function GlobalTenantsPage() {
             <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Active</p>
+                  <p className="text-sm font-medium text-gray-600">{t('global.tenants.stats.active')}</p>
                   <p className="text-3xl font-bold text-green-600 mt-2">
                     {tenants.filter(t => t.status === 'active').length}
                   </p>
@@ -410,7 +410,7 @@ export default function GlobalTenantsPage() {
             <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Trial</p>
+                  <p className="text-sm font-medium text-gray-600">{t('global.tenants.stats.trial')}</p>
                   <p className="text-3xl font-bold text-blue-600 mt-2">
                     {tenants.filter(t => t.status === 'trial').length}
                   </p>
@@ -426,7 +426,7 @@ export default function GlobalTenantsPage() {
             <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Suspended</p>
+                  <p className="text-sm font-medium text-gray-600">{t('global.tenants.stats.suspended')}</p>
                   <p className="text-3xl font-bold text-red-600 mt-2">
                     {tenants.filter(t => t.status === 'suspended').length}
                   </p>
@@ -447,28 +447,28 @@ export default function GlobalTenantsPage() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tenant
+                      {t('global.tenants.table.tenant')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Subdomain
+                      {t('global.tenants.table.subdomain')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
+                      {t('global.tenants.table.status')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tier
+                      {t('global.tenants.table.tier')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Users
+                      {t('global.tenants.table.users')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Region
+                      {t('global.tenants.table.region')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Created
+                      {t('global.tenants.table.created')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
+                      {t('global.tenants.table.actions')}
                     </th>
                   </tr>
                 </thead>
@@ -492,7 +492,7 @@ export default function GlobalTenantsPage() {
                         </span>
                         {tenant.status === 'trial' && tenant.trialEndsAt && (
                           <div className="text-xs text-gray-500 mt-1">
-                            {calculateDaysRemaining(tenant.trialEndsAt)} days left
+                            {calculateDaysRemaining(tenant.trialEndsAt)} {t('global.tenants.daysLeft')}
                           </div>
                         )}
                       </td>
@@ -519,7 +519,7 @@ export default function GlobalTenantsPage() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {tenant.region || 'N/A'}
+                        {tenant.region || t('common.na')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {formatDate(tenant.createdAt)}
@@ -531,7 +531,7 @@ export default function GlobalTenantsPage() {
                               onClick={() => handleActivateTenant(tenant.id)}
                               className="text-green-600 hover:text-green-900 font-medium"
                             >
-                              Activate
+                              {t('global.tenants.actions.activate')}
                             </button>
                           ) : (
                             <button
@@ -541,7 +541,7 @@ export default function GlobalTenantsPage() {
                               }}
                               className="text-yellow-600 hover:text-yellow-900 font-medium"
                             >
-                              Suspend
+                              {t('global.tenants.actions.suspend')}
                             </button>
                           )}
                           <button
@@ -551,13 +551,13 @@ export default function GlobalTenantsPage() {
                             }}
                             className="text-blue-600 hover:text-blue-900 font-medium"
                           >
-                            Health
+                            {t('global.tenants.actions.health')}
                           </button>
                           <button
                             onClick={() => handleDeleteTenant(tenant.id)}
                             className="text-red-600 hover:text-red-900 font-medium"
                           >
-                            Delete
+                            {t('global.tenants.actions.delete')}
                           </button>
                         </div>
                       </td>
@@ -569,7 +569,7 @@ export default function GlobalTenantsPage() {
                         <svg className="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
-                        No tenants found
+                        {t('global.tenants.noTenantsFound')}
                       </td>
                     </tr>
                   )}
@@ -581,7 +581,7 @@ export default function GlobalTenantsPage() {
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                           </svg>
-                          <span className="ml-3">Loading tenants...</span>
+                          <span className="ml-3">{t('global.tenants.loadingTenants')}</span>
                         </div>
                       </td>
                     </tr>
@@ -597,13 +597,13 @@ export default function GlobalTenantsPage() {
       {activeTab === 'health' && (
         <div className="space-y-6">
           <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Select Tenant</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">{t('global.tenants.selectTenant')}</label>
             <select
               value={selectedTenant}
               onChange={(e) => setSelectedTenant(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             >
-              <option value="">Select a tenant</option>
+              <option value="">{t('global.tenants.selectATenant')}</option>
               {tenants.map((tenant) => (
                 <option key={tenant.id} value={tenant.id}>
                   {tenant.displayName} ({tenant.subdomain})
@@ -616,24 +616,24 @@ export default function GlobalTenantsPage() {
             <div className="space-y-6">
               {/* Health Overview */}
               <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Tenant Health Overview</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-6">{t('global.tenants.health.overview')}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                   <div className="border border-gray-200 rounded-lg p-4">
-                    <div className="text-sm text-gray-500 mb-2">Status</div>
+                    <div className="text-sm text-gray-500 mb-2">{t('common.status')}</div>
                     <span className={`inline-block px-3 py-1 rounded-lg text-sm font-semibold border ${getHealthStatusColor(tenantHealth.status)}`}>
                       {tenantHealth.status}
                     </span>
                   </div>
                   <div className="border border-gray-200 rounded-lg p-4">
-                    <div className="text-sm text-gray-500 mb-2">Uptime</div>
+                    <div className="text-sm text-gray-500 mb-2">{t('global.tenants.health.uptime')}</div>
                     <div className="text-2xl font-bold text-gray-900">{tenantHealth.uptime}%</div>
                   </div>
                   <div className="border border-gray-200 rounded-lg p-4">
-                    <div className="text-sm text-gray-500 mb-2">Active Users</div>
+                    <div className="text-sm text-gray-500 mb-2">{t('global.tenants.health.activeUsers')}</div>
                     <div className="text-2xl font-bold text-gray-900">{tenantHealth.activeUsers}</div>
                   </div>
                   <div className="border border-gray-200 rounded-lg p-4">
-                    <div className="text-sm text-gray-500 mb-2">Last Checked</div>
+                    <div className="text-sm text-gray-500 mb-2">{t('global.tenants.health.lastChecked')}</div>
                     <div className="text-sm font-medium text-gray-900">
                       {new Date(tenantHealth.lastChecked).toLocaleTimeString()}
                     </div>
@@ -644,16 +644,16 @@ export default function GlobalTenantsPage() {
               {/* Metrics */}
               {tenantHealth.metrics && (
                 <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-6">Performance Metrics</h2>
+                  <h2 className="text-xl font-bold text-gray-900 mb-6">{t('global.tenants.health.performanceMetrics')}</h2>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
-                      <div className="text-xs text-blue-700 font-semibold mb-1">API Calls (24h)</div>
+                      <div className="text-xs text-blue-700 font-semibold mb-1">{t('global.tenants.health.apiCalls24h')}</div>
                       <div className="text-2xl font-bold text-blue-800">
                         {tenantHealth.metrics.apiCalls.toLocaleString()}
                       </div>
                     </div>
                     <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4">
-                      <div className="text-xs text-green-700 font-semibold mb-1">Avg Response Time</div>
+                      <div className="text-xs text-green-700 font-semibold mb-1">{t('global.tenants.health.avgResponseTime')}</div>
                       <div className="text-2xl font-bold text-green-800">
                         {tenantHealth.metrics.avgResponseTime}ms
                       </div>
@@ -663,7 +663,7 @@ export default function GlobalTenantsPage() {
                     } border rounded-lg p-4`}>
                       <div className={`text-xs font-semibold mb-1 ${
                         tenantHealth.metrics.errorRate > 1 ? 'text-red-700' : 'text-green-700'
-                      }`}>Error Rate</div>
+                      }`}>{t('global.tenants.health.errorRate')}</div>
                       <div className={`text-2xl font-bold ${
                         tenantHealth.metrics.errorRate > 1 ? 'text-red-800' : 'text-green-800'
                       }`}>
@@ -681,7 +681,7 @@ export default function GlobalTenantsPage() {
               <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
-              <p className="text-gray-500">Select a tenant to view health metrics</p>
+              <p className="text-gray-500">{t('global.tenants.health.selectTenantPrompt')}</p>
             </div>
           )}
         </div>
@@ -691,11 +691,11 @@ export default function GlobalTenantsPage() {
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Create New Tenant</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('global.tenants.createModal.title')}</h2>
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Tenant Name *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('global.tenants.createModal.tenantName')}</label>
                   <input
                     type="text"
                     value={newTenant.name}
@@ -705,7 +705,7 @@ export default function GlobalTenantsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Display Name *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('global.tenants.createModal.displayName')}</label>
                   <input
                     type="text"
                     value={newTenant.displayName}
@@ -716,7 +716,7 @@ export default function GlobalTenantsPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Subdomain *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t('global.tenants.createModal.subdomain')}</label>
                 <input
                   type="text"
                   value={newTenant.subdomain}
@@ -726,7 +726,7 @@ export default function GlobalTenantsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Admin Email *</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t('global.tenants.createModal.adminEmail')}</label>
                 <input
                   type="email"
                   value={newTenant.adminEmail}
@@ -737,7 +737,7 @@ export default function GlobalTenantsPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Admin First Name *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('global.tenants.createModal.adminFirstName')}</label>
                   <input
                     type="text"
                     value={newTenant.adminFirstName}
@@ -747,7 +747,7 @@ export default function GlobalTenantsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Admin Last Name *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('global.tenants.createModal.adminLastName')}</label>
                   <input
                     type="text"
                     value={newTenant.adminLastName}
@@ -758,7 +758,7 @@ export default function GlobalTenantsPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tier</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t('global.tenants.createModal.tier')}</label>
                 <select
                   value={newTenant.tier}
                   onChange={(e) => setNewTenant({ ...newTenant, tier: e.target.value as any })}
@@ -787,14 +787,14 @@ export default function GlobalTenantsPage() {
                 }}
                 className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium transition-colors"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleCreateTenant}
                 disabled={loading}
                 className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 font-medium transition-all"
               >
-                {loading ? 'Creating...' : 'Create Tenant'}
+                {loading ? t('common.creating') : t('global.tenants.createModal.createButton')}
               </button>
             </div>
           </div>
@@ -805,16 +805,16 @@ export default function GlobalTenantsPage() {
       {showSuspendModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Suspend Tenant</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">{t('global.tenants.suspendModal.title')}</h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Reason (optional)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t('global.tenants.suspendModal.reason')}</label>
                 <textarea
                   value={suspendReason}
                   onChange={(e) => setSuspendReason(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   rows={4}
-                  placeholder="Enter reason for suspension..."
+                  placeholder={t('global.tenants.suspendModal.reasonPlaceholder')}
                 />
               </div>
             </div>
@@ -827,14 +827,14 @@ export default function GlobalTenantsPage() {
                 }}
                 className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium transition-colors"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleSuspendTenant}
                 disabled={loading}
                 className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 font-medium transition-all"
               >
-                {loading ? 'Suspending...' : 'Suspend Tenant'}
+                {loading ? t('common.suspending') : t('global.tenants.suspendModal.suspendButton')}
               </button>
             </div>
           </div>

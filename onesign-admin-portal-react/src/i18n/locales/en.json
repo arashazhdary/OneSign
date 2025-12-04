@@ -182,6 +182,8 @@
       "failedToSignOut": "Failed to sign out",
       "failedToSetPassword": "Failed to set password",
       "failedToVerify": "Failed to verify",
+      "failedToCompleteGoogleSignIn": "Failed to complete Google sign in",
+      "failedToInitializeGoogleLogin": "Failed to initialize Google login",
       "sessionExpired": "Session expired",
       "invalidInput": "Invalid input",
       "duplicateEntry": "Duplicate entry",
@@ -283,7 +285,34 @@
       "needHelp": "Need help? Contact your system administrator",
       "invalidEmail": "Please enter a valid email address",
       "passwordRequired": "Password is required",
-      "signingIn": "Signing in..."
+      "signingIn": "Signing in...",
+      "completeSetup": "Complete Setup",
+      "completeSetupDescription": "Set your password to complete your first login",
+      "confirmPasswordPlaceholder": "Confirm your password",
+      "settingUp": "Setting up...",
+      "invalidSetupToken": "Invalid or missing setup token",
+      "setupTokenMissing": "Setup token is missing",
+      "passwordSetSuccess": "Password set successfully. Please sign in.",
+      "passwordRequirements": "Password Requirements:",
+      "googleAuthCancelled": "Google authentication was cancelled or failed",
+      "invalidCallback": "Invalid callback: missing authorization code",
+      "completingGoogleSignIn": "Completing Google sign in...",
+      "authenticationFailed": "Authentication Failed",
+      "redirectingToLogin": "Redirecting to login...",
+      "validation": {
+        "minLength": "Password must be at least 8 characters long",
+        "requireUppercase": "Password must contain at least one uppercase letter",
+        "requireLowercase": "Password must contain at least one lowercase letter",
+        "requireNumber": "Password must contain at least one number",
+        "requireSpecial": "Password must contain at least one special character",
+        "passwordsMismatch": "Passwords do not match"
+      },
+      "requirements": {
+        "minLength": "At least 8 characters long",
+        "upperAndLowerCase": "Contains uppercase and lowercase letters",
+        "number": "Contains at least one number",
+        "specialChar": "Contains at least one special character"
+      }
     }
   },
 

@@ -264,7 +264,7 @@ export default function GlobalTemplatesPage() {
         setTemplates([...templates, newTemplateData]);
       }
 
-      setSuccess('Template created successfully');
+      setSuccess(t('global.templates.messages.created'));
       setShowCreateModal(false);
       resetNewTemplate();
       fetchTemplates();
@@ -284,7 +284,7 @@ export default function GlobalTemplatesPage() {
         setTemplates(templates.map(t =>
           t.id === template.id ? { ...t, isPublished: true, updatedAt: new Date().toISOString() } : t
         ));
-        setSuccess('Template published successfully');
+        setSuccess(t('global.templates.messages.published'));
       }
     } catch (err: any) {
       setError(err.message || t('common.failedToPublishTemplate'));
@@ -296,11 +296,11 @@ export default function GlobalTemplatesPage() {
     setTemplates(templates.map(t =>
       t.id === template.id ? { ...t, isPublished: false, updatedAt: new Date().toISOString() } : t
     ));
-    setSuccess('Template unpublished successfully');
+    setSuccess(t('global.templates.messages.unpublished'));
   };
 
   const handleDeleteTemplate = async (template: Template) => {
-    if (!confirm(`Are you sure you want to delete "${template.name}"? This will affect all tenants using this template.`)) return;
+    if (!confirm(t('global.templates.confirmDelete', { name: template.name }))) return;
 
     try {
       if (template.type === 'workflow') {
@@ -309,7 +309,7 @@ export default function GlobalTemplatesPage() {
         fetchTemplates();
       } else {
         setTemplates(templates.filter(t => t.id !== template.id));
-        setSuccess('Template deleted successfully');
+        setSuccess(t('global.templates.messages.deleted'));
       }
     } catch (err: any) {
       setError(err.message || t('common.failedToDeleteTemplate'));
@@ -356,7 +356,7 @@ export default function GlobalTemplatesPage() {
           conditions: content.conditions || [],
           actions: content.actions || [],
         });
-        setSuccess('Template updated successfully');
+        setSuccess(t('global.templates.messages.updated'));
         fetchTemplates();
       } else {
         const updatedTemplate: Template = {
@@ -370,7 +370,7 @@ export default function GlobalTemplatesPage() {
           updatedAt: new Date().toISOString(),
         };
         setTemplates(templates.map(t => t.id === selectedTemplate.id ? updatedTemplate : t));
-        setSuccess('Template updated successfully');
+        setSuccess(t('global.templates.messages.updated'));
       }
 
       setShowEditModal(false);
@@ -392,7 +392,7 @@ export default function GlobalTemplatesPage() {
       usageCount: 0,
     };
     setTemplates([...templates, cloned]);
-    setSuccess('Template cloned successfully');
+    setSuccess(t('global.templates.messages.cloned'));
   };
 
   const handlePreview = (template: Template) => {
@@ -451,7 +451,7 @@ export default function GlobalTemplatesPage() {
           onClick={() => setShowCreateModal(true)}
           className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
         >
-          Create Global Template
+          {t('global.templates.createButton')}
         </button>
       </div>
 
@@ -480,7 +480,7 @@ export default function GlobalTemplatesPage() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              {tab === 'all' ? 'All Templates' : `${tab.charAt(0).toUpperCase() + tab.slice(1)} Templates`}
+              {tab === 'all' ? t('global.templates.allTemplates') : t(`global.templates.${tab}Templates`)}
               <span className="ml-2 text-xs text-gray-500">
                 ({templates.filter(t => tab === 'all' || t.type === tab).length})
               </span>

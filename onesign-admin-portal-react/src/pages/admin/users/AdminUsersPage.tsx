@@ -58,7 +58,7 @@ export default function AdminUsersPage() {
       setAdmins(response.items);
     } catch (err: any) {
       console.error('Error fetching admins:', err);
-      setError('Failed to load platform administrators');
+      setError(t('admin.users.messages.failedToLoad'));
     } finally {
       setLoading(false);
     }
@@ -91,7 +91,7 @@ export default function AdminUsersPage() {
       });
 
       setAdmins([...admins, newAdmin]);
-      setSuccess('Administrator created successfully');
+      setSuccess(t('admin.users.messages.adminCreated'));
       setShowCreateModal(false);
       resetForm();
     } catch (err: any) {
@@ -117,7 +117,7 @@ export default function AdminUsersPage() {
       });
 
       setAdmins(admins.map(a => a.id === selectedAdmin.id ? updatedAdmin : a));
-      setSuccess('Administrator updated successfully');
+      setSuccess(t('admin.users.messages.adminUpdated'));
       setShowEditModal(false);
       setSelectedAdmin(null);
       resetForm();
@@ -127,7 +127,7 @@ export default function AdminUsersPage() {
   };
 
   const handleDeleteAdmin = async (adminId: string) => {
-    if (!confirm('Are you sure you want to delete this administrator?')) return;
+    if (!confirm(t('admin.users.messages.confirmDelete'))) return;
 
     setError('');
     setSuccess('');
@@ -136,14 +136,14 @@ export default function AdminUsersPage() {
       // Delete admin via API
       await adminService.deleteAdmin(adminId);
       setAdmins(admins.filter(a => a.id !== adminId));
-      setSuccess('Administrator deleted successfully');
+      setSuccess(t('admin.users.messages.adminDeleted'));
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || t('common.failedToDeleteAdministrator'));
     }
   };
 
   const handleSuspendAdmin = async (adminId: string) => {
-    if (!confirm('Are you sure you want to suspend this administrator?')) return;
+    if (!confirm(t('admin.users.messages.confirmSuspend'))) return;
 
     setError('');
     setSuccess('');
@@ -152,7 +152,7 @@ export default function AdminUsersPage() {
       // Suspend admin via API
       const updatedAdmin = await adminService.suspendAdmin(adminId);
       setAdmins(admins.map(a => a.id === adminId ? updatedAdmin : a));
-      setSuccess('Administrator suspended successfully');
+      setSuccess(t('admin.users.messages.adminSuspended'));
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || t('common.failedToSuspendAdministrator'));
     }
@@ -166,7 +166,7 @@ export default function AdminUsersPage() {
       // Activate admin via API
       const updatedAdmin = await adminService.activateAdmin(adminId);
       setAdmins(admins.map(a => a.id === adminId ? updatedAdmin : a));
-      setSuccess('Administrator activated successfully');
+      setSuccess(t('admin.users.messages.adminActivated'));
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || t('common.failedToActivateAdministrator'));
     }
@@ -206,7 +206,7 @@ export default function AdminUsersPage() {
   };
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return 'Never';
+    if (!dateString) return t('admin.users.labels.never');
     return new Date(dateString).toLocaleString();
   };
 
@@ -239,7 +239,7 @@ export default function AdminUsersPage() {
   if (loading) {
     return (
       <div className="p-8">
-        <div className="text-gray-600">Loading administrators...</div>
+        <div className="text-gray-600">{t('admin.users.messages.loading')}</div>
       </div>
     );
   }
@@ -247,8 +247,8 @@ export default function AdminUsersPage() {
   return (
     <div className="p-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Platform Administrators</h1>
-        <p className="mt-2 text-gray-600">Manage super admins, platform admins, and support staff</p>
+        <h1 className="text-3xl font-bold text-gray-900">{t('admin.users.title')}</h1>
+        <p className="mt-2 text-gray-600">{t('admin.users.description')}</p>
       </div>
 
       {error && (
@@ -266,17 +266,17 @@ export default function AdminUsersPage() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div className="bg-white shadow rounded-lg p-6">
-          <div className="text-sm text-gray-500">Total Admins</div>
+          <div className="text-sm text-gray-500">{t('admin.users.stats.totalAdmins')}</div>
           <div className="text-2xl font-bold text-gray-900">{admins.length}</div>
         </div>
         <div className="bg-white shadow rounded-lg p-6">
-          <div className="text-sm text-gray-500">Active</div>
+          <div className="text-sm text-gray-500">{t('admin.users.stats.active')}</div>
           <div className="text-2xl font-bold text-green-600">
             {admins.filter(a => a.status === 'Active').length}
           </div>
         </div>
         <div className="bg-white shadow rounded-lg p-6">
-          <div className="text-sm text-gray-500">Suspended</div>
+          <div className="text-sm text-gray-500">{t('admin.users.stats.suspended')}</div>
           <div className="text-2xl font-bold text-red-600">
             {admins.filter(a => a.status === 'Suspended').length}
           </div>
@@ -286,7 +286,7 @@ export default function AdminUsersPage() {
       {/* Admin List */}
       <div className="bg-white shadow rounded-lg">
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-900">Administrators</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{t('admin.users.table.title')}</h2>
           <button
             onClick={() => {
               resetForm();
@@ -294,22 +294,22 @@ export default function AdminUsersPage() {
             }}
             className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
           >
-            Create New Admin
+            {t('admin.users.buttons.createNewAdmin')}
           </button>
         </div>
         <div className="overflow-x-auto">
           {admins.length === 0 ? (
-            <p className="text-gray-500 text-center py-12">No administrators found</p>
+            <p className="text-gray-500 text-center py-12">{t('admin.users.messages.noAdminsFound')}</p>
           ) : (
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Admin</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Permissions</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Last Login</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('admin.users.table.admin')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('admin.users.table.role')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('admin.users.table.status')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('admin.users.table.permissions')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('admin.users.table.lastLogin')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('admin.users.table.actions')}</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -333,7 +333,7 @@ export default function AdminUsersPage() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm text-gray-500">
-                        {admin.permissions.length} permissions
+                        {t('admin.users.table.permissionsCount', { count: admin.permissions.length })}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -344,34 +344,34 @@ export default function AdminUsersPage() {
                         onClick={() => openEditModal(admin)}
                         className="text-indigo-600 hover:text-indigo-900"
                       >
-                        Edit
+                        {t('admin.users.buttons.edit')}
                       </button>
                       <button
                         onClick={() => openActivityModal(admin)}
                         className="text-blue-600 hover:text-blue-900"
                       >
-                        Activity
+                        {t('admin.users.buttons.activity')}
                       </button>
                       {admin.status === 'Active' ? (
                         <button
                           onClick={() => handleSuspendAdmin(admin.id)}
                           className="text-yellow-600 hover:text-yellow-900"
                         >
-                          Suspend
+                          {t('admin.users.buttons.suspend')}
                         </button>
                       ) : (
                         <button
                           onClick={() => handleActivateAdmin(admin.id)}
                           className="text-green-600 hover:text-green-900"
                         >
-                          Activate
+                          {t('admin.users.buttons.activate')}
                         </button>
                       )}
                       <button
                         onClick={() => handleDeleteAdmin(admin.id)}
                         className="text-red-600 hover:text-red-900"
                       >
-                        Delete
+                        {t('admin.users.buttons.delete')}
                       </button>
                     </td>
                   </tr>
@@ -387,12 +387,12 @@ export default function AdminUsersPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-xl font-semibold">Create New Administrator</h2>
+              <h2 className="text-xl font-semibold">{t('admin.users.createModal.title')}</h2>
             </div>
             <form onSubmit={handleCreateAdmin} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.users.createModal.firstName')}</label>
                   <input
                     type="text"
                     required
@@ -402,7 +402,7 @@ export default function AdminUsersPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.users.createModal.lastName')}</label>
                   <input
                     type="text"
                     required
@@ -413,7 +413,7 @@ export default function AdminUsersPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.users.createModal.email')}</label>
                 <input
                   type="email"
                   required
@@ -423,7 +423,7 @@ export default function AdminUsersPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.users.createModal.role')}</label>
                 <select
                   className="w-full border border-gray-300 rounded-md px-3 py-2"
                   value={formRole}
@@ -435,7 +435,7 @@ export default function AdminUsersPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Permissions</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.users.createModal.permissions')}</label>
                 <div className="border border-gray-300 rounded-md p-4 max-h-60 overflow-y-auto">
                   {AVAILABLE_PERMISSIONS.map(permission => (
                     <label key={permission} className="flex items-center gap-2 py-2">
@@ -455,14 +455,14 @@ export default function AdminUsersPage() {
                   type="submit"
                   className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
                 >
-                  Create Admin
+                  {t('admin.users.buttons.createAdmin')}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
                   className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
                 >
-                  Cancel
+                  {t('admin.users.buttons.cancel')}
                 </button>
               </div>
             </form>
@@ -475,12 +475,12 @@ export default function AdminUsersPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-xl font-semibold">Edit Administrator</h2>
+              <h2 className="text-xl font-semibold">{t('admin.users.editModal.title')}</h2>
             </div>
             <form onSubmit={handleUpdateAdmin} className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.users.editModal.firstName')}</label>
                   <input
                     type="text"
                     required
@@ -490,7 +490,7 @@ export default function AdminUsersPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.users.editModal.lastName')}</label>
                   <input
                     type="text"
                     required
@@ -501,7 +501,7 @@ export default function AdminUsersPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.users.editModal.email')}</label>
                 <input
                   type="email"
                   required
@@ -511,7 +511,7 @@ export default function AdminUsersPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.users.editModal.role')}</label>
                 <select
                   className="w-full border border-gray-300 rounded-md px-3 py-2"
                   value={formRole}
@@ -523,7 +523,7 @@ export default function AdminUsersPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Permissions</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.users.editModal.permissions')}</label>
                 <div className="border border-gray-300 rounded-md p-4 max-h-60 overflow-y-auto">
                   {AVAILABLE_PERMISSIONS.map(permission => (
                     <label key={permission} className="flex items-center gap-2 py-2">
@@ -543,14 +543,14 @@ export default function AdminUsersPage() {
                   type="submit"
                   className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
                 >
-                  Update Admin
+                  {t('admin.users.buttons.updateAdmin')}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowEditModal(false)}
                   className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
                 >
-                  Cancel
+                  {t('admin.users.buttons.cancel')}
                 </button>
               </div>
             </form>
@@ -564,19 +564,19 @@ export default function AdminUsersPage() {
           <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
               <h2 className="text-xl font-semibold">
-                Activity Log - {selectedAdmin.firstName} {selectedAdmin.lastName}
+                {t('admin.users.activityModal.title')} - {selectedAdmin.firstName} {selectedAdmin.lastName}
               </h2>
               <button
                 onClick={() => setShowActivityModal(false)}
                 className="text-gray-500 hover:text-gray-700"
               >
-                Close
+                {t('admin.users.buttons.close')}
               </button>
             </div>
             <div className="p-6">
               <div className="space-y-4">
                 {adminActivities.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No activities found</p>
+                  <p className="text-gray-500 text-center py-8">{t('admin.users.activityModal.noActivities')}</p>
                 ) : (
                   adminActivities.map((activity) => (
                     <div key={activity.id} className="border-b border-gray-200 pb-4 last:border-0">

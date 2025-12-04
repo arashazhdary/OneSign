@@ -153,39 +153,39 @@ export default function TenantMfaManagementPage() {
   };
 
   const handleDisableMFA = async (userId: string) => {
-    if (!tenantId || !confirm('Are you sure you want to disable MFA for this user?')) return;
+    if (!tenantId || !confirm(t('tenant.mfaManagement.confirmDisableMfa'))) return;
     setLoading(true);
     try {
-      setSuccess('MFA disabled successfully');
+      setSuccess(t('tenant.mfaManagement.messages.mfaDisabled'));
       fetchMFAMethods();
     } catch (err) {
-      setError('Failed to disable MFA');
+      setError(t('tenant.mfaManagement.messages.failedToDisableMfa'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleDeleteMethod = async (methodId: string) => {
-    if (!tenantId || !confirm('Are you sure you want to delete this MFA method?')) return;
+    if (!tenantId || !confirm(t('tenant.mfaManagement.confirmDeleteMethod'))) return;
     setLoading(true);
     try {
-      setSuccess('MFA method deleted successfully');
+      setSuccess(t('tenant.mfaManagement.messages.methodDeleted'));
       fetchMFAMethods();
     } catch (err) {
-      setError('Failed to delete MFA method');
+      setError(t('tenant.mfaManagement.messages.failedToDeleteMethod'));
     } finally {
       setLoading(false);
     }
   };
 
   const handleRevokeTrust = async (deviceId: string) => {
-    if (!tenantId || !confirm('Are you sure you want to revoke trust for this device?')) return;
+    if (!tenantId || !confirm(t('tenant.mfaManagement.confirmRevokeTrust'))) return;
     setLoading(true);
     try {
-      setSuccess('Trust revoked successfully');
+      setSuccess(t('tenant.mfaManagement.messages.trustRevoked'));
       fetchTrustedDevices();
     } catch (err) {
-      setError('Failed to revoke trust');
+      setError(t('tenant.mfaManagement.messages.failedToRevokeTrust'));
     } finally {
       setLoading(false);
     }
@@ -210,7 +210,7 @@ export default function TenantMfaManagementPage() {
           className="flex flex-col items-center gap-4"
         >
           <div className="w-16 h-16 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
-          <p className="text-gray-600 dark:text-gray-300">Loading MFA settings...</p>
+          <p className="text-gray-600 dark:text-gray-300">{t('tenant.mfaManagement.loading')}</p>
         </motion.div>
       </div>
     );
@@ -219,7 +219,7 @@ export default function TenantMfaManagementPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 p-8">
       <Helmet>
-        <title>MFA & Device Management</title>
+        <title>{t('tenant.mfaManagement.pageTitle')}</title>
       </Helmet>
 
       {/* Header */}
@@ -233,8 +233,8 @@ export default function TenantMfaManagementPage() {
             <Shield className="w-8 h-8 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">MFA & Device Management</h1>
-            <p className="text-gray-500 dark:text-gray-400">Manage multi-factor authentication and trusted devices</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('tenant.mfaManagement.title')}</h1>
+            <p className="text-gray-500 dark:text-gray-400">{t('tenant.mfaManagement.subtitle')}</p>
           </div>
         </div>
       </motion.div>

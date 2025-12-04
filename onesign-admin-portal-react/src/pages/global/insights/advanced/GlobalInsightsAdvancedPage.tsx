@@ -294,9 +294,9 @@ export default function GlobalInsightsAdvancedPage() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      setSuccess('Report exported successfully');
+      setSuccess(t('global.insights.messages.reportExportedSuccessfully'));
     } catch (err) {
-      setError('Failed to export report');
+      setError(t('global.insights.messages.failedToExportReport'));
     }
   };
 
@@ -346,10 +346,10 @@ export default function GlobalInsightsAdvancedPage() {
   return (
     <div className="p-8">
       <Helmet>
-        <title>Global Advanced Insights</title>
+        <title>{t('global.insights.advanced.title')}</title>
       </Helmet>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Global Advanced Insights</h1>
+        <h1 className="text-3xl font-bold">{t('global.insights.advanced.title')}</h1>
         <button
           onClick={handleExportReport}
           className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 flex items-center gap-2"
@@ -357,7 +357,7 @@ export default function GlobalInsightsAdvancedPage() {
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          Export Reports
+          {t('global.insights.actions.exportReports')}
         </button>
       </div>
 
@@ -376,46 +376,46 @@ export default function GlobalInsightsAdvancedPage() {
       <div className="mb-6 bg-white p-4 rounded-lg shadow">
         <div className="flex flex-wrap gap-4 items-center">
           <div>
-            <label className="block text-sm font-medium mb-2">Date Range</label>
+            <label className="block text-sm font-medium mb-2">{t('global.insights.labels.dateRange')}</label>
             <select
               value={dateRange}
               onChange={(e) => setDateRange(e.target.value)}
               className="px-3 py-2 border rounded"
             >
-              <option value="7">Last 7 days</option>
-              <option value="30">Last 30 days</option>
-              <option value="60">Last 60 days</option>
-              <option value="90">Last 90 days</option>
-              <option value="180">Last 6 months</option>
-              <option value="365">Last year</option>
+              <option value="7">{t('global.insights.dateRange.last7Days')}</option>
+              <option value="30">{t('global.insights.dateRange.last30Days')}</option>
+              <option value="60">{t('global.insights.dateRange.last60Days')}</option>
+              <option value="90">{t('global.insights.dateRange.last90Days')}</option>
+              <option value="180">{t('global.insights.dateRange.last6Months')}</option>
+              <option value="365">{t('global.insights.dateRange.lastYear')}</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Top Tenants</label>
+            <label className="block text-sm font-medium mb-2">{t('global.insights.labels.topTenants')}</label>
             <select
               value={topTenantsCount}
               onChange={(e) => setTopTenantsCount(parseInt(e.target.value))}
               className="px-3 py-2 border rounded"
             >
-              <option value="5">Top 5</option>
-              <option value="10">Top 10</option>
-              <option value="20">Top 20</option>
-              <option value="50">Top 50</option>
+              <option value="5">{t('global.insights.topTenants.top5')}</option>
+              <option value="10">{t('global.insights.topTenants.top10')}</option>
+              <option value="20">{t('global.insights.topTenants.top20')}</option>
+              <option value="50">{t('global.insights.topTenants.top50')}</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Sort By</label>
+            <label className="block text-sm font-medium mb-2">{t('global.insights.labels.sortBy')}</label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
               className="px-3 py-2 border rounded"
             >
-              <option value="users">Total Users</option>
-              <option value="growth">Growth Rate</option>
-              <option value="revenue">Revenue</option>
-              <option value="resources">Resource Usage</option>
+              <option value="users">{t('global.insights.sortBy.totalUsers')}</option>
+              <option value="growth">{t('global.insights.sortBy.growthRate')}</option>
+              <option value="revenue">{t('global.insights.sortBy.revenue')}</option>
+              <option value="resources">{t('global.insights.sortBy.resourceUsage')}</option>
             </select>
           </div>
         </div>
@@ -423,7 +423,7 @@ export default function GlobalInsightsAdvancedPage() {
 
       {/* Platform Overview Metrics */}
       <div className="mb-6">
-        <h2 className="text-xl font-bold mb-4">Platform Overview</h2>
+        <h2 className="text-xl font-bold mb-4">{t('global.insights.labels.platformOverview')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {platformMetrics.map(metric => (
             <div key={metric.id} className="bg-white p-6 rounded-lg shadow">
@@ -437,7 +437,7 @@ export default function GlobalInsightsAdvancedPage() {
                 </p>
               </div>
               <div className={`text-sm mt-2 ${metric.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {metric.change >= 0 ? '+' : ''}{metric.change}% from last period
+                {metric.change >= 0 ? '+' : ''}{metric.change}% {t('global.insights.labels.fromLastPeriod')}
               </div>
             </div>
           ))}
@@ -446,11 +446,11 @@ export default function GlobalInsightsAdvancedPage() {
 
       {/* Growth Trends */}
       <div className="bg-white p-6 rounded-lg shadow mb-6">
-        <h2 className="text-xl font-bold mb-4">Platform-wide Growth Trends</h2>
+        <h2 className="text-xl font-bold mb-4">{t('global.insights.labels.platformGrowthTrends')}</h2>
         <div className="space-y-6">
           {/* Tenants Growth */}
           <div>
-            <h3 className="text-sm font-medium text-gray-600 mb-2">Tenant Growth</h3>
+            <h3 className="text-sm font-medium text-gray-600 mb-2">{t('global.insights.labels.tenantGrowth')}</h3>
             <div className="space-y-1">
               {growthTrends.filter((_, i) => i % 3 === 0).map((trend, index) => {
                 const maxTenants = Math.max(...growthTrends.map(t => t.tenants));
@@ -472,7 +472,7 @@ export default function GlobalInsightsAdvancedPage() {
 
           {/* Users Growth */}
           <div>
-            <h3 className="text-sm font-medium text-gray-600 mb-2">User Growth</h3>
+            <h3 className="text-sm font-medium text-gray-600 mb-2">{t('global.insights.labels.userGrowth')}</h3>
             <div className="space-y-1">
               {growthTrends.filter((_, i) => i % 3 === 0).map((trend, index) => {
                 const maxUsers = Math.max(...growthTrends.map(t => t.users));
@@ -496,17 +496,17 @@ export default function GlobalInsightsAdvancedPage() {
 
       {/* Tenant Comparison */}
       <div className="bg-white p-6 rounded-lg shadow mb-6">
-        <h2 className="text-xl font-bold mb-4">Tenant Comparison</h2>
+        <h2 className="text-xl font-bold mb-4">{t('global.insights.labels.tenantComparison')}</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tenant</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Users</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Active Users</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Growth Rate</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Revenue (Est.)</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Resource Usage</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.insights.labels.tenant')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.insights.labels.totalUsers')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.insights.labels.activeUsers')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.insights.labels.growthRate')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.insights.labels.revenueEst')}</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('global.insights.labels.resourceUsage')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -549,7 +549,7 @@ export default function GlobalInsightsAdvancedPage() {
 
       {/* Resource Utilization */}
       <div className="bg-white p-6 rounded-lg shadow mb-6">
-        <h2 className="text-xl font-bold mb-4">Resource Utilization</h2>
+        <h2 className="text-xl font-bold mb-4">{t('global.insights.labels.resourceUtilization')}</h2>
         <div className="space-y-4">
           {resourceUtilization.map(resource => (
             <div key={resource.category}>
@@ -575,10 +575,10 @@ export default function GlobalInsightsAdvancedPage() {
 
       {/* Geographical Distribution */}
       <div className="bg-white p-6 rounded-lg shadow mb-6">
-        <h2 className="text-xl font-bold mb-4">Geographical Distribution</h2>
+        <h2 className="text-xl font-bold mb-4">{t('global.insights.labels.geographicalDistribution')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <h3 className="text-sm font-medium text-gray-600 mb-3">By Region</h3>
+            <h3 className="text-sm font-medium text-gray-600 mb-3">{t('global.insights.labels.byRegion')}</h3>
             <div className="space-y-3">
               {geographicDist.map(geo => (
                 <div key={`${geo.region}-${geo.country}`}>
@@ -593,20 +593,20 @@ export default function GlobalInsightsAdvancedPage() {
                     />
                   </div>
                   <div className="text-xs text-gray-500 mt-1">
-                    {geo.tenants} tenants, {geo.users.toLocaleString()} users
+                    {geo.tenants} {t('global.insights.labels.tenants')}, {geo.users.toLocaleString()} {t('global.insights.labels.users')}
                   </div>
                 </div>
               ))}
             </div>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-600 mb-3">Distribution Map</h3>
+            <h3 className="text-sm font-medium text-gray-600 mb-3">{t('global.insights.labels.distributionMap')}</h3>
             <div className="border rounded p-4 bg-gray-50 h-64 flex items-center justify-center">
               <div className="text-center text-gray-500">
                 <svg className="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p className="text-sm">Geographic heat map visualization</p>
+                <p className="text-sm">{t('global.insights.labels.geoHeatMapVisualization')}</p>
               </div>
             </div>
           </div>
@@ -615,37 +615,37 @@ export default function GlobalInsightsAdvancedPage() {
 
       {/* Usage Forecasting */}
       <div className="bg-white p-6 rounded-lg shadow mb-6">
-        <h2 className="text-xl font-bold mb-4">Usage Forecasting</h2>
+        <h2 className="text-xl font-bold mb-4">{t('global.insights.labels.usageForecasting')}</h2>
         <div className="space-y-4">
           {forecasts.map(forecast => (
             <div key={forecast.metric} className="border rounded p-4">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="font-medium">{forecast.metric}</h3>
                 <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                  {forecast.confidence}% confidence
+                  {forecast.confidence}% {t('global.insights.labels.confidence')}
                 </span>
               </div>
               <div className="grid grid-cols-4 gap-4 text-center">
                 <div>
-                  <div className="text-xs text-gray-500 mb-1">Current</div>
+                  <div className="text-xs text-gray-500 mb-1">{t('global.insights.labels.current')}</div>
                   <div className="text-lg font-bold">{forecast.current.toLocaleString()}</div>
                 </div>
                 <div>
-                  <div className="text-xs text-gray-500 mb-1">30 Days</div>
+                  <div className="text-xs text-gray-500 mb-1">{t('global.insights.labels.30Days')}</div>
                   <div className="text-lg font-bold text-blue-600">{forecast.forecast30d.toLocaleString()}</div>
                   <div className="text-xs text-green-600">
                     +{((forecast.forecast30d / forecast.current - 1) * 100).toFixed(1)}%
                   </div>
                 </div>
                 <div>
-                  <div className="text-xs text-gray-500 mb-1">60 Days</div>
+                  <div className="text-xs text-gray-500 mb-1">{t('global.insights.labels.60Days')}</div>
                   <div className="text-lg font-bold text-blue-600">{forecast.forecast60d.toLocaleString()}</div>
                   <div className="text-xs text-green-600">
                     +{((forecast.forecast60d / forecast.current - 1) * 100).toFixed(1)}%
                   </div>
                 </div>
                 <div>
-                  <div className="text-xs text-gray-500 mb-1">90 Days</div>
+                  <div className="text-xs text-gray-500 mb-1">{t('global.insights.labels.90Days')}</div>
                   <div className="text-lg font-bold text-blue-600">{forecast.forecast90d.toLocaleString()}</div>
                   <div className="text-xs text-green-600">
                     +{((forecast.forecast90d / forecast.current - 1) * 100).toFixed(1)}%
@@ -659,7 +659,7 @@ export default function GlobalInsightsAdvancedPage() {
 
       {/* Cost Optimization */}
       <div className="bg-white p-6 rounded-lg shadow mb-6">
-        <h2 className="text-xl font-bold mb-4">Cost Optimization Suggestions</h2>
+        <h2 className="text-xl font-bold mb-4">{t('global.insights.labels.costOptimizationSuggestions')}</h2>
         <div className="space-y-3">
           {costOptimizations.map(opt => (
             <div key={opt.id} className="border rounded p-4 hover:shadow-md transition-shadow">
@@ -668,10 +668,10 @@ export default function GlobalInsightsAdvancedPage() {
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-sm font-medium">{opt.category}</span>
                     <span className={`text-xs px-2 py-1 rounded ${getEffortColor(opt.effort)}`}>
-                      {opt.effort} effort
+                      {opt.effort} {t('global.insights.labels.effort')}
                     </span>
                     <span className={`text-xs px-2 py-1 rounded ${getImpactColor(opt.impact)}`}>
-                      {opt.impact} impact
+                      {opt.impact} {t('global.insights.labels.impact')}
                     </span>
                   </div>
                   <p className="text-sm text-gray-700">{opt.suggestion}</p>
@@ -680,14 +680,14 @@ export default function GlobalInsightsAdvancedPage() {
                   <div className="text-lg font-bold text-green-600">
                     ${opt.potentialSaving.toLocaleString()}
                   </div>
-                  <div className="text-xs text-gray-500">potential saving</div>
+                  <div className="text-xs text-gray-500">{t('global.insights.labels.potentialSaving')}</div>
                 </div>
               </div>
             </div>
           ))}
           <div className="mt-4 pt-4 border-t">
             <div className="flex justify-between items-center">
-              <span className="text-lg font-semibold">Total Potential Savings</span>
+              <span className="text-lg font-semibold">{t('global.insights.labels.totalPotentialSavings')}</span>
               <span className="text-2xl font-bold text-green-600">
                 ${costOptimizations.reduce((sum, opt) => sum + opt.potentialSaving, 0).toLocaleString()}
               </span>
@@ -698,22 +698,22 @@ export default function GlobalInsightsAdvancedPage() {
 
       {/* Capacity Planning */}
       <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-xl font-bold mb-4">Capacity Planning Insights</h2>
+        <h2 className="text-xl font-bold mb-4">{t('global.insights.labels.capacityPlanningInsights')}</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="border rounded p-4">
-            <h3 className="text-sm font-medium text-gray-600 mb-2">Estimated Time to 80% Capacity</h3>
-            <p className="text-2xl font-bold text-orange-600">45 days</p>
-            <p className="text-xs text-gray-500 mt-2">Based on current growth rate</p>
+            <h3 className="text-sm font-medium text-gray-600 mb-2">{t('global.insights.labels.estimatedTimeTo80Capacity')}</h3>
+            <p className="text-2xl font-bold text-orange-600">45 {t('common.days')}</p>
+            <p className="text-xs text-gray-500 mt-2">{t('global.insights.labels.basedOnCurrentGrowthRate')}</p>
           </div>
           <div className="border rounded p-4">
-            <h3 className="text-sm font-medium text-gray-600 mb-2">Recommended Scale-up</h3>
+            <h3 className="text-sm font-medium text-gray-600 mb-2">{t('global.insights.labels.recommendedScaleUp')}</h3>
             <p className="text-2xl font-bold text-indigo-600">+25%</p>
-            <p className="text-xs text-gray-500 mt-2">To handle projected Q1 growth</p>
+            <p className="text-xs text-gray-500 mt-2">{t('global.insights.labels.toHandleProjectedQ1Growth')}</p>
           </div>
           <div className="border rounded p-4">
-            <h3 className="text-sm font-medium text-gray-600 mb-2">Cost Impact</h3>
+            <h3 className="text-sm font-medium text-gray-600 mb-2">{t('global.insights.labels.costImpact')}</h3>
             <p className="text-2xl font-bold text-green-600">$8,500/mo</p>
-            <p className="text-xs text-gray-500 mt-2">Additional infrastructure cost</p>
+            <p className="text-xs text-gray-500 mt-2">{t('global.insights.labels.additionalInfrastructureCost')}</p>
           </div>
         </div>
       </div>
