@@ -358,35 +358,35 @@ export default function TenantAnalyticsApplicationsPage() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
           <StatCard
-            title="Total Apps"
+            title={t('tenant.analytics.applications.totalApps')}
             value={stats.totalApps}
             icon={<AppWindow className="w-6 h-6 text-white" />}
             color="from-blue-500 to-indigo-500"
             delay={0}
           />
           <StatCard
-            title="Active Apps"
+            title={t('tenant.analytics.applications.activeApps')}
             value={stats.activeApps}
             icon={<CheckCircle className="w-6 h-6 text-white" />}
             color="from-green-500 to-emerald-500"
             delay={1}
           />
           <StatCard
-            title="Unused Apps"
+            title={t('tenant.analytics.applications.unusedApps')}
             value={stats.unusedApps}
             icon={<AlertTriangle className="w-6 h-6 text-white" />}
             color="from-yellow-500 to-orange-500"
             delay={2}
           />
           <StatCard
-            title="Tokens Issued"
+            title={t('tenant.analytics.applications.tokensIssued')}
             value={stats.tokensIssued.toLocaleString()}
             icon={<Ticket className="w-6 h-6 text-white" />}
             color="from-cyan-500 to-blue-500"
             delay={3}
           />
           <StatCard
-            title="API Calls"
+            title={t('tenant.analytics.applications.apiCalls')}
             value={stats.apiCalls.toLocaleString()}
             icon={<Zap className="w-6 h-6 text-white" />}
             color="from-purple-500 to-pink-500"

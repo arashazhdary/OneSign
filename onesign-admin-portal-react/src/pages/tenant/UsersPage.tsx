@@ -303,14 +303,14 @@ const UsersPage = () => {
 
   const handleBulkDelete = async () => {
     if (selectedUsers.length === 0) return;
-    if (confirm(`Delete ${selectedUsers.length} users?`)) {
+    if (confirm(t('tenant.users.confirmDeleteMultiple', { count: selectedUsers.length }))) {
       try {
         // Delete users via API
         const selectedIds = selectedUsers.map((u) => u.id);
         await Promise.all(selectedIds.map((id) => tenantService.deleteUser(id)));
 
         setUsers((prev) => prev.filter((u) => !selectedIds.includes(u.id)));
-        toast.success(`${selectedUsers.length} users deleted`);
+        toast.success(t('tenant.users.deletedCount', { count: selectedUsers.length }));
         setSelectedUsers([]);
       } catch (error) {
         console.error('Error deleting users:', error);

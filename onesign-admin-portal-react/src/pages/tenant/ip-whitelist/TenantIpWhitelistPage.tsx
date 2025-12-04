@@ -367,7 +367,7 @@ export default function TenantIpWhitelistPage() {
                   type="text"
                   value={newIP}
                   onChange={(e) => setNewIP(e.target.value)}
-                  placeholder="192.168.1.100 or 10.0.0.0/24"
+                  placeholder={t('tenant.ipWhitelist.placeholderFormat')}
                   className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
                 />
               </div>

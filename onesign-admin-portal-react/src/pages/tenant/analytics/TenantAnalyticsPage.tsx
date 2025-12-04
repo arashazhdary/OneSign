@@ -170,7 +170,7 @@ export default function TenantAnalyticsPage() {
       setSignInTrend(data.signInTrend.slice(-7)); // Last 7 days
     } catch (err: any) {
       console.error('Error fetching analytics:', err);
-      setError('Failed to load analytics data');
+      setError(t('tenant.analytics.errors.failedToLoad'));
       // Use mock data on error
       setStats({
         totalUsers: 1250,
