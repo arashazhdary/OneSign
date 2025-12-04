@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet-async';
+import { useDirection } from '@/hooks/useDirection';
 import {
   Shield,
   Plus,
@@ -132,6 +133,7 @@ const StatCard = ({ title, value, icon, color, delay = 0 }: {
 
 export default function TenantRolesPage() {
   const { t } = useTranslation();
+  const { isRTL } = useDirection();
   const [tenantId, setTenantIdState] = useState<string | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
@@ -292,12 +294,12 @@ export default function TenantRolesPage() {
     return childRoles.map((role) => (
       <motion.div
         key={role.id}
-        initial={{ opacity: 0, x: -10 }}
+        initial={{ opacity: 0, x: isRTL ? 10 : -10 }}
         animate={{ opacity: 1, x: 0 }}
       >
         <div
           className="flex items-center gap-2 p-3 hover:bg-gray-50 rounded-lg transition-colors"
-          style={{ marginRight: level * 24 }}
+          style={isRTL ? { marginRight: level * 24 } : { marginLeft: level * 24 }}
         >
           {level > 0 && <ChevronRight className="w-4 h-4 text-gray-400" />}
           <div className="flex items-center gap-3 flex-1">

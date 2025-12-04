@@ -35,12 +35,22 @@ const TopBar: React.FC = () => {
 
   const currentLanguage = languages.find((lang) => lang.code === i18n.language) || languages[0];
 
+  const sidebarPadding = sidebarCollapsed ? 96 : 296;
+
   return (
     <motion.header
       initial={false}
       animate={isRTL
-        ? { paddingRight: sidebarCollapsed ? '96px' : '296px', paddingLeft: '24px' }
-        : { paddingLeft: sidebarCollapsed ? '96px' : '296px', paddingRight: '24px' }
+        ? {
+            paddingRight: `${sidebarPadding}px`,
+            paddingLeft: '24px',
+            width: '100%'
+          }
+        : {
+            paddingLeft: `${sidebarPadding}px`,
+            paddingRight: '24px',
+            width: '100%'
+          }
       }
       transition={{ duration: 0.3, ease: 'easeInOut' }}
       className="fixed top-0 right-0 left-0 h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 z-30 flex items-center justify-between"
