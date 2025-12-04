@@ -117,7 +117,9 @@
       "minLength": "حداقل {{min}} کاراکتر",
       "maxLength": "حداکثر {{max}} کاراکتر",
       "passwordMismatch": "رمزهای عبور مطابقت ندارند",
-      "invalidFormat": "فرمت نامعتبر"
+      "invalidFormat": "فرمت نامعتبر",
+      "requiredFields": "لطفاً همه فیلدهای الزامی را پر کنید",
+      "fillRequired": "لطفاً همه فیلدهای الزامی را پر کنید"
     },
     "table": {
       "search": "جستجو...",
@@ -313,9 +315,18 @@
         "number": "حداقل یک عدد",
         "specialChar": "حداقل یک کاراکتر خاص"
       }
-    }
+    },
+    "saving": "در حال ذخیره...",
+    "creating": "در حال ایجاد...",
+    "updating": "در حال به‌روزرسانی...",
+    "deleting": "در حال حذف...",
+    "adding": "در حال افزودن...",
+    "loading": "در حال بارگذاری...",
+    "processing": "در حال پردازش...",
+    "saveChanges": "ذخیره تغییرات",
+    "copied": "کپی شد!",
+    "cannotBeUndone": "این عملیات قابل برگشت نیست."
   },
-
   "admin": {
     "portal": {
       "title": "پورتال مدیریت",
@@ -1492,7 +1503,6 @@
       "confirmRollback": "آیا از بازگشت این تغییر اطمینان دارید؟"
     }
   },
-
   "tenant": {
     "portal": {
       "title": "پورتال سازمان",
@@ -3318,7 +3328,61 @@
       "confirmDelete": "آیا از حذف این قالب اطمینان دارید؟"
     }
   },
-
+  "global": {
+    "alerts": {
+      "title": "هشدارهای سراسری پلتفرم",
+      "subtitle": "نظارت و مدیریت هشدارهای سراسری پلتفرم",
+      "tabs": {
+        "activeAlerts": "هشدارهای فعال",
+        "history": "تاریخچه",
+        "alertRules": "قوانین هشدار"
+      },
+      "stats": {
+        "critical": "بحرانی",
+        "high": "بالا",
+        "medium": "متوسط",
+        "resolvedToday": "حل شده امروز",
+        "activeRules": "قوانین فعال"
+      },
+      "buttons": {
+        "createRule": "ایجاد قانون هشدار",
+        "acknowledge": "تأیید دریافت",
+        "resolve": "حل کردن",
+        "silence": "خاموش کردن",
+        "edit": "ویرایش",
+        "delete": "حذف"
+      },
+      "filters": {
+        "bySeverity": "فیلتر بر اساس شدت",
+        "allSeverities": "همه شدت‌ها",
+        "critical": "بحرانی",
+        "high": "بالا",
+        "medium": "متوسط",
+        "low": "پایین"
+      },
+      "fields": {
+        "triggered": "فعال شده",
+        "source": "منبع",
+        "category": "دسته‌بندی",
+        "affectedTenants": "مستأجران تحت تأثیر",
+        "acknowledgedBy": "تأیید شده توسط",
+        "at": "در"
+      },
+      "table": {
+        "alert": "هشدار",
+        "severity": "شدت",
+        "category": "دسته‌بندی",
+        "triggered": "فعال شده",
+        "resolved": "حل شده",
+        "status": "وضعیت",
+        "ruleName": "نام قانون",
+        "condition": "شرط",
+        "threshold": "آستانه",
+        "channels": "کانال‌ها",
+        "actions": "عملیات"
+      }
+    }
+  },
   "docs": {
     "title": "مستندات",
     "subtitle": "مستندات API",
