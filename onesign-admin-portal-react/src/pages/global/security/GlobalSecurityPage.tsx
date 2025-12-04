@@ -1067,7 +1067,7 @@ export default function GlobalSecurityPage() {
                       <div className="flex items-center gap-6 text-sm">
                         <div className="flex items-center gap-2">
                           <Globe className="w-4 h-4 text-slate-400" />
-                          <span className="text-slate-600 dark:text-slate-400">{t('global.security.tenantsCount', { count: policy.appliedTenants })}
+                          <span className="text-slate-600 dark:text-slate-400">{t('global.security.tenantsCount', { count: policy.appliedTenants })}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <AlertTriangle className="w-4 h-4 text-slate-400" />

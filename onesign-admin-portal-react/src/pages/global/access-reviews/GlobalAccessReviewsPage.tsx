@@ -737,7 +737,7 @@ export default function GlobalAccessReviewsPage() {
         <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg shadow-lg p-6">
           <div className="text-sm opacity-90">{t('global.accessReviews.pendingReviews')}</div>
           <div className="text-3xl font-bold">{stats.pendingReviews.toLocaleString()}</div>
-          <div className="text-xs mt-1">{t('global.accessReviews.completedCount', { count: stats.completedReviews.toLocaleString() })}</div>
+          <div className="text-xs mt-1">{t('global.accessReviews.completedCount', { count: stats.completedReviews })}</div>
         </div>
         <div className="bg-gradient-to-br from-red-500 to-red-600 text-white rounded-lg shadow-lg p-6">
           <div className="text-sm opacity-90">{t('global.accessReviews.revokedAccess')}</div>

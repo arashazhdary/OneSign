@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '@/hooks/useLocale';
+import { useDirection } from '@/hooks/useDirection';
 import { getTenantId } from '@/lib/tenant-context';
 import { getCurrentUserScope, CurrentUserScopeDto } from '@/lib/api/users';
 import { orgUnitsService } from '@/lib/api/services/org-units.service';
@@ -64,6 +65,7 @@ const StatCard = ({ title, value, icon, color, delay }: StatCardProps) => (
 export default function TenantOrgUnitsPage() {
   const { t } = useTranslation();
   const locale = useLocale();
+  const { isRTL } = useDirection();
   const [tree, setTree] = useState<OrgUnitTreeNode[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -257,10 +259,10 @@ export default function TenantOrgUnitsPage() {
     return (
       <motion.div
         key={node.id}
-        initial={{ opacity: 0, x: -10 }}
+        initial={{ opacity: 0, x: isRTL ? 10 : -10 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: level * 0.05 }}
-        style={{ marginLeft: `${level * 24}px` }}
+        style={isRTL ? { marginRight: `${level * 24}px` } : { marginLeft: `${level * 24}px` }}
       >
         <div className={`flex items-center gap-3 py-3 px-4 rounded-xl transition-all duration-200 hover:bg-gray-50 ${
           selectedNode?.id === node.id ? 'bg-indigo-50 border border-indigo-200' : ''

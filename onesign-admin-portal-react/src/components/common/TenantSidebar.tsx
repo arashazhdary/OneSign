@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -66,7 +66,7 @@ const TenantSidebar: React.FC = () => {
   const { user } = useAuthStore();
   const { isRTL } = useDirection();
   const [searchQuery, setSearchQuery] = useState('');
-  const [expandedGroups, setExpandedGroups] = useState<string[]>(['core', 'security']);
+  const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
 
   const menuGroups: { id: string; label: string; items: MenuItem[] }[] = [
     {
@@ -193,10 +193,28 @@ const TenantSidebar: React.FC = () => {
     },
   ];
 
+  // Find the group that contains the active page
+  const findActiveGroup = useMemo(() => {
+    for (const group of menuGroups) {
+      for (const item of group.items) {
+        if (item.href && (location.pathname === item.href || location.pathname.startsWith(item.href + '/'))) {
+          return group.id;
+        }
+      }
+    }
+    return null;
+  }, [location.pathname, menuGroups]);
+
+  // Auto-expand the group containing the active page
+  useEffect(() => {
+    if (findActiveGroup) {
+      setExpandedGroup(findActiveGroup);
+    }
+  }, [findActiveGroup]);
+
   const toggleGroup = (groupId: string) => {
-    setExpandedGroups((prev) =>
-      prev.includes(groupId) ? prev.filter((id) => id !== groupId) : [...prev, groupId]
-    );
+    // Toggle: if clicking the same group, close it; otherwise open the new one
+    setExpandedGroup((prev) => prev === groupId ? null : groupId);
   };
 
   const isActive = (href?: string) => {
@@ -302,13 +320,13 @@ const TenantSidebar: React.FC = () => {
                 <ChevronDown
                   className={cn(
                     'w-4 h-4 transition-transform',
-                    expandedGroups.includes(group.id) && 'rotate-180'
+                    expandedGroup === group.id && 'rotate-180'
                   )}
                 />
               </button>
             )}
             <AnimatePresence>
-              {(sidebarCollapsed || expandedGroups.includes(group.id)) && (
+              {(sidebarCollapsed || expandedGroup === group.id) && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}

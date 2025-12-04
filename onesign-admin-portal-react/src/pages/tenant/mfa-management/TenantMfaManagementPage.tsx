@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
 import { securityService } from '@/lib/api/services/security.service';
 import { Helmet } from 'react-helmet-async';
@@ -90,6 +91,7 @@ const getDeviceIcon = (type: string) => {
 };
 
 export default function TenantMfaManagementPage() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('methods');
   const [tenantId, setTenantIdState] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);

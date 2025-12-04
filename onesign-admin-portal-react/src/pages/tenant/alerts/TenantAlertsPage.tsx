@@ -1115,7 +1115,7 @@ export default function TenantAlertsPage() {
             setShowDeleteModal(false);
             setDeletingRule(null);
           }}
-          title=t('common.deleteAlertRule')
+          title={t('common.deleteAlertRule')}
           footer={
             <div className="flex justify-end gap-3">
               <button
@@ -1164,7 +1164,7 @@ export default function TenantAlertsPage() {
         <Modal
           isOpen={showHistoryModal}
           onClose={() => setShowHistoryModal(false)}
-          title=t('common.alertDetails')
+          title={t('common.alertDetails')}
           footer={
             <div className="flex justify-end">
               <button

@@ -513,7 +513,7 @@ export default function TenantReportsCompliancePage() {
             delay={1}
           />
           <StatCard
-            title=t('common.compliant')
+            title={t('common.compliant')}
             value={compliantCount}
             icon={<CheckCircle className="w-6 h-6 text-white" />}
             color="from-green-500 to-emerald-600"
