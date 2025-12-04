@@ -205,13 +205,13 @@ export default function TenantTemplatesPage() {
         const newTemplateData: Template = { id: `temp-${Date.now()}`, ...newTemplate, content, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
         setTemplates([...templates, newTemplateData]);
       }
-      setSuccess('Template created successfully');
+      setSuccess(t('tenant.templates.messages.created'));
       setShowCreateModal(false);
       resetNewTemplate();
       fetchTemplates();
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
-      setError(err.message || 'Failed to create template');
+      setError(err.message || t('tenant.templates.errors.failedToCreate'));
       setTimeout(() => setError(''), 3000);
     }
   };
@@ -226,18 +226,18 @@ export default function TenantTemplatesPage() {
         const cloned: Template = { ...template, id: `temp-${Date.now()}`, name: `${template.name} (Copy)`, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
         setTemplates([...templates, cloned]);
       }
-      setSuccess('Template cloned successfully');
+      setSuccess(t('tenant.templates.messages.cloned'));
       setTimeout(() => setSuccess(''), 3000);
     } catch (err: any) {
-      setError(err.message || 'Failed to clone template');
+      setError(err.message || t('tenant.templates.errors.failedToClone'));
       setTimeout(() => setError(''), 3000);
     }
   };
 
   const handleDeleteTemplate = (template: Template) => {
-    if (!confirm(`Delete "${template.name}"?`)) return;
+    if (!confirm(t('tenant.templates.confirmDelete', { name: template.name }))) return;
     setTemplates(templates.filter(t => t.id !== template.id));
-    setSuccess('Template deleted successfully');
+    setSuccess(t('tenant.templates.messages.deleted'));
     setTimeout(() => setSuccess(''), 3000);
   };
 
@@ -254,12 +254,12 @@ export default function TenantTemplatesPage() {
       const content = JSON.parse(newTemplate.content);
       const updatedTemplate: Template = { ...selectedTemplate, name: newTemplate.name, type: newTemplate.type, category: newTemplate.category, description: newTemplate.description, content, variables: newTemplate.variables, updatedAt: new Date().toISOString() };
       setTemplates(templates.map(t => t.id === selectedTemplate.id ? updatedTemplate : t));
-      setSuccess('Template updated successfully');
+      setSuccess(t('tenant.templates.messages.updated'));
       setShowEditModal(false);
       setSelectedTemplate(null);
       resetNewTemplate();
       setTimeout(() => setSuccess(''), 3000);
-    } catch { setError('Invalid JSON content'); setTimeout(() => setError(''), 3000); }
+    } catch { setError(t('tenant.templates.errors.invalidJSON')); setTimeout(() => setError(''), 3000); }
   };
 
   const resetNewTemplate = () => setNewTemplate({ name: '', type: 'workflow', category: '', description: '', content: '{}', variables: [] });
@@ -277,11 +277,11 @@ export default function TenantTemplatesPage() {
   };
 
   const tabs = [
-    { key: 'all', label: 'All Templates', count: templates.length },
-    { key: 'workflow', label: 'Workflows', count: templates.filter(t => t.type === 'workflow').length },
-    { key: 'email', label: 'Emails', count: templates.filter(t => t.type === 'email').length },
-    { key: 'policy', label: 'Policies', count: templates.filter(t => t.type === 'policy').length },
-    { key: 'report', label: 'Reports', count: templates.filter(t => t.type === 'report').length },
+    { key: 'all', label: t('tenant.templates.tabs.all'), count: templates.length },
+    { key: 'workflow', label: t('tenant.templates.tabs.workflows'), count: templates.filter(t => t.type === 'workflow').length },
+    { key: 'email', label: t('tenant.templates.tabs.emails'), count: templates.filter(t => t.type === 'email').length },
+    { key: 'policy', label: t('tenant.templates.tabs.policies'), count: templates.filter(t => t.type === 'policy').length },
+    { key: 'report', label: t('tenant.templates.tabs.reports'), count: templates.filter(t => t.type === 'report').length },
   ];
 
   if (loading) {
@@ -294,7 +294,7 @@ export default function TenantTemplatesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
-      <Helmet><title>Template Management - OneSign</title></Helmet>
+      <Helmet><title>{t('tenant.templates.title')} - OneSign</title></Helmet>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
@@ -304,12 +304,12 @@ export default function TenantTemplatesPage() {
               <FileCode className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Template Management</h1>
-              <p className="text-gray-500 dark:text-gray-400 mt-1">Manage workflow, email, policy, and report templates</p>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('tenant.templates.title')}</h1>
+              <p className="text-gray-500 dark:text-gray-400 mt-1">{t('tenant.templates.subtitle')}</p>
             </div>
           </div>
           <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setShowCreateModal(true)} className="mt-4 md:mt-0 flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
-            <Plus className="w-5 h-5" /><span>Create Template</span>
+            <Plus className="w-5 h-5" /><span>{t('tenant.templates.createTemplate')}</span>
           </motion.button>
         </motion.div>
 
@@ -321,10 +321,10 @@ export default function TenantTemplatesPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <StatCard title="Total Templates" value={templates.length} icon={<LayoutGrid className="w-6 h-6 text-white" />} color="from-blue-500 to-indigo-600" delay={0} />
-          <StatCard title="Workflows" value={templates.filter(t => t.type === 'workflow').length} icon={<Zap className="w-6 h-6 text-white" />} color="from-purple-500 to-violet-600" delay={1} />
-          <StatCard title="Email Templates" value={templates.filter(t => t.type === 'email').length} icon={<Mail className="w-6 h-6 text-white" />} color="from-green-500 to-emerald-600" delay={2} />
-          <StatCard title="Report Templates" value={templates.filter(t => t.type === 'report').length} icon={<BarChart3 className="w-6 h-6 text-white" />} color="from-orange-500 to-amber-600" delay={3} />
+          <StatCard title={t('tenant.templates.stats.total')} value={templates.length} icon={<LayoutGrid className="w-6 h-6 text-white" />} color="from-blue-500 to-indigo-600" delay={0} />
+          <StatCard title={t('tenant.templates.stats.workflows')} value={templates.filter(t => t.type === 'workflow').length} icon={<Zap className="w-6 h-6 text-white" />} color="from-purple-500 to-violet-600" delay={1} />
+          <StatCard title={t('tenant.templates.stats.emails')} value={templates.filter(t => t.type === 'email').length} icon={<Mail className="w-6 h-6 text-white" />} color="from-green-500 to-emerald-600" delay={2} />
+          <StatCard title={t('tenant.templates.stats.reports')} value={templates.filter(t => t.type === 'report').length} icon={<BarChart3 className="w-6 h-6 text-white" />} color="from-orange-500 to-amber-600" delay={3} />
         </div>
 
         {/* Tabs */}
@@ -345,12 +345,12 @@ export default function TenantTemplatesPage() {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input type="text" placeholder="Search templates..." className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+              <input type="text" placeholder={t('tenant.templates.searchPlaceholder')} className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
             </div>
             <div className="flex items-center space-x-2">
               <Filter className="w-5 h-5 text-gray-400" />
               <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                {getCategories().map(cat => <option key={cat} value={cat}>{cat === 'all' ? 'All Categories' : cat}</option>)}
+                {getCategories().map(cat => <option key={cat} value={cat}>{cat === 'all' ? t('tenant.templates.allCategories') : cat}</option>)}
               </select>
             </div>
           </div>
@@ -378,28 +378,28 @@ export default function TenantTemplatesPage() {
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">{template.description}</p>
 
                   <div className="mb-3">
-                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Category: </span>
+                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{t('tenant.templates.category')}: </span>
                     <span className="text-xs text-gray-700 dark:text-gray-300">{template.category}</span>
                   </div>
 
                   {template.variables.length > 0 && (
                     <div className="mb-3">
-                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Variables: </span>
+                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{t('tenant.templates.variables')}: </span>
                       <div className="flex flex-wrap gap-1 mt-1">
                         {template.variables.slice(0, 3).map((v, i) => <span key={i} className="text-xs bg-gray-100 dark:bg-slate-700 px-2 py-1 rounded">{v}</span>)}
-                        {template.variables.length > 3 && <span className="text-xs text-gray-500 dark:text-gray-400">+{template.variables.length - 3} more</span>}
+                        {template.variables.length > 3 && <span className="text-xs text-gray-500 dark:text-gray-400">+{template.variables.length - 3} {t('common.more')}</span>}
                       </div>
                     </div>
                   )}
 
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mb-4">Updated: {new Date(template.updatedAt).toLocaleDateString(locale)}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mb-4">{t('tenant.templates.updated')}: {new Date(template.updatedAt).toLocaleDateString(locale)}</div>
 
                   <div className="flex flex-wrap gap-2">
                     <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => { setSelectedTemplate(template); setShowPreviewModal(true); }} className="flex-1 text-sm px-3 py-2 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors flex items-center justify-center space-x-1">
-                      <Eye className="w-4 h-4" /><span>Preview</span>
+                      <Eye className="w-4 h-4" /><span>{t('common.preview')}</span>
                     </motion.button>
                     <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => handleEditTemplate(template)} className="flex-1 text-sm px-3 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors flex items-center justify-center space-x-1">
-                      <Edit className="w-4 h-4" /><span>Edit</span>
+                      <Edit className="w-4 h-4" /><span>{t('common.edit')}</span>
                     </motion.button>
                     <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => handleCloneTemplate(template)} className="p-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors">
                       <Copy className="w-4 h-4" />
@@ -417,14 +417,14 @@ export default function TenantTemplatesPage() {
         {filteredTemplates.length === 0 && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
             <FileCode className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-            <p className="text-gray-500 dark:text-gray-400">No templates found</p>
-            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Create your first template to get started</p>
+            <p className="text-gray-500 dark:text-gray-400">{t('tenant.templates.noTemplates')}</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">{t('tenant.templates.noTemplatesDescription')}</p>
           </motion.div>
         )}
       </div>
 
       {/* Create/Edit Modal */}
-      <Modal isOpen={showCreateModal || showEditModal} onClose={() => { setShowCreateModal(false); setShowEditModal(false); setSelectedTemplate(null); resetNewTemplate(); }} title={showEditModal ? 'Edit Template' : 'Create Template'}>
+      <Modal isOpen={showCreateModal || showEditModal} onClose={() => { setShowCreateModal(false); setShowEditModal(false); setSelectedTemplate(null); resetNewTemplate(); }} title={showEditModal ? t('tenant.templates.editTemplate') : t('tenant.templates.createTemplate')}>
         <form onSubmit={showEditModal ? handleUpdateTemplate : handleCreateTemplate} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>

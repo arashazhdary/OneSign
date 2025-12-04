@@ -225,13 +225,13 @@ export default function TenantNotificationsTemplatesDetailPage() {
     setSuccess('');
     try {
       if (!name.trim()) {
-        throw new Error('Template name is required');
+        throw new Error(t('common.templateNameRequired'));
       }
       if (!subject.trim()) {
-        throw new Error('Subject is required');
+        throw new Error(t('common.subjectRequired'));
       }
       if (!body.trim()) {
-        throw new Error('Body is required');
+        throw new Error(t('common.bodyRequired'));
       }
 
       await updateNotificationTemplate(templateId, {
@@ -239,7 +239,7 @@ export default function TenantNotificationsTemplatesDetailPage() {
         isActive,
       } as any);
 
-      setSuccess('Template saved successfully');
+      setSuccess(t('common.templateSavedSuccessfully'));
       fetchTemplate();
     } catch (err: any) {
       console.error('Error saving template:', err);
@@ -255,26 +255,26 @@ export default function TenantNotificationsTemplatesDetailPage() {
     setSuccess('');
     try {
       if (!testRecipient.trim()) {
-        throw new Error('Recipient is required');
+        throw new Error(t('common.recipientRequired'));
       }
 
       const missingVars = variables.filter(v => !testVariableValues[v]?.trim());
       if (missingVars.length > 0) {
-        throw new Error(`Please provide values for: ${missingVars.join(', ')}`);
+        throw new Error(`${t('common.pleaseProvideValuesFor')} ${missingVars.join(', ')}`);
       }
 
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      setSuccess(`Test notification sent to ${testRecipient}`);
+      setSuccess(`${t('common.testNotificationSentTo')} ${testRecipient}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send test notification');
+      setError(err instanceof Error ? err.message : t('common.failedToSendTestNotification'));
     } finally {
       setTesting(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this template? This action cannot be undone.')) {
+    if (!confirm(t('common.confirmDeleteTemplate'))) {
       return;
     }
 
@@ -282,7 +282,7 @@ export default function TenantNotificationsTemplatesDetailPage() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       navigate('/tenant/notifications?tab=templates');
     } catch (err) {
-      setError('Failed to delete template');
+      setError(t('common.failedToDeleteTemplate'));
     }
   };
 
@@ -294,7 +294,7 @@ export default function TenantNotificationsTemplatesDetailPage() {
   };
 
   const addVariable = () => {
-    const newVar = prompt('Enter variable name:');
+    const newVar = prompt(t('common.enterVariableName'));
     if (newVar && newVar.trim() && !variables.includes(newVar.trim())) {
       const updatedVars = [...variables, newVar.trim()];
       setVariables(updatedVars);
@@ -354,7 +354,7 @@ export default function TenantNotificationsTemplatesDetailPage() {
   if (!template) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-amber-50 to-orange-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-8">
-        <div className="text-center text-gray-600 dark:text-gray-400">Template not found</div>
+        <div className="text-center text-gray-600 dark:text-gray-400">{t('templates.notFound')}</div>
       </div>
     );
   }
@@ -400,7 +400,7 @@ export default function TenantNotificationsTemplatesDetailPage() {
                       ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                       : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                   }`}>
-                    {isActive ? 'Active' : 'Inactive'}
+                    {isActive ? t('common.active') : 'Inactive'}
                   </span>
                   <span className="px-3 py-1 text-sm font-medium rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
                     {category}
@@ -421,7 +421,7 @@ export default function TenantNotificationsTemplatesDetailPage() {
                 className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
               >
                 <Save className="w-5 h-5" />
-                {saving ? 'Saving...' : 'Save Template'}
+                {saving ? t('common.saving') : t('common.saveTemplate')}
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.02 }}
@@ -921,7 +921,7 @@ export default function TenantNotificationsTemplatesDetailPage() {
                     className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
                   >
                     <Save className="w-5 h-5" />
-                    {saving ? 'Saving...' : 'Save Settings'}
+                    {saving ? t('common.saving') : 'Save Settings'}
                   </motion.button>
                 </div>
               </div>

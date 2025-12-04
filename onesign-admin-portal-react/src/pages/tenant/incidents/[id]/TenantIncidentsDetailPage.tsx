@@ -224,7 +224,7 @@ export default function TenantIncidentsDetailPage() {
 
   const handleAddEntity = async () => {
     if (!entityType || !entityId) {
-      setError('Please fill in all required fields');
+      setError(t('tenant.incidents.errors.provideAllFields'));
       return;
     }
 
@@ -247,7 +247,7 @@ export default function TenantIncidentsDetailPage() {
 
   const handleExecutePlaybook = async () => {
     if (!selectedPlaybookId) {
-      setError('Please select a playbook');
+      setError(t('tenant.incidents.errors.selectPlaybook'));
       return;
     }
 
@@ -825,7 +825,7 @@ export default function TenantIncidentsDetailPage() {
           onChange={(e) => setNewNoteContent(e.target.value)}
           rows={4}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
-          placeholder="Enter your note..."
+          placeholder={t('tenant.incidents.placeholders.note')}
         />
       </Modal>
 
@@ -884,7 +884,7 @@ export default function TenantIncidentsDetailPage() {
               value={entityId}
               onChange={(e) => setEntityId(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-              placeholder="Enter entity ID"
+              placeholder={t('tenant.incidents.placeholders.entityId')}
             />
           </div>
           <div>
@@ -894,7 +894,7 @@ export default function TenantIncidentsDetailPage() {
               value={entityName}
               onChange={(e) => setEntityName(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-              placeholder="Enter entity name"
+              placeholder={t('tenant.incidents.placeholders.entityName')}
             />
           </div>
         </div>

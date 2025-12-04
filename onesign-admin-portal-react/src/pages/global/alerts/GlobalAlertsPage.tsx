@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { globalService } from '@/lib/api/services/global.service';
 
 interface Alert {
@@ -31,6 +32,7 @@ interface AlertRule {
 }
 
 export default function GlobalAlertsPage() {
+  const { t } = useTranslation();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [rules, setRules] = useState<AlertRule[]>([]);
   const [loading, setLoading] = useState(true);
@@ -97,7 +99,7 @@ export default function GlobalAlertsPage() {
   };
 
   const handleDeleteRule = async (ruleId: string) => {
-    if (!confirm('Are you sure you want to delete this alert rule?')) return;
+    if (!confirm(t('alerts.confirmDeleteRule'))) return;
     try {
       await globalService.deleteAlertRule(ruleId);
       fetchData();
@@ -144,7 +146,7 @@ export default function GlobalAlertsPage() {
   const activeAlerts = filteredAlerts.filter(a => a.status === 'active' || a.status === 'acknowledged');
   const historicalAlerts = filteredAlerts.filter(a => a.status === 'resolved' || a.status === 'silenced');
 
-  if (loading) return <div className="p-6">Loading...</div>;
+  if (loading) return <div className="p-6">{t('common.loading')}...</div>;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">

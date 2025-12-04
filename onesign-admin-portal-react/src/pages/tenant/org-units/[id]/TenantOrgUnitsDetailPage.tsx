@@ -204,7 +204,7 @@ export default function TenantOrgUnitsDetailPage() {
         description: 'Main engineering organizational unit',
         path: '/root/engineering',
         level: 1,
-        status: 'Active',
+        status: t('common.active'),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
@@ -275,7 +275,7 @@ export default function TenantOrgUnitsDetailPage() {
     setError('');
     setSuccess('');
     try {
-      setSuccess('Org unit updated successfully');
+      setSuccess(t('common.orgUnitUpdatedSuccessfully'));
       setShowEditModal(false);
       fetchOrgUnit();
     } catch (err: any) {
@@ -286,9 +286,9 @@ export default function TenantOrgUnitsDetailPage() {
   };
 
   const handleRemoveUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to remove this user from the org unit?')) return;
+    if (!confirm(t('common.confirmRemoveUserFromOrgUnit'))) return;
     try {
-      setSuccess('User removed successfully');
+      setSuccess(t('common.userRemovedSuccessfully'));
       fetchUsers();
     } catch (err: any) {
       setError(err?.message);
@@ -296,9 +296,9 @@ export default function TenantOrgUnitsDetailPage() {
   };
 
   const handleRemoveApplication = async (applicationId: string) => {
-    if (!confirm('Are you sure you want to remove this application from the org unit?')) return;
+    if (!confirm(t('common.confirmRemoveApplicationFromOrgUnit'))) return;
     try {
-      setSuccess('Application removed successfully');
+      setSuccess(t('common.applicationRemovedSuccessfully'));
       fetchApplications();
     } catch (err: any) {
       setError(err?.message);
@@ -578,7 +578,7 @@ export default function TenantOrgUnitsDetailPage() {
           {users.length === 0 ? (
             <div className="text-center py-12">
               <Users className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400">No users assigned to this org unit</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('common.noUsersAssignedToThisOrgUnit')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -649,7 +649,7 @@ export default function TenantOrgUnitsDetailPage() {
           {applications.length === 0 ? (
             <div className="text-center py-12">
               <AppWindow className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400">No applications assigned to this org unit</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('common.noApplicationsAssignedToThisOrgUnit')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -756,7 +756,7 @@ export default function TenantOrgUnitsDetailPage() {
           {!hierarchy ? (
             <div className="text-center py-12">
               <GitBranch className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400">Loading hierarchy...</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('common.loadingHierarchy')}</p>
             </div>
           ) : (
             <div className="space-y-2">{renderHierarchyTree(hierarchy)}</div>
@@ -774,7 +774,7 @@ export default function TenantOrgUnitsDetailPage() {
           {!statistics ? (
             <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6 text-center">
               <BarChart3 className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400">Loading statistics...</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('common.loadingStatistics')}</p>
             </div>
           ) : (
             <>
@@ -905,7 +905,7 @@ export default function TenantOrgUnitsDetailPage() {
               disabled={saving}
               className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:shadow-lg transition-all disabled:opacity-50"
             >
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? t('common.saving') : t('common.saveChanges')}
             </motion.button>
           </>
         }

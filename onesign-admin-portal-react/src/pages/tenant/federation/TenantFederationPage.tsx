@@ -931,10 +931,10 @@ export default function TenantFederationPage() {
                   {submitting ? (
                     <span className="flex items-center gap-2">
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      Creating...
+                      {t('common.creating')}
                     </span>
                   ) : (
-                    'Create Provider'
+                    t('tenant.federation.createProvider')
                   )}
                 </button>
               </div>
@@ -1044,10 +1044,10 @@ export default function TenantFederationPage() {
                   {submitting ? (
                     <span className="flex items-center gap-2">
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      Creating...
+                      {t('common.creating')}
                     </span>
                   ) : (
-                    'Create Provider'
+                    t('tenant.federation.createProvider')
                   )}
                 </button>
               </div>
@@ -1213,10 +1213,10 @@ export default function TenantFederationPage() {
                   {submitting ? (
                     <span className="flex items-center gap-2">
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      Creating...
+                      {t('common.creating')}
                     </span>
                   ) : (
-                    'Create Token'
+                    t('tenant.federation.createToken')
                   )}
                 </button>
               </div>
@@ -1288,10 +1288,10 @@ export default function TenantFederationPage() {
                 {submitting ? (
                   <span className="flex items-center gap-2">
                     <RefreshCw className="w-4 h-4 animate-spin" />
-                    Updating...
+                    {t('common.updating')}
                   </span>
                 ) : (
-                  'Update Provider'
+                  t('tenant.federation.updateProvider')
                 )}
               </button>
             </div>
@@ -1481,10 +1481,10 @@ export default function TenantFederationPage() {
                 {submitting ? (
                   <span className="flex items-center gap-2">
                     <RefreshCw className="w-4 h-4 animate-spin" />
-                    Deleting...
+                    {t('common.deleting')}
                   </span>
                 ) : (
-                  'Delete'
+                  t('common.delete')
                 )}
               </button>
             </div>

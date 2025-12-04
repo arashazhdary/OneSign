@@ -182,7 +182,7 @@ export default function TenantScopesPage() {
       } else {
         await tenantService.createScope(payload);
       }
-      setSuccess(editingScope ? 'Scope updated successfully' : 'Scope created successfully');
+      setSuccess(editingScope ? t('tenant.scopes.messages.updated') : t('tenant.scopes.messages.created'));
       setShowCreateModal(false);
       resetForm();
       fetchScopes();
@@ -205,14 +205,14 @@ export default function TenantScopesPage() {
   };
 
   const handleDeleteScope = async (scopeId: string) => {
-    if (!confirm('Are you sure you want to delete this scope?')) return;
+    if (!confirm(t('tenant.scopes.confirmDelete'))) return;
 
     setError('');
     setSuccess('');
 
     try {
       await tenantService.deleteScope(scopeId);
-      setSuccess('Scope deleted successfully');
+      setSuccess(t('tenant.scopes.messages.deleted'));
       fetchScopes();
     } catch (error: any) {
       setError(error?.message || t('common.failedToDeleteScope'));
@@ -223,7 +223,7 @@ export default function TenantScopesPage() {
   const handleToggleScopeStatus = async (scope: Scope) => {
     try {
       await tenantService.updateScope(scope.id, { isEnabled: !scope.isEnabled });
-      setSuccess(`Scope ${scope.isEnabled ? 'disabled' : 'enabled'} successfully`);
+      setSuccess(scope.isEnabled ? t('tenant.scopes.messages.disabled') : t('tenant.scopes.messages.enabled'));
       fetchScopes();
     } catch (error: any) {
       setError(error?.message || t('common.failedToUpdateScopeStatus'));

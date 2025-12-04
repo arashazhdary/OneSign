@@ -11,7 +11,7 @@ export default function DocsUserinfoPage() {
 
   const handleTryIt = async () => {
     if (!accessToken) {
-      setResponse('Please provide an access token');
+      setResponse(t('docs.userinfo.pleaseProvideToken', 'Please provide an access token'));
       return;
     }
 
@@ -366,7 +366,7 @@ Console.WriteLine($"User Roles: {userInfo["roles"]}");`}
             onClick={() => setShowTryIt(!showTryIt)}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
-            {showTryIt ? 'Hide' : 'Show'} Interactive Test
+            {showTryIt ? t('common.hide', 'Hide') : t('common.show', 'Show')} {t('docs.userinfo.interactiveTest', 'Interactive Test')}
           </button>
         </div>
 
@@ -379,7 +379,7 @@ Console.WriteLine($"User Roles: {userInfo["roles"]}");`}
               <input
                 type="text"
                 className="w-full px-3 py-2 border rounded font-mono text-sm"
-                placeholder="Paste your access token here"
+                placeholder={t('docs.userinfo.pasteTokenPlaceholder', 'Paste your access token here')}
                 value={accessToken}
                 onChange={(e) => setAccessToken(e.target.value)}
               />
@@ -390,7 +390,7 @@ Console.WriteLine($"User Roles: {userInfo["roles"]}");`}
               disabled={loading}
               className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 disabled:bg-gray-400"
             >
-              {loading ? 'Loading...' : 'Send Request'}
+              {loading ? t('common.loading', 'Loading...') : t('docs.userinfo.sendRequest', 'Send Request')}
             </button>
 
             {response && (

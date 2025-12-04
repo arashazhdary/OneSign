@@ -502,7 +502,7 @@ export default function TenantChangeManagementPage() {
 
   const handleRejectChangeSet = async () => {
     if (!selectedChangeSet || !rejectReason.trim()) {
-      setError('Please provide a reason for rejection');
+      setError(t('tenant.changeManagement.errors.provideReason'));
       return;
     }
 
@@ -580,7 +580,7 @@ export default function TenantChangeManagementPage() {
 
   const handleClone = async () => {
     if (!selectedChangeSet || !cloneName.trim()) {
-      setError('Please provide a name for the cloned change set');
+      setError(t('tenant.changeManagement.errors.provideCloneName'));
       return;
     }
 
@@ -687,7 +687,7 @@ export default function TenantChangeManagementPage() {
   };
 
   const handleDeleteChangeSet = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this change set?')) return;
+    if (!confirm(t('tenant.changeManagement.confirmDelete'))) return;
 
     try {
       await changeManagementService.deleteTenantChangeSet(tenantId, id);
@@ -1734,7 +1734,7 @@ export default function TenantChangeManagementPage() {
               <textarea
                 className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
                 rows={3}
-                placeholder="Add your approval comment..."
+                placeholder={t('tenant.changeManagement.placeholders.approvalComment')}
                 value={approvalComment}
                 onChange={(e) => setApprovalComment(e.target.value)}
               />
@@ -1775,7 +1775,7 @@ export default function TenantChangeManagementPage() {
               <textarea
                 className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
                 rows={4}
-                placeholder="Please provide a detailed reason for rejection..."
+                placeholder={t('tenant.changeManagement.placeholders.rejectReason')}
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 required

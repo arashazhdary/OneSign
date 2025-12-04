@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
@@ -24,6 +25,7 @@ interface SystemHealth {
 }
 
 export default function GlobalDiagnosticsPage() {
+  const { t } = useTranslation();
   const [tests, setTests] = useState<DiagnosticTest[]>([]);
   const [health, setHealth] = useState<SystemHealth | null>(null);
   const [loading, setLoading] = useState(true);
@@ -67,7 +69,7 @@ export default function GlobalDiagnosticsPage() {
           status: 'passed',
           duration: 234,
           lastRun: '2024-11-23T10:00:00Z',
-          message: 'Successfully connected to all database instances',
+          message: t('diagnostics.successfullyConnectedDatabases'),
           details: {
             primary: 'Connected (12ms)',
             replica1: 'Connected (15ms)',
@@ -81,7 +83,7 @@ export default function GlobalDiagnosticsPage() {
           status: 'passed',
           duration: 1560,
           lastRun: '2024-11-23T10:00:00Z',
-          message: 'All endpoints responding within acceptable limits',
+          message: t('diagnostics.allEndpointsResponding'),
           details: {
             p50: '45ms',
             p95: '120ms',
@@ -95,7 +97,7 @@ export default function GlobalDiagnosticsPage() {
           status: 'passed',
           duration: 3450,
           lastRun: '2024-11-23T10:00:00Z',
-          message: 'All external APIs reachable',
+          message: t('diagnostics.allExternalAPIsReachable'),
           details: {
             stripe: 'Connected',
             sendgrid: 'Connected',
@@ -109,7 +111,7 @@ export default function GlobalDiagnosticsPage() {
           status: 'passed',
           duration: 890,
           lastRun: '2024-11-23T10:00:00Z',
-          message: 'All SSL certificates are valid',
+          message: t('diagnostics.allSSLCertificatesValid'),
           details: {
             'api.onesign.io': 'Valid until 2025-06-15',
             'admin.onesign.io': 'Valid until 2025-05-20',
@@ -122,7 +124,7 @@ export default function GlobalDiagnosticsPage() {
           status: 'passed',
           duration: 456,
           lastRun: '2024-11-23T10:00:00Z',
-          message: 'All storage buckets accessible',
+          message: t('diagnostics.allStorageBucketsAccessible'),
           details: {
             primary: 'Accessible',
             backups: 'Accessible',
@@ -136,7 +138,7 @@ export default function GlobalDiagnosticsPage() {
           status: 'warning',
           duration: 5678,
           lastRun: '2024-11-23T10:00:00Z',
-          message: 'Email service responding slowly',
+          message: t('diagnostics.emailServiceRespondingSlowly'),
           details: {
             status: 'Operational',
             avgResponseTime: '450ms',
@@ -150,7 +152,7 @@ export default function GlobalDiagnosticsPage() {
           status: 'passed',
           duration: 123,
           lastRun: '2024-11-23T10:00:00Z',
-          message: 'Cache hit rate within target',
+          message: t('diagnostics.cacheHitRateWithinTarget'),
           details: {
             hitRate: '94.5%',
             avgLatency: '2ms',
@@ -163,7 +165,7 @@ export default function GlobalDiagnosticsPage() {
           status: 'passed',
           duration: 2340,
           lastRun: '2024-11-23T10:00:00Z',
-          message: 'Query performance acceptable',
+          message: t('diagnostics.queryPerformanceAcceptable'),
           details: {
             slowQueries: 12,
             avgQueryTime: '45ms',
@@ -176,7 +178,7 @@ export default function GlobalDiagnosticsPage() {
           status: 'passed',
           duration: 8900,
           lastRun: '2024-11-23T09:00:00Z',
-          message: 'No security vulnerabilities detected',
+          message: t('diagnostics.noSecurityVulnerabilitiesDetected'),
           details: {
             vulnerabilities: 0,
             lastScan: '2024-11-23T09:00:00Z',
@@ -189,7 +191,7 @@ export default function GlobalDiagnosticsPage() {
           status: 'passed',
           duration: 12300,
           lastRun: '2024-11-23T02:00:00Z',
-          message: 'Latest backup verified successfully',
+          message: t('diagnostics.latestBackupVerifiedSuccessfully'),
           details: {
             lastBackup: '2024-11-23T02:00:00Z',
             size: '487.5 GB',
@@ -276,23 +278,23 @@ export default function GlobalDiagnosticsPage() {
     : tests.filter(t => t.category === activeCategory);
 
   const categories = [
-    { id: 'all', name: 'All Tests', count: tests.length },
-    { id: 'connectivity', name: 'Connectivity', count: tests.filter(t => t.category === 'connectivity').length },
-    { id: 'performance', name: 'Performance', count: tests.filter(t => t.category === 'performance').length },
-    { id: 'security', name: 'Security', count: tests.filter(t => t.category === 'security').length },
-    { id: 'database', name: 'Database', count: tests.filter(t => t.category === 'database').length },
-    { id: 'storage', name: 'Storage', count: tests.filter(t => t.category === 'storage').length },
-    { id: 'services', name: 'Services', count: tests.filter(t => t.category === 'services').length },
+    { id: 'all', name: t('diagnostics.allTests'), count: tests.length },
+    { id: 'connectivity', name: t('diagnostics.connectivity'), count: tests.filter(t => t.category === 'connectivity').length },
+    { id: 'performance', name: t('diagnostics.performance'), count: tests.filter(t => t.category === 'performance').length },
+    { id: 'security', name: t('diagnostics.security'), count: tests.filter(t => t.category === 'security').length },
+    { id: 'database', name: t('diagnostics.database'), count: tests.filter(t => t.category === 'database').length },
+    { id: 'storage', name: t('diagnostics.storage'), count: tests.filter(t => t.category === 'storage').length },
+    { id: 'services', name: t('diagnostics.services'), count: tests.filter(t => t.category === 'services').length },
   ];
 
-  if (loading) return <div className="p-6">Loading...</div>;
+  if (loading) return <div className="p-6">{t('common.loading')}...</div>;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold">System Diagnostics</h1>
-          <p className="text-gray-600 mt-1">Run diagnostic tests and health checks</p>
+          <h1 className="text-2xl font-bold">{t('diagnostics.title')}</h1>
+          <p className="text-gray-600 mt-1">{t('diagnostics.subtitle')}</p>
         </div>
         <button
           onClick={handleRunAll}
@@ -303,7 +305,7 @@ export default function GlobalDiagnosticsPage() {
               : 'bg-blue-600 hover:bg-blue-700'
           } text-white`}
         >
-          {running ? 'Running...' : 'Run All Tests'}
+          {running ? t('diagnostics.running') : t('diagnostics.runAllTests')}
         </button>
       </div>
 
@@ -312,7 +314,7 @@ export default function GlobalDiagnosticsPage() {
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-lg font-semibold">Overall System Health</h2>
+              <h2 className="text-lg font-semibold">{t('diagnostics.overallSystemHealth')}</h2>
               <p className={`text-3xl font-bold ${getHealthColor(health.overall)} mt-2`}>
                 {health.score}%
               </p>
@@ -334,7 +336,7 @@ export default function GlobalDiagnosticsPage() {
                 </div>
                 {component.responseTime && (
                   <div className="text-xs text-gray-500">
-                    Response: {component.responseTime}ms
+                    {t('diagnostics.response')}: {component.responseTime}ms
                   </div>
                 )}
               </div>
@@ -346,25 +348,25 @@ export default function GlobalDiagnosticsPage() {
       {/* Test Results Summary */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="text-sm text-green-600">Passed</div>
+          <div className="text-sm text-green-600">{t('diagnostics.passed')}</div>
           <div className="text-2xl font-bold text-green-700">
             {tests.filter(t => t.status === 'passed').length}
           </div>
         </div>
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="text-sm text-yellow-600">Warnings</div>
+          <div className="text-sm text-yellow-600">{t('diagnostics.warnings')}</div>
           <div className="text-2xl font-bold text-yellow-700">
             {tests.filter(t => t.status === 'warning').length}
           </div>
         </div>
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="text-sm text-red-600">Failed</div>
+          <div className="text-sm text-red-600">{t('diagnostics.failed')}</div>
           <div className="text-2xl font-bold text-red-700">
             {tests.filter(t => t.status === 'failed').length}
           </div>
         </div>
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="text-sm text-blue-600">Avg Duration</div>
+          <div className="text-sm text-blue-600">{t('diagnostics.avgDuration')}</div>
           <div className="text-2xl font-bold text-blue-700">
             {(tests.reduce((acc, t) => acc + (t.duration || 0), 0) / tests.length / 1000).toFixed(1)}s
           </div>
@@ -411,13 +413,13 @@ export default function GlobalDiagnosticsPage() {
                 onClick={() => handleRunTest(test.id)}
                 className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
               >
-                Run Test
+                {t('diagnostics.runTest')}
               </button>
             </div>
 
             {test.details && (
               <div className="mt-4 bg-gray-50 rounded p-4">
-                <h4 className="text-sm font-semibold mb-2">Details</h4>
+                <h4 className="text-sm font-semibold mb-2">{t('diagnostics.details')}</h4>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
                   {Object.entries(test.details).map(([key, value]) => (
                     <div key={key}>
@@ -430,11 +432,11 @@ export default function GlobalDiagnosticsPage() {
             )}
 
             <div className="mt-3 flex items-center text-xs text-gray-500">
-              {test.duration && <span>Duration: {(test.duration / 1000).toFixed(2)}s</span>}
+              {test.duration && <span>{t('diagnostics.duration')}: {(test.duration / 1000).toFixed(2)}s</span>}
               {test.lastRun && (
                 <>
                   <span className="mx-2">•</span>
-                  <span>Last run: {new Date(test.lastRun).toLocaleString()}</span>
+                  <span>{t('diagnostics.lastRun')}: {new Date(test.lastRun).toLocaleString()}</span>
                 </>
               )}
             </div>

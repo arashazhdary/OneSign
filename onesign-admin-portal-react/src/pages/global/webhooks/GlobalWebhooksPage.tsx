@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { globalService } from '@/lib/api/services/global.service';
 import { Helmet } from 'react-helmet-async';
 
@@ -38,6 +39,7 @@ interface WebhookLog {
 }
 
 export default function GlobalWebhooksPage() {
+  const { t } = useTranslation();
   const [webhooks, setWebhooks] = useState<GlobalWebhook[]>([]);
   const [logs, setLogs] = useState<WebhookLog[]>([]);
   const [loading, setLoading] = useState(true);
@@ -215,7 +217,7 @@ export default function GlobalWebhooksPage() {
   };
 
   const handleDelete = async (webhookId: string) => {
-    if (!confirm('Delete this webhook?')) return;
+    if (!confirm(t('webhooks.confirmDelete'))) return;
     try {
       await globalService.deleteGlobalWebhook(webhookId);
       fetchData();
@@ -228,7 +230,7 @@ export default function GlobalWebhooksPage() {
     return ((stats.successfulDeliveries / stats.totalDeliveries) * 100).toFixed(1);
   };
 
-  if (loading) return <div className="p-6">Loading...</div>;
+  if (loading) return <div className="p-6">{t('common.loading')}...</div>;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">

@@ -277,14 +277,14 @@ export default function TenantSessionsPage() {
 
   const handleRevokeSession = async (sessionId: string) => {
     if (!tenantId) return;
-    if (!confirm(t('tenant.sessions.confirmRevoke', 'Are you sure you want to revoke this session? The user will be logged out immediately.'))) return;
+    if (!confirm(t('tenant.sessions.confirmRevoke'))) return;
 
     setError('');
     setSuccess('');
 
     try {
       await usersService.revokeSession(sessionId);
-      setSuccess(t('tenant.sessions.revokeSuccess', 'Session revoked successfully. User has been logged out.'));
+      setSuccess(t('tenant.sessions.revokeSuccess'));
       fetchSessions();
     } catch (error: any) {
       setError(error?.message || t('common.failedToRevokeSession'));
@@ -293,14 +293,14 @@ export default function TenantSessionsPage() {
   };
 
   const handleRevokeAllUserSessions = async (userId: string) => {
-    if (!confirm(t('tenant.sessions.confirmRevokeAll', 'Are you sure you want to revoke ALL sessions for this user?'))) return;
+    if (!confirm(t('tenant.sessions.confirmRevokeAll'))) return;
 
     setError('');
     setSuccess('');
 
     try {
       await usersService.revokeAllUserSessions(userId);
-      setSuccess(t('tenant.sessions.revokeAllSuccess', 'All user sessions revoked successfully'));
+      setSuccess(t('tenant.sessions.revokeAllSuccess'));
       fetchSessions();
     } catch (error: any) {
       setError(error?.message || t('common.failedToRevokeSessions'));
@@ -308,14 +308,14 @@ export default function TenantSessionsPage() {
   };
 
   const handleRevokeSuspiciousSessions = async () => {
-    if (!confirm(t('tenant.sessions.confirmRevokeSuspicious', 'Are you sure you want to revoke all suspicious sessions?'))) return;
+    if (!confirm(t('tenant.sessions.confirmRevokeSuspicious'))) return;
 
     setError('');
     setSuccess('');
 
     try {
       await usersService.revokeSuspiciousSessions();
-      setSuccess(t('tenant.sessions.revokeSuspiciousSuccess', 'All suspicious sessions revoked successfully'));
+      setSuccess(t('tenant.sessions.revokeSuspiciousSuccess'));
       fetchSessions();
     } catch (error: any) {
       setError(error?.message || t('common.failedToRevokeSuspiciousSessions'));
@@ -376,7 +376,7 @@ export default function TenantSessionsPage() {
           className="flex items-center gap-3 text-gray-600"
         >
           <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-          <span>{t('common.loading', 'Loading...')}</span>
+          <span>{t('common.loading')}</span>
         </motion.div>
       </div>
     );
@@ -385,7 +385,7 @@ export default function TenantSessionsPage() {
   return (
     <div dir={locale === 'fa' ? 'rtl' : 'ltr'} className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-8">
       <Helmet>
-        <title>{t('tenant.sessions.title', 'Sessions Management')} | OneSign</title>
+        <title>{t('tenant.sessions.title')} | OneSign</title>
       </Helmet>
 
       {/* Header */}
@@ -396,10 +396,10 @@ export default function TenantSessionsPage() {
       >
         <div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            {t('tenant.sessions.title', 'Active Sessions Management')}
+            {t('tenant.sessions.title')}
           </h1>
           <p className="text-gray-600 mt-1">
-            {t('tenant.sessions.subtitle', 'Monitor and manage active user sessions')}
+            {t('tenant.sessions.subtitle')}
           </p>
         </div>
         <motion.button
@@ -409,7 +409,7 @@ export default function TenantSessionsPage() {
           className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl hover:shadow-lg transition-all duration-300"
         >
           <History className="w-5 h-5" />
-          {t('tenant.sessions.viewHistory', 'View History')}
+          {t('tenant.sessions.viewHistory')}
         </motion.button>
       </motion.div>
 
@@ -449,21 +449,21 @@ export default function TenantSessionsPage() {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <StatCard
-          title={t('tenant.sessions.activeSessions', 'Active Sessions')}
+          title={t('tenant.sessions.activeSessions')}
           value={activeSessionsCount}
           icon={<Activity className="w-6 h-6 text-blue-600" />}
           color="bg-blue-100"
           delay={0}
         />
         <StatCard
-          title={t('tenant.sessions.uniqueUsers', 'Unique Users')}
+          title={t('tenant.sessions.uniqueUsers')}
           value={uniqueUsersCount}
           icon={<Users className="w-6 h-6 text-green-600" />}
           color="bg-green-100"
           delay={1}
         />
         <StatCard
-          title={t('tenant.sessions.suspiciousSessions', 'Suspicious Sessions')}
+          title={t('tenant.sessions.suspiciousSessions')}
           value={suspiciousSessionsCount}
           icon={<AlertTriangle className="w-6 h-6 text-red-600" />}
           color="bg-red-100"
@@ -476,7 +476,7 @@ export default function TenantSessionsPage() {
                 onClick={handleRevokeSuspiciousSessions}
                 className="text-sm bg-red-600 text-white px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors"
               >
-                {t('tenant.sessions.revokeAll', 'Revoke All')}
+                {t('tenant.sessions.revokeAll')}
               </motion.button>
             )
           }
@@ -495,7 +495,7 @@ export default function TenantSessionsPage() {
             <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder={t('tenant.sessions.searchPlaceholder', 'Search by user name, email, or IP address...')}
+              placeholder={t('tenant.sessions.searchPlaceholder')}
               className="w-full ps-10 pe-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -508,7 +508,7 @@ export default function TenantSessionsPage() {
               onChange={(e) => setFilterSuspicious(e.target.checked)}
               className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
-            <span className="text-sm text-gray-700">{t('tenant.sessions.showSuspicious', 'Show only suspicious')}</span>
+            <span className="text-sm text-gray-700">{t('tenant.sessions.showSuspicious')}</span>
           </label>
         </div>
       </motion.div>
@@ -524,14 +524,14 @@ export default function TenantSessionsPage() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
               <tr>
-                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.user', 'User')}</th>
-                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.device', 'Device')}</th>
-                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.location', 'Location')}</th>
-                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.ipAddress', 'IP Address')}</th>
-                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.loginTime', 'Login Time')}</th>
-                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.duration', 'Duration')}</th>
-                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.status', 'Status')}</th>
-                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('common.actions', 'Actions')}</th>
+                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.user')}</th>
+                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.device')}</th>
+                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.location')}</th>
+                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.ipAddress')}</th>
+                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.loginTime')}</th>
+                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.duration')}</th>
+                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.status')}</th>
+                <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-100">
@@ -590,12 +590,12 @@ export default function TenantSessionsPage() {
                       {session.isSuspicious ? (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium border border-red-200">
                           <AlertTriangle className="w-3 h-3" />
-                          {t('tenant.sessions.suspicious', 'Suspicious')}
+                          {t('tenant.sessions.suspicious')}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium border border-green-200">
                           <Shield className="w-3 h-3" />
-                          {t('tenant.sessions.normal', 'Normal')}
+                          {t('tenant.sessions.normal')}
                         </span>
                       )}
                     </td>
@@ -606,7 +606,7 @@ export default function TenantSessionsPage() {
                           whileTap={{ scale: 0.9 }}
                           onClick={() => openDetailsModal(session)}
                           className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title={t('common.details', 'Details')}
+                          title={t('common.details')}
                         >
                           <Eye className="w-4 h-4" />
                         </motion.button>
@@ -615,7 +615,7 @@ export default function TenantSessionsPage() {
                           whileTap={{ scale: 0.9 }}
                           onClick={() => handleRevokeSession(session.id)}
                           className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title={t('tenant.sessions.revoke', 'Revoke')}
+                          title={t('tenant.sessions.revoke')}
                         >
                           <Power className="w-4 h-4" />
                         </motion.button>
@@ -635,7 +635,7 @@ export default function TenantSessionsPage() {
             className="text-center py-12"
           >
             <Monitor className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">{t('tenant.sessions.noSessions', 'No active sessions found.')}</p>
+            <p className="text-gray-500">{t('tenant.sessions.noSessions')}</p>
           </motion.div>
         )}
       </motion.div>
@@ -663,7 +663,7 @@ export default function TenantSessionsPage() {
                     <div className="p-2 bg-white/20 rounded-xl">
                       <Eye className="w-6 h-6" />
                     </div>
-                    <h2 className="text-xl font-bold">{t('tenant.sessions.sessionDetails', 'Session Details')}</h2>
+                    <h2 className="text-xl font-bold">{t('tenant.sessions.sessionDetails')}</h2>
                   </div>
                   <button
                     onClick={() => setShowDetailsModal(false)}
@@ -683,7 +683,7 @@ export default function TenantSessionsPage() {
                   >
                     <div className="flex items-center gap-2 text-red-800 font-semibold mb-2">
                       <AlertTriangle className="w-5 h-5" />
-                      {t('tenant.sessions.suspiciousDetected', 'Suspicious Activity Detected')}
+                      {t('tenant.sessions.suspiciousDetected')}
                     </div>
                     <ul className="list-disc list-inside text-sm text-red-700 space-y-1">
                       {selectedSession.suspiciousReasons?.map((reason, index) => (
@@ -696,45 +696,45 @@ export default function TenantSessionsPage() {
                 <div className="space-y-6">
                   <div className="grid grid-cols-2 gap-6">
                     <div className="bg-gray-50 rounded-xl p-4">
-                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.user', 'User')}</h3>
+                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.user')}</h3>
                       <p className="font-medium text-gray-900">{selectedSession.userName}</p>
                       <p className="text-sm text-gray-500">{selectedSession.userEmail}</p>
                     </div>
                     <div className="bg-gray-50 rounded-xl p-4">
-                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.userId', 'User ID')}</h3>
+                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.userId')}</h3>
                       <p className="font-mono text-sm text-gray-900 break-all">{selectedSession.userId}</p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-6">
                     <div className="bg-gray-50 rounded-xl p-4">
-                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.deviceType', 'Device Type')}</h3>
+                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.deviceType')}</h3>
                       <div className="flex items-center gap-2">
                         {getDeviceIcon(selectedSession.deviceType)}
                         <span className="text-gray-900">{selectedSession.deviceType}</span>
                       </div>
                     </div>
                     <div className="bg-gray-50 rounded-xl p-4">
-                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.deviceName', 'Device Name')}</h3>
+                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.deviceName')}</h3>
                       <p className="text-gray-900">{selectedSession.deviceName}</p>
                     </div>
                   </div>
 
                   <div className="bg-gray-50 rounded-xl p-4">
-                    <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.browser', 'Browser')}</h3>
+                    <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.browser')}</h3>
                     <p className="text-gray-900">{selectedSession.browser}</p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-6">
                     <div className="bg-gray-50 rounded-xl p-4">
-                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.ipAddress', 'IP Address')}</h3>
+                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.ipAddress')}</h3>
                       <div className="flex items-center gap-2">
                         <Globe className="w-4 h-4 text-gray-400" />
                         <span className="font-mono text-gray-900">{selectedSession.ipAddress}</span>
                       </div>
                     </div>
                     <div className="bg-gray-50 rounded-xl p-4">
-                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.location', 'Location')}</h3>
+                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.location')}</h3>
                       <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4 text-gray-400" />
                         <span className="text-gray-900">{selectedSession.location}</span>
@@ -744,22 +744,22 @@ export default function TenantSessionsPage() {
 
                   <div className="grid grid-cols-2 gap-6">
                     <div className="bg-gray-50 rounded-xl p-4">
-                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.loginTime', 'Login Time')}</h3>
+                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.loginTime')}</h3>
                       <p className="text-gray-900">{formatDate(selectedSession.loginAt)}</p>
                     </div>
                     <div className="bg-gray-50 rounded-xl p-4">
-                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.lastActivity', 'Last Activity')}</h3>
+                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.lastActivity')}</h3>
                       <p className="text-gray-900">{formatDate(selectedSession.lastActivityAt)}</p>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-6">
                     <div className="bg-gray-50 rounded-xl p-4">
-                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.duration', 'Session Duration')}</h3>
+                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.duration')}</h3>
                       <p className="text-gray-900">{selectedSession.duration}</p>
                     </div>
                     <div className="bg-gray-50 rounded-xl p-4">
-                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.expiresAt', 'Expires At')}</h3>
+                      <h3 className="text-sm font-semibold text-gray-500 mb-2">{t('tenant.sessions.expiresAt')}</h3>
                       <p className="text-gray-900">{formatDate(selectedSession.expiresAt)}</p>
                     </div>
                   </div>
@@ -776,7 +776,7 @@ export default function TenantSessionsPage() {
                     className="flex items-center gap-2 bg-red-600 text-white px-4 py-2.5 rounded-xl hover:bg-red-700 transition-colors"
                   >
                     <Power className="w-4 h-4" />
-                    {t('tenant.sessions.revokeSession', 'Revoke Session')}
+                    {t('tenant.sessions.revokeSession')}
                   </motion.button>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
@@ -788,7 +788,7 @@ export default function TenantSessionsPage() {
                     className="flex items-center gap-2 bg-yellow-600 text-white px-4 py-2.5 rounded-xl hover:bg-yellow-700 transition-colors"
                   >
                     <AlertTriangle className="w-4 h-4" />
-                    {t('tenant.sessions.revokeAllUserSessions', 'Revoke All User Sessions')}
+                    {t('tenant.sessions.revokeAllUserSessions')}
                   </motion.button>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
@@ -796,7 +796,7 @@ export default function TenantSessionsPage() {
                     onClick={() => setShowDetailsModal(false)}
                     className="flex items-center gap-2 bg-gray-200 text-gray-700 px-4 py-2.5 rounded-xl hover:bg-gray-300 transition-colors"
                   >
-                    {t('common.close', 'Close')}
+                    {t('common.close')}
                   </motion.button>
                 </div>
               </div>
@@ -828,7 +828,7 @@ export default function TenantSessionsPage() {
                     <div className="p-2 bg-white/20 rounded-xl">
                       <History className="w-6 h-6" />
                     </div>
-                    <h2 className="text-xl font-bold">{t('tenant.sessions.sessionHistory', 'Session History')}</h2>
+                    <h2 className="text-xl font-bold">{t('tenant.sessions.sessionHistory')}</h2>
                   </div>
                   <button
                     onClick={() => setShowHistoryModal(false)}
@@ -843,13 +843,13 @@ export default function TenantSessionsPage() {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50 sticky top-0">
                     <tr>
-                      <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.user', 'User')}</th>
-                      <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.device', 'Device')}</th>
-                      <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.location', 'Location')}</th>
-                      <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.login', 'Login')}</th>
-                      <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.logout', 'Logout')}</th>
-                      <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.duration', 'Duration')}</th>
-                      <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.status', 'Status')}</th>
+                      <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.user')}</th>
+                      <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.device')}</th>
+                      <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.location')}</th>
+                      <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.login')}</th>
+                      <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.logout')}</th>
+                      <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.duration')}</th>
+                      <th className="px-6 py-4 text-start text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('tenant.sessions.status')}</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-100">
@@ -901,7 +901,7 @@ export default function TenantSessionsPage() {
                   onClick={() => setShowHistoryModal(false)}
                   className="bg-gray-200 text-gray-700 px-4 py-2 rounded-xl hover:bg-gray-300 transition-colors"
                 >
-                  {t('common.close', 'Close')}
+                  {t('common.close')}
                 </motion.button>
               </div>
             </motion.div>

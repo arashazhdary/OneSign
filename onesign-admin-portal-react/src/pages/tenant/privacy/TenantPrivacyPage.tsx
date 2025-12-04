@@ -167,7 +167,7 @@ export default function TenantPrivacyPage() {
   };
 
   const handleExecuteRequest = async (id: string) => {
-    if (!tenantId || !confirm('Are you sure you want to execute this request?')) return;
+    if (!tenantId || !confirm(t('tenant.privacy.confirmExecuteRequest'))) return;
     setLoading(true);
     try {
       await governanceService.executeDataSubjectRequest(tenantId, id);

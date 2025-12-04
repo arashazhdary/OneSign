@@ -247,7 +247,7 @@ export default function TenantAutomationDesignerPage() {
               className="flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-slate-700 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 transition-colors"
             >
               <FolderOpen className="w-4 h-4" />
-              Load
+              {t('common.load', 'Load')}
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -256,7 +256,7 @@ export default function TenantAutomationDesignerPage() {
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all"
             >
               <Save className="w-4 h-4" />
-              Save
+              {t('common.save', 'Save')}
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -265,7 +265,7 @@ export default function TenantAutomationDesignerPage() {
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all"
             >
               <TestTube className="w-4 h-4" />
-              Test
+              {t('common.test', 'Test')}
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -275,7 +275,7 @@ export default function TenantAutomationDesignerPage() {
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Rocket className="w-4 h-4" />
-              Deploy
+              {t('common.deploy', 'Deploy')}
             </motion.button>
           </div>
         </div>
@@ -351,7 +351,7 @@ export default function TenantAutomationDesignerPage() {
               animate={{ opacity: 1, y: 0 }}
               className="absolute top-4 left-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-xl shadow-lg z-10"
             >
-              Click on a step to connect
+              {t('tenant.automation.designer.clickToConnect', 'Click on a step to connect')}
             </motion.div>
           )}
 
@@ -363,8 +363,8 @@ export default function TenantAutomationDesignerPage() {
                 className="text-center text-gray-400 dark:text-gray-500"
               >
                 <Workflow className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                <p className="text-xl mb-2">Drag actions from the left to start building</p>
-                <p className="text-sm">Your workflow canvas is empty</p>
+                <p className="text-xl mb-2">{t('tenant.automation.designer.dragActionsToStart', 'Drag actions from the left to start building')}</p>
+                <p className="text-sm">{t('tenant.automation.designer.canvasEmpty', 'Your workflow canvas is empty')}</p>
               </motion.div>
             </div>
           )}
@@ -435,7 +435,7 @@ export default function TenantAutomationDesignerPage() {
                   onClick={(e) => { e.stopPropagation(); handleStartConnection(step.id); }}
                   className="mt-2 text-xs bg-white/20 px-3 py-1.5 rounded-lg hover:bg-white/30 w-full flex items-center justify-center gap-1 transition-colors"
                 >
-                  Connect
+                  {t('common.connect', 'Connect')}
                   <ArrowRight className="w-3 h-3" />
                 </motion.button>
               </motion.div>

@@ -114,7 +114,7 @@ const AppsPage = () => {
   };
 
   const handleDeleteApp = async (appId: string) => {
-    if (!confirm(t('apps.confirmDelete') || 'Are you sure you want to delete this application?')) return;
+    if (!confirm(t('apps.confirmDelete'))) return;
     try {
       await applicationsService.deleteApplication(appId);
       toast.success(t('apps.appDeleted') || 'Application deleted successfully');
@@ -127,9 +127,9 @@ const AppsPage = () => {
   const handleRegenerateSecret = async (appId: string) => {
     try {
       const result = await applicationsService.regenerateSecret(null, appId);
-      toast.success(t('apps.secretRegenerated') || 'Client secret regenerated');
+      toast.success(t('apps.secretRegenerated'));
       navigator.clipboard.writeText(result.clientSecret);
-      toast.success('New secret copied to clipboard');
+      toast.success(t('apps.secretCopied'));
     } catch (error: any) {
       toast.error(error.response?.data?.message || t('common.error'));
     }

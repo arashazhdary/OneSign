@@ -200,7 +200,7 @@ export default function TenantTokensPage() {
   };
 
   const handleRevoke = async (tokenId: string) => {
-    if (!confirm('Revoke this token? This action cannot be undone.')) return;
+    if (!confirm(t('tenant.tokens.confirmRevoke'))) return;
     setError('');
     setSuccess('');
     try {
@@ -214,7 +214,7 @@ export default function TenantTokensPage() {
   };
 
   const handleRotate = async (tokenId: string) => {
-    if (!confirm('Rotate this token? The old token will be invalidated.')) return;
+    if (!confirm(t('tenant.tokens.confirmRotate'))) return;
     setError('');
     setSuccess('');
     try {

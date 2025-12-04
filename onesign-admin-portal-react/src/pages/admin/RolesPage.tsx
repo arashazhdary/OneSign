@@ -305,7 +305,7 @@ const RolesPage = () => {
   const handleDelete = async (role: Role) => {
     if (confirm(`${t('roles.deleteRole')}: ${role.name}?`)) {
       setRoles((prev) => prev.filter((r) => r.id !== role.id));
-      toast.success('Role deleted successfully');
+      toast.success(t('admin.roles.messages.deleted'));
     }
   };
 
@@ -360,13 +360,13 @@ const RolesPage = () => {
               label={t('roles.roleName')}
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Enter role name"
+              placeholder={t('admin.roles.placeholders.roleName')}
             />
             <Input
               label={t('roles.description')}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Enter role description"
+              placeholder={t('admin.roles.placeholders.roleDescription')}
             />
 
             <div>

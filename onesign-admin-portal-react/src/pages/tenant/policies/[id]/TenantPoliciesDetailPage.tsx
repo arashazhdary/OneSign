@@ -247,7 +247,7 @@ export default function TenantPoliciesDetailPage() {
 
   const handleTestPolicy = async () => {
     if (!testUserId.trim()) {
-      setError('Please enter a user ID');
+      setError(t('tenant.policies.errors.provideUserId'));
       return;
     }
 
@@ -268,7 +268,7 @@ export default function TenantPoliciesDetailPage() {
 
   const handleApplyPolicy = async () => {
     if (!applyEntityId.trim()) {
-      setError('Please enter an entity ID');
+      setError(t('tenant.policies.errors.provideEntityId'));
       return;
     }
 

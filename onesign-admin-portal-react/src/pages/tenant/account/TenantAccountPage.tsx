@@ -411,10 +411,10 @@ export default function TenantAccountPage() {
                         value={language}
                         onChange={(e) => setLanguage(e.target.value)}
                       >
-                        <option value="en">English</option>
-                        <option value="fa">فارسی</option>
-                        <option value="ar">العربية</option>
-                        <option value="fr">Français</option>
+                        <option value="en">{t('common.languages.english')}</option>
+                        <option value="fa">{t('common.languages.persian')}</option>
+                        <option value="ar">{t('common.languages.arabic')}</option>
+                        <option value="fr">{t('common.languages.french')}</option>
                       </select>
                     </div>
                   </div>

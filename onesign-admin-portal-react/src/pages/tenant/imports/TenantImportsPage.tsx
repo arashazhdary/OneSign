@@ -300,7 +300,7 @@ export default function TenantImportsPage() {
         selectedTemplate || undefined,
         fieldMappings.length > 0 ? fieldMappings : undefined
       );
-      setSuccess('File uploaded successfully. Import job started.');
+      setSuccess(t('tenant.imports.messages.uploadSuccess'));
       setShowUploadModal(false);
       resetUploadForm();
       fetchImports();
@@ -312,14 +312,14 @@ export default function TenantImportsPage() {
 
   const handleRollback = async (importId: string) => {
     if (!tenantId) return;
-    if (!confirm('Are you sure you want to rollback this import? All imported records will be deleted.')) return;
+    if (!confirm(t('tenant.imports.confirmRollback'))) return;
 
     setError('');
     setSuccess('');
 
     try {
       await tenantService.rollbackImport(tenantId, importId);
-      setSuccess('Import rolled back successfully');
+      setSuccess(t('tenant.imports.messages.rollbackSuccess'));
       fetchImports();
     } catch (error: any) {
       setError(error?.message || t('common.failedToRollbackImport'));
@@ -331,7 +331,7 @@ export default function TenantImportsPage() {
     if (!template) return;
 
     try {
-      setSuccess(`Downloading ${template.name}...`);
+      setSuccess(t('tenant.imports.messages.downloading', { name: template.name }));
       if (template.downloadUrl) {
         window.open(template.downloadUrl, '_blank');
       } else {
@@ -355,7 +355,7 @@ export default function TenantImportsPage() {
 
   const openPreviewModal = () => {
     if (!selectedFile) {
-      setError('Please select a file first');
+      setError(t('tenant.imports.errors.selectFile'));
       return;
     }
     setShowPreviewModal(true);
@@ -368,7 +368,7 @@ export default function TenantImportsPage() {
 
   const openMappingModal = () => {
     if (!selectedFile) {
-      setError('Please select a file first');
+      setError(t('tenant.imports.errors.selectFile'));
       return;
     }
     const headers = Object.keys(previewData[0] || {});
@@ -437,7 +437,7 @@ export default function TenantImportsPage() {
           className="flex flex-col items-center gap-4"
         >
           <div className="w-16 h-16 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
-          <p className="text-gray-600 dark:text-gray-300">Loading imports...</p>
+          <p className="text-gray-600 dark:text-gray-300">{t('tenant.imports.loading')}</p>
         </motion.div>
       </div>
     );
@@ -446,7 +446,7 @@ export default function TenantImportsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 p-8">
       <Helmet>
-        <title>Data Import - Management</title>
+        <title>{t('tenant.imports.title')} - {t('common.management')}</title>
       </Helmet>
 
       {/* Header */}
@@ -460,8 +460,8 @@ export default function TenantImportsPage() {
             <Upload className="w-8 h-8 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Data Import</h1>
-            <p className="text-gray-500 dark:text-gray-400">Import and manage bulk data uploads</p>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('tenant.imports.title')}</h1>
+            <p className="text-gray-500 dark:text-gray-400">{t('tenant.imports.subtitle')}</p>
           </div>
         </div>
         <motion.button
@@ -471,35 +471,35 @@ export default function TenantImportsPage() {
           className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
         >
           <FileUp className="w-5 h-5" />
-          Upload File
+          {t('tenant.imports.uploadFile')}
         </motion.button>
       </motion.div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard
-          title="Total Imports"
+          title={t('tenant.imports.stats.totalImports')}
           value={imports.length}
           icon={<FileSpreadsheet className="w-6 h-6 text-white" />}
           color="from-blue-500 to-cyan-600"
           delay={0}
         />
         <StatCard
-          title="Records Imported"
+          title={t('tenant.imports.stats.recordsImported')}
           value={totalRecordsImported.toLocaleString()}
           icon={<CheckCircle className="w-6 h-6 text-white" />}
           color="from-green-500 to-emerald-600"
           delay={1}
         />
         <StatCard
-          title="Templates"
+          title={t('tenant.imports.stats.templates')}
           value={templates.length}
           icon={<LayoutTemplate className="w-6 h-6 text-white" />}
           color="from-purple-500 to-indigo-600"
           delay={2}
         />
         <StatCard
-          title="Failed Imports"
+          title={t('tenant.imports.stats.failedImports')}
           value={failedImports}
           icon={<AlertTriangle className="w-6 h-6 text-white" />}
           color="from-orange-500 to-red-600"
@@ -544,7 +544,7 @@ export default function TenantImportsPage() {
           <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
             <LayoutTemplate className="w-5 h-5 text-purple-600 dark:text-purple-400" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Import Templates</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('tenant.imports.importTemplates')}</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {templates.map((template, index) => (
@@ -580,7 +580,7 @@ export default function TenantImportsPage() {
                 className="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300"
               >
                 <Download className="w-4 h-4" />
-                Download Template
+                {t('tenant.imports.downloadTemplate')}
               </motion.button>
             </motion.div>
           ))}
@@ -598,19 +598,19 @@ export default function TenantImportsPage() {
           <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
             <History className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Import History</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('tenant.imports.importHistory')}</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
             <thead className="bg-gray-50 dark:bg-slate-900/50">
               <tr>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">File Name</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Data Type</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Progress</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Records</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
-                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('tenant.imports.table.fileName')}</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('tenant.imports.table.dataType')}</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('tenant.imports.table.status')}</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('tenant.imports.table.progress')}</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('tenant.imports.table.records')}</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('tenant.imports.table.created')}</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
@@ -664,12 +664,12 @@ export default function TenantImportsPage() {
                       <div className="space-y-1">
                         <p className="text-green-600 dark:text-green-400 flex items-center gap-1">
                           <CheckCircle className="w-3 h-3" />
-                          {job.successfulRecords} success
+                          {job.successfulRecords} {t('tenant.imports.status.success')}
                         </p>
                         {job.failedRecords > 0 && (
                           <p className="text-red-600 dark:text-red-400 flex items-center gap-1">
                             <XCircle className="w-3 h-3" />
-                            {job.failedRecords} failed
+                            {job.failedRecords} {t('tenant.imports.status.failed')}
                           </p>
                         )}
                       </div>
@@ -716,7 +716,7 @@ export default function TenantImportsPage() {
               <div className="p-4 rounded-full bg-gray-100 dark:bg-slate-700">
                 <FileSpreadsheet className="w-8 h-8 text-gray-400" />
               </div>
-              <p className="text-gray-500 dark:text-gray-400">No import history found. Upload a file to get started.</p>
+              <p className="text-gray-500 dark:text-gray-400">{t('tenant.imports.noHistory')}</p>
             </div>
           </div>
         )}
@@ -729,12 +729,12 @@ export default function TenantImportsPage() {
           setShowUploadModal(false);
           resetUploadForm();
         }}
-        title="Upload Import File"
+        title={t('tenant.imports.uploadModal.title')}
         size="lg"
       >
         <form onSubmit={handleUpload} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Data Type *</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('tenant.imports.uploadModal.dataType')}</label>
             <select
               className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
               value={selectedDataType}
@@ -747,13 +747,13 @@ export default function TenantImportsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Select Template (optional)</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('tenant.imports.uploadModal.selectTemplate')}</label>
             <select
               className="w-full px-4 py-3 border border-gray-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
               value={selectedTemplate}
               onChange={(e) => setSelectedTemplate(e.target.value)}
             >
-              <option value="">No template</option>
+              <option value="">{t('tenant.imports.uploadModal.noTemplate')}</option>
               {templates
                 .filter((t) => t.dataType === selectedDataType)
                 .map((template) => (
@@ -763,7 +763,7 @@ export default function TenantImportsPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Upload File *</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('tenant.imports.uploadModal.uploadFile')}</label>
             <div
               className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
                 isDragging
@@ -789,10 +789,10 @@ export default function TenantImportsPage() {
                   </div>
                   <div>
                     <p className="text-gray-700 dark:text-gray-300 font-medium">
-                      Drop your file here, or <span className="text-indigo-600 dark:text-indigo-400">browse</span>
+                      {t('tenant.imports.uploadModal.dropFile')} <span className="text-indigo-600 dark:text-indigo-400">{t('tenant.imports.uploadModal.browse')}</span>
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      Supported formats: CSV, JSON, Excel (XLSX)
+                      {t('tenant.imports.uploadModal.supportedFormats')}
                     </p>
                   </div>
                 </div>
@@ -813,7 +813,7 @@ export default function TenantImportsPage() {
                 <div>
                   <p className="text-sm font-medium text-gray-900 dark:text-white">{selectedFile.name}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Size: {(selectedFile.size / 1024).toFixed(2)} KB
+                    {t('tenant.imports.uploadModal.size')}: {(selectedFile.size / 1024).toFixed(2)} KB
                   </p>
                 </div>
               </div>
@@ -830,7 +830,7 @@ export default function TenantImportsPage() {
               className="flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-xl hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors disabled:opacity-50"
             >
               <Eye className="w-4 h-4" />
-              Preview Data
+              {t('tenant.imports.uploadModal.previewData')}
             </motion.button>
             <motion.button
               type="button"
@@ -841,7 +841,7 @@ export default function TenantImportsPage() {
               className="flex items-center gap-2 px-4 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-xl hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors disabled:opacity-50"
             >
               <Settings2 className="w-4 h-4" />
-              Configure Mapping
+              {t('tenant.imports.uploadModal.configureMapping')}
             </motion.button>
           </div>
 
@@ -856,7 +856,7 @@ export default function TenantImportsPage() {
               }}
               className="px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
             >
-              Cancel
+              {t('common.cancel')}
             </motion.button>
             <motion.button
               type="submit"
@@ -865,7 +865,7 @@ export default function TenantImportsPage() {
               disabled={!selectedFile}
               className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
             >
-              Upload & Import
+              {t('tenant.imports.uploadModal.uploadImport')}
             </motion.button>
           </div>
         </form>
@@ -875,7 +875,7 @@ export default function TenantImportsPage() {
       <Modal
         isOpen={showPreviewModal}
         onClose={() => setShowPreviewModal(false)}
-        title="Data Preview (First 3 rows)"
+        title={t('tenant.imports.previewModal.title')}
         size="xl"
       >
         <div className="overflow-x-auto">
@@ -909,7 +909,7 @@ export default function TenantImportsPage() {
             onClick={() => setShowPreviewModal(false)}
             className="px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
           >
-            Close
+            {t('common.close')}
           </motion.button>
         </div>
       </Modal>
@@ -918,7 +918,7 @@ export default function TenantImportsPage() {
       <Modal
         isOpen={showMappingModal}
         onClose={() => setShowMappingModal(false)}
-        title="Configure Field Mapping"
+        title={t('tenant.imports.mappingModal.title')}
         size="lg"
       >
         <div className="space-y-4">
@@ -931,7 +931,7 @@ export default function TenantImportsPage() {
               className="grid grid-cols-3 gap-4 items-center p-4 bg-gray-50 dark:bg-slate-700/50 rounded-xl"
             >
               <div>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Source Field</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t('tenant.imports.mappingModal.sourceField')}</label>
                 <div className="px-3 py-2 bg-white dark:bg-slate-600 border border-gray-200 dark:border-slate-500 rounded-lg text-sm text-gray-700 dark:text-gray-300">
                   {mapping.sourceField}
                 </div>
@@ -940,7 +940,7 @@ export default function TenantImportsPage() {
                 <ArrowRight className="w-5 h-5 text-gray-400" />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Target Field</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{t('tenant.imports.mappingModal.targetField')}</label>
                 <input
                   type="text"
                   value={mapping.targetField}
@@ -962,7 +962,7 @@ export default function TenantImportsPage() {
             onClick={() => setShowMappingModal(false)}
             className="px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
           >
-            Cancel
+            {t('common.cancel')}
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -970,7 +970,7 @@ export default function TenantImportsPage() {
             onClick={() => setShowMappingModal(false)}
             className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
           >
-            Save Mapping
+            {t('tenant.imports.mappingModal.saveMapping')}
           </motion.button>
         </div>
       </Modal>
@@ -990,7 +990,7 @@ export default function TenantImportsPage() {
             <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
               <p className="text-sm text-red-700 dark:text-red-400 flex items-center gap-2">
                 <AlertCircle className="w-4 h-4" />
-                {selectedImport.validationErrors.length} errors found in this import
+                {t('tenant.imports.errorsModal.errorsFound', { count: selectedImport.validationErrors.length })}
               </p>
             </div>
             <div className="overflow-x-auto">
@@ -1033,7 +1033,7 @@ export default function TenantImportsPage() {
             }}
             className="px-4 py-2 border border-gray-300 dark:border-slate-600 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
           >
-            Close
+            {t('common.close')}
           </motion.button>
         </div>
       </Modal>

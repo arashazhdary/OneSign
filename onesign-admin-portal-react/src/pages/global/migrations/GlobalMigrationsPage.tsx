@@ -91,7 +91,7 @@ export default function GlobalMigrationsPage() {
           id: 'mig-001',
           name: 'AddUserPreferencesTable',
           version: '1.5.0',
-          description: 'Create user_preferences table for storing user settings',
+          description: t('migrations.createUserPreferencesTableDesc'),
           type: 'Schema',
           status: 'Completed',
           appliedAt: '2024-11-20T10:30:00Z',
@@ -107,7 +107,7 @@ export default function GlobalMigrationsPage() {
           id: 'mig-002',
           name: 'AddIndexOnTenantUsers',
           version: '1.5.1',
-          description: 'Add composite index on tenant_id and user_id for faster queries',
+          description: t('migrations.addIndexOnTenantUsersDesc'),
           type: 'Index',
           status: 'Completed',
           appliedAt: '2024-11-21T14:15:00Z',
@@ -123,7 +123,7 @@ export default function GlobalMigrationsPage() {
           id: 'mig-003',
           name: 'MigrateOldNotifications',
           version: '1.5.2',
-          description: 'Migrate old notification format to new schema',
+          description: t('migrations.migrateOldNotificationsDesc'),
           type: 'Data',
           status: 'Failed',
           appliedAt: '2024-11-22T09:00:00Z',
@@ -139,7 +139,7 @@ export default function GlobalMigrationsPage() {
           id: 'mig-004',
           name: 'AddAuditLogPartitioning',
           version: '1.5.3',
-          description: 'Partition audit_logs table by month for better performance',
+          description: t('migrations.addAuditLogPartitioningDesc'),
           type: 'Schema',
           status: 'Completed',
           appliedAt: '2024-11-22T16:30:00Z',
@@ -163,7 +163,7 @@ export default function GlobalMigrationsPage() {
           id: 'mig-005',
           name: 'AddTenantBillingTable',
           version: '1.6.0',
-          description: 'Create tenant_billing table for storing billing information',
+          description: t('migrations.createTenantBillingTableDesc'),
           type: 'Schema',
           status: 'Pending',
           appliedAt: null,
@@ -179,7 +179,7 @@ export default function GlobalMigrationsPage() {
           id: 'mig-006',
           name: 'OptimizeTemplateQueries',
           version: '1.6.1',
-          description: 'Add indexes and optimize template query performance',
+          description: t('migrations.optimizeTemplateQueriesDesc'),
           type: 'Index',
           status: 'Pending',
           appliedAt: null,
@@ -214,7 +214,7 @@ export default function GlobalMigrationsPage() {
         migrationId: 'mig-004',
         timestamp: '2024-11-22T16:30:05Z',
         level: 'INFO',
-        message: 'Starting migration: AddAuditLogPartitioning',
+        message: t('migrations.startingMigration', { name: 'AddAuditLogPartitioning' }),
         details: { version: '1.5.3' },
       },
       {
@@ -222,7 +222,7 @@ export default function GlobalMigrationsPage() {
         migrationId: 'mig-004',
         timestamp: '2024-11-22T16:30:10Z',
         level: 'INFO',
-        message: 'Creating partitions for audit_logs table',
+        message: t('migrations.creatingPartitions'),
         details: { partitions: 12 },
       },
       {
@@ -230,7 +230,7 @@ export default function GlobalMigrationsPage() {
         migrationId: 'mig-004',
         timestamp: '2024-11-22T16:32:45Z',
         level: 'INFO',
-        message: 'Migration completed successfully',
+        message: t('migrations.migrationCompletedSuccessfully'),
         details: { executionTime: 8901 },
       },
       {
@@ -238,7 +238,7 @@ export default function GlobalMigrationsPage() {
         migrationId: 'mig-003',
         timestamp: '2024-11-22T09:00:05Z',
         level: 'ERROR',
-        message: 'Migration failed: Foreign key constraint violation',
+        message: t('migrations.migrationFailed', { error: 'Foreign key constraint violation' }),
         details: { error: 'FK_notification_template_id', table: 'notifications' },
       },
       {
@@ -246,7 +246,7 @@ export default function GlobalMigrationsPage() {
         migrationId: 'mig-003',
         timestamp: '2024-11-22T09:15:00Z',
         level: 'WARNING',
-        message: 'Rolling back migration',
+        message: t('migrations.rollingBackMigration'),
         details: { reason: 'Constraint violation' },
       },
     ]);
@@ -263,7 +263,7 @@ export default function GlobalMigrationsPage() {
 
     try {
       await globalService.applyPlatformMigration(migrationToRun.id);
-      setSuccess(`Migration ${migrationToRun.name} started successfully`);
+      setSuccess(t('migrations.migrationStartedSuccessfully', { name: migrationToRun.name }));
       setShowRunModal(false);
       setMigrationToRun(null);
       fetchData();
@@ -279,7 +279,7 @@ export default function GlobalMigrationsPage() {
 
     try {
       // Would call rollback API
-      setSuccess(`Migration ${migrationToRollback.name} rolled back successfully`);
+      setSuccess(t('migrations.migrationRolledBackSuccessfully', { name: migrationToRollback.name }));
       setShowRollbackModal(false);
       setMigrationToRollback(null);
       fetchData();

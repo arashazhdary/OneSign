@@ -146,19 +146,19 @@ export default function TenantDomainsPage() {
 
   const handleAdd = async () => {
     if (!newDomain) {
-      setError('Please enter a domain name');
+      setError(t('tenant.domains.errors.enterDomain'));
       return;
     }
     setError('');
     setSuccess('');
     try {
       await tenantService.addCustomDomain('tenant-id', { domain: newDomain, verificationMethod });
-      setSuccess('Domain added successfully. Please configure DNS records.');
+      setSuccess(t('tenant.domains.messages.added'));
       setShowAdd(false);
       setNewDomain('');
       fetchDomains();
     } catch (error) {
-      setError('Failed to add custom domain');
+      setError(t('tenant.domains.errors.failedToAdd'));
       console.error('Failed to add custom domain:', error);
     }
   };
@@ -168,24 +168,24 @@ export default function TenantDomainsPage() {
     setSuccess('');
     try {
       await tenantService.verifyCustomDomain('tenant-id', domainId);
-      setSuccess('Verification check initiated');
+      setSuccess(t('tenant.domains.messages.verificationInitiated'));
       fetchDomains();
     } catch (error) {
-      setError('Failed to verify domain');
+      setError(t('tenant.domains.errors.failedToVerify'));
       console.error('Failed to verify custom domain:', error);
     }
   };
 
   const handleDelete = async (domainId: string) => {
-    if (!confirm('Are you sure you want to remove this domain?')) return;
+    if (!confirm(t('tenant.domains.confirmDelete'))) return;
     setError('');
     setSuccess('');
     try {
       await tenantService.deleteCustomDomain('tenant-id', domainId);
-      setSuccess('Domain removed successfully');
+      setSuccess(t('tenant.domains.messages.removed'));
       fetchDomains();
     } catch (error) {
-      setError('Failed to remove domain');
+      setError(t('tenant.domains.errors.failedToRemove'));
       console.error('Failed to delete custom domain:', error);
     }
   };
@@ -195,10 +195,10 @@ export default function TenantDomainsPage() {
     setSuccess('');
     try {
       await tenantService.setPrimaryDomain('tenant-id', domainId);
-      setSuccess('Primary domain updated');
+      setSuccess(t('tenant.domains.messages.primaryUpdated'));
       fetchDomains();
     } catch (error) {
-      setError('Failed to set primary domain');
+      setError(t('tenant.domains.errors.failedToSetPrimary'));
       console.error('Failed to set primary domain:', error);
     }
   };
@@ -208,17 +208,17 @@ export default function TenantDomainsPage() {
     setSuccess('');
     try {
       await tenantService.renewDomainSSL('tenant-id', domainId);
-      setSuccess('SSL renewal initiated');
+      setSuccess(t('tenant.domains.messages.sslRenewalInitiated'));
       fetchDomains();
     } catch (error) {
-      setError('Failed to renew SSL certificate');
+      setError(t('tenant.domains.errors.failedToRenewSSL'));
       console.error('Failed to renew SSL certificate:', error);
     }
   };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    setSuccess('Copied to clipboard');
+    setSuccess(t('tenant.domains.messages.copiedToClipboard'));
     setTimeout(() => setSuccess(''), 2000);
   };
 
@@ -422,13 +422,13 @@ export default function TenantDomainsPage() {
                     {domain.isPrimary && (
                       <span className="px-2 py-1 text-xs rounded-full font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 flex items-center gap-1">
                         <Star className="w-3 h-3" />
-                        Primary
+                        {t('tenant.domains.primary')}
                       </span>
                     )}
                   </div>
                   <div className="text-sm text-slate-500 dark:text-slate-400">
-                    Created: {new Date(domain.createdAt).toLocaleString()}
-                    {domain.verifiedAt && ` | Verified: ${new Date(domain.verifiedAt).toLocaleString()}`}
+                    {t('tenant.domains.created')}: {new Date(domain.createdAt).toLocaleString()}
+                    {domain.verifiedAt && ` | ${t('tenant.domains.verified')}: ${new Date(domain.verifiedAt).toLocaleString()}`}
                   </div>
                 </div>
 
@@ -440,7 +440,7 @@ export default function TenantDomainsPage() {
                       onClick={() => handleVerify(domain.id)}
                       className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                     >
-                      Verify Now
+                      {t('tenant.domains.verifyNow')}
                     </motion.button>
                   )}
                   {domain.status === 'active' && !domain.isPrimary && (
@@ -451,7 +451,7 @@ export default function TenantDomainsPage() {
                       className="px-3 py-1.5 text-sm border border-purple-300 dark:border-purple-700 text-purple-600 dark:text-purple-400 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors flex items-center gap-1"
                     >
                       <Star className="w-3 h-3" />
-                      Set Primary
+                      {t('tenant.domains.setPrimary')}
                     </motion.button>
                   )}
                   {domain.sslStatus === 'active' && (
@@ -462,7 +462,7 @@ export default function TenantDomainsPage() {
                       className="px-3 py-1.5 text-sm border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-1"
                     >
                       <RefreshCw className="w-3 h-3" />
-                      Renew SSL
+                      {t('tenant.domains.renewSSL')}
                     </motion.button>
                   )}
                   <motion.button
@@ -472,14 +472,14 @@ export default function TenantDomainsPage() {
                     className="px-3 py-1.5 text-sm text-red-600 dark:text-red-400 border border-red-300 dark:border-red-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-1"
                   >
                     <Trash2 className="w-3 h-3" />
-                    Remove
+                    {t('tenant.domains.remove')}
                   </motion.button>
                 </div>
               </div>
 
               {/* DNS Records */}
               <div className="mt-4">
-                <h4 className="text-sm font-semibold mb-3 text-slate-700 dark:text-slate-300">DNS Configuration</h4>
+                <h4 className="text-sm font-semibold mb-3 text-slate-700 dark:text-slate-300">{t('tenant.domains.dnsConfiguration')}</h4>
                 <div className="space-y-2">
                   {domain.dnsRecords.map((record, idx) => (
                     <div key={idx} className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-3">
@@ -490,7 +490,7 @@ export default function TenantDomainsPage() {
                           </span>
                           <span className={`text-xs flex items-center gap-1 ${record.verified ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
                             {record.verified ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                            {record.verified ? 'Verified' : 'Pending'}
+                            {record.verified ? t('tenant.domains.verified') : t('tenant.domains.pending')}
                           </span>
                         </div>
                         <motion.button
@@ -504,11 +504,11 @@ export default function TenantDomainsPage() {
                       </div>
                       <div className="space-y-1 text-sm">
                         <div className="grid grid-cols-12 gap-2">
-                          <span className="col-span-2 text-slate-500 dark:text-slate-400 font-medium">Name:</span>
+                          <span className="col-span-2 text-slate-500 dark:text-slate-400 font-medium">{t('tenant.domains.name')}:</span>
                           <span className="col-span-10 font-mono text-xs text-slate-700 dark:text-slate-300">{record.name}</span>
                         </div>
                         <div className="grid grid-cols-12 gap-2">
-                          <span className="col-span-2 text-slate-500 dark:text-slate-400 font-medium">Value:</span>
+                          <span className="col-span-2 text-slate-500 dark:text-slate-400 font-medium">{t('tenant.domains.value')}:</span>
                           <span className="col-span-10 font-mono text-xs break-all text-slate-700 dark:text-slate-300">{record.value}</span>
                         </div>
                       </div>
@@ -523,12 +523,12 @@ export default function TenantDomainsPage() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-slate-600 dark:text-slate-400 flex items-center gap-2">
                       <Shield className="w-4 h-4" />
-                      SSL Certificate Expires:
+                      {t('tenant.domains.sslExpires')}:
                     </span>
                     <span className="font-semibold text-slate-900 dark:text-white">
                       {new Date(domain.sslExpiry).toLocaleDateString()}
                       <span className="ml-2 text-slate-500 dark:text-slate-400 font-normal">
-                        ({Math.ceil((new Date(domain.sslExpiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24))} days remaining)
+                        ({t('tenant.domains.daysRemaining', { days: Math.ceil((new Date(domain.sslExpiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) })})
                       </span>
                     </span>
                   </div>
@@ -544,18 +544,17 @@ export default function TenantDomainsPage() {
                 >
                   <h4 className="font-semibold text-blue-800 dark:text-blue-400 mb-2 flex items-center gap-2">
                     <AlertCircle className="w-4 h-4" />
-                    Action Required
+                    {t('tenant.domains.actionRequired')}
                   </h4>
                   <p className="text-sm text-blue-700 dark:text-blue-300">
-                    Add the DNS records shown above to your domain's DNS settings.
-                    Verification can take up to 48 hours, but usually completes within a few minutes.
+                    {t('tenant.domains.verificationInstructions')}
                   </p>
                   <button
                     onClick={() => handleVerify(domain.id)}
                     className="mt-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline flex items-center gap-1"
                   >
                     <RefreshCw className="w-3 h-3" />
-                    Check verification status
+                    {t('tenant.domains.checkVerificationStatus')}
                   </button>
                 </motion.div>
               )}
@@ -569,15 +568,15 @@ export default function TenantDomainsPage() {
               className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-12 text-center"
             >
               <Globe className="w-16 h-16 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">No Custom Domains</h3>
-              <p className="text-slate-500 dark:text-slate-400 mb-4">Add a custom domain to brand your authentication experience.</p>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">{t('tenant.domains.noDomains')}</h3>
+              <p className="text-slate-500 dark:text-slate-400 mb-4">{t('tenant.domains.noDomainsDescription')}</p>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowAdd(true)}
                 className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all"
               >
-                Add Your First Domain
+                {t('tenant.domains.addFirstDomain')}
               </motion.button>
             </motion.div>
           )}
@@ -597,23 +596,23 @@ export default function TenantDomainsPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Domain Name
+                {t('tenant.domains.modal.domainName')}
               </label>
               <input
                 type="text"
                 value={newDomain}
                 onChange={(e) => setNewDomain(e.target.value)}
-                placeholder="app.yourdomain.com"
+                placeholder={t('tenant.domains.modal.domainPlaceholder')}
                 className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
               />
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                Enter the fully qualified domain name (e.g., app.yourdomain.com)
+                {t('tenant.domains.modal.domainHelp')}
               </p>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Verification Method
+                {t('tenant.domains.modal.verificationMethod')}
               </label>
               <div className="space-y-2">
                 <label className="flex items-start p-3 border border-slate-200 dark:border-slate-600 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
@@ -625,8 +624,8 @@ export default function TenantDomainsPage() {
                     className="mt-1 mr-3"
                   />
                   <div>
-                    <div className="font-medium text-slate-900 dark:text-white">DNS Verification (Recommended)</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Add DNS records to verify domain ownership</div>
+                    <div className="font-medium text-slate-900 dark:text-white">{t('tenant.domains.modal.dnsVerification')}</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">{t('tenant.domains.modal.dnsVerificationHelp')}</div>
                   </div>
                 </label>
                 <label className="flex items-start p-3 border border-slate-200 dark:border-slate-600 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
@@ -638,8 +637,8 @@ export default function TenantDomainsPage() {
                     className="mt-1 mr-3"
                   />
                   <div>
-                    <div className="font-medium text-slate-900 dark:text-white">File Upload</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">Upload a verification file to your domain</div>
+                    <div className="font-medium text-slate-900 dark:text-white">{t('tenant.domains.modal.fileUpload')}</div>
+                    <div className="text-xs text-slate-500 dark:text-slate-400">{t('tenant.domains.modal.fileUploadHelp')}</div>
                   </div>
                 </label>
               </div>
@@ -647,8 +646,7 @@ export default function TenantDomainsPage() {
 
             <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl text-sm">
               <p className="text-yellow-800 dark:text-yellow-400">
-                <strong>Note:</strong> After adding the domain, you'll need to configure DNS records
-                and wait for verification. SSL certificates will be automatically provisioned after verification.
+                {t('tenant.domains.modal.note')}
               </p>
             </div>
 
@@ -662,7 +660,7 @@ export default function TenantDomainsPage() {
                 }}
                 className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               >
-                Cancel
+                {t('common.cancel')}
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.02 }}
@@ -670,7 +668,7 @@ export default function TenantDomainsPage() {
                 onClick={handleAdd}
                 className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all"
               >
-                Add Domain
+                {t('tenant.domains.addDomain')}
               </motion.button>
             </div>
           </div>

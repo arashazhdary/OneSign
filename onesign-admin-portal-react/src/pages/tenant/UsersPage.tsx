@@ -381,7 +381,7 @@ const UsersPage = () => {
               label={t('users.name')}
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Enter user name"
+              placeholder={t('users.enterUserName', 'Enter user name')}
             />
             <Input
               label={t('users.email')}
@@ -389,7 +389,7 @@ const UsersPage = () => {
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               leftIcon={<Mail className="w-4 h-4" />}
-              placeholder="user@example.com"
+              placeholder={t('users.emailPlaceholder', 'user@example.com')}
             />
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">{t('users.role')}</label>

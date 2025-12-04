@@ -220,7 +220,7 @@ export default function TenantAutomationWorkflowsDetailPage() {
         await activateWorkflow(workflowId);
       }
 
-      setSuccess(`Workflow ${action}d successfully`);
+      setSuccess(t(`tenant.automation.workflow.${action}dSuccessfully`, `Workflow ${action}d successfully`));
       fetchWorkflow();
     } catch (err) {
       setError(t('common.error'));
@@ -236,7 +236,7 @@ export default function TenantAutomationWorkflowsDetailPage() {
     try {
       JSON.parse(testData);
       await testWorkflowDetail(workflowId);
-      setSuccess('Workflow test completed successfully');
+      setSuccess(t('tenant.automation.workflow.testCompletedSuccessfully', 'Workflow test completed successfully'));
       setShowTestModal(false);
       setActiveTab('runs');
       fetchRuns();
@@ -253,7 +253,7 @@ export default function TenantAutomationWorkflowsDetailPage() {
     setSuccess('');
     try {
       await updateWorkflowBasicInfo(workflowId, { name: editName, description: editDescription });
-      setSuccess('Workflow updated successfully');
+      setSuccess(t('tenant.automation.workflow.updatedSuccessfully', 'Workflow updated successfully'));
       setShowEditModal(false);
       fetchWorkflow();
     } catch (err) {
@@ -311,7 +311,7 @@ export default function TenantAutomationWorkflowsDetailPage() {
           className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-6 py-4 rounded-xl flex items-center gap-3"
         >
           <AlertCircle className="w-6 h-6" />
-          Workflow not found
+          {t('tenant.automation.workflow.notFound', 'Workflow not found')}
         </motion.div>
       </div>
     );
@@ -331,7 +331,7 @@ export default function TenantAutomationWorkflowsDetailPage() {
         className="flex items-center gap-2 text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 mb-6 transition-colors"
       >
         <ArrowLeft className="w-5 h-5" />
-        Back to Workflows
+        {t('tenant.automation.workflow.backToWorkflows', 'Back to Workflows')}
       </motion.button>
 
       {/* Header */}
@@ -404,7 +404,7 @@ export default function TenantAutomationWorkflowsDetailPage() {
           }`}
         >
           {workflow.isActive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-          {workflow.isActive ? 'Deactivate' : 'Activate'}
+          {workflow.isActive ? t('common.deactivate', 'Deactivate') : t('common.activate', 'Activate')}
         </motion.button>
         <motion.button
           whileHover={{ scale: 1.02 }}
@@ -413,7 +413,7 @@ export default function TenantAutomationWorkflowsDetailPage() {
           className="flex items-center gap-2 bg-blue-500 text-white px-5 py-2.5 rounded-xl hover:bg-blue-600 font-medium transition-all"
         >
           <Edit className="w-4 h-4" />
-          Edit
+          {t('common.edit', 'Edit')}
         </motion.button>
         <motion.button
           whileHover={{ scale: 1.02 }}
@@ -422,7 +422,7 @@ export default function TenantAutomationWorkflowsDetailPage() {
           className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl hover:shadow-lg font-medium transition-all"
         >
           <TestTube className="w-4 h-4" />
-          Test
+          {t('common.test', 'Test')}
         </motion.button>
       </motion.div>
 

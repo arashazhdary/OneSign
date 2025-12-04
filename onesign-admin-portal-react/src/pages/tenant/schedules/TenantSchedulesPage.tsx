@@ -521,7 +521,7 @@ export default function TenantSchedulesPage() {
               className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 transition-all font-medium"
             >
               <Plus className="w-5 h-5" />
-              Create Schedule
+              {t('tenant.schedules.createSchedule')}
             </motion.button>
           </div>
         </motion.div>
@@ -628,7 +628,7 @@ export default function TenantSchedulesPage() {
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 transition-all font-medium"
             >
               <Plus className="w-5 h-5" />
-              Create Schedule
+              {t('tenant.schedules.createSchedule')}
             </motion.button>
           </motion.div>
         ) : (
@@ -666,7 +666,7 @@ export default function TenantSchedulesPage() {
                               ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
                               : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
                           }`}>
-                            {schedule.enabled ? 'Active' : 'Paused'}
+                            {schedule.enabled ? t('common.active') : t('tenant.schedules.paused')}
                           </span>
                           {schedule.lastStatus && (
                             <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${
@@ -774,7 +774,7 @@ export default function TenantSchedulesPage() {
             setSelectedSchedule(null);
             resetForm();
           }}
-          title={showCreateModal ? 'Create Schedule' : 'Edit Schedule'}
+          title={showCreateModal ? t('tenant.schedules.createSchedule') : t('tenant.schedules.editSchedule')}
           size="lg"
           footer={
             <div className="flex justify-end gap-3">
@@ -786,7 +786,7 @@ export default function TenantSchedulesPage() {
                 }}
                 className="px-4 py-2 text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={showCreateModal ? handleCreateSchedule : handleUpdateSchedule}
@@ -796,12 +796,12 @@ export default function TenantSchedulesPage() {
                 {loading ? (
                   <span className="flex items-center gap-2">
                     <RefreshCw className="w-4 h-4 animate-spin" />
-                    Saving...
+                    {t('common.saving')}
                   </span>
                 ) : showCreateModal ? (
-                  'Create Schedule'
+                  t('tenant.schedules.createSchedule')
                 ) : (
-                  'Update Schedule'
+                  t('tenant.schedules.updateSchedule')
                 )}
               </button>
             </div>
@@ -954,7 +954,7 @@ export default function TenantSchedulesPage() {
                 }}
                 className="px-4 py-2 text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleDeleteSchedule}
@@ -964,10 +964,10 @@ export default function TenantSchedulesPage() {
                 {loading ? (
                   <span className="flex items-center gap-2">
                     <RefreshCw className="w-4 h-4 animate-spin" />
-                    Deleting...
+                    {t('common.deleting')}
                   </span>
                 ) : (
-                  'Delete Schedule'
+                  t('tenant.schedules.deleteSchedule')
                 )}
               </button>
             </div>
@@ -1008,7 +1008,7 @@ export default function TenantSchedulesPage() {
                 }}
                 className="px-4 py-2 text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
               >
-                Close
+                {t('common.close')}
               </button>
             </div>
           }
@@ -1059,7 +1059,7 @@ export default function TenantSchedulesPage() {
                   className="flex items-center gap-2 px-3 py-1.5 text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
                 >
                   <Terminal className="w-4 h-4" />
-                  View Logs
+                  {t('tenant.schedules.viewLogs')}
                 </motion.button>
               </motion.div>
             ))}
@@ -1084,7 +1084,7 @@ export default function TenantSchedulesPage() {
                 }}
                 className="px-4 py-2 text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
               >
-                Close
+                {t('common.close')}
               </button>
             </div>
           }

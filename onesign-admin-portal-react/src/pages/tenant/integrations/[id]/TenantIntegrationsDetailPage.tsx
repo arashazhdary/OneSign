@@ -256,9 +256,9 @@ export default function TenantIntegrationsDetailPage() {
     setSuccess('');
 
     try {
-      setSuccess('Connection test successful');
+      setSuccess(t('tenant.integrations.connectionTestSuccess', 'Connection test successful'));
     } catch (err: any) {
-      setError(err?.message || 'Failed to test connection');
+      setError(err?.message || t('tenant.integrations.failedToTestConnection', 'Failed to test connection'));
     } finally {
       setTesting(false);
     }
@@ -272,12 +272,12 @@ export default function TenantIntegrationsDetailPage() {
     setSuccess('');
 
     try {
-      setSuccess('Sync started successfully');
+      setSuccess(t('tenant.integrations.syncStartedSuccess', 'Sync started successfully'));
       setTimeout(() => {
         fetchSyncLogs();
       }, 2000);
     } catch (err: any) {
-      setError(err?.message || 'Failed to start sync');
+      setError(err?.message || t('tenant.integrations.failedToStartSync', 'Failed to start sync'));
     } finally {
       setSyncing(false);
     }
@@ -293,10 +293,12 @@ export default function TenantIntegrationsDetailPage() {
 
     try {
       await tenantService.updateIntegration(id, { status: newStatus });
-      setSuccess(`Integration ${newStatus === 'active' ? 'enabled' : 'disabled'} successfully`);
+      setSuccess(newStatus === 'active'
+        ? t('tenant.integrations.enabledSuccess', 'Integration enabled successfully')
+        : t('tenant.integrations.disabledSuccess', 'Integration disabled successfully'));
       fetchData();
     } catch (err: any) {
-      setError(err?.message || 'Failed to update integration status');
+      setError(err?.message || t('tenant.integrations.failedToUpdateStatus', 'Failed to update integration status'));
     }
   };
 
@@ -312,7 +314,7 @@ export default function TenantIntegrationsDetailPage() {
     try {
       configObj = JSON.parse(editConfig);
     } catch (err) {
-      setConfigError('Invalid JSON configuration');
+      setConfigError(t('tenant.integrations.invalidJsonConfig', 'Invalid JSON configuration'));
       return;
     }
 
@@ -325,11 +327,11 @@ export default function TenantIntegrationsDetailPage() {
         }
       );
 
-      setSuccess('Integration updated successfully');
+      setSuccess(t('tenant.integrations.updatedSuccess', 'Integration updated successfully'));
       setShowEditModal(false);
       fetchData();
     } catch (err: any) {
-      setError(err?.message || 'Failed to update integration');
+      setError(err?.message || t('tenant.integrations.failedToUpdate', 'Failed to update integration'));
     }
   };
 
@@ -341,12 +343,12 @@ export default function TenantIntegrationsDetailPage() {
 
     try {
       await tenantService.deleteIntegration(id);
-      setSuccess('Integration deleted successfully');
+      setSuccess(t('tenant.integrations.deletedSuccess', 'Integration deleted successfully'));
       setTimeout(() => {
         navigate('/tenant/integrations');
       }, 1500);
     } catch (err: any) {
-      setError(err?.message || 'Failed to delete integration');
+      setError(err?.message || t('tenant.integrations.failedToDelete', 'Failed to delete integration'));
       setShowDeleteConfirm(false);
     }
   };
@@ -444,15 +446,15 @@ export default function TenantIntegrationsDetailPage() {
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-100 dark:bg-red-900/30 mb-6">
             <AlertCircle className="w-10 h-10 text-red-600 dark:text-red-400" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Integration Not Found</h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">The integration you're looking for doesn't exist.</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">{t('tenant.integrations.notFound', 'Integration Not Found')}</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">{t('tenant.integrations.notFoundDescription', "The integration you're looking for doesn't exist.")}</p>
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => navigate('/tenant/integrations')}
             className="px-6 py-3 bg-gradient-to-r from-teal-500 to-cyan-600 text-white rounded-xl font-medium hover:from-teal-600 hover:to-cyan-700 transition-all"
           >
-            Back to Integrations
+            {t('tenant.integrations.backToIntegrations', 'Back to Integrations')}
           </motion.button>
         </motion.div>
       </div>
@@ -502,7 +504,7 @@ export default function TenantIntegrationsDetailPage() {
               className="px-4 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 flex items-center gap-2 transition-all"
             >
               <Zap className="w-4 h-4" />
-              {testing ? 'Testing...' : 'Test Connection'}
+              {testing ? t('tenant.integrations.testing', 'Testing...') : t('tenant.integrations.testConnection', 'Test Connection')}
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -512,7 +514,7 @@ export default function TenantIntegrationsDetailPage() {
               className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-medium hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 flex items-center gap-2 transition-all"
             >
               <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
-              {syncing ? 'Syncing...' : 'Sync Now'}
+              {syncing ? t('tenant.integrations.syncing', 'Syncing...') : t('tenant.integrations.syncNow', 'Sync Now')}
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -527,12 +529,12 @@ export default function TenantIntegrationsDetailPage() {
               {integration.status === 'active' ? (
                 <>
                   <Pause className="w-4 h-4" />
-                  Disable
+                  {t('common.disable', 'Disable')}
                 </>
               ) : (
                 <>
                   <Play className="w-4 h-4" />
-                  Enable
+                  {t('common.enable', 'Enable')}
                 </>
               )}
             </motion.button>
@@ -543,7 +545,7 @@ export default function TenantIntegrationsDetailPage() {
               className="px-4 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 flex items-center gap-2 transition-all"
             >
               <Edit3 className="w-4 h-4" />
-              Edit
+              {t('common.edit', 'Edit')}
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -552,7 +554,7 @@ export default function TenantIntegrationsDetailPage() {
               className="px-4 py-2 bg-red-500 text-white rounded-xl font-medium hover:bg-red-600 flex items-center gap-2 transition-all"
             >
               <Trash2 className="w-4 h-4" />
-              Delete
+              {t('common.delete', 'Delete')}
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -561,7 +563,7 @@ export default function TenantIntegrationsDetailPage() {
               className="px-4 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 flex items-center gap-2 transition-all"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back
+              {t('common.back', 'Back')}
             </motion.button>
           </div>
         </motion.div>
@@ -606,28 +608,28 @@ export default function TenantIntegrationsDetailPage() {
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <StatCard
-            title="Total Syncs"
+            title={t('tenant.integrations.stats.totalSyncs', 'Total Syncs')}
             value={syncLogs.length}
             icon={<RefreshCw className="w-6 h-6 text-white" />}
             color="from-teal-500 to-cyan-600"
             delay={0}
           />
           <StatCard
-            title="Successful"
+            title={t('tenant.integrations.stats.successful', 'Successful')}
             value={successfulSyncs}
             icon={<CheckCircle className="w-6 h-6 text-white" />}
             color="from-green-500 to-emerald-600"
             delay={1}
           />
           <StatCard
-            title="Failed"
+            title={t('tenant.integrations.stats.failed', 'Failed')}
             value={failedSyncs}
             icon={<XCircle className="w-6 h-6 text-white" />}
             color="from-red-500 to-rose-600"
             delay={2}
           />
           <StatCard
-            title="Last Sync Records"
+            title={t('tenant.integrations.stats.lastSyncRecords', 'Last Sync Records')}
             value={syncLogs[0]?.recordsSynced || 0}
             icon={<Database className="w-6 h-6 text-white" />}
             color="from-blue-500 to-indigo-600"
@@ -660,7 +662,7 @@ export default function TenantIntegrationsDetailPage() {
                   />
                 )}
                 <tab.icon className="w-4 h-4 relative z-10" />
-                <span className="relative z-10">{tab.label}</span>
+                <span className="relative z-10">{t(`tenant.integrations.tabs.${tab.key}`, tab.label)}</span>
               </button>
             ))}
           </nav>
@@ -682,38 +684,38 @@ export default function TenantIntegrationsDetailPage() {
                   <div className="p-2 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600">
                     <Info className="w-5 h-5 text-white" />
                   </div>
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Integration Information</h2>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('tenant.integrations.integrationInformation', 'Integration Information')}</h2>
                 </div>
                 <div className="space-y-4">
                   <div>
-                    <label className="text-sm text-gray-500 dark:text-gray-400">Integration ID</label>
+                    <label className="text-sm text-gray-500 dark:text-gray-400">{t('tenant.integrations.integrationId', 'Integration ID')}</label>
                     <p className="font-mono text-sm text-gray-900 dark:text-white">{integration.id}</p>
                   </div>
                   <div>
-                    <label className="text-sm text-gray-500 dark:text-gray-400">Type</label>
+                    <label className="text-sm text-gray-500 dark:text-gray-400">{t('common.type', 'Type')}</label>
                     <p className="capitalize text-gray-900 dark:text-white">{integration.type}</p>
                   </div>
                   <div>
-                    <label className="text-sm text-gray-500 dark:text-gray-400">Provider</label>
+                    <label className="text-sm text-gray-500 dark:text-gray-400">{t('tenant.integrations.provider', 'Provider')}</label>
                     <p className="text-gray-900 dark:text-white">{integration.provider}</p>
                   </div>
                   <div>
-                    <label className="text-sm text-gray-500 dark:text-gray-400">Status</label>
+                    <label className="text-sm text-gray-500 dark:text-gray-400">{t('common.status', 'Status')}</label>
                     <div className="mt-1">{getStatusBadge(integration.status)}</div>
                   </div>
                   <div>
-                    <label className="text-sm text-gray-500 dark:text-gray-400">Last Sync</label>
+                    <label className="text-sm text-gray-500 dark:text-gray-400">{t('tenant.integrations.lastSync', 'Last Sync')}</label>
                     <p className="text-sm text-gray-900 dark:text-white flex items-center gap-2">
                       <Clock className="w-4 h-4 text-gray-400" />
-                      {integration.lastSyncAt ? formatDate(integration.lastSyncAt) : 'Never'}
+                      {integration.lastSyncAt ? formatDate(integration.lastSyncAt) : t('common.never', 'Never')}
                     </p>
                   </div>
                   <div>
-                    <label className="text-sm text-gray-500 dark:text-gray-400">Created</label>
+                    <label className="text-sm text-gray-500 dark:text-gray-400">{t('common.created', 'Created')}</label>
                     <p className="text-sm text-gray-900 dark:text-white">{formatDate(integration.createdAt)}</p>
                   </div>
                   <div>
-                    <label className="text-sm text-gray-500 dark:text-gray-400">Last Updated</label>
+                    <label className="text-sm text-gray-500 dark:text-gray-400">{t('common.lastUpdated', 'Last Updated')}</label>
                     <p className="text-sm text-gray-900 dark:text-white">{formatDate(integration.updatedAt)}</p>
                   </div>
                 </div>
@@ -725,24 +727,24 @@ export default function TenantIntegrationsDetailPage() {
                   <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600">
                     <Activity className="w-5 h-5 text-white" />
                   </div>
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Sync Statistics</h2>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('tenant.integrations.syncStatistics', 'Sync Statistics')}</h2>
                 </div>
                 <div className="grid grid-cols-2 gap-6">
                   <div className="text-center p-4 bg-gray-50 dark:bg-slate-700/50 rounded-xl">
                     <p className="text-3xl font-bold text-teal-600 dark:text-teal-400">{syncLogs.length}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Total Syncs</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('tenant.integrations.stats.totalSyncs', 'Total Syncs')}</p>
                   </div>
                   <div className="text-center p-4 bg-gray-50 dark:bg-slate-700/50 rounded-xl">
                     <p className="text-3xl font-bold text-green-600 dark:text-green-400">{successfulSyncs}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Successful</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('tenant.integrations.stats.successful', 'Successful')}</p>
                   </div>
                   <div className="text-center p-4 bg-gray-50 dark:bg-slate-700/50 rounded-xl">
                     <p className="text-3xl font-bold text-red-600 dark:text-red-400">{failedSyncs}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Failed</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('tenant.integrations.stats.failed', 'Failed')}</p>
                   </div>
                   <div className="text-center p-4 bg-gray-50 dark:bg-slate-700/50 rounded-xl">
                     <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{syncLogs[0]?.recordsSynced || 0}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Last Records</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('tenant.integrations.stats.lastRecords', 'Last Records')}</p>
                   </div>
                 </div>
               </div>
@@ -762,7 +764,7 @@ export default function TenantIntegrationsDetailPage() {
                   <div className="p-2 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600">
                     <Settings className="w-5 h-5 text-white" />
                   </div>
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Configuration</h2>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('common.configuration', 'Configuration')}</h2>
                 </div>
               </div>
               <div className="p-6">
@@ -786,25 +788,25 @@ export default function TenantIntegrationsDetailPage() {
                   <div className="p-2 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600">
                     <History className="w-5 h-5 text-white" />
                   </div>
-                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Sync History ({syncLogs.length})</h2>
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('tenant.integrations.syncHistory', 'Sync History')} ({syncLogs.length})</h2>
                 </div>
               </div>
               <div className="p-6">
                 {syncLogs.length === 0 ? (
                   <div className="text-center py-12">
                     <History className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500 dark:text-gray-400">No sync logs available</p>
+                    <p className="text-gray-500 dark:text-gray-400">{t('tenant.integrations.noSyncLogs', 'No sync logs available')}</p>
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="min-w-full">
                       <thead>
                         <tr className="border-b border-gray-200 dark:border-slate-700">
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Timestamp</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Records Synced</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Duration</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Errors</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('common.timestamp', 'Timestamp')}</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('common.status', 'Status')}</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('tenant.integrations.recordsSynced', 'Records Synced')}</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('common.duration', 'Duration')}</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">{t('common.errors', 'Errors')}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200 dark:divide-slate-700">
@@ -832,7 +834,7 @@ export default function TenantIntegrationsDetailPage() {
                                   ))}
                                 </ul>
                               ) : (
-                                <span className="text-gray-500 dark:text-gray-400">None</span>
+                                <span className="text-gray-500 dark:text-gray-400">{t('common.none', 'None')}</span>
                               )}
                             </td>
                           </motion.tr>
@@ -867,12 +869,12 @@ export default function TenantIntegrationsDetailPage() {
                   <div className="p-2 rounded-lg bg-gradient-to-br from-teal-500 to-cyan-600">
                     <Edit3 className="w-5 h-5 text-white" />
                   </div>
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">Edit Integration</h2>
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('tenant.integrations.editIntegration', 'Edit Integration')}</h2>
                 </div>
                 <form onSubmit={handleUpdateIntegration}>
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Integration Name</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('tenant.integrations.integrationName', 'Integration Name')}</label>
                       <input
                         type="text"
                         required
@@ -882,7 +884,7 @@ export default function TenantIntegrationsDetailPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Configuration (JSON)</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('tenant.integrations.configurationJson', 'Configuration (JSON)')}</label>
                       <textarea
                         value={editConfig}
                         onChange={(e) => setEditConfig(e.target.value)}
@@ -906,7 +908,7 @@ export default function TenantIntegrationsDetailPage() {
                       type="submit"
                       className="flex-1 px-6 py-3 bg-gradient-to-r from-teal-500 to-cyan-600 text-white rounded-xl font-medium hover:from-teal-600 hover:to-cyan-700 transition-all"
                     >
-                      Save Changes
+                      {t('common.saveChanges', 'Save Changes')}
                     </motion.button>
                     <motion.button
                       whileHover={{ scale: 1.02 }}
@@ -918,7 +920,7 @@ export default function TenantIntegrationsDetailPage() {
                       }}
                       className="px-6 py-3 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-slate-600 transition-all"
                     >
-                      Cancel
+                      {t('common.cancel', 'Cancel')}
                     </motion.button>
                   </div>
                 </form>
@@ -948,10 +950,10 @@ export default function TenantIntegrationsDetailPage() {
                   <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/30">
                     <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
                   </div>
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">Delete Integration</h2>
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('tenant.integrations.deleteIntegration', 'Delete Integration')}</h2>
                 </div>
                 <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  Are you sure you want to delete this integration? This action cannot be undone and will stop all sync operations.
+                  {t('tenant.integrations.deleteConfirmation', 'Are you sure you want to delete this integration? This action cannot be undone and will stop all sync operations.')}
                 </p>
                 <div className="flex gap-3">
                   <motion.button
@@ -960,7 +962,7 @@ export default function TenantIntegrationsDetailPage() {
                     onClick={handleDeleteIntegration}
                     className="flex-1 px-4 py-3 bg-red-500 text-white rounded-xl font-medium hover:bg-red-600 transition-all"
                   >
-                    Delete
+                    {t('common.delete', 'Delete')}
                   </motion.button>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
@@ -968,7 +970,7 @@ export default function TenantIntegrationsDetailPage() {
                     onClick={() => setShowDeleteConfirm(false)}
                     className="flex-1 px-4 py-3 bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:bg-gray-200 dark:hover:bg-slate-600 transition-all"
                   >
-                    Cancel
+                    {t('common.cancel', 'Cancel')}
                   </motion.button>
                 </div>
               </motion.div>

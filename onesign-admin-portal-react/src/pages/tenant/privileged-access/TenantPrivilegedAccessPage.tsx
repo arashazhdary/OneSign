@@ -349,7 +349,7 @@ export default function TenantPrivilegedAccessPage() {
   };
 
   const handleRevokeGrant = async (grantId: string) => {
-    if (!tenantId || !confirm('Are you sure you want to revoke this grant?')) return;
+    if (!tenantId || !confirm(t('tenant.privilegedAccess.confirmRevokeGrant'))) return;
     setLoading(true);
     try {
       setSuccess('Grant revoked successfully');
@@ -362,7 +362,7 @@ export default function TenantPrivilegedAccessPage() {
   };
 
   const handleRevokeSession = async (sessionId: string) => {
-    if (!tenantId || !confirm('Are you sure you want to revoke this session?')) return;
+    if (!tenantId || !confirm(t('tenant.privilegedAccess.confirmRevokeSession'))) return;
     setLoading(true);
     try {
       setSuccess('Session revoked successfully');
@@ -375,7 +375,7 @@ export default function TenantPrivilegedAccessPage() {
   };
 
   const handleActivateBreakGlass = async (accountId: string) => {
-    if (!tenantId || !confirm('Are you sure you want to activate this break-glass account? This action will be audited.')) return;
+    if (!tenantId || !confirm(t('tenant.privilegedAccess.confirmActivateBreakGlass'))) return;
     setLoading(true);
     try {
       setSuccess('Break-glass account activated');
@@ -937,7 +937,7 @@ export default function TenantPrivilegedAccessPage() {
                   value={requestForm.resourceId}
                   onChange={(e) => setRequestForm({ ...requestForm, resourceId: e.target.value })}
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
-                  placeholder="e.g., prod-server-01"
+                  placeholder={t('tenant.privilegedAccess.placeholders.resourceId')}
                   required
                 />
               </div>
@@ -948,7 +948,7 @@ export default function TenantPrivilegedAccessPage() {
                   onChange={(e) => setRequestForm({ ...requestForm, reason: e.target.value })}
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
                   rows={3}
-                  placeholder="Describe why you need this access..."
+                  placeholder={t('tenant.privilegedAccess.placeholders.reason')}
                   required
                 />
               </div>
