@@ -20,6 +20,7 @@
     "signingIn": "در حال ورود...",
     "signInWithGoogle": "ورود با گوگل",
     "signInWithMicrosoft": "ورود با مایکروسافت",
+    "signInWithApple": "ورود با اپل",
     "signInWithEmail": "ورود با رایانامه (لینک جادویی)",
     "orContinueWith": "یا ادامه با",
     "invalidCredentials": "رایانامه یا گذرواژه نامعتبر است",
@@ -87,5 +88,23 @@
     "invalidToken": "لینک جادویی نامعتبر یا منقضی شده",
     "tokenExpired": "این لینک جادویی منقضی شده است",
     "tokenUsed": "این لینک جادویی قبلاً استفاده شده است"
-  }
+  },
+  "passkey": {
+    "signInWithPasskey": "ورود با کلید عبور",
+    "addPasskey": "افزودن کلید عبور",
+    "register": "ثبت کلید عبور",
+    "deviceName": "نام دستگاه",
+    "deviceNameHint": "به این کلید عبور یک نام بدهید تا بعداً آن را شناسایی کنید",
+    "authenticating": "در حال احراز هویت...",
+    "notSupported": "کلید عبور در این مرورگر پشتیبانی نمی‌شود",
+    "faceIdSupported": "Face ID / Touch ID",
+    "cancelled": "احراز هویت لغو شد",
+    "authFailed": "احراز هویت ناموفق بود",
+    "registrationFailed": "ثبت‌نام ناموفق بود",
+    "alreadyRegistered": "کلید عبور قبلاً برای این دستگاه ثبت شده است",
+    "emailRequired": "رایانامه برای ثبت کلید عبور الزامی است",
+    "registerInfo": "از Face ID، Touch ID یا امنیت دستگاه خود برای ایجاد کلید عبور استفاده کنید",
+    "authInfo": "از کلید عبور ثبت شده خود برای ورود امن استفاده کنید"
+  },
+  "login.trustThisDevice": "به این دستگاه اعتماد کن"
 }

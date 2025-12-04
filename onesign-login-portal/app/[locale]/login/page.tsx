@@ -11,6 +11,9 @@ import ImageSlider, { DEFAULT_SLIDER_IMAGES } from '@/app/components/ImageSlider
 import ValidationIcon from '@/app/components/ValidationIcon';
 import PasswordStrengthMeter from '@/app/components/PasswordStrengthMeter';
 import { useFormValidation, PasswordStrength } from '@/hooks/useFormValidation';
+import { useDarkMode } from '@/hooks/useDarkMode';
+import DarkModeToggle from '@/app/components/DarkModeToggle';
+import { getDeviceFingerprint, markDeviceAsTrusted } from '@/lib/device-fingerprint';
 
 declare global {
   interface Window {
@@ -23,6 +26,12 @@ declare global {
       };
     };
     msal?: any;
+    AppleID?: {
+      auth: {
+        init: (config: any) => void;
+        signIn: () => Promise<any>;
+      };
+    };
     grecaptcha?: {
       ready: (callback: () => void) => void;
       execute: (siteKey: string, options: { action: string }) => Promise<string>;
@@ -54,6 +63,7 @@ export default function LoginPage() {
 
   // Form state
   const [rememberMe, setRememberMe] = useState(false);
+  const [trustThisDevice, setTrustThisDevice] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState<PasswordStrength>({
     score: 0,
@@ -61,6 +71,9 @@ export default function LoginPage() {
     color: '',
     percentage: 0,
   });
+
+  // Device fingerprint state
+  const [deviceFingerprint, setDeviceFingerprint] = useState<string | null>(null);
 
   // UI state
   const [error, setError] = useState('');
@@ -82,11 +95,21 @@ export default function LoginPage() {
   // RTL detection
   const isRTL = useMemo(() => ['fa', 'ar', 'he'].includes(locale), [locale]);
 
+  // Dark mode hook
+  useDarkMode();
+
   // Register form fields on mount
   useEffect(() => {
     registerField('email', '');
     registerField('password', '');
   }, [registerField]);
+
+  // Generate device fingerprint on mount
+  useEffect(() => {
+    getDeviceFingerprint().then((fingerprint) => {
+      setDeviceFingerprint(fingerprint);
+    });
+  }, []);
 
   useEffect(() => {
     // Get tenant ID from URL or context
@@ -307,6 +330,97 @@ export default function LoginPage() {
     }
   };
 
+  const handleAppleLogin = async () => {
+    setError('');
+    setLoading(true);
+
+    try {
+      if (!tenantId) {
+        setError(t('common.error'));
+        setLoading(false);
+        return;
+      }
+
+      // Load Apple JS SDK if not already loaded
+      if (!window.AppleID) {
+        const script = document.createElement('script');
+        script.src = 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js';
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+
+        await new Promise((resolve) => {
+          script.onload = resolve;
+        });
+      }
+
+      // Initialize Apple Sign In
+      if (window.AppleID) {
+        window.AppleID.auth.init({
+          clientId: process.env.NEXT_PUBLIC_APPLE_SERVICE_ID || '',
+          scope: 'name email',
+          redirectURI: window.location.origin + `/${locale}/login`,
+          state: 'origin:web',
+          usePopup: true,
+        });
+
+        try {
+          const response = await window.AppleID.auth.signIn();
+
+          if (response && response.authorization && response.authorization.id_token) {
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:7000';
+            const apiResponse = await fetch(`${baseUrl}/api/auth/apple-login?tenantId=${tenantId}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                idToken: response.authorization.id_token,
+                clientId: clientId ? clientId : undefined,
+              }),
+            });
+
+            if (!apiResponse.ok) {
+              const data = await apiResponse.json();
+              setError(data.errorMessage || t('login.invalidCredentials'));
+              setLoading(false);
+              return;
+            }
+
+            const data = await apiResponse.json();
+
+            // If OIDC flow, redirect to authorize endpoint
+            if (clientId && redirectUri) {
+              const authorizeUrl = new URL(`${baseUrl}/connect/authorize`);
+              authorizeUrl.searchParams.set('client_id', clientId);
+              authorizeUrl.searchParams.set('redirect_uri', redirectUri);
+              authorizeUrl.searchParams.set('response_type', 'code');
+              authorizeUrl.searchParams.set('scope', 'openid profile email');
+              if (state) authorizeUrl.searchParams.set('state', state);
+              if (codeChallenge) authorizeUrl.searchParams.set('code_challenge', codeChallenge);
+              if (codeChallengeMethod) authorizeUrl.searchParams.set('code_challenge_method', codeChallengeMethod);
+              authorizeUrl.searchParams.set('tenantId', tenantId);
+
+              window.location.href = authorizeUrl.toString();
+            } else {
+              router.push('/');
+            }
+          }
+        } catch (appleError: any) {
+          console.error('Apple login error:', appleError);
+          if (appleError.error !== 'popup_closed_by_user') {
+            setError(t('common.error'));
+          }
+          setLoading(false);
+        }
+      }
+    } catch (err) {
+      console.error('Apple login error:', err);
+      setError(t('common.error'));
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -367,7 +481,9 @@ export default function LoginPage() {
         body: JSON.stringify({
           email: emailField.value,
           password: passwordField.value,
-          recaptchaToken: recaptchaToken
+          recaptchaToken: recaptchaToken,
+          deviceFingerprint: deviceFingerprint,
+          trustThisDevice: trustThisDevice
         }),
       });
 
@@ -379,6 +495,11 @@ export default function LoginPage() {
       }
 
       const data = await response.json();
+
+      // Mark device as trusted in localStorage if checkbox was checked
+      if (trustThisDevice && deviceFingerprint) {
+        markDeviceAsTrusted();
+      }
 
       // Check if MFA is required
       if (data.mfaRequired) {
@@ -805,6 +926,44 @@ export default function LoginPage() {
                 </a>
               </div>
 
+              {/* Trust This Device */}
+              <div className="flex items-center">
+                <label className="flex items-center gap-2 cursor-pointer group">
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      checked={trustThisDevice}
+                      onChange={(e) => setTrustThisDevice(e.target.checked)}
+                      className="sr-only"
+                    />
+                    <div
+                      className={`w-5 h-5 border-2 rounded transition-all duration-200 flex items-center justify-center ${
+                        trustThisDevice
+                          ? 'border-transparent'
+                          : 'border-slate-300 dark:border-slate-600 group-hover:border-slate-400'
+                      }`}
+                      style={trustThisDevice ? { backgroundColor: primaryColor } : {}}
+                    >
+                      {trustThisDevice && (
+                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <svg className="w-4 h-4 text-slate-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span className="text-sm text-slate-600 dark:text-slate-400">{t('login.trustThisDevice')}</span>
+                  </div>
+                </label>
+              </div>
+
               {/* Sign In Button */}
               <motion.button
                 type="submit"
@@ -936,19 +1095,39 @@ export default function LoginPage() {
                     </svg>
                     <span>{t('login.signInWithMicrosoft')}</span>
                   </motion.button>
+
+                  {/* Apple Sign In Button */}
+                  <motion.button
+                    type="button"
+                    onClick={handleAppleLogin}
+                    disabled={loading}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                    className="w-full flex justify-center items-center gap-3 py-3.5 px-4 border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-700 dark:text-slate-300 font-semibold rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 focus:outline-none focus:ring-4 focus:ring-slate-200 dark:focus:ring-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  >
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+                    </svg>
+                    <span>{t('login.signInWithApple')}</span>
+                  </motion.button>
                 </>
               )}
             </motion.form>
 
             {/* Footer */}
-            <motion.div variants={itemVariants} className="mt-8 text-center">
+            <motion.div variants={itemVariants} className="mt-8 text-center space-y-4">
+              {/* Dark Mode Toggle */}
+              <div className="flex justify-center">
+                <DarkModeToggle size="md" />
+              </div>
+
               <p className="text-sm text-slate-500 dark:text-slate-400">
                 {branding.footerText || t('login.securityNote')}
               </p>
 
               {/* Language Switcher */}
               {features.showLanguageSwitcher && (
-                <div className="mt-4 flex items-center justify-center gap-2">
+                <div className="flex items-center justify-center gap-2">
                   <a
                     href={`/en/login${window.location.search}`}
                     className={`text-sm px-3 py-1 rounded-lg transition-colors ${

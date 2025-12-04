@@ -20,6 +20,7 @@
     "signingIn": "Signing you in...",
     "signInWithGoogle": "Sign in with Google",
     "signInWithMicrosoft": "Sign in with Microsoft",
+    "signInWithApple": "Sign in with Apple",
     "signInWithEmail": "Sign in with Email (Magic Link)",
     "orContinueWith": "Or continue with",
     "invalidCredentials": "Invalid email or password",
@@ -87,5 +88,23 @@
     "invalidToken": "Invalid or expired magic link",
     "tokenExpired": "This magic link has expired",
     "tokenUsed": "This magic link has already been used"
-  }
+  },
+  "passkey": {
+    "signInWithPasskey": "Sign in with Passkey",
+    "addPasskey": "Add Passkey",
+    "register": "Register Passkey",
+    "deviceName": "Device Name",
+    "deviceNameHint": "Give this passkey a name to identify it later",
+    "authenticating": "Authenticating...",
+    "notSupported": "Passkeys are not supported in this browser",
+    "faceIdSupported": "Face ID / Touch ID",
+    "cancelled": "Authentication was cancelled",
+    "authFailed": "Authentication failed",
+    "registrationFailed": "Registration failed",
+    "alreadyRegistered": "A passkey is already registered for this device",
+    "emailRequired": "Email is required for passkey registration",
+    "registerInfo": "Use Face ID, Touch ID, or your device security to create a passkey",
+    "authInfo": "Use your registered passkey to sign in securely"
+  },
+  "login.trustThisDevice": "Trust this device"
 }

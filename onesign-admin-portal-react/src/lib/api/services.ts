@@ -1609,9 +1609,8 @@ export const usersService = {
   },
 
   getAccountSessions: async (): Promise<any[]> => {
-    // Sessions endpoint - may not exist in swagger
     try {
-      const response = await apiClient.get('/api/tenant/sessions');
+      const response = await apiClient.get('/api/user/account/sessions');
       return response.data || [];
     } catch (error) {
       console.error('Failed to fetch account sessions:', error);
@@ -1628,11 +1627,15 @@ export const usersService = {
   },
 
   revokeSession: async (sessionId: string): Promise<void> => {
-    await apiClient.delete(`/api/tenant/sessions/${sessionId}`);
+    await apiClient.delete(`/api/user/account/sessions/${sessionId}`);
   },
 
   revokeAllUserSessions: async (userId: string): Promise<void> => {
     await apiClient.post(`/api/tenant/users/${userId}/revoke-sessions`);
+  },
+
+  revokeAllOtherSessions: async (): Promise<void> => {
+    await apiClient.post('/api/user/account/sessions/revoke-all-others');
   },
 
   revokeSuspiciousSessions: async (): Promise<void> => {

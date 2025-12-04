@@ -187,6 +187,28 @@ public class PasswordLoginCommandHandler : IRequestHandler<PasswordLoginCommand,
         }
         await _tenantUserRepository.UpdateAsync(tenantUser, cancellationToken);
 
+        // Trust this device if requested and device fingerprint is provided
+        if (request.TrustThisDevice && !string.IsNullOrEmpty(request.DeviceFingerprint))
+        {
+            try
+            {
+                var trustDeviceCommand = new Onesign.Modules.Security.Application.Commands.TrustDeviceCommand
+                {
+                    UserId = tenantUser.Id,
+                    DeviceFingerprint = request.DeviceFingerprint,
+                    DeviceName = "Trusted Device",
+                    RememberDays = 30
+                };
+                await _mediator.Send(trustDeviceCommand, cancellationToken);
+                _logger.LogInformation("Device marked as trusted for user {TenantUserId}", tenantUser.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to mark device as trusted for user {TenantUserId}", tenantUser.Id);
+                // Don't fail the login if device trust fails
+            }
+        }
+
         // Create login session
         var sessionToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32))
             .Replace("+", "-")

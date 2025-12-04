@@ -400,6 +400,41 @@ export const tenantService = {
     return response.data;
   },
 
+  // ==================== TENANT EMAIL TEMPLATES ====================
+  getEmailTemplates: async (): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/email-templates');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch email templates:', error);
+      return [];
+    }
+  },
+
+  getEmailTemplateByType: async (type: string): Promise<any> => {
+    try {
+      const response = await apiClient.get(`/api/tenant/email-templates/${type}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch email template:', error);
+      return null;
+    }
+  },
+
+  updateEmailTemplate: async (type: string, data: any): Promise<any> => {
+    const response = await apiClient.put(`/api/tenant/email-templates/${type}`, data);
+    return response.data;
+  },
+
+  previewEmailTemplate: async (type: string, data: { email: string; variables?: Record<string, string> }): Promise<any> => {
+    const response = await apiClient.post(`/api/tenant/email-templates/${type}/preview`, data);
+    return response.data;
+  },
+
+  sendTestEmail: async (type: string, email: string): Promise<void> => {
+    await apiClient.post(`/api/tenant/email-templates/${type}/test`, { email });
+  },
+
   // ==================== TENANT CERTIFICATES ====================
   getCertificates: async (): Promise<any[]> => {
     try {

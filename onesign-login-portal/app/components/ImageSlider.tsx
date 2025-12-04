@@ -147,7 +147,7 @@ export default function ImageSlider({
 
   return (
     <div
-      className="relative w-full h-full overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800"
+      className="relative w-full h-full overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-950 dark:to-slate-900"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -173,11 +173,11 @@ export default function ImageSlider({
             objectFit="cover"
             objectPosition="center"
           />
-          {/* Dark Overlay */}
-          <div className="absolute inset-0 bg-black/40" />
-          {/* Gradient Overlay */}
+          {/* Dark Overlay - Adjusted for dark mode */}
+          <div className="absolute inset-0 bg-black/40 dark:bg-black/60" />
+          {/* Gradient Overlay - Stronger in dark mode for better contrast */}
           {overlayGradient && (
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent dark:from-black/90 dark:via-black/30" />
           )}
         </motion.div>
       </AnimatePresence>
@@ -190,7 +190,7 @@ export default function ImageSlider({
             <img
               src={tenantLogo}
               alt={tenantName || 'Logo'}
-              className="h-10 lg:h-12 object-contain filter brightness-0 invert"
+              className="h-10 lg:h-12 object-contain filter brightness-0 invert dark:brightness-100 dark:invert-0"
             />
           ) : (
             <div className="flex items-center gap-3">

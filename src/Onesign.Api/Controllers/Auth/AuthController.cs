@@ -97,7 +97,8 @@ public class AuthController : ControllerBase
             Email = request.Email,
             Password = request.Password,
             DeviceFingerprint = request.DeviceFingerprint,
-            RecaptchaToken = request.RecaptchaToken
+            RecaptchaToken = request.RecaptchaToken,
+            TrustThisDevice = request.TrustThisDevice
         };
         var result = await _mediator.Send(command);
 
@@ -324,6 +325,61 @@ public class AuthController : ControllerBase
         return Ok(result.Value);
     }
 
+    [HttpPost("apple-login")]
+    public async Task<ActionResult<LoginResponse>> AppleLogin([FromBody] AppleLoginRequest request, [FromQuery] Guid tenantId)
+    {
+        var command = new AppleLoginCommand
+        {
+            TenantId = tenantId,
+            IdToken = request.IdToken,
+            ClientId = request.ClientId
+        };
+        var result = await _mediator.Send(command);
+
+        if (result.IsFailure)
+        {
+            var culture = GetCulture();
+            var localizedMessage = _localizationService.GetString(result.ErrorCode ?? "UNKNOWN_ERROR", culture);
+            return Unauthorized(new { errorCode = result.ErrorCode, errorMessage = localizedMessage });
+        }
+
+        // Extract tenant user ID from ID token and store in session
+        try
+        {
+            if (result.Value != null && !string.IsNullOrEmpty(result.Value.IdToken))
+            {
+                var idTokenParts = result.Value.IdToken.Split('.');
+                if (idTokenParts.Length == 3)
+                {
+                    var payload = idTokenParts[1];
+                    var padding = payload.Length % 4;
+                    if (padding != 0)
+                    {
+                        payload += new string('=', 4 - padding);
+                    }
+                    var payloadBytes = Convert.FromBase64String(payload);
+                    var payloadJson = System.Text.Encoding.UTF8.GetString(payloadBytes);
+                    var tokenData = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(payloadJson);
+
+                    if (tokenData != null && tokenData.ContainsKey("sub"))
+                    {
+                        var tenantUserId = tokenData["sub"].GetString();
+                        if (!string.IsNullOrEmpty(tenantUserId))
+                        {
+                            HttpContext.Session.SetString("TenantUserId", tenantUserId);
+                        }
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // Session storage failed, but login was successful
+        }
+
+        return Ok(result.Value);
+    }
+
     [HttpPost("complete-first-login")]
     public async Task<ActionResult<TenantUserDto>> CompleteFirstLogin([FromBody] CompleteFirstLoginRequest request)
     {
@@ -473,6 +529,12 @@ public class GoogleLoginRequest
 }
 
 public class MicrosoftLoginRequest
+{
+    public string IdToken { get; set; } = string.Empty;
+    public Guid? ClientId { get; set; }
+}
+
+public class AppleLoginRequest
 {
     public string IdToken { get; set; } = string.Empty;
     public Guid? ClientId { get; set; }
