@@ -389,7 +389,7 @@ export default function TenantSecurityAnomalyDetectionPage() {
           </div>
           <div className="flex gap-3 pt-4">
             <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={handleCreateDetection} className="flex-1 bg-gradient-to-r from-red-600 to-orange-600 text-white px-4 py-3 rounded-xl font-medium">Create Rule</motion.button>
-            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setShowCreateModal(false)} className="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 px-4 py-3 rounded-xl font-medium">Cancel</motion.button>
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} onClick={() => setShowCreateModal(false)} className="flex-1 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 px-4 py-3 rounded-xl font-medium">{t('common.cancel')}</motion.button>
           </div>
         </div>
       </Modal>
