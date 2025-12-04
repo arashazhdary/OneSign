@@ -150,19 +150,19 @@ export default function TenantQuotasPage() {
 
   const handleRequestIncrease = async () => {
     if (!tenantId || !selectedQuota || !requestedLimit || !requestReason || requestedLimit <= selectedQuota.limit) {
-      setError('Please fill in all required fields with valid values');
+      setError(t('quotas.fillRequiredFields'));
       return;
     }
     setLoading(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      setSuccess('Quota increase request submitted successfully');
+      setSuccess(t('quotas.increaseRequestSuccess'));
       setShowIncreaseModal(false);
       setSelectedQuota(null);
       setRequestedLimit(0);
       setRequestReason('');
     } catch (err) {
-      setError('Failed to submit quota increase request');
+      setError(t('quotas.increaseRequestError'));
     } finally {
       setLoading(false);
     }

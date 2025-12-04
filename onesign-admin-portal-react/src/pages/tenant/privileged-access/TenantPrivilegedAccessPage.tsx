@@ -337,12 +337,12 @@ export default function TenantPrivilegedAccessPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      setSuccess('JIT access requested successfully');
+      setSuccess(t('tenant.privilegedAccess.jitAccessRequestSuccess'));
       setShowRequestModal(false);
       fetchAccessRequests();
       setRequestForm({ resourceType: '', resourceId: '', reason: '', duration: 3600 });
     } catch (err) {
-      setError('Failed to request JIT access');
+      setError(t('tenant.privilegedAccess.jitAccessRequestError'));
     } finally {
       setLoading(false);
     }
@@ -352,10 +352,10 @@ export default function TenantPrivilegedAccessPage() {
     if (!tenantId || !confirm(t('tenant.privilegedAccess.confirmRevokeGrant'))) return;
     setLoading(true);
     try {
-      setSuccess('Grant revoked successfully');
+      setSuccess(t('tenant.privilegedAccess.grantRevokedSuccess'));
       fetchJITGrants();
     } catch (err) {
-      setError('Failed to revoke grant');
+      setError(t('tenant.privilegedAccess.grantRevokeError'));
     } finally {
       setLoading(false);
     }
@@ -365,10 +365,10 @@ export default function TenantPrivilegedAccessPage() {
     if (!tenantId || !confirm(t('tenant.privilegedAccess.confirmRevokeSession'))) return;
     setLoading(true);
     try {
-      setSuccess('Session revoked successfully');
+      setSuccess(t('tenant.privilegedAccess.sessionRevokedSuccess'));
       fetchSessions();
     } catch (err) {
-      setError('Failed to revoke session');
+      setError(t('tenant.privilegedAccess.sessionRevokeError'));
     } finally {
       setLoading(false);
     }
@@ -378,10 +378,10 @@ export default function TenantPrivilegedAccessPage() {
     if (!tenantId || !confirm(t('tenant.privilegedAccess.confirmActivateBreakGlass'))) return;
     setLoading(true);
     try {
-      setSuccess('Break-glass account activated');
+      setSuccess(t('tenant.privilegedAccess.breakGlassActivatedSuccess'));
       fetchBreakGlassAccounts();
     } catch (err) {
-      setError('Failed to activate break-glass account');
+      setError(t('tenant.privilegedAccess.breakGlassActivateError'));
     } finally {
       setLoading(false);
     }
@@ -430,7 +430,7 @@ export default function TenantPrivilegedAccessPage() {
                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 <Plus className="w-5 h-5" />
-                Request JIT Access
+                {t('tenant.privilegedAccess.requestJITAccess')}
               </motion.button>
             )}
           </div>
@@ -921,7 +921,7 @@ export default function TenantPrivilegedAccessPage() {
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
                   required
                 >
-                  <option value="">Select resource type</option>
+                  <option value="">{t('tenant.privilegedAccess.selectResourceType')}</option>
                   <option value="Server">Server</option>
                   <option value="Database">Database</option>
                   <option value="Kubernetes">Kubernetes</option>

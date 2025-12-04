@@ -309,7 +309,7 @@ export default function GlobalChangeManagementPage() {
         estimatedDuration: '2 minutes',
       };
       setSimulationResult(mockResult);
-      setSuccess('Simulation completed (mock data)');
+      setSuccess(t('global.changeManagement.messages.simulationCompletedMock'));
     } finally {
       setLoading(false);
     }
@@ -348,7 +348,7 @@ export default function GlobalChangeManagementPage() {
       setShowScheduleModal(false);
       fetchData();
     } catch (err) {
-      setError('Failed to schedule change set');
+      setError(t('global.changeManagement.errors.failedToSchedule'));
     } finally {
       setLoading(false);
     }
@@ -364,7 +364,7 @@ export default function GlobalChangeManagementPage() {
       setShowExecuteModal(false);
       fetchData();
     } catch (err) {
-      setError('Failed to apply change set');
+      setError(t('global.changeManagement.errors.failedToApply'));
     } finally {
       setLoading(false);
     }
@@ -380,7 +380,7 @@ export default function GlobalChangeManagementPage() {
       setShowRollbackModal(false);
       fetchData();
     } catch (err) {
-      setError('Failed to rollback change set');
+      setError(t('global.changeManagement.errors.failedToRollback'));
     } finally {
       setLoading(false);
     }
@@ -397,7 +397,7 @@ export default function GlobalChangeManagementPage() {
       setApprovalComment('');
       fetchData();
     } catch (err) {
-      setError('Failed to approve change set');
+      setError(t('global.changeManagement.errors.failedToApprove'));
     } finally {
       setLoading(false);
     }
@@ -405,7 +405,7 @@ export default function GlobalChangeManagementPage() {
 
   const handleRejectChangeSet = async () => {
     if (!selectedChangeSet || !rejectReason.trim()) {
-      setError('Please provide a reason for rejection');
+      setError(t('global.changeManagement.errors.provideReason'));
       return;
     }
 
@@ -417,7 +417,7 @@ export default function GlobalChangeManagementPage() {
       setRejectReason('');
       fetchData();
     } catch (err) {
-      setError('Failed to reject change set');
+      setError(t('global.changeManagement.errors.failedToReject'));
     } finally {
       setLoading(false);
     }
@@ -432,7 +432,7 @@ export default function GlobalChangeManagementPage() {
       setSuccess(t('global.changeManagement.messages.submitted'));
       fetchData();
     } catch (err) {
-      setError('Failed to submit change set');
+      setError(t('global.changeManagement.errors.failedToSubmit'));
     } finally {
       setLoading(false);
     }
@@ -585,7 +585,7 @@ export default function GlobalChangeManagementPage() {
   const handleToggleRule = async (rule: GlobalApprovalRule) => {
     try {
       await changeManagementService.toggleGlobalApprovalRule(rule.id, !rule.isActive);
-      setSuccess(`Rule ${rule.isActive ? 'disabled' : 'enabled'}`);
+      setSuccess(t(rule.isActive ? 'global.changeManagement.messages.ruleDisabled' : 'global.changeManagement.messages.ruleEnabled'));
       fetchData();
     } catch (err) {
       setError(t('common.error'));
@@ -595,7 +595,7 @@ export default function GlobalChangeManagementPage() {
   const handleEnforceRule = async (rule: GlobalApprovalRule) => {
     try {
       await changeManagementService.enforceGlobalApprovalRule(rule.id);
-      setSuccess(`Rule ${rule.isEnforced ? 'unenforced' : 'enforced'} globally`);
+      setSuccess(t(rule.isEnforced ? 'global.changeManagement.messages.ruleUnenforced' : 'global.changeManagement.messages.ruleEnforced'));
       fetchData();
     } catch (err) {
       setError(t('common.error'));

@@ -371,7 +371,7 @@ export default function TenantChangeManagementPage() {
     try {
       const data = await changeManagementService.simulateTenantChangeSet(tenantId, id);
       setSimulationResult(data as any);
-      setSuccess('Simulation completed successfully');
+      setSuccess(t('tenant.changeManagement.messages.simulationCompleted'));
     } catch (err) {
       const mockResult: SimulationResult = {
         success: true,
@@ -385,7 +385,7 @@ export default function TenantChangeManagementPage() {
         estimatedDuration: '2 minutes',
       };
       setSimulationResult(mockResult);
-      setSuccess('Simulation completed (mock data)');
+      setSuccess(t('tenant.changeManagement.messages.simulationCompletedMock'));
     } finally {
       setLoading(false);
     }
@@ -436,11 +436,11 @@ export default function TenantChangeManagementPage() {
         userId,
         scheduleData
       );
-      setSuccess('Change set scheduled successfully');
+      setSuccess(t('tenant.changeManagement.messages.scheduled'));
       setShowScheduleModal(false);
       fetchData();
     } catch (err) {
-      setError('Failed to schedule change set');
+      setError(t('tenant.changeManagement.errors.failedToSchedule'));
     } finally {
       setLoading(false);
     }
@@ -452,11 +452,11 @@ export default function TenantChangeManagementPage() {
     setLoading(true);
     try {
       await changeManagementService.executeTenantChangeSet(tenantId, selectedChangeSet.id, userId);
-      setSuccess('Change set executed successfully');
+      setSuccess(t('tenant.changeManagement.messages.executed'));
       setShowExecuteModal(false);
       fetchData();
     } catch (err) {
-      setError('Failed to execute change set');
+      setError(t('tenant.changeManagement.errors.failedToExecute'));
     } finally {
       setLoading(false);
     }
@@ -468,11 +468,11 @@ export default function TenantChangeManagementPage() {
     setLoading(true);
     try {
       await changeManagementService.rollbackTenantChangeSet(tenantId, selectedChangeSet.id, userId);
-      setSuccess('Change set rolled back successfully');
+      setSuccess(t('tenant.changeManagement.messages.rolledBack'));
       setShowRollbackModal(false);
       fetchData();
     } catch (err) {
-      setError('Failed to rollback change set');
+      setError(t('tenant.changeManagement.errors.failedToRollback'));
     } finally {
       setLoading(false);
     }
@@ -489,12 +489,12 @@ export default function TenantChangeManagementPage() {
         userId,
         approvalComment
       );
-      setSuccess('Change set approved');
+      setSuccess(t('tenant.changeManagement.messages.approved'));
       setShowApprovalModal(false);
       setApprovalComment('');
       fetchData();
     } catch (err) {
-      setError('Failed to approve change set');
+      setError(t('tenant.changeManagement.errors.failedToApprove'));
     } finally {
       setLoading(false);
     }
@@ -514,12 +514,12 @@ export default function TenantChangeManagementPage() {
         userId,
         rejectReason
       );
-      setSuccess('Change set rejected');
+      setSuccess(t('tenant.changeManagement.messages.rejected'));
       setShowRejectModal(false);
       setRejectReason('');
       fetchData();
     } catch (err) {
-      setError('Failed to reject change set');
+      setError(t('tenant.changeManagement.errors.failedToReject'));
     } finally {
       setLoading(false);
     }
@@ -592,12 +592,12 @@ export default function TenantChangeManagementPage() {
         userId,
         cloneName
       );
-      setSuccess('Change set cloned successfully');
+      setSuccess(t('tenant.changeManagement.messages.cloned'));
       setShowCloneModal(false);
       setCloneName('');
       fetchData();
     } catch (err) {
-      setError('Failed to clone change set');
+      setError(t('tenant.changeManagement.errors.failedToClone'));
     } finally {
       setLoading(false);
     }
@@ -661,7 +661,7 @@ export default function TenantChangeManagementPage() {
     setSuccess('');
     try {
       await changeManagementService.createTenantChangeSet(tenantId, userId, newChangeSet);
-      setSuccess('Change set created successfully');
+      setSuccess(t('tenant.changeManagement.messages.created'));
       setShowCreateModal(false);
       setNewChangeSet({
         name: '',
@@ -679,7 +679,7 @@ export default function TenantChangeManagementPage() {
   const handleSubmitForReview = async (changeSet: ChangeSet) => {
     try {
       await changeManagementService.submitTenantChangeSet(tenantId, changeSet.id, userId);
-      setSuccess('Change set submitted for review');
+      setSuccess(t('tenant.changeManagement.messages.submitted'));
       fetchData();
     } catch (err) {
       setError(t('common.error'));
@@ -691,7 +691,7 @@ export default function TenantChangeManagementPage() {
 
     try {
       await changeManagementService.deleteTenantChangeSet(tenantId, id);
-      setSuccess('Change set deleted');
+      setSuccess(t('tenant.changeManagement.messages.deleted'));
       fetchData();
     } catch (err) {
       setError(t('common.error'));

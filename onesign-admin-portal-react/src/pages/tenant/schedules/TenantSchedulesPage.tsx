@@ -121,14 +121,14 @@ export default function TenantSchedulesPage() {
   const [cronDayOfWeek, setCronDayOfWeek] = useState('*');
 
   const jobTypes = [
-    { value: 'data_cleanup', label: 'Data Cleanup', icon: Database },
-    { value: 'user_sync', label: 'User Synchronization', icon: Users },
-    { value: 'backup', label: 'Backup', icon: Archive },
-    { value: 'report_generation', label: 'Report Generation', icon: BarChart3 },
-    { value: 'notification_batch', label: 'Batch Notifications', icon: Bell },
-    { value: 'audit_export', label: 'Audit Export', icon: FileText },
-    { value: 'metric_aggregation', label: 'Metric Aggregation', icon: Zap },
-    { value: 'custom', label: 'Custom Job', icon: Settings },
+    { value: 'data_cleanup', label: t('tenant.schedules.jobTypes.dataCleanup'), icon: Database },
+    { value: 'user_sync', label: t('tenant.schedules.jobTypes.userSync'), icon: Users },
+    { value: 'backup', label: t('tenant.schedules.jobTypes.backup'), icon: Archive },
+    { value: 'report_generation', label: t('tenant.schedules.jobTypes.reportGeneration'), icon: BarChart3 },
+    { value: 'notification_batch', label: t('tenant.schedules.jobTypes.batchNotifications'), icon: Bell },
+    { value: 'audit_export', label: t('tenant.schedules.jobTypes.auditExport'), icon: FileText },
+    { value: 'metric_aggregation', label: t('tenant.schedules.jobTypes.metricAggregation'), icon: Zap },
+    { value: 'custom', label: t('tenant.schedules.jobTypes.customJob'), icon: Settings },
   ];
 
   useEffect(() => {
@@ -294,7 +294,7 @@ export default function TenantSchedulesPage() {
 
   const handleCreateSchedule = async () => {
     if (!tenantId || !formName || !formJobType || !formCronExpression) {
-      setError('Please fill in all required fields');
+      setError(t('common.validation.requiredFields'));
       return;
     }
 
@@ -314,12 +314,12 @@ export default function TenantSchedulesPage() {
         executionCount: 0,
       });
 
-      setSuccess('Schedule created successfully');
+      setSuccess(t('tenant.schedules.messages.scheduleCreated'));
       setShowCreateModal(false);
       resetForm();
       fetchSchedules();
     } catch (err) {
-      setError('Failed to create schedule');
+      setError(t('tenant.schedules.messages.createFailed'));
       console.error('Error creating schedule:', err);
     } finally {
       setLoading(false);
@@ -328,7 +328,7 @@ export default function TenantSchedulesPage() {
 
   const handleUpdateSchedule = async () => {
     if (!tenantId || !selectedSchedule || !formName || !formJobType || !formCronExpression) {
-      setError('Please fill in all required fields');
+      setError(t('common.validation.requiredFields'));
       return;
     }
 
@@ -345,13 +345,13 @@ export default function TenantSchedulesPage() {
         enabled: formEnabled,
       });
 
-      setSuccess('Schedule updated successfully');
+      setSuccess(t('tenant.schedules.messages.scheduleUpdated'));
       setShowEditModal(false);
       setSelectedSchedule(null);
       resetForm();
       fetchSchedules();
     } catch (err) {
-      setError('Failed to update schedule');
+      setError(t('tenant.schedules.messages.updateFailed'));
       console.error('Error updating schedule:', err);
     } finally {
       setLoading(false);
@@ -368,12 +368,12 @@ export default function TenantSchedulesPage() {
     try {
       await automationService.deleteSchedule(selectedSchedule.id);
 
-      setSuccess('Schedule deleted successfully');
+      setSuccess(t('tenant.schedules.messages.scheduleDeleted'));
       setShowDeleteConfirm(false);
       setSelectedSchedule(null);
       fetchSchedules();
     } catch (err) {
-      setError('Failed to delete schedule');
+      setError(t('tenant.schedules.messages.deleteFailed'));
       console.error('Error deleting schedule:', err);
     } finally {
       setLoading(false);
@@ -386,10 +386,10 @@ export default function TenantSchedulesPage() {
 
     try {
       await automationService.toggleSchedule(schedule.id, !schedule.enabled);
-      setSuccess(`Schedule ${schedule.enabled ? 'disabled' : 'enabled'} successfully`);
+      setSuccess(schedule.enabled ? t('tenant.schedules.messages.scheduleDisabled') : t('tenant.schedules.messages.scheduleEnabled'));
       fetchSchedules();
     } catch (err) {
-      setError('Failed to toggle schedule');
+      setError(t('tenant.schedules.messages.toggleFailed'));
       console.error('Error toggling schedule:', err);
     } finally {
       setLoading(false);
@@ -442,22 +442,30 @@ export default function TenantSchedulesPage() {
 
   const parseCronDescription = (cron: string) => {
     const parts = cron.split(' ');
-    if (parts.length !== 5) return 'Invalid cron expression';
+    if (parts.length !== 5) return t('tenant.schedules.invalidCron');
 
     const [minute, hour, dayOfMonth, month, dayOfWeek] = parts;
 
-    let desc = 'Runs ';
+    let desc = t('tenant.schedules.cronRuns') + ' ';
 
     if (dayOfWeek !== '*') {
-      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      desc += `every ${days[parseInt(dayOfWeek)]} `;
+      const days = [
+        t('tenant.schedules.days.sunday'),
+        t('tenant.schedules.days.monday'),
+        t('tenant.schedules.days.tuesday'),
+        t('tenant.schedules.days.wednesday'),
+        t('tenant.schedules.days.thursday'),
+        t('tenant.schedules.days.friday'),
+        t('tenant.schedules.days.saturday')
+      ];
+      desc += t('tenant.schedules.cronEvery', { day: days[parseInt(dayOfWeek)] }) + ' ';
     } else if (dayOfMonth !== '*') {
-      desc += `on day ${dayOfMonth} of the month `;
+      desc += t('tenant.schedules.cronOnDay', { day: dayOfMonth }) + ' ';
     } else {
-      desc += 'daily ';
+      desc += t('tenant.schedules.cronDaily') + ' ';
     }
 
-    desc += `at ${hour.padStart(2, '0')}:${minute.padStart(2, '0')}`;
+    desc += t('tenant.schedules.cronAt', { time: `${hour.padStart(2, '0')}:${minute.padStart(2, '0')}` });
 
     return desc;
   };
@@ -487,7 +495,7 @@ export default function TenantSchedulesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
       <Helmet>
-        <title>Scheduled Jobs - OneSign</title>
+        <title>{t('tenant.schedules.pageTitle')}</title>
       </Helmet>
 
       <div className="p-6 max-w-7xl mx-auto">
@@ -504,10 +512,10 @@ export default function TenantSchedulesPage() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-                  Scheduled Jobs
+                  {t('tenant.schedules.title')}
                 </h1>
                 <p className="text-slate-500 dark:text-slate-400 mt-1">
-                  Manage and monitor automated job schedules
+                  {t('tenant.schedules.subtitle')}
                 </p>
               </div>
             </div>
@@ -529,28 +537,28 @@ export default function TenantSchedulesPage() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <StatCard
-            title="Total Schedules"
+            title={t('tenant.schedules.stats.totalSchedules')}
             value={stats.totalSchedules}
             icon={Calendar}
             color="bg-gradient-to-br from-blue-500 to-blue-600"
             delay={0}
           />
           <StatCard
-            title="Active Schedules"
+            title={t('tenant.schedules.stats.activeSchedules')}
             value={stats.activeSchedules}
             icon={Play}
             color="bg-gradient-to-br from-emerald-500 to-emerald-600"
             delay={1}
           />
           <StatCard
-            title="Successful Runs"
+            title={t('tenant.schedules.stats.successfulRuns')}
             value={stats.successfulRuns}
             icon={CheckCircle}
             color="bg-gradient-to-br from-green-500 to-green-600"
             delay={2}
           />
           <StatCard
-            title="Failed Runs"
+            title={t('tenant.schedules.stats.failedRuns')}
             value={stats.failedRuns}
             icon={XCircle}
             color="bg-gradient-to-br from-red-500 to-red-600"
@@ -613,10 +621,10 @@ export default function TenantSchedulesPage() {
               <Clock className="w-8 h-8 text-indigo-500" />
             </div>
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-              No Scheduled Jobs
+              {t('tenant.schedules.noSchedules')}
             </h3>
             <p className="text-slate-500 dark:text-slate-400 mb-6 max-w-md mx-auto">
-              Create your first schedule to automate recurring tasks.
+              {t('tenant.schedules.noSchedulesDescription')}
             </p>
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -676,7 +684,7 @@ export default function TenantSchedulesPage() {
                                 ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                                 : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
                             }`}>
-                              Last: {schedule.lastStatus}
+                              {t('tenant.schedules.lastStatus', { status: schedule.lastStatus })}
                             </span>
                           )}
                         </div>
@@ -699,17 +707,17 @@ export default function TenantSchedulesPage() {
                         <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
                           <div className="flex items-center gap-1">
                             <Clock className="w-4 h-4 text-slate-400" />
-                            Next run: {new Date(schedule.nextRun).toLocaleString()}
+                            {t('tenant.schedules.nextRun', { time: new Date(schedule.nextRun).toLocaleString() })}
                           </div>
                           {schedule.lastRun && (
                             <div className="flex items-center gap-1">
                               <History className="w-4 h-4 text-slate-400" />
-                              Last run: {new Date(schedule.lastRun).toLocaleString()}
+                              {t('tenant.schedules.lastRun', { time: new Date(schedule.lastRun).toLocaleString() })}
                             </div>
                           )}
                           <div className="flex items-center gap-1">
                             <Zap className="w-4 h-4 text-slate-400" />
-                            {schedule.executionCount} executions
+                            {t('tenant.schedules.executionCount', { count: schedule.executionCount })}
                           </div>
                         </div>
                       </div>
@@ -724,7 +732,7 @@ export default function TenantSchedulesPage() {
                             ? 'text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20'
                             : 'text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20'
                         }`}
-                        title={schedule.enabled ? 'Pause' : 'Resume'}
+                        title={schedule.enabled ? t('tenant.schedules.pause') : t('tenant.schedules.resume')}
                       >
                         {schedule.enabled ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
                       </motion.button>
@@ -733,7 +741,7 @@ export default function TenantSchedulesPage() {
                         whileTap={{ scale: 0.95 }}
                         onClick={() => handleViewHistory(schedule)}
                         className="p-2 text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-all"
-                        title="View History"
+                        title={t('tenant.schedules.viewHistory')}
                       >
                         <History className="w-5 h-5" />
                       </motion.button>
@@ -742,7 +750,7 @@ export default function TenantSchedulesPage() {
                         whileTap={{ scale: 0.95 }}
                         onClick={() => handleEdit(schedule)}
                         className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-all"
-                        title="Edit"
+                        title={t('common.edit')}
                       >
                         <Edit3 className="w-5 h-5" />
                       </motion.button>
@@ -754,7 +762,7 @@ export default function TenantSchedulesPage() {
                           setShowDeleteConfirm(true);
                         }}
                         className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
-                        title="Delete"
+                        title={t('common.delete')}
                       >
                         <Trash2 className="w-5 h-5" />
                       </motion.button>
@@ -810,33 +818,33 @@ export default function TenantSchedulesPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Name <span className="text-red-500">*</span>
+                {t('tenant.schedules.form.name')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
-                placeholder="Enter schedule name"
+                placeholder={t('tenant.schedules.form.namePlaceholder')}
                 className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-slate-900 dark:text-white"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Description
+                {t('tenant.schedules.form.description')}
               </label>
               <textarea
                 value={formDescription}
                 onChange={(e) => setFormDescription(e.target.value)}
                 rows={3}
-                placeholder="Enter schedule description"
+                placeholder={t('tenant.schedules.form.descriptionPlaceholder')}
                 className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-slate-900 dark:text-white"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Job Type <span className="text-red-500">*</span>
+                {t('tenant.schedules.form.jobType')} <span className="text-red-500">*</span>
               </label>
               <select
                 value={formJobType}
@@ -853,11 +861,11 @@ export default function TenantSchedulesPage() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Cron Expression <span className="text-red-500">*</span>
+                {t('tenant.schedules.form.cronExpression')} <span className="text-red-500">*</span>
               </label>
               <div className="grid grid-cols-5 gap-2 mb-3">
                 <div>
-                  <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Minute</label>
+                  <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">{t('tenant.schedules.form.minute')}</label>
                   <input
                     type="text"
                     value={cronMinute}
@@ -867,7 +875,7 @@ export default function TenantSchedulesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Hour</label>
+                  <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">{t('tenant.schedules.form.hour')}</label>
                   <input
                     type="text"
                     value={cronHour}
@@ -877,7 +885,7 @@ export default function TenantSchedulesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Day</label>
+                  <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">{t('tenant.schedules.form.day')}</label>
                   <input
                     type="text"
                     value={cronDayOfMonth}
@@ -887,7 +895,7 @@ export default function TenantSchedulesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Month</label>
+                  <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">{t('tenant.schedules.form.month')}</label>
                   <input
                     type="text"
                     value={cronMonth}
@@ -897,7 +905,7 @@ export default function TenantSchedulesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">Weekday</label>
+                  <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">{t('tenant.schedules.form.weekday')}</label>
                   <input
                     type="text"
                     value={cronDayOfWeek}
@@ -908,7 +916,7 @@ export default function TenantSchedulesPage() {
                 </div>
               </div>
               <div className="bg-slate-100 dark:bg-slate-900 p-4 rounded-xl">
-                <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Generated Expression:</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">{t('tenant.schedules.form.generatedExpression')}</div>
                 <code className="text-sm font-mono text-slate-900 dark:text-white">{formCronExpression}</code>
                 <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                   {parseCronDescription(formCronExpression)}
@@ -931,7 +939,7 @@ export default function TenantSchedulesPage() {
                 />
               </button>
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                Enable schedule immediately
+                {t('tenant.schedules.form.enableImmediately')}
               </span>
             </div>
           </div>
@@ -944,7 +952,7 @@ export default function TenantSchedulesPage() {
             setShowDeleteConfirm(false);
             setSelectedSchedule(null);
           }}
-          title="Delete Schedule"
+          title={t('tenant.schedules.deleteSchedule')}
           footer={
             <div className="flex justify-end gap-3">
               <button
@@ -979,10 +987,10 @@ export default function TenantSchedulesPage() {
             </div>
             <div>
               <p className="text-slate-700 dark:text-slate-300">
-                Are you sure you want to delete the schedule <strong className="text-slate-900 dark:text-white">"{selectedSchedule?.name}"</strong>?
+                {t('tenant.schedules.deleteConfirmation', { name: selectedSchedule?.name })}
               </p>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
-                This action cannot be undone.
+                {t('common.cannotBeUndone')}
               </p>
             </div>
           </div>
@@ -996,7 +1004,7 @@ export default function TenantSchedulesPage() {
             setSelectedSchedule(null);
             setExecutions([]);
           }}
-          title="Execution History"
+          title={t('tenant.schedules.executionHistory')}
           size="xl"
           footer={
             <div className="flex justify-end">
@@ -1015,7 +1023,7 @@ export default function TenantSchedulesPage() {
         >
           <div className="mb-4">
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              Execution history for <strong className="text-slate-900 dark:text-white">{selectedSchedule?.name}</strong>
+              {t('tenant.schedules.executionHistoryFor', { name: selectedSchedule?.name })}
             </p>
           </div>
           <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -1048,7 +1056,7 @@ export default function TenantSchedulesPage() {
                       {new Date(execution.startedAt).toLocaleString()}
                     </p>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Duration: {execution.duration ? formatDuration(execution.duration) : '-'}
+                      {t('tenant.schedules.duration', { duration: execution.duration ? formatDuration(execution.duration) : '-' })}
                     </p>
                   </div>
                 </div>
@@ -1073,7 +1081,7 @@ export default function TenantSchedulesPage() {
             setShowLogsModal(false);
             setSelectedExecution(null);
           }}
-          title="Job Logs"
+          title={t('tenant.schedules.jobLogs')}
           size="lg"
           footer={
             <div className="flex justify-end">
@@ -1111,7 +1119,7 @@ export default function TenantSchedulesPage() {
                 <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
                 <div>
                   <div className="text-sm font-medium text-red-800 dark:text-red-300 mb-1">
-                    Error Message
+                    {t('tenant.schedules.errorMessage')}
                   </div>
                   <div className="text-sm text-red-700 dark:text-red-400">
                     {selectedExecution.errorMessage}

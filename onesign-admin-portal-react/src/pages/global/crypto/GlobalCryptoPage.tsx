@@ -176,7 +176,7 @@ export default function GlobalCryptoPage() {
   };
 
   const handleRotateKey = async (keySetId: string) => {
-    if (!confirm('Are you sure you want to rotate this key set?')) {
+    if (!confirm(t('global.crypto.confirmRotateKey'))) {
       return;
     }
 

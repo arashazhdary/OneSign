@@ -200,7 +200,7 @@ export default function TenantAutomationDesignerPage() {
       setError('Please save workflow before deploying');
       return;
     }
-    if (!confirm('Deploy this workflow? It will become active.')) return;
+    if (!confirm(t('tenant.automation.designer.confirmDeploy'))) return;
     try {
       const data = await AutomationAPI.deployWorkflow(workflow.id);
       setWorkflow(data);

@@ -905,10 +905,10 @@ export default function GlobalAccessReviewsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Campaign Status Distribution */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-4">Campaign Status Distribution</h3>
+              <h3 className="text-lg font-semibold mb-4">{t('global.accessReviews.campaignStatusDistribution')}</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Active</span>
+                  <span className="text-sm">{t('global.accessReviews.active')}</span>
                   <div className="flex items-center gap-2 flex-1 ml-4">
                     <div className="flex-1 bg-gray-200 rounded-full h-2">
                       <div className="bg-green-500 h-2 rounded-full" style={{ width: '60%' }} />
@@ -917,7 +917,7 @@ export default function GlobalAccessReviewsPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Completed</span>
+                  <span className="text-sm">{t('global.accessReviews.completed')}</span>
                   <div className="flex items-center gap-2 flex-1 ml-4">
                     <div className="flex-1 bg-gray-200 rounded-full h-2">
                       <div className="bg-blue-500 h-2 rounded-full" style={{ width: '20%' }} />
@@ -926,7 +926,7 @@ export default function GlobalAccessReviewsPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Scheduled</span>
+                  <span className="text-sm">{t('global.accessReviews.scheduled')}</span>
                   <div className="flex items-center gap-2 flex-1 ml-4">
                     <div className="flex-1 bg-gray-200 rounded-full h-2">
                       <div className="bg-yellow-500 h-2 rounded-full" style={{ width: '20%' }} />
@@ -939,10 +939,10 @@ export default function GlobalAccessReviewsPage() {
 
             {/* Review Decision Distribution */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-4">Review Decisions</h3>
+              <h3 className="text-lg font-semibold mb-4">{t('global.accessReviews.reviewDecisions')}</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Approved</span>
+                  <span className="text-sm">{t('global.accessReviews.approved')}</span>
                   <div className="flex items-center gap-2 flex-1 ml-4">
                     <div className="flex-1 bg-gray-200 rounded-full h-2">
                       <div className="bg-green-500 h-2 rounded-full" style={{ width: '88%' }} />
@@ -951,7 +951,7 @@ export default function GlobalAccessReviewsPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Revoked</span>
+                  <span className="text-sm">{t('global.accessReviews.revoked')}</span>
                   <div className="flex items-center gap-2 flex-1 ml-4">
                     <div className="flex-1 bg-gray-200 rounded-full h-2">
                       <div className="bg-red-500 h-2 rounded-full" style={{ width: '10%' }} />
@@ -960,7 +960,7 @@ export default function GlobalAccessReviewsPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Escalated</span>
+                  <span className="text-sm">{t('global.accessReviews.escalated')}</span>
                   <div className="flex items-center gap-2 flex-1 ml-4">
                     <div className="flex-1 bg-gray-200 rounded-full h-2">
                       <div className="bg-orange-500 h-2 rounded-full" style={{ width: '2%' }} />
@@ -973,10 +973,10 @@ export default function GlobalAccessReviewsPage() {
 
             {/* Risk Level Distribution */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-4">Access Risk Levels</h3>
+              <h3 className="text-lg font-semibold mb-4">{t('global.accessReviews.accessRiskLevels')}</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Critical</span>
+                  <span className="text-sm">{t('global.accessReviews.critical')}</span>
                   <div className="flex items-center gap-2 flex-1 ml-4">
                     <div className="flex-1 bg-gray-200 rounded-full h-2">
                       <div className="bg-red-500 h-2 rounded-full" style={{ width: '15%' }} />
@@ -985,7 +985,7 @@ export default function GlobalAccessReviewsPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">High</span>
+                  <span className="text-sm">{t('global.accessReviews.high')}</span>
                   <div className="flex items-center gap-2 flex-1 ml-4">
                     <div className="flex-1 bg-gray-200 rounded-full h-2">
                       <div className="bg-orange-500 h-2 rounded-full" style={{ width: '25%' }} />
@@ -994,7 +994,7 @@ export default function GlobalAccessReviewsPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Medium</span>
+                  <span className="text-sm">{t('global.accessReviews.medium')}</span>
                   <div className="flex items-center gap-2 flex-1 ml-4">
                     <div className="flex-1 bg-gray-200 rounded-full h-2">
                       <div className="bg-yellow-500 h-2 rounded-full" style={{ width: '35%' }} />
@@ -1003,7 +1003,7 @@ export default function GlobalAccessReviewsPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm">Low</span>
+                  <span className="text-sm">{t('global.accessReviews.low')}</span>
                   <div className="flex items-center gap-2 flex-1 ml-4">
                     <div className="flex-1 bg-gray-200 rounded-full h-2">
                       <div className="bg-green-500 h-2 rounded-full" style={{ width: '25%' }} />
@@ -1016,7 +1016,7 @@ export default function GlobalAccessReviewsPage() {
 
             {/* Reviewer Performance */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold mb-4">Top Reviewers</h3>
+              <h3 className="text-lg font-semibold mb-4">{t('global.accessReviews.topReviewers')}</h3>
               <div className="space-y-3">
                 {reviewers.slice(0, 5).map((reviewer, index) => (
                   <div key={reviewer.id} className="flex items-center justify-between border-b pb-2">
@@ -1026,12 +1026,12 @@ export default function GlobalAccessReviewsPage() {
                       </div>
                       <div>
                         <div className="font-medium text-sm">{reviewer.reviewerName}</div>
-                        <div className="text-xs text-gray-500">{reviewer.reviewedItems} reviews</div>
+                        <div className="text-xs text-gray-500">{reviewer.reviewedItems} {t('global.accessReviews.reviews')}</div>
                       </div>
                     </div>
                     <div className="text-right">
                       <div className="text-sm font-medium">{reviewer.progress.toFixed(1)}%</div>
-                      <div className="text-xs text-gray-500">completion</div>
+                      <div className="text-xs text-gray-500">{t('global.accessReviews.completion')}</div>
                     </div>
                   </div>
                 ))}
@@ -1054,46 +1054,46 @@ export default function GlobalAccessReviewsPage() {
       >
         <form onSubmit={handleCreateCampaign} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">Campaign Name</label>
+            <label className="block text-sm font-medium mb-2">{t('global.accessReviews.campaignName')}</label>
             <input
               type="text"
               required
               className="w-full px-3 py-2 border rounded"
               value={campaignName}
               onChange={(e) => setCampaignName(e.target.value)}
-              placeholder="e.g., Q1 2025 Privileged Access Review"
+              placeholder={t('global.accessReviews.campaignNamePlaceholder')}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Description</label>
+            <label className="block text-sm font-medium mb-2">{t('global.accessReviews.description')}</label>
             <textarea
               required
               rows={3}
               className="w-full px-3 py-2 border rounded"
               value={campaignDescription}
               onChange={(e) => setCampaignDescription(e.target.value)}
-              placeholder="Describe the purpose and scope of this review campaign"
+              placeholder={t('global.accessReviews.descriptionPlaceholder')}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">Campaign Type</label>
+            <label className="block text-sm font-medium mb-2">{t('global.accessReviews.campaignType')}</label>
             <select
               className="w-full px-3 py-2 border rounded"
               value={campaignType}
               onChange={(e) => setCampaignType(e.target.value as any)}
             >
-              <option value="User Access">User Access</option>
-              <option value="Role Assignment">Role Assignment</option>
-              <option value="Privileged Access">Privileged Access</option>
-              <option value="Application Access">Application Access</option>
+              <option value="User Access">{t('global.accessReviews.userAccess')}</option>
+              <option value="Role Assignment">{t('global.accessReviews.roleAssignment')}</option>
+              <option value="Privileged Access">{t('global.accessReviews.privilegedAccess')}</option>
+              <option value="Application Access">{t('global.accessReviews.applicationAccess')}</option>
             </select>
           </div>
 
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Start Date</label>
+              <label className="block text-sm font-medium mb-2">{t('global.accessReviews.startDate')}</label>
               <input
                 type="date"
                 required
@@ -1103,7 +1103,7 @@ export default function GlobalAccessReviewsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">End Date</label>
+              <label className="block text-sm font-medium mb-2">{t('global.accessReviews.endDate')}</label>
               <input
                 type="date"
                 required
@@ -1113,7 +1113,7 @@ export default function GlobalAccessReviewsPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-2">Deadline</label>
+              <label className="block text-sm font-medium mb-2">{t('global.accessReviews.deadline')}</label>
               <input
                 type="date"
                 required
@@ -1140,13 +1140,13 @@ export default function GlobalAccessReviewsPage() {
               }}
               className="px-4 py-2 border rounded hover:bg-gray-50"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
             >
-              Create Campaign
+              {t('global.accessReviews.createCampaign')}
             </button>
           </div>
         </form>
@@ -1160,31 +1160,31 @@ export default function GlobalAccessReviewsPage() {
           setSelectedReviewItem(null);
           setReviewJustification('');
         }}
-        title="Review Access"
+        title={t('global.accessReviews.reviewAccess')}
       >
         {selectedReviewItem && (
           <form onSubmit={handleSubmitReview} className="space-y-4">
             <div className="bg-gray-50 p-4 rounded">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <div className="text-gray-600">User</div>
+                  <div className="text-gray-600">{t('common.user')}</div>
                   <div className="font-medium">{selectedReviewItem.userName}</div>
                   <div className="text-xs text-gray-500">{selectedReviewItem.userEmail}</div>
                 </div>
                 <div>
-                  <div className="text-gray-600">Tenant</div>
+                  <div className="text-gray-600">{t('common.tenant')}</div>
                   <div className="font-medium">{selectedReviewItem.tenantName}</div>
                 </div>
                 <div>
-                  <div className="text-gray-600">Access Type</div>
+                  <div className="text-gray-600">{t('global.accessReviews.accessType')}</div>
                   <div className="font-medium">{selectedReviewItem.accessType}</div>
                 </div>
                 <div>
-                  <div className="text-gray-600">Resource</div>
+                  <div className="text-gray-600">{t('global.accessReviews.resource')}</div>
                   <div className="font-medium">{selectedReviewItem.resourceName}</div>
                 </div>
                 <div>
-                  <div className="text-gray-600">Risk Level</div>
+                  <div className="text-gray-600">{t('global.accessReviews.risk')}</div>
                   <StatusBadge
                     status={selectedReviewItem.riskLevel}
 
@@ -1194,7 +1194,7 @@ export default function GlobalAccessReviewsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Decision</label>
+              <label className="block text-sm font-medium mb-2">{t('global.accessReviews.decision')}</label>
               <div className="flex gap-4">
                 <label className="flex items-center">
                   <input
@@ -1205,7 +1205,7 @@ export default function GlobalAccessReviewsPage() {
                     onChange={(e) => setReviewDecision(e.target.value as any)}
                     className="mr-2"
                   />
-                  <span className="text-sm">Approve Access</span>
+                  <span className="text-sm">{t('global.accessReviews.approveAccess')}</span>
                 </label>
                 <label className="flex items-center">
                   <input
@@ -1216,20 +1216,20 @@ export default function GlobalAccessReviewsPage() {
                     onChange={(e) => setReviewDecision(e.target.value as any)}
                     className="mr-2"
                   />
-                  <span className="text-sm">Revoke Access</span>
+                  <span className="text-sm">{t('global.accessReviews.revokeAccess')}</span>
                 </label>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Justification</label>
+              <label className="block text-sm font-medium mb-2">{t('global.accessReviews.justification')}</label>
               <textarea
                 required
                 rows={3}
                 className="w-full px-3 py-2 border rounded"
                 value={reviewJustification}
                 onChange={(e) => setReviewJustification(e.target.value)}
-                placeholder="Provide justification for your decision"
+                placeholder={t('global.accessReviews.justificationPlaceholder')}
               />
             </div>
 
@@ -1249,7 +1249,7 @@ export default function GlobalAccessReviewsPage() {
                 }}
                 className="px-4 py-2 border rounded hover:bg-gray-50"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
@@ -1259,7 +1259,7 @@ export default function GlobalAccessReviewsPage() {
                     : 'bg-red-600 hover:bg-red-700'
                 }`}
               >
-                {reviewDecision === 'approve' ? 'Approve' : 'Revoke'}
+                {reviewDecision === 'approve' ? t('global.accessReviews.approve') : t('global.accessReviews.revoke')}
               </button>
             </div>
           </form>

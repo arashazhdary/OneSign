@@ -139,12 +139,21 @@ export default function TenantConditionalAccessPage() {
     return configs[action as keyof typeof configs] || { bg: 'bg-gray-100', text: 'text-gray-800', icon: null };
   };
 
+  const getActionLabel = (action: string) => {
+    const labels = {
+      allow: t('conditionalAccess.allow', 'Allow'),
+      deny: t('conditionalAccess.deny', 'Deny'),
+      mfa_required: t('conditionalAccess.mfaRequired', 'Require MFA'),
+    };
+    return labels[action as keyof typeof labels] || action;
+  };
+
   const handleTogglePolicy = async (policy: ConditionalAccessPolicy) => {
     try {
-      setSuccess(`Policy ${policy.isEnabled ? 'disabled' : 'enabled'} successfully`);
+      setSuccess(t('conditionalAccess.policyToggled', `Policy ${policy.isEnabled ? t('common.disabled', 'disabled') : t('common.enabled', 'enabled')} successfully`));
       fetchPolicies();
     } catch (err: any) {
-      setError(err?.message || 'Failed to update policy');
+      setError(err?.message || t('conditionalAccess.updatePolicyError', 'Failed to update policy'));
     }
   };
 
@@ -287,11 +296,11 @@ export default function TenantConditionalAccessPage() {
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{policy.name}</h3>
                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full ${getActionConfig(policy.action).bg} ${getActionConfig(policy.action).text}`}>
                       {getActionConfig(policy.action).icon}
-                      {policy.action.replace('_', ' ')}
+                      {getActionLabel(policy.action)}
                     </span>
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400">
                       <ArrowUp className="w-3 h-3" />
-                      Priority: {policy.priority}
+                      {t('conditionalAccess.priority', 'Priority')}: {policy.priority}
                     </span>
                   </div>
                   <p className="text-gray-600 dark:text-gray-400 mt-2">{policy.description}</p>

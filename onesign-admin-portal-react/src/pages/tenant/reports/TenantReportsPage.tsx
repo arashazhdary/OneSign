@@ -236,7 +236,7 @@ export default function TenantReportsPage() {
   };
 
   const handleDeleteSubscription = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this subscription?')) return;
+    if (!confirm(t('tenant.reports.confirmDeleteSubscription'))) return;
     try {
       await InsightsAPI.deleteReportSubscription(tenantId!, id);
       setSuccess('Subscription deleted successfully');
