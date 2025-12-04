@@ -104,7 +104,10 @@ export default function GlobalObservabilityPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold mb-6">Global Observability - Audit Logs</h1>
+      <Helmet>
+        <title>{t('globalObservability.pageTitle')}</title>
+      </Helmet>
+      <h1 className="text-3xl font-bold mb-6">{t('globalObservability.pageTitle')}</h1>
 
       {error && (
         <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">{error}</div>
@@ -122,7 +125,7 @@ export default function GlobalObservabilityPage() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              {tab === 'search' ? 'Search Events' : 'Event Detail'}
+              {tab === 'search' ? t('globalObservability.searchEvents') : t('globalObservability.eventDetail')}
             </button>
           ))}
         </nav>
@@ -131,20 +134,20 @@ export default function GlobalObservabilityPage() {
       {activeTab === 'search' && (
         <div>
           <div className="mb-6 bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold mb-4">Search Filters</h2>
+            <h2 className="text-lg font-semibold mb-4">{t('globalObservability.searchFilters')}</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Search Term</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalObservability.searchTerm')}</label>
                 <input
                   type="text"
                   value={searchRequest.searchTerm || ''}
                   onChange={(e) => setSearchRequest({ ...searchRequest, searchTerm: e.target.value })}
-                  placeholder="Search in events..."
+                  placeholder={t('globalObservability.searchPlaceholder')}
                   className="w-full px-3 py-2 border border-gray-300 rounded"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalObservability.startDate')}</label>
                 <input
                   type="datetime-local"
                   value={searchRequest.startDate || ''}
@@ -153,7 +156,7 @@ export default function GlobalObservabilityPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('globalObservability.endDate')}</label>
                 <input
                   type="datetime-local"
                   value={searchRequest.endDate || ''}
@@ -171,7 +174,7 @@ export default function GlobalObservabilityPage() {
                 disabled={loading}
                 className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
               >
-                {loading ? 'Searching...' : 'Search'}
+                {loading ? t('globalObservability.searching') : t('globalObservability.search')}
               </button>
             </div>
           </div>
@@ -180,14 +183,14 @@ export default function GlobalObservabilityPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Event Type</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tenant</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Resource</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Outcome</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Timestamp</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('globalObservability.eventType')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('globalObservability.tenant')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('globalObservability.user')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('globalObservability.action')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('globalObservability.resource')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('globalObservability.outcome')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('globalObservability.timestamp')}</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('globalObservability.actions')}</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -199,7 +202,7 @@ export default function GlobalObservabilityPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {event.tenantName || event.tenantId || 'Global'}
+                      {event.tenantName || event.tenantId || t('globalObservability.global')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {event.userEmail || event.userId}
@@ -228,7 +231,7 @@ export default function GlobalObservabilityPage() {
                         }}
                         className="text-indigo-600 hover:text-indigo-900"
                       >
-                        View
+                        {t('globalObservability.view')}
                       </button>
                     </td>
                   </tr>
@@ -236,7 +239,7 @@ export default function GlobalObservabilityPage() {
                 {auditEvents.length === 0 && (
                   <tr>
                     <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
-                      No audit events found
+                      {t('globalObservability.noEventsFound')}
                     </td>
                   </tr>
                 )}
@@ -274,7 +277,7 @@ export default function GlobalObservabilityPage() {
               type="text"
               value={selectedEventId}
               onChange={(e) => setSelectedEventId(e.target.value)}
-              placeholder="Enter event ID"
+              placeholder={t('globalObservability.enterEventId')}
               className="flex-1 px-3 py-2 border border-gray-300 rounded"
             />
             <button
@@ -282,7 +285,7 @@ export default function GlobalObservabilityPage() {
               disabled={!selectedEventId || loading}
               className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:opacity-50"
             >
-              {loading ? 'Loading...' : 'Get Event'}
+              {loading ? t('common.loading') : t('globalObservability.getEvent')}
             </button>
           </div>
 
@@ -291,7 +294,7 @@ export default function GlobalObservabilityPage() {
               <div className="flex items-start justify-between pb-4 border-b">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">{eventDetail.eventType}</h2>
-                  <p className="text-sm text-gray-500 mt-1">Event ID: {eventDetail.id}</p>
+                  <p className="text-sm text-gray-500 mt-1">{t('globalObservability.eventId')}: {eventDetail.id}</p>
                 </div>
                 <span className={`px-3 py-1 rounded text-sm font-semibold ${getOutcomeColor(eventDetail.outcome)}`}>
                   {eventDetail.outcome}
@@ -300,43 +303,43 @@ export default function GlobalObservabilityPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Event Information</h3>
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">{t('globalObservability.eventInformation')}</h3>
                   <div className="space-y-3">
                     <div>
-                      <span className="text-sm text-gray-500">Action:</span>
+                      <span className="text-sm text-gray-500">{t('globalObservability.action')}:</span>
                       <p className="font-medium">{eventDetail.action}</p>
                     </div>
                     <div>
-                      <span className="text-sm text-gray-500">Resource:</span>
+                      <span className="text-sm text-gray-500">{t('globalObservability.resource')}:</span>
                       <p className="font-medium">{eventDetail.resource}</p>
                       {eventDetail.resourceId && (
                         <p className="text-xs text-gray-600 mt-1">{eventDetail.resourceId}</p>
                       )}
                     </div>
                     <div>
-                      <span className="text-sm text-gray-500">Timestamp:</span>
+                      <span className="text-sm text-gray-500">{t('globalObservability.timestamp')}:</span>
                       <p className="font-medium">{new Date(eventDetail.timestamp).toLocaleString()}</p>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-700 mb-2">User & Tenant</h3>
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">{t('globalObservability.userAndTenant')}</h3>
                   <div className="space-y-3">
                     {eventDetail.tenantName && (
                       <div>
-                        <span className="text-sm text-gray-500">Tenant:</span>
+                        <span className="text-sm text-gray-500">{t('globalObservability.tenant')}:</span>
                         <p className="font-medium">{eventDetail.tenantName}</p>
                         <p className="text-xs text-gray-600 mt-1">{eventDetail.tenantId}</p>
                       </div>
                     )}
                     <div>
-                      <span className="text-sm text-gray-500">User:</span>
+                      <span className="text-sm text-gray-500">{t('globalObservability.user')}:</span>
                       <p className="font-medium">{eventDetail.userEmail}</p>
                       <p className="text-xs text-gray-600 mt-1">{eventDetail.userId}</p>
                     </div>
                     <div>
-                      <span className="text-sm text-gray-500">IP Address:</span>
+                      <span className="text-sm text-gray-500">{t('globalObservability.ipAddress')}:</span>
                       <p className="font-medium">{eventDetail.ipAddress}</p>
                     </div>
                   </div>
@@ -345,14 +348,14 @@ export default function GlobalObservabilityPage() {
 
               {eventDetail.userAgent && (
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-700 mb-2">User Agent</h3>
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">{t('globalObservability.userAgent')}</h3>
                   <p className="text-sm text-gray-600 font-mono bg-gray-50 p-3 rounded">{eventDetail.userAgent}</p>
                 </div>
               )}
 
               {eventDetail.details && Object.keys(eventDetail.details).length > 0 && (
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Additional Details</h3>
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">{t('globalObservability.additionalDetails')}</h3>
                   <pre className="text-sm text-gray-800 bg-gray-50 p-4 rounded overflow-auto max-h-96">
                     {JSON.stringify(eventDetail.details, null, 2)}
                   </pre>
@@ -368,7 +371,7 @@ export default function GlobalObservabilityPage() {
                   }}
                   className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50"
                 >
-                  Back to Search
+                  {t('globalObservability.backToSearch')}
                 </button>
               </div>
             </div>
@@ -376,7 +379,7 @@ export default function GlobalObservabilityPage() {
 
           {!eventDetail && !loading && (
             <div className="text-center text-gray-500 py-12">
-              Enter an event ID to view details
+              {t('globalObservability.enterEventIdPrompt')}
             </div>
           )}
         </div>

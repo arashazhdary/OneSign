@@ -197,7 +197,7 @@ export default function TenantRolesPage() {
       } else {
         await rolesService.createRole(payload as any);
       }
-      setSuccess(editingRole ? t('tenant.roles.roleUpdated', 'نقش با موفقیت به‌روزرسانی شد') : t('tenant.roles.roleCreated', 'نقش با موفقیت ایجاد شد'));
+      setSuccess(editingRole ? t('tenant.roles.roleUpdated') : t('tenant.roles.roleCreated'));
       setShowCreateModal(false);
       resetForm();
       fetchRoles();
@@ -217,14 +217,14 @@ export default function TenantRolesPage() {
   };
 
   const handleDeleteRole = async (roleId: string) => {
-    if (!confirm(t('tenant.roles.confirmDelete', 'آیا از حذف این نقش اطمینان دارید؟'))) return;
+    if (!confirm(t('tenant.roles.confirmDelete'))) return;
 
     setError('');
     setSuccess('');
 
     try {
       await rolesService.deleteRole(roleId);
-      setSuccess(t('tenant.roles.roleDeleted', 'نقش با موفقیت حذف شد'));
+      setSuccess(t('tenant.roles.roleDeleted'));
       fetchRoles();
     } catch (error: any) {
       setError(error?.message || t('common.failedToDeleteRole'));
@@ -306,7 +306,7 @@ export default function TenantRolesPage() {
             </div>
             <div>
               <span className="font-medium text-gray-900">{role.name}</span>
-              <span className="text-sm text-gray-500 mr-2">({role.userCount} کاربر)</span>
+              <span className="text-sm text-gray-500 mr-2">({role.userCount} {t('tenant.roles.users')})</span>
             </div>
           </div>
         </div>
@@ -334,7 +334,7 @@ export default function TenantRolesPage() {
   return (
     <>
       <Helmet>
-        <title>{t('tenant.roles.title', 'مدیریت نقش‌ها')} | OneSign</title>
+        <title>{t('tenant.roles.title')} | OneSign</title>
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-8" dir="rtl">
@@ -347,7 +347,7 @@ export default function TenantRolesPage() {
                 animate={{ opacity: 1, x: 0 }}
                 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent"
               >
-                {t('tenant.roles.title', 'مدیریت نقش‌ها')}
+                {t('tenant.roles.title')}
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0, x: -20 }}
@@ -355,7 +355,7 @@ export default function TenantRolesPage() {
                 transition={{ delay: 0.1 }}
                 className="text-gray-600 mt-2"
               >
-                {t('tenant.roles.subtitle', 'تعریف و مدیریت نقش‌ها و مجوزها')}
+                {t('tenant.roles.subtitle')}
               </motion.p>
             </div>
             <div className="flex gap-3">
@@ -377,7 +377,7 @@ export default function TenantRolesPage() {
                 className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-white transition-all flex items-center gap-2"
               >
                 <FileText className="w-4 h-4" />
-                {t('tenant.roles.templates', 'قالب‌ها')}
+                {t('tenant.roles.templates')}
               </motion.button>
               <motion.button
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -387,7 +387,7 @@ export default function TenantRolesPage() {
                 className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-white transition-all flex items-center gap-2"
               >
                 <Layers className="w-4 h-4" />
-                {t('tenant.roles.hierarchy', 'سلسله‌مراتب')}
+                {t('tenant.roles.hierarchy')}
               </motion.button>
               <motion.button
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -397,7 +397,7 @@ export default function TenantRolesPage() {
                 className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-white transition-all flex items-center gap-2"
               >
                 <Grid3X3 className="w-4 h-4" />
-                {t('tenant.roles.matrix', 'ماتریس')}
+                {t('tenant.roles.matrix')}
               </motion.button>
               <motion.button
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -411,7 +411,7 @@ export default function TenantRolesPage() {
                 className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl font-medium flex items-center gap-2"
               >
                 <Plus className="w-5 h-5" />
-                {t('tenant.roles.createRole', 'ایجاد نقش')}
+                {t('tenant.roles.createRole')}
               </motion.button>
             </div>
           </div>
@@ -443,28 +443,28 @@ export default function TenantRolesPage() {
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <StatCard
-            title={t('tenant.roles.totalRoles', 'کل نقش‌ها')}
+            title={t('tenant.roles.totalRoles')}
             value={totalRoles}
             icon={<Shield className="w-6 h-6" />}
             color="blue"
             delay={0}
           />
           <StatCard
-            title={t('tenant.roles.systemRoles', 'نقش‌های سیستمی')}
+            title={t('tenant.roles.systemRoles')}
             value={systemRoles}
             icon={<Lock className="w-6 h-6" />}
             color="purple"
             delay={1}
           />
           <StatCard
-            title={t('tenant.roles.customRoles', 'نقش‌های سفارشی')}
+            title={t('tenant.roles.customRoles')}
             value={customRoles}
             icon={<Settings className="w-6 h-6" />}
             color="green"
             delay={2}
           />
           <StatCard
-            title={t('tenant.roles.totalPermissions', 'کل مجوزها')}
+            title={t('tenant.roles.totalPermissions')}
             value={totalPermissions}
             icon={<Eye className="w-6 h-6" />}
             color="orange"
@@ -483,7 +483,7 @@ export default function TenantRolesPage() {
             <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder={t('tenant.roles.searchRoles', 'جستجوی نقش‌ها...')}
+              placeholder={t('tenant.roles.searchRoles')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pr-10 pl-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -503,22 +503,22 @@ export default function TenantRolesPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('tenant.roles.roleName', 'نام نقش')}
+                    {t('tenant.roles.roleName')}
                   </th>
                   <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('tenant.roles.description', 'توضیحات')}
+                    {t('tenant.roles.description')}
                   </th>
                   <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('tenant.roles.permissions', 'مجوزها')}
+                    {t('tenant.roles.permissions')}
                   </th>
                   <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('tenant.roles.users', 'کاربران')}
+                    {t('tenant.roles.users')}
                   </th>
                   <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('tenant.roles.type', 'نوع')}
+                    {t('tenant.roles.type')}
                   </th>
                   <th className="px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {t('common.actions', 'عملیات')}
+                    {t('common.actions')}
                   </th>
                 </tr>
               </thead>
@@ -544,7 +544,7 @@ export default function TenantRolesPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium">
-                        {role.permissions.length} {t('tenant.roles.permission', 'مجوز')}
+                        {role.permissions.length} {t('tenant.roles.permission')}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -559,7 +559,7 @@ export default function TenantRolesPage() {
                           ? 'bg-purple-100 text-purple-800 border-purple-200'
                           : 'bg-blue-100 text-blue-800 border-blue-200'
                       }`}>
-                        {role.isSystem ? t('tenant.roles.system', 'سیستمی') : t('tenant.roles.custom', 'سفارشی')}
+                        {role.isSystem ? t('tenant.roles.system') : t('tenant.roles.custom')}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -575,7 +575,7 @@ export default function TenantRolesPage() {
                         <button
                           onClick={() => handleCloneRole(role)}
                           className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                          title={t('tenant.roles.clone', 'کپی')}
+                          title={t('tenant.roles.clone')}
                         >
                           <Copy className="w-4 h-4" />
                         </button>
@@ -585,7 +585,7 @@ export default function TenantRolesPage() {
                             setShowAssignUsersModal(true);
                           }}
                           className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
-                          title={t('tenant.roles.assignUsers', 'تخصیص کاربران')}
+                          title={t('tenant.roles.assignUsers')}
                         >
                           <UserPlus className="w-4 h-4" />
                         </button>
@@ -606,7 +606,7 @@ export default function TenantRolesPage() {
                   <tr>
                     <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                       <Shield className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                      <p>{t('tenant.roles.noRoles', 'نقشی یافت نشد')}</p>
+                      <p>{t('tenant.roles.noRoles')}</p>
                     </td>
                   </tr>
                 )}
@@ -625,7 +625,7 @@ export default function TenantRolesPage() {
             >
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">
-                  {editingRole ? t('tenant.roles.editRole', 'ویرایش نقش') : t('tenant.roles.createRole', 'ایجاد نقش جدید')}
+                  {editingRole ? t('tenant.roles.editRole') : t('tenant.roles.createNewRole')}
                 </h2>
                 <button
                   onClick={() => {
@@ -642,7 +642,7 @@ export default function TenantRolesPage() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t('tenant.roles.roleName', 'نام نقش')}
+                      {t('tenant.roles.roleName')}
                     </label>
                     <input
                       type="text"
@@ -655,7 +655,7 @@ export default function TenantRolesPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t('tenant.roles.description', 'توضیحات')}
+                      {t('tenant.roles.description')}
                     </label>
                     <textarea
                       value={roleDescription}
@@ -667,14 +667,14 @@ export default function TenantRolesPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t('tenant.roles.parentRole', 'نقش والد (اختیاری)')}
+                      {t('tenant.roles.parentRole')}
                     </label>
                     <select
                       value={parentRoleId}
                       onChange={(e) => setParentRoleId(e.target.value)}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                     >
-                      <option value="">{t('common.none', 'هیچکدام')}</option>
+                      <option value="">{t('common.none')}</option>
                       {roles
                         .filter((r) => r.id !== editingRole?.id)
                         .map((role) => (
@@ -687,7 +687,7 @@ export default function TenantRolesPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      {t('tenant.roles.permissions', 'مجوزها')}
+                      {t('tenant.roles.permissions')}
                     </label>
                     <div className="border border-gray-200 rounded-lg p-4 max-h-64 overflow-y-auto bg-gray-50">
                       {Object.entries(getResourceGroups()).map(([resource, perms]) => (
@@ -712,7 +712,7 @@ export default function TenantRolesPage() {
                       ))}
                     </div>
                     <p className="text-sm text-gray-500 mt-2">
-                      {selectedPermissions.length} {t('tenant.roles.permissionsSelected', 'مجوز انتخاب شده')}
+                      {selectedPermissions.length} {t('tenant.roles.permissionsSelected')}
                     </p>
                   </div>
                 </div>
@@ -732,7 +732,7 @@ export default function TenantRolesPage() {
                     type="submit"
                     className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 font-medium transition-all"
                   >
-                    {editingRole ? t('common.update', 'به‌روزرسانی') : t('common.create', 'ایجاد')}
+                    {editingRole ? t('common.update') : t('common.create')}
                   </button>
                 </div>
               </form>
@@ -749,7 +749,7 @@ export default function TenantRolesPage() {
               className="bg-white rounded-xl shadow-2xl p-8 max-w-6xl w-full max-h-[90vh] overflow-auto mx-4"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">{t('tenant.roles.permissionMatrix', 'ماتریس مجوزها')}</h2>
+                <h2 className="text-2xl font-bold text-gray-900">{t('tenant.roles.permissionMatrix')}</h2>
                 <button
                   onClick={() => setShowPermissionMatrix(false)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -762,7 +762,7 @@ export default function TenantRolesPage() {
                   <thead>
                     <tr className="bg-gray-50">
                       <th className="border border-gray-200 px-4 py-3 text-right text-sm font-medium text-gray-700">
-                        {t('tenant.roles.resourceAction', 'منبع / عملیات')}
+                        {t('tenant.roles.resourceAction')}
                       </th>
                       {roles.map((role) => (
                         <th key={role.id} className="border border-gray-200 px-4 py-3 text-center text-sm font-medium text-gray-700">
@@ -805,7 +805,7 @@ export default function TenantRolesPage() {
               className="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full mx-4"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">{t('tenant.roles.roleTemplates', 'قالب‌های نقش')}</h2>
+                <h2 className="text-2xl font-bold text-gray-900">{t('tenant.roles.roleTemplates')}</h2>
                 <button
                   onClick={() => setShowTemplateModal(false)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -829,7 +829,7 @@ export default function TenantRolesPage() {
                         <h3 className="font-semibold text-gray-900">{template.name}</h3>
                         <p className="text-sm text-gray-600">{template.description}</p>
                         <p className="text-xs text-gray-400 mt-1">
-                          {template.permissions.length} {t('tenant.roles.permissions', 'مجوز')}
+                          {template.permissions.length} {t('tenant.roles.permissions')}
                         </p>
                       </div>
                     </div>
@@ -849,7 +849,7 @@ export default function TenantRolesPage() {
               className="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto mx-4"
             >
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">{t('tenant.roles.roleHierarchy', 'سلسله‌مراتب نقش‌ها')}</h2>
+                <h2 className="text-2xl font-bold text-gray-900">{t('tenant.roles.roleHierarchy')}</h2>
                 <button
                   onClick={() => setShowHierarchyView(false)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -859,7 +859,7 @@ export default function TenantRolesPage() {
               </div>
               <div className="space-y-1">{buildRoleHierarchy()}</div>
               {roles.length === 0 && (
-                <p className="text-center text-gray-500 py-8">{t('tenant.roles.noRoles', 'نقشی یافت نشد')}</p>
+                <p className="text-center text-gray-500 py-8">{t('tenant.roles.noRoles')}</p>
               )}
             </motion.div>
           </div>
@@ -875,7 +875,7 @@ export default function TenantRolesPage() {
             >
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">
-                  {t('tenant.roles.assignUsersTo', 'تخصیص کاربران به')} {selectedRoleForUsers.name}
+                  {t('tenant.roles.assignUsersTo')} {selectedRoleForUsers.name}
                 </h2>
                 <button
                   onClick={() => {
@@ -892,13 +892,13 @@ export default function TenantRolesPage() {
                 <div className="flex items-center gap-3">
                   <Users className="w-5 h-5 text-gray-400" />
                   <span className="text-gray-700">
-                    {t('tenant.roles.currentUsers', 'کاربران فعلی')}: {selectedRoleForUsers.userCount}
+                    {t('tenant.roles.currentUsers')}: {selectedRoleForUsers.userCount}
                   </span>
                 </div>
               </div>
 
               <p className="text-sm text-gray-600 mb-6">
-                {t('tenant.roles.assignUsersDescription', 'این قابلیت به شما امکان تخصیص کاربران به این نقش را می‌دهد.')}
+                {t('tenant.roles.assignUsersDescription')}
               </p>
 
               <button
@@ -908,7 +908,7 @@ export default function TenantRolesPage() {
                 }}
                 className="w-full px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium transition-colors"
               >
-                {t('common.close', 'بستن')}
+                {t('common.close')}
               </button>
             </motion.div>
           </div>

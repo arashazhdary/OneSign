@@ -125,7 +125,7 @@ export default function TenantCertificatesPage() {
       const mockData: Certificate[] = [
         {
           id: '1',
-          name: 'گواهینامه SSL اصلی',
+          name: t('tenant.certificates.mockData.mainSSL'),
           domain: '*.example.com',
           issuer: "Let's Encrypt Authority X3",
           expiresAt: '2025-06-15T00:00:00Z',
@@ -137,7 +137,7 @@ export default function TenantCertificatesPage() {
         },
         {
           id: '2',
-          name: 'گواهینامه API',
+          name: t('tenant.certificates.mockData.apiCert'),
           domain: 'api.example.com',
           issuer: 'DigiCert Inc',
           expiresAt: '2025-01-10T00:00:00Z',
@@ -168,7 +168,7 @@ export default function TenantCertificatesPage() {
       await tenantService.uploadCertificate('tenant-id', file);
       setShowUpload(false);
       setFile(null);
-      setSuccess('گواهینامه با موفقیت آپلود شد');
+      setSuccess(t('tenant.certificates.messages.uploadSuccess'));
       fetchCertificates(true);
     } catch (err: any) {
       setError(err.message || t('common.failedToUploadCertificate'));
@@ -186,7 +186,7 @@ export default function TenantCertificatesPage() {
       await tenantService.deleteCertificate(selectedCert.id);
       setShowDeleteConfirm(false);
       setSelectedCert(null);
-      setSuccess('گواهینامه با موفقیت حذف شد');
+      setSuccess(t('tenant.certificates.messages.deleteSuccess'));
       fetchCertificates(true);
     } catch (err: any) {
       setError(err.message || t('common.failedToDeleteCertificate'));
@@ -226,9 +226,9 @@ export default function TenantCertificatesPage() {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'valid': return 'معتبر';
-      case 'expiring': return 'در حال انقضا';
-      case 'expired': return 'منقضی';
+      case 'valid': return t('tenant.certificates.status.valid');
+      case 'expiring': return t('tenant.certificates.status.expiring');
+      case 'expired': return t('tenant.certificates.status.expired');
       default: return status;
     }
   };
@@ -249,7 +249,7 @@ export default function TenantCertificatesPage() {
               <Shield className="w-6 h-6 text-cyan-500" />
             </div>
           </div>
-          <p className="text-slate-600 dark:text-slate-400 font-medium">{t('common.loading', 'در حال بارگذاری...')}</p>
+          <p className="text-slate-600 dark:text-slate-400 font-medium">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -258,7 +258,7 @@ export default function TenantCertificatesPage() {
   return (
     <>
       <Helmet>
-        <title>{t('tenant.certificates.title', 'گواهینامه‌های SSL/TLS')} | OneSign</title>
+        <title>{t('tenant.certificates.title')} | OneSign</title>
       </Helmet>
 
       <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-cyan-50/30 to-teal-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 min-h-screen" dir="rtl">
@@ -273,7 +273,7 @@ export default function TenantCertificatesPage() {
               <div className="p-2 bg-gradient-to-br from-cyan-500 to-teal-500 rounded-xl text-white">
                 <Shield className="w-6 h-6" />
               </div>
-              {t('tenant.certificates.title', 'گواهینامه‌های SSL/TLS')}
+              {t('tenant.certificates.title')}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, x: -20 }}
@@ -281,7 +281,7 @@ export default function TenantCertificatesPage() {
               transition={{ delay: 0.1 }}
               className="text-slate-500 dark:text-slate-400 mt-1"
             >
-              {t('tenant.certificates.subtitle', 'مدیریت گواهینامه‌های امنیتی')}
+              {t('tenant.certificates.subtitle')}
             </motion.p>
           </div>
           <div className="flex gap-3">
@@ -295,7 +295,7 @@ export default function TenantCertificatesPage() {
               className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-              {t('common.refresh', 'بروزرسانی')}
+              {t('common.refresh')}
             </motion.button>
             <motion.button
               initial={{ opacity: 0, scale: 0.9 }}
@@ -306,7 +306,7 @@ export default function TenantCertificatesPage() {
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-xl hover:from-cyan-700 hover:to-teal-700 transition-all shadow-lg hover:shadow-xl"
             >
               <Upload className="w-4 h-4" />
-              {t('common.uploadCertificate', 'آپلود گواهینامه')}
+              {t('common.uploadCertificate')}
             </motion.button>
           </div>
         </div>
@@ -337,29 +337,29 @@ export default function TenantCertificatesPage() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            title="کل گواهینامه‌ها"
+            title={t('tenant.certificates.stats.total')}
             value={stats.total}
             icon={<Award className="w-6 h-6" />}
             color="cyan"
             delay={0}
           />
           <StatCard
-            title="گواهینامه‌های معتبر"
+            title={t('tenant.certificates.stats.valid')}
             value={stats.valid}
             icon={<CheckCircle className="w-6 h-6" />}
             color="green"
             delay={1}
           />
           <StatCard
-            title="در حال انقضا"
+            title={t('tenant.certificates.stats.expiring')}
             value={stats.expiring}
-            subtitle="نیاز به تمدید"
+            subtitle={t('tenant.certificates.stats.needsRenewal')}
             icon={<AlertTriangle className="w-6 h-6" />}
             color="yellow"
             delay={2}
           />
           <StatCard
-            title="منقضی شده"
+            title={t('tenant.certificates.stats.expired')}
             value={stats.expired}
             icon={<XCircle className="w-6 h-6" />}
             color="red"
@@ -378,7 +378,7 @@ export default function TenantCertificatesPage() {
             <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input
               type="text"
-              placeholder="جستجو در گواهینامه‌ها..."
+              placeholder={t('tenant.certificates.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pr-10 pl-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
@@ -438,14 +438,14 @@ export default function TenantCertificatesPage() {
                         <div className="flex items-center gap-2">
                           <Lock className="w-4 h-4 text-slate-400" />
                           <div>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">صادرکننده</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{t('tenant.certificates.fields.issuer')}</p>
                             <p className="text-sm font-medium text-slate-900 dark:text-white">{cert.issuer}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4 text-slate-400" />
                           <div>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">تاریخ انقضا</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{t('tenant.certificates.fields.expiryDate')}</p>
                             <p className="text-sm font-medium text-slate-900 dark:text-white">
                               {formatDate(cert.expiresAt)}
                             </p>
@@ -454,20 +454,20 @@ export default function TenantCertificatesPage() {
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4 text-slate-400" />
                           <div>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">روزهای باقیمانده</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{t('tenant.certificates.fields.daysRemaining')}</p>
                             <p className={`text-sm font-medium ${
                               daysLeft > 30 ? 'text-green-600' :
                               daysLeft > 0 ? 'text-yellow-600' :
                               'text-red-600'
                             }`}>
-                              {daysLeft > 0 ? `${daysLeft} روز` : 'منقضی شده'}
+                              {daysLeft > 0 ? t('tenant.certificates.fields.daysValue', { days: daysLeft }) : t('tenant.certificates.status.expired')}
                             </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
                           <Award className="w-4 h-4 text-slate-400" />
                           <div>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">ایجاد شده</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{t('tenant.certificates.fields.createdDate')}</p>
                             <p className="text-sm font-medium text-slate-900 dark:text-white">
                               {formatDate(cert.createdAt)}
                             </p>
@@ -514,10 +514,10 @@ export default function TenantCertificatesPage() {
                 <Shield className="w-8 h-8 text-cyan-500" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-                گواهینامه‌ای یافت نشد
+                {t('tenant.certificates.empty.title')}
               </h3>
               <p className="text-slate-500 dark:text-slate-400 mb-4">
-                هنوز هیچ گواهینامه SSL/TLS آپلود نشده است
+                {t('tenant.certificates.empty.description')}
               </p>
               <motion.button
                 whileHover={{ scale: 1.05 }}
@@ -525,7 +525,7 @@ export default function TenantCertificatesPage() {
                 onClick={() => setShowUpload(true)}
                 className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-xl hover:from-cyan-700 hover:to-teal-700 transition-all"
               >
-                آپلود اولین گواهینامه
+                {t('tenant.certificates.empty.uploadFirst')}
               </motion.button>
             </motion.div>
           )}
@@ -538,13 +538,13 @@ export default function TenantCertificatesPage() {
             setShowUpload(false);
             setFile(null);
           }}
-          title="آپلود گواهینامه"
+          title={t('tenant.certificates.upload.title')}
           size="md"
         >
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                فایل گواهینامه (.pem, .crt, .cer)
+                {t('tenant.certificates.upload.fileLabel')}
               </label>
               <div className="border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-xl p-8 text-center hover:border-cyan-400 transition-colors">
                 <input
@@ -557,10 +557,10 @@ export default function TenantCertificatesPage() {
                 <label htmlFor="cert-file" className="cursor-pointer">
                   <Upload className="w-12 h-12 text-slate-400 mx-auto mb-4" />
                   <p className="text-slate-600 dark:text-slate-400">
-                    {file ? file.name : 'برای انتخاب فایل کلیک کنید'}
+                    {file ? file.name : t('tenant.certificates.upload.selectFile')}
                   </p>
                   <p className="text-xs text-slate-500 mt-2">
-                    فرمت‌های پشتیبانی شده: PEM, CRT, CER
+                    {t('tenant.certificates.upload.supportedFormats')}
                   </p>
                 </label>
               </div>
@@ -574,14 +574,14 @@ export default function TenantCertificatesPage() {
                 }}
                 className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               >
-                انصراف
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleUpload}
                 disabled={!file || submitting}
                 className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-teal-600 text-white rounded-xl hover:from-cyan-700 hover:to-teal-700 transition-all disabled:opacity-50"
               >
-                {submitting ? 'در حال آپلود...' : 'آپلود'}
+                {submitting ? t('tenant.certificates.upload.uploading') : t('tenant.certificates.upload.submit')}
               </button>
             </div>
           </div>
@@ -594,7 +594,7 @@ export default function TenantCertificatesPage() {
             setShowDetails(false);
             setSelectedCert(null);
           }}
-          title="جزئیات گواهینامه"
+          title={t('tenant.certificates.details.title')}
           size="lg"
         >
           {selectedCert && (
@@ -624,30 +624,30 @@ export default function TenantCertificatesPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">نوع</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">{t('tenant.certificates.fields.type')}</p>
                   <p className="font-medium text-slate-900 dark:text-white">{selectedCert.type.toUpperCase()}</p>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">صادرکننده</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">{t('tenant.certificates.fields.issuer')}</p>
                   <p className="font-medium text-slate-900 dark:text-white">{selectedCert.issuer}</p>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">تاریخ ایجاد</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">{t('tenant.certificates.fields.createdDate')}</p>
                   <p className="font-medium text-slate-900 dark:text-white">{formatDate(selectedCert.createdAt)}</p>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">تاریخ انقضا</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">{t('tenant.certificates.fields.expiryDate')}</p>
                   <p className="font-medium text-slate-900 dark:text-white">{formatDate(selectedCert.expiresAt)}</p>
                 </div>
               </div>
 
               <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">شماره سریال</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">{t('tenant.certificates.fields.serialNumber')}</p>
                 <code className="text-sm font-mono text-slate-900 dark:text-white">{selectedCert.serialNumber}</code>
               </div>
 
               <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">اثر انگشت</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">{t('tenant.certificates.fields.fingerprint')}</p>
                 <code className="text-sm font-mono text-slate-900 dark:text-white">{selectedCert.fingerprint}</code>
               </div>
 
@@ -659,7 +659,7 @@ export default function TenantCertificatesPage() {
                   }}
                   className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
                 >
-                  بستن
+                  {t('common.close')}
                 </button>
               </div>
             </div>
@@ -673,7 +673,7 @@ export default function TenantCertificatesPage() {
             setShowDeleteConfirm(false);
             setSelectedCert(null);
           }}
-          title="تأیید حذف گواهینامه"
+          title={t('tenant.certificates.delete.title')}
           size="sm"
         >
           <div className="space-y-4">
@@ -682,10 +682,10 @@ export default function TenantCertificatesPage() {
                 <XCircle className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0" />
                 <div>
                   <p className="text-red-800 dark:text-red-300 font-medium mb-1">
-                    آیا از حذف این گواهینامه مطمئن هستید؟
+                    {t('tenant.certificates.delete.confirm')}
                   </p>
                   <p className="text-sm text-red-700 dark:text-red-400">
-                    این عمل غیرقابل بازگشت است و ممکن است سرویس‌های وابسته را تحت تأثیر قرار دهد.
+                    {t('tenant.certificates.delete.warning')}
                   </p>
                 </div>
               </div>
@@ -693,7 +693,7 @@ export default function TenantCertificatesPage() {
 
             {selectedCert && (
               <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
-                <p className="text-sm text-slate-500 dark:text-slate-400">گواهینامه انتخاب شده:</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">{t('tenant.certificates.delete.selected')}</p>
                 <p className="font-medium text-slate-900 dark:text-white">{selectedCert.name}</p>
                 <p className="text-sm text-slate-500">{selectedCert.domain}</p>
               </div>
@@ -707,14 +707,14 @@ export default function TenantCertificatesPage() {
                 }}
                 className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               >
-                انصراف
+                {t('common.cancel')}
               </button>
               <button
                 onClick={handleDelete}
                 disabled={submitting}
                 className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all disabled:opacity-50"
               >
-                {submitting ? 'در حال حذف...' : 'حذف گواهینامه'}
+                {submitting ? t('tenant.certificates.delete.deleting') : t('tenant.certificates.delete.submit')}
               </button>
             </div>
           </div>

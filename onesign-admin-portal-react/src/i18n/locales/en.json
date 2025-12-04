@@ -148,6 +148,15 @@
       "thisMonth": "This month",
       "never": "Never"
     },
+    "days": {
+      "saturday": "Saturday",
+      "sunday": "Sunday",
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday"
+    },
     "errors": {
       "generic": "Something went wrong",
       "network": "Network error",
@@ -340,7 +349,12 @@
       "storageUsage": "Storage Usage",
       "activeTenants": "Active Organizations",
       "pendingRequests": "Pending Requests",
-      "securityAlerts": "Security Alerts"
+      "securityAlerts": "Security Alerts",
+      "charts": {
+        "successfulLogins": "Successful Logins",
+        "failedLogins": "Failed Logins",
+        "mfaChallenges": "MFA Challenges"
+      }
     },
     "users": {
       "title": "Users",
@@ -1553,7 +1567,34 @@
       "noRecentLogins": "No recent logins",
       "registered": "registered",
       "activeNow": "active now",
-      "thisWeek": "this week"
+      "thisWeek": "this week",
+      "logins": "Logins",
+      "user": "User",
+      "severityCritical": "Critical",
+      "severityMedium": "Medium",
+      "severityLow": "Low",
+      "charts": {
+        "successfulLogins": "Successful Logins",
+        "failedLogins": "Failed Logins",
+        "mfaChallenges": "MFA Challenges"
+      },
+      "roles": {
+        "user": "User",
+        "admin": "Admin",
+        "auditor": "Auditor",
+        "guest": "Guest"
+      },
+      "apps": {
+        "hrPortal": "HR Portal",
+        "financialSystem": "Financial System",
+        "email": "Email",
+        "projectManagement": "Project Management"
+      },
+      "devices": {
+        "windows": "Windows",
+        "mac": "Mac",
+        "android": "Android"
+      }
     },
     "access": {
       "title": "Access Management",

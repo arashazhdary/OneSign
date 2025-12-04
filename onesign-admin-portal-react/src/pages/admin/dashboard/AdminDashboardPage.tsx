@@ -190,22 +190,26 @@ export default function AdminDashboardPage() {
   }
 
   // Prepare chart data
+  const successfulLoginsLabel = t('adminDashboard.charts.successfulLogins');
+  const failedLoginsLabel = t('adminDashboard.charts.failedLogins');
+  const mfaChallengesLabel = t('adminDashboard.charts.mfaChallenges');
+
   const authTrendData = stats?.authenticationTrend.map(item => ({
     name: item.dayName,
-    'ورود موفق': item.successfulLogins,
-    'ورود ناموفق': item.failedLogins,
-    'چالش MFA': item.mfaChallenges
+    [successfulLoginsLabel]: item.successfulLogins,
+    [failedLoginsLabel]: item.failedLogins,
+    [mfaChallengesLabel]: item.mfaChallenges
   })) || [];
 
   const mfaPieData = stats?.mfaDistribution ? [
-    { name: 'با MFA', value: stats.mfaDistribution.usersWithMfa },
-    { name: 'بدون MFA', value: stats.mfaDistribution.usersWithoutMfa }
+    { name: t('adminDashboard.charts.withMFA'), value: stats.mfaDistribution.usersWithMfa },
+    { name: t('adminDashboard.charts.withoutMFA'), value: stats.mfaDistribution.usersWithoutMfa }
   ] : [];
 
   const riskBarData = stats?.riskDistribution ? [
-    { name: 'ریسک بالا', count: stats.riskDistribution.highRiskCount },
-    { name: 'ریسک متوسط', count: stats.riskDistribution.mediumRiskCount },
-    { name: 'ریسک پایین', count: stats.riskDistribution.lowRiskCount }
+    { name: t('adminDashboard.charts.highRisk'), count: stats.riskDistribution.highRiskCount },
+    { name: t('adminDashboard.charts.mediumRisk'), count: stats.riskDistribution.mediumRiskCount },
+    { name: t('adminDashboard.charts.lowRisk'), count: stats.riskDistribution.lowRiskCount }
   ] : [];
 
   return (
@@ -214,10 +218,10 @@ export default function AdminDashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-            {t('adminDashboard.title', 'داشبورد مدیریت')}
+            {t('admin.dashboard.title')}
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">
-            {t('adminDashboard.subtitle', 'نمای کلی از وضعیت پلتفرم')}
+            {t('admin.dashboard.subtitle')}
           </p>
         </div>
         <button
@@ -226,7 +230,7 @@ export default function AdminDashboardPage() {
           className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50"
         >
           <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-          {t('common.refresh', 'بروزرسانی')}
+          {t('common.buttons.refresh')}
         </button>
       </div>
 
@@ -239,32 +243,32 @@ export default function AdminDashboardPage() {
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title={t('adminDashboard.totalTenants', 'تعداد سازمان‌ها')}
+          title={t('admin.dashboard.totalTenants')}
           value={stats?.summary.totalTenants || 0}
-          subtitle={`${formatNumber(stats?.summary.activeTenants || 0)} ${t('common.active', 'فعال')}`}
+          subtitle={`${formatNumber(stats?.summary.activeTenants || 0)} ${t('common.labels.active')}`}
           icon={<Building2 className="w-6 h-6" />}
           color="indigo"
           delay={0}
         />
         <StatCard
-          title={t('adminDashboard.totalUsers', 'تعداد کاربران')}
+          title={t('admin.dashboard.totalUsers')}
           value={stats?.summary.totalUsers || 0}
-          subtitle={`${formatNumber(stats?.summary.activeUsersToday || 0)} ${t('adminDashboard.activeToday', 'فعال امروز')}`}
+          subtitle={`${formatNumber(stats?.summary.activeUsersToday || 0)} ${t('adminDashboard.activeToday')}`}
           icon={<Users className="w-6 h-6" />}
           color="green"
           delay={1}
         />
         <StatCard
-          title={t('adminDashboard.totalApps', 'برنامه‌ها')}
+          title={t('admin.dashboard.totalApplications')}
           value={stats?.summary.totalApplications || 0}
           icon={<AppWindow className="w-6 h-6" />}
           color="purple"
           delay={2}
         />
         <StatCard
-          title={t('adminDashboard.authToday', 'احراز هویت امروز')}
+          title={t('adminDashboard.authToday')}
           value={stats?.summary.totalAuthenticationsToday || 0}
-          subtitle={`${formatNumber(stats?.summary.failedAuthenticationsToday || 0)} ${t('adminDashboard.failed', 'ناموفق')}`}
+          subtitle={`${formatNumber(stats?.summary.failedAuthenticationsToday || 0)} ${t('adminDashboard.failed')}`}
           icon={<Shield className="w-6 h-6" />}
           color="blue"
           delay={3}
@@ -274,28 +278,28 @@ export default function AdminDashboardPage() {
       {/* Second Row Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title={t('adminDashboard.authSuccessRate', 'نرخ موفقیت احراز هویت')}
+          title={t('adminDashboard.authSuccessRate')}
           value={`${stats?.summary.authSuccessRate || 0}%`}
           icon={<CheckCircle className="w-6 h-6" />}
           color="green"
           delay={4}
         />
         <StatCard
-          title={t('adminDashboard.mfaAdoption', 'نرخ استفاده از MFA')}
+          title={t('adminDashboard.mfaAdoption')}
           value={`${stats?.summary.mfaAdoptionRate || 0}%`}
           icon={<Lock className="w-6 h-6" />}
           color="blue"
           delay={5}
         />
         <StatCard
-          title={t('adminDashboard.highRiskUsers', 'کاربران پرخطر')}
+          title={t('adminDashboard.highRiskUsers')}
           value={stats?.summary.highRiskUsers || 0}
           icon={<AlertTriangle className="w-6 h-6" />}
           color="red"
           delay={6}
         />
         <StatCard
-          title={t('adminDashboard.pendingRequests', 'درخواست‌های در انتظار')}
+          title={t('admin.dashboard.pendingRequests')}
           value={stats?.summary.pendingAccessRequests || 0}
           icon={<Clock className="w-6 h-6" />}
           color="orange"
@@ -313,12 +317,12 @@ export default function AdminDashboardPage() {
           className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6"
         >
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
-            {t('adminDashboard.authTrend', 'روند احراز هویت (۷ روز گذشته)')}
+            {t('adminDashboard.authTrend')}
           </h3>
           <AdvancedChart
             data={authTrendData}
             type="area"
-            dataKeys={['ورود موفق', 'ورود ناموفق', 'چالش MFA']}
+            dataKeys={[successfulLoginsLabel, failedLoginsLabel, mfaChallengesLabel]}
             xAxisKey="name"
             height={280}
             colors={['#22c55e', '#ef4444', '#3b82f6']}
@@ -333,7 +337,7 @@ export default function AdminDashboardPage() {
           className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6"
         >
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
-            {t('adminDashboard.mfaDistribution', 'وضعیت MFA کاربران')}
+            {t('adminDashboard.mfaDistribution')}
           </h3>
           <div className="flex items-center justify-center gap-8">
             <ProgressRing
@@ -345,13 +349,13 @@ export default function AdminDashboardPage() {
               <div className="flex items-center gap-2">
                 <Lock className="w-5 h-5 text-blue-600" />
                 <span className="text-slate-600 dark:text-slate-400">
-                  {formatNumber(stats?.mfaDistribution.usersWithMfa || 0)} {t('adminDashboard.withMfa', 'کاربر با MFA')}
+                  {formatNumber(stats?.mfaDistribution.usersWithMfa || 0)} {t('adminDashboard.usersWithMfa')}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <Unlock className="w-5 h-5 text-slate-400" />
                 <span className="text-slate-600 dark:text-slate-400">
-                  {formatNumber(stats?.mfaDistribution.usersWithoutMfa || 0)} {t('adminDashboard.withoutMfa', 'کاربر بدون MFA')}
+                  {formatNumber(stats?.mfaDistribution.usersWithoutMfa || 0)} {t('adminDashboard.usersWithoutMfa')}
                 </span>
               </div>
               {stats?.mfaDistribution.methodBreakdown?.map((method, idx) => (
@@ -377,7 +381,7 @@ export default function AdminDashboardPage() {
           className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6"
         >
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
-            {t('adminDashboard.riskDistribution', 'توزیع ریسک سازمان‌ها')}
+            {t('adminDashboard.riskDistribution')}
           </h3>
           <AdvancedChart
             data={riskBarData}
@@ -391,7 +395,7 @@ export default function AdminDashboardPage() {
           {stats?.riskDistribution.eventTypeBreakdown && stats.riskDistribution.eventTypeBreakdown.length > 0 && (
             <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
               <h4 className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">
-                {t('adminDashboard.recentRiskEvents', 'رویدادهای اخیر')}
+                {t('adminDashboard.recentRiskEvents')}
               </h4>
               <div className="space-y-2">
                 {stats.riskDistribution.eventTypeBreakdown.map((event, idx) => (
@@ -415,7 +419,7 @@ export default function AdminDashboardPage() {
           className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6"
         >
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
-            {t('adminDashboard.topTenants', 'سازمان‌های برتر')}
+            {t('adminDashboard.topTenants')}
           </h3>
           <div className="space-y-3">
             {stats?.topTenants.map((tenant, idx) => (
@@ -430,13 +434,13 @@ export default function AdminDashboardPage() {
                   <div>
                     <p className="font-medium text-slate-900 dark:text-white">{tenant.tenantName}</p>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      {formatNumber(tenant.userCount)} {t('common.users', 'کاربر')} | {formatNumber(tenant.applicationCount)} {t('common.apps', 'برنامه')}
+                      {formatNumber(tenant.userCount)} {t('adminDashboard.user')} | {formatNumber(tenant.applicationCount)} {t('adminDashboard.app')}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={`px-2 py-1 text-xs rounded-full ${getRiskBadgeColor(tenant.riskLevel)}`}>
-                    {tenant.riskLevel === 'High' ? 'پرخطر' : tenant.riskLevel === 'Medium' ? 'متوسط' : 'کم‌خطر'}
+                    {tenant.riskLevel === 'High' ? t('adminDashboard.riskHigh') : tenant.riskLevel === 'Medium' ? t('adminDashboard.riskMedium') : t('adminDashboard.riskLow')}
                   </span>
                   <span className="text-sm text-slate-500 dark:text-slate-400">
                     MFA: {tenant.mfaAdoptionPercent}%
@@ -459,7 +463,7 @@ export default function AdminDashboardPage() {
         >
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <Activity className="w-5 h-5 text-red-500" />
-            {t('adminDashboard.securityEvents', 'رویدادهای امنیتی اخیر')}
+            {t('adminDashboard.securityEvents')}
           </h3>
           <div className="space-y-3 max-h-80 overflow-y-auto">
             {stats?.recentSecurityEvents.map((event) => (
@@ -489,7 +493,7 @@ export default function AdminDashboardPage() {
             ))}
             {(!stats?.recentSecurityEvents || stats.recentSecurityEvents.length === 0) && (
               <p className="text-center text-slate-500 dark:text-slate-400 py-8">
-                {t('adminDashboard.noSecurityEvents', 'هیچ رویداد امنیتی اخیری وجود ندارد')}
+                {t('adminDashboard.noSecurityEvents')}
               </p>
             )}
           </div>
@@ -503,13 +507,13 @@ export default function AdminDashboardPage() {
           className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6"
         >
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">
-            {t('adminDashboard.systemHealth', 'سلامت سیستم')}
+            {t('admin.dashboard.systemHealth')}
           </h3>
           <div className="space-y-4">
             {/* Overall Status */}
             <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
               <span className="font-medium text-slate-900 dark:text-white">
-                {t('adminDashboard.overallStatus', 'وضعیت کلی')}
+                {t('adminDashboard.overallStatus')}
               </span>
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                 health?.status === 'healthy'
@@ -518,7 +522,7 @@ export default function AdminDashboardPage() {
                   ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
                   : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
               }`}>
-                {health?.status === 'healthy' ? 'سالم' : health?.status === 'degraded' ? 'کاهش یافته' : 'خراب'}
+                {health?.status === 'healthy' ? t('adminDashboard.statusHealthy') : health?.status === 'degraded' ? t('adminDashboard.statusDegraded') : t('adminDashboard.statusDown')}
               </span>
             </div>
 
@@ -544,7 +548,7 @@ export default function AdminDashboardPage() {
               <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-slate-600 dark:text-slate-400">
-                    {t('adminDashboard.memoryUsage', 'استفاده از حافظه')}
+                    {t('adminDashboard.memoryUsage')}
                   </span>
                   <span className="text-slate-900 dark:text-white font-medium">
                     {health.memory.percentage}%
@@ -570,18 +574,18 @@ export default function AdminDashboardPage() {
               <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
                 <div className="flex items-center justify-between">
                   <span className="text-slate-600 dark:text-slate-400">
-                    {t('adminDashboard.database', 'پایگاه داده')}
+                    {t('adminDashboard.database')}
                   </span>
                   <span className={`px-2 py-1 text-xs rounded ${
                     health.database.status === 'healthy'
                       ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                       : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                   }`}>
-                    {health.database.status === 'healthy' ? 'سالم' : 'مشکل'}
+                    {health.database.status === 'healthy' ? t('adminDashboard.statusHealthy') : t('adminDashboard.statusError')}
                   </span>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  {t('adminDashboard.connections', 'اتصالات')}: {health.database.connections}/{health.database.maxConnections}
+                  {t('adminDashboard.connections')}: {health.database.connections}/{health.database.maxConnections}
                 </p>
               </div>
             )}

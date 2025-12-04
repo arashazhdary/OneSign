@@ -164,7 +164,7 @@ export default function TenantAccessRequestsPage() {
 
   const handleCreateRequest = async () => {
     if (!resourceType || !resourceId || !accessLevel || !justification) {
-      setError('لطفاً تمام فیلدهای الزامی را پر کنید');
+      setError(t('tenant.accessRequests.errors.fillRequired'));
       return;
     }
 
@@ -182,7 +182,7 @@ export default function TenantAccessRequestsPage() {
         justification,
       });
 
-      setSuccess('درخواست دسترسی با موفقیت ایجاد شد');
+      setSuccess(t('tenant.accessRequests.success.created'));
       setShowCreateModal(false);
       resetForm();
       fetchRequests(true);
@@ -214,7 +214,7 @@ export default function TenantAccessRequestsPage() {
         });
       }
 
-      setSuccess(`درخواست دسترسی با موفقیت ${approve ? 'تأیید' : 'رد'} شد`);
+      setSuccess(approve ? t('tenant.accessRequests.success.approved') : t('tenant.accessRequests.success.rejected'));
       setShowApprovalModal(false);
       setSelectedRequest(null);
       setReviewerComment('');
@@ -267,10 +267,10 @@ export default function TenantAccessRequestsPage() {
   const counts = getStatusCounts();
 
   const tabs = [
-    { id: 'pending', label: 'در انتظار', icon: Clock, count: counts.pending },
-    { id: 'approved', label: 'تأیید شده', icon: CheckCircle, count: counts.approved },
-    { id: 'rejected', label: 'رد شده', icon: XCircle, count: counts.rejected },
-    { id: 'all', label: 'همه', icon: FileText, count: counts.all },
+    { id: 'pending', label: t('tenant.accessRequests.tabs.pending'), icon: Clock, count: counts.pending },
+    { id: 'approved', label: t('tenant.accessRequests.tabs.approved'), icon: CheckCircle, count: counts.approved },
+    { id: 'rejected', label: t('tenant.accessRequests.tabs.rejected'), icon: XCircle, count: counts.rejected },
+    { id: 'all', label: t('tenant.accessRequests.tabs.all'), icon: FileText, count: counts.all },
   ];
 
   const filteredRequests = requests.filter((req) =>
@@ -291,9 +291,9 @@ export default function TenantAccessRequestsPage() {
 
   const getStatusLabel = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'pending': return 'در انتظار';
-      case 'approved': return 'تأیید شده';
-      case 'rejected': return 'رد شده';
+      case 'pending': return t('tenant.accessRequests.status.pending');
+      case 'approved': return t('tenant.accessRequests.status.approved');
+      case 'rejected': return t('tenant.accessRequests.status.rejected');
       default: return status;
     }
   };
@@ -308,7 +308,7 @@ export default function TenantAccessRequestsPage() {
               <KeyRound className="w-6 h-6 text-blue-500" />
             </div>
           </div>
-          <p className="text-slate-600 dark:text-slate-400 font-medium">{t('common.loading', 'در حال بارگذاری...')}</p>
+          <p className="text-slate-600 dark:text-slate-400 font-medium">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -317,7 +317,7 @@ export default function TenantAccessRequestsPage() {
   return (
     <>
       <Helmet>
-        <title>{t('tenant.accessRequests.title', 'درخواست‌های دسترسی')} | OneSign</title>
+        <title>{t('tenant.accessRequests.title')} | OneSign</title>
       </Helmet>
 
       <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 min-h-screen" dir="rtl">
@@ -332,7 +332,7 @@ export default function TenantAccessRequestsPage() {
               <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl text-white">
                 <KeyRound className="w-6 h-6" />
               </div>
-              {t('tenant.accessRequests.title', 'درخواست‌های دسترسی')}
+              {t('tenant.accessRequests.title')}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, x: -20 }}
@@ -340,7 +340,7 @@ export default function TenantAccessRequestsPage() {
               transition={{ delay: 0.1 }}
               className="text-slate-500 dark:text-slate-400 mt-1"
             >
-              {t('tenant.accessRequests.subtitle', 'مدیریت و بررسی درخواست‌های دسترسی کاربران')}
+              {t('tenant.accessRequests.subtitle')}
             </motion.p>
           </div>
           <div className="flex gap-3">
@@ -354,7 +354,7 @@ export default function TenantAccessRequestsPage() {
               className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-              {t('common.refresh', 'بروزرسانی')}
+              {t('common.refresh')}
             </motion.button>
             <motion.button
               initial={{ opacity: 0, scale: 0.9 }}
@@ -365,7 +365,7 @@ export default function TenantAccessRequestsPage() {
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl"
             >
               <Plus className="w-4 h-4" />
-              {t('common.newRequest', 'درخواست جدید')}
+              {t('common.newRequest')}
             </motion.button>
           </div>
         </div>
@@ -396,29 +396,29 @@ export default function TenantAccessRequestsPage() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            title="کل درخواست‌ها"
+            title={t('tenant.accessRequests.stats.total')}
             value={counts.all}
             icon={<FileText className="w-6 h-6" />}
             color="blue"
             delay={0}
           />
           <StatCard
-            title="در انتظار بررسی"
+            title={t('tenant.accessRequests.stats.pendingReview')}
             value={counts.pending}
-            subtitle="نیاز به اقدام"
+            subtitle={t('tenant.accessRequests.stats.needsAction')}
             icon={<Clock className="w-6 h-6" />}
             color="yellow"
             delay={1}
           />
           <StatCard
-            title="تأیید شده"
+            title={t('tenant.accessRequests.stats.approved')}
             value={counts.approved}
             icon={<CheckCircle className="w-6 h-6" />}
             color="green"
             delay={2}
           />
           <StatCard
-            title="رد شده"
+            title={t('tenant.accessRequests.stats.rejected')}
             value={counts.rejected}
             icon={<XCircle className="w-6 h-6" />}
             color="red"
@@ -472,7 +472,7 @@ export default function TenantAccessRequestsPage() {
             <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input
               type="text"
-              placeholder="جستجو در درخواست‌ها..."
+              placeholder={t('tenant.accessRequests.searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pr-10 pl-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -504,10 +504,10 @@ export default function TenantAccessRequestsPage() {
                       </div>
                       <div>
                         <h3 className="font-semibold text-slate-900 dark:text-white">
-                          {request.requesterName || 'کاربر ناشناس'}
+                          {request.requesterName || t('tenant.accessRequests.labels.unknownUser')}
                         </h3>
                         <p className="text-sm text-slate-500 dark:text-slate-400">
-                          {request.requesterEmail || 'بدون ایمیل'}
+                          {request.requesterEmail || t('tenant.accessRequests.labels.noEmail')}
                         </p>
                       </div>
                       <span className={`px-3 py-1 text-xs font-medium rounded-full ${getStatusStyle(request.status)}`}>
@@ -519,14 +519,14 @@ export default function TenantAccessRequestsPage() {
                       <div className="flex items-center gap-2">
                         <Shield className="w-4 h-4 text-slate-400" />
                         <div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">نوع منبع</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">{t('tenant.accessRequests.labels.resourceType')}</p>
                           <p className="text-sm font-medium text-slate-900 dark:text-white">{request.targetResourceType}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <FileText className="w-4 h-4 text-slate-400" />
                         <div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">منبع</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">{t('tenant.accessRequests.labels.resource')}</p>
                           <p className="text-sm font-medium text-slate-900 dark:text-white">
                             {request.targetResourceName || request.targetResourceId}
                           </p>
@@ -535,7 +535,7 @@ export default function TenantAccessRequestsPage() {
                       <div className="flex items-center gap-2">
                         <KeyRound className="w-4 h-4 text-slate-400" />
                         <div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">سطح دسترسی</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">{t('tenant.accessRequests.labels.accessLevel')}</p>
                           <p className="text-sm font-medium text-slate-900 dark:text-white">
                             {request.requestedScopes?.join(', ') || 'N/A'}
                           </p>
@@ -546,12 +546,12 @@ export default function TenantAccessRequestsPage() {
                     <div className="flex items-center gap-6 text-sm text-slate-500 dark:text-slate-400">
                       <div className="flex items-center gap-1">
                         <Calendar className="w-4 h-4" />
-                        <span>درخواست شده: {formatDate(request.createdAt)}</span>
+                        <span>{t('tenant.accessRequests.labels.requestedAt')}: {formatDate(request.createdAt)}</span>
                       </div>
                       {request.reviewedAt && (
                         <div className="flex items-center gap-1">
                           <Clock className="w-4 h-4" />
-                          <span>بررسی شده: {formatDate(request.reviewedAt)}</span>
+                          <span>{t('tenant.accessRequests.labels.reviewedAt')}: {formatDate(request.reviewedAt)}</span>
                         </div>
                       )}
                     </div>
@@ -609,10 +609,10 @@ export default function TenantAccessRequestsPage() {
                 <FileText className="w-8 h-8 text-slate-400" />
               </div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-                درخواستی یافت نشد
+                {t('tenant.accessRequests.emptyState.title')}
               </h3>
               <p className="text-slate-500 dark:text-slate-400">
-                هیچ درخواست دسترسی در این دسته وجود ندارد
+                {t('tenant.accessRequests.emptyState.description')}
               </p>
             </motion.div>
           )}
@@ -631,17 +631,17 @@ export default function TenantAccessRequestsPage() {
               className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               <ChevronRight className="w-4 h-4" />
-              {t('common.previous', 'قبلی')}
+              {t('common.previous')}
             </button>
             <span className="text-sm text-slate-600 dark:text-slate-400">
-              صفحه {pageNumber.toLocaleString('fa-IR')}
+              {t('tenant.accessRequests.pagination.page')} {pageNumber.toLocaleString('fa-IR')}
             </span>
             <button
               onClick={() => setPageNumber(pageNumber + 1)}
               disabled={requests.length < pageSize}
               className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
-              {t('common.next', 'بعدی')}
+              {t('common.next')}
               <ChevronLeft className="w-4 h-4" />
             </button>
           </motion.div>
@@ -654,80 +654,80 @@ export default function TenantAccessRequestsPage() {
             setShowCreateModal(false);
             resetForm();
           }}
-          title="ایجاد درخواست دسترسی جدید"
+          title={t('tenant.accessRequests.modal.create.title')}
           size="lg"
         >
           <form onSubmit={(e) => { e.preventDefault(); handleCreateRequest(); }} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                نوع منبع <span className="text-red-500">*</span>
+                {t('tenant.accessRequests.modal.create.resourceType')} <span className="text-red-500">*</span>
               </label>
               <select
                 value={resourceType}
                 onChange={(e) => setResourceType(e.target.value)}
                 className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">انتخاب نوع منبع</option>
-                <option value="application">اپلیکیشن</option>
-                <option value="role">نقش</option>
-                <option value="group">گروه</option>
-                <option value="resource">منبع</option>
+                <option value="">{t('tenant.accessRequests.modal.create.selectResourceType')}</option>
+                <option value="application">{t('tenant.accessRequests.modal.create.resourceTypes.application')}</option>
+                <option value="role">{t('tenant.accessRequests.modal.create.resourceTypes.role')}</option>
+                <option value="group">{t('tenant.accessRequests.modal.create.resourceTypes.group')}</option>
+                <option value="resource">{t('tenant.accessRequests.modal.create.resourceTypes.resource')}</option>
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                شناسه منبع <span className="text-red-500">*</span>
+                {t('tenant.accessRequests.modal.create.resourceId')} <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={resourceId}
                 onChange={(e) => setResourceId(e.target.value)}
                 className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                placeholder="شناسه منبع را وارد کنید"
+                placeholder={t('tenant.accessRequests.modal.create.resourceIdPlaceholder')}
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                نام منبع (اختیاری)
+                {t('tenant.accessRequests.modal.create.resourceName')}
               </label>
               <input
                 type="text"
                 value={resourceName}
                 onChange={(e) => setResourceName(e.target.value)}
                 className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                placeholder="نام منبع را وارد کنید"
+                placeholder={t('tenant.accessRequests.modal.create.resourceNamePlaceholder')}
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                سطح دسترسی <span className="text-red-500">*</span>
+                {t('tenant.accessRequests.modal.create.accessLevel')} <span className="text-red-500">*</span>
               </label>
               <select
                 value={accessLevel}
                 onChange={(e) => setAccessLevel(e.target.value)}
                 className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">انتخاب سطح دسترسی</option>
-                <option value="read">خواندن</option>
-                <option value="write">نوشتن</option>
-                <option value="admin">مدیر</option>
-                <option value="owner">مالک</option>
+                <option value="">{t('tenant.accessRequests.modal.create.selectAccessLevel')}</option>
+                <option value="read">{t('tenant.accessRequests.modal.create.accessLevels.read')}</option>
+                <option value="write">{t('tenant.accessRequests.modal.create.accessLevels.write')}</option>
+                <option value="admin">{t('tenant.accessRequests.modal.create.accessLevels.admin')}</option>
+                <option value="owner">{t('tenant.accessRequests.modal.create.accessLevels.owner')}</option>
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                توجیه <span className="text-red-500">*</span>
+                {t('tenant.accessRequests.modal.create.justification')} <span className="text-red-500">*</span>
               </label>
               <textarea
                 value={justification}
                 onChange={(e) => setJustification(e.target.value)}
                 rows={4}
                 className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                placeholder="دلیل نیاز به این دسترسی را توضیح دهید..."
+                placeholder={t('tenant.accessRequests.modal.create.justificationPlaceholder')}
               />
             </div>
 
@@ -740,14 +740,14 @@ export default function TenantAccessRequestsPage() {
                 }}
                 className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
               >
-                انصراف
+                {t('common.cancel')}
               </button>
               <button
                 type="submit"
                 disabled={submitting}
                 className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50"
               >
-                {submitting ? 'در حال ارسال...' : 'ایجاد درخواست'}
+                {submitting ? t('tenant.accessRequests.modal.create.submitting') : t('tenant.accessRequests.modal.create.submit')}
               </button>
             </div>
           </form>
@@ -761,7 +761,7 @@ export default function TenantAccessRequestsPage() {
             setSelectedRequest(null);
             setReviewerComment('');
           }}
-          title="بررسی درخواست دسترسی"
+          title={t('tenant.accessRequests.modal.approval.title')}
           size="lg"
         >
           {selectedRequest && (
@@ -769,39 +769,39 @@ export default function TenantAccessRequestsPage() {
               <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-slate-500 dark:text-slate-400">درخواست‌کننده:</span>
+                    <span className="text-slate-500 dark:text-slate-400">{t('tenant.accessRequests.modal.approval.requester')}:</span>
                     <div className="font-medium text-slate-900 dark:text-white">
                       {selectedRequest.requesterName || 'N/A'}
                     </div>
                     <div className="text-xs text-slate-500">{selectedRequest.requesterEmail || 'N/A'}</div>
                   </div>
                   <div>
-                    <span className="text-slate-500 dark:text-slate-400">تاریخ درخواست:</span>
+                    <span className="text-slate-500 dark:text-slate-400">{t('tenant.accessRequests.modal.approval.requestDate')}:</span>
                     <div className="font-medium text-slate-900 dark:text-white">
                       {formatDateTime(selectedRequest.createdAt)}
                     </div>
                   </div>
                   <div>
-                    <span className="text-slate-500 dark:text-slate-400">نوع منبع:</span>
+                    <span className="text-slate-500 dark:text-slate-400">{t('tenant.accessRequests.modal.approval.resourceType')}:</span>
                     <div className="font-medium text-slate-900 dark:text-white">
                       {selectedRequest.targetResourceType}
                     </div>
                   </div>
                   <div>
-                    <span className="text-slate-500 dark:text-slate-400">سطح دسترسی:</span>
+                    <span className="text-slate-500 dark:text-slate-400">{t('tenant.accessRequests.modal.approval.accessLevel')}:</span>
                     <div className="font-medium text-slate-900 dark:text-white">
                       {selectedRequest.requestedScopes?.join(', ') || 'N/A'}
                     </div>
                   </div>
                 </div>
                 <div className="mt-4">
-                  <span className="text-slate-500 dark:text-slate-400">منبع:</span>
+                  <span className="text-slate-500 dark:text-slate-400">{t('tenant.accessRequests.modal.approval.resource')}:</span>
                   <div className="font-medium text-slate-900 dark:text-white">
                     {selectedRequest.targetResourceName || selectedRequest.targetResourceId}
                   </div>
                 </div>
                 <div className="mt-4">
-                  <span className="text-slate-500 dark:text-slate-400">توجیه:</span>
+                  <span className="text-slate-500 dark:text-slate-400">{t('tenant.accessRequests.modal.approval.justification')}:</span>
                   <div className="mt-1 text-slate-900 dark:text-white">{selectedRequest.justification}</div>
                 </div>
               </div>
@@ -809,14 +809,14 @@ export default function TenantAccessRequestsPage() {
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                   <MessageSquare className="w-4 h-4 inline ml-1" />
-                  نظر بررسی‌کننده
+                  {t('tenant.accessRequests.modal.approval.reviewerComment')}
                 </label>
                 <textarea
                   value={reviewerComment}
                   onChange={(e) => setReviewerComment(e.target.value)}
                   rows={3}
                   className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                  placeholder="نظر خود را وارد کنید (اختیاری)..."
+                  placeholder={t('tenant.accessRequests.modal.approval.commentPlaceholder')}
                 />
               </div>
 
@@ -829,21 +829,21 @@ export default function TenantAccessRequestsPage() {
                   }}
                   className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
                 >
-                  انصراف
+                  {t('common.cancel')}
                 </button>
                 <button
                   onClick={() => handleApproveReject(false)}
                   disabled={submitting}
                   className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all disabled:opacity-50"
                 >
-                  {submitting ? 'در حال پردازش...' : 'رد کردن'}
+                  {submitting ? t('tenant.accessRequests.modal.approval.processing') : t('tenant.accessRequests.modal.approval.reject')}
                 </button>
                 <button
                   onClick={() => handleApproveReject(true)}
                   disabled={submitting}
                   className="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all disabled:opacity-50"
                 >
-                  {submitting ? 'در حال پردازش...' : 'تأیید'}
+                  {submitting ? t('tenant.accessRequests.modal.approval.processing') : t('tenant.accessRequests.modal.approval.approve')}
                 </button>
               </div>
             </div>
@@ -857,7 +857,7 @@ export default function TenantAccessRequestsPage() {
             setShowDetailsModal(false);
             setSelectedRequest(null);
           }}
-          title="جزئیات درخواست دسترسی"
+          title={t('tenant.accessRequests.modal.details.title')}
           size="lg"
         >
           {selectedRequest && (
@@ -868,10 +868,10 @@ export default function TenantAccessRequestsPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
-                    {selectedRequest.requesterName || 'کاربر ناشناس'}
+                    {selectedRequest.requesterName || t('tenant.accessRequests.labels.unknownUser')}
                   </h3>
                   <p className="text-slate-500 dark:text-slate-400">
-                    {selectedRequest.requesterEmail || 'بدون ایمیل'}
+                    {selectedRequest.requesterEmail || t('tenant.accessRequests.labels.noEmail')}
                   </p>
                 </div>
                 <span className={`px-3 py-1 text-sm font-medium rounded-full mr-auto ${getStatusStyle(selectedRequest.status)}`}>
@@ -883,14 +883,14 @@ export default function TenantAccessRequestsPage() {
                 <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
                   <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
                     <Shield className="w-4 h-4" />
-                    نوع منبع
+                    {t('tenant.accessRequests.modal.details.resourceType')}
                   </div>
                   <p className="font-medium text-slate-900 dark:text-white">{selectedRequest.targetResourceType}</p>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
                   <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
                     <FileText className="w-4 h-4" />
-                    منبع
+                    {t('tenant.accessRequests.modal.details.resource')}
                   </div>
                   <p className="font-medium text-slate-900 dark:text-white">
                     {selectedRequest.targetResourceName || selectedRequest.targetResourceId}
@@ -899,7 +899,7 @@ export default function TenantAccessRequestsPage() {
                 <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
                   <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
                     <KeyRound className="w-4 h-4" />
-                    سطح دسترسی
+                    {t('tenant.accessRequests.modal.details.accessLevel')}
                   </div>
                   <p className="font-medium text-slate-900 dark:text-white">
                     {selectedRequest.requestedScopes?.join(', ') || 'N/A'}
@@ -908,7 +908,7 @@ export default function TenantAccessRequestsPage() {
                 <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
                   <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
                     <Calendar className="w-4 h-4" />
-                    تاریخ درخواست
+                    {t('tenant.accessRequests.modal.details.requestDate')}
                   </div>
                   <p className="font-medium text-slate-900 dark:text-white">{formatDateTime(selectedRequest.createdAt)}</p>
                 </div>
@@ -917,7 +917,7 @@ export default function TenantAccessRequestsPage() {
               <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
                 <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
                   <MessageSquare className="w-4 h-4" />
-                  توجیه
+                  {t('tenant.accessRequests.modal.details.justification')}
                 </div>
                 <p className="text-slate-900 dark:text-white">{selectedRequest.justification}</p>
               </div>
@@ -926,7 +926,7 @@ export default function TenantAccessRequestsPage() {
                 <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4">
                   <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
                     <Clock className="w-4 h-4" />
-                    بررسی شده در
+                    {t('tenant.accessRequests.modal.details.reviewedAt')}
                   </div>
                   <p className="text-slate-900 dark:text-white">{formatDateTime(selectedRequest.reviewedAt)}</p>
                 </div>
@@ -940,7 +940,7 @@ export default function TenantAccessRequestsPage() {
                   }}
                   className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
                 >
-                  بستن
+                  {t('common.close')}
                 </button>
               </div>
             </div>

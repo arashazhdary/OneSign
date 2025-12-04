@@ -148,6 +148,15 @@
       "thisMonth": "این ماه",
       "never": "هرگز"
     },
+    "days": {
+      "saturday": "شنبه",
+      "sunday": "یکشنبه",
+      "monday": "دوشنبه",
+      "tuesday": "سه‌شنبه",
+      "wednesday": "چهارشنبه",
+      "thursday": "پنجشنبه",
+      "friday": "جمعه"
+    },
     "errors": {
       "generic": "مشکلی پیش آمد",
       "network": "خطای شبکه",
@@ -340,7 +349,12 @@
       "storageUsage": "میزان استفاده از فضا",
       "activeTenants": "سازمان‌های فعال",
       "pendingRequests": "درخواست‌های در انتظار",
-      "securityAlerts": "هشدارهای امنیتی"
+      "securityAlerts": "هشدارهای امنیتی",
+      "charts": {
+        "successfulLogins": "ورود موفق",
+        "failedLogins": "ورود ناموفق",
+        "mfaChallenges": "چالش MFA"
+      }
     },
     "users": {
       "title": "کاربران",
@@ -1553,7 +1567,34 @@
       "noRecentLogins": "ورود اخیری موجود نیست",
       "registered": "ثبت شده",
       "activeNow": "فعال الان",
-      "thisWeek": "این هفته"
+      "thisWeek": "این هفته",
+      "logins": "ورود",
+      "user": "کاربر",
+      "severityCritical": "بحرانی",
+      "severityMedium": "متوسط",
+      "severityLow": "کم",
+      "charts": {
+        "successfulLogins": "ورود موفق",
+        "failedLogins": "ورود ناموفق",
+        "mfaChallenges": "چالش MFA"
+      },
+      "roles": {
+        "user": "کاربر عادی",
+        "admin": "مدیر",
+        "auditor": "ناظر",
+        "guest": "مهمان"
+      },
+      "apps": {
+        "hrPortal": "پورتال منابع انسانی",
+        "financialSystem": "سیستم مالی",
+        "email": "پست الکترونیک",
+        "projectManagement": "مدیریت پروژه"
+      },
+      "devices": {
+        "windows": "ویندوز",
+        "mac": "مک",
+        "android": "اندروید"
+      }
     },
     "access": {
       "title": "مدیریت دسترسی",
