@@ -1,5 +1,98 @@
 @import "tailwindcss";
 
+/* ===========================
+   IRANYekan Font Family (Persian/Farsi)
+   Only loaded and used for Persian locale
+   =========================== */
+
+@font-face {
+  font-family: 'IRANYekanX';
+  src: url('/fonts/IRANYekanXFaNum-Thin.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IRANYekanX';
+  src: url('/fonts/IRANYekanXFaNum-UltraLight.woff2') format('woff2');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IRANYekanX';
+  src: url('/fonts/IRANYekanXFaNum-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IRANYekanX';
+  src: url('/fonts/IRANYekanXFaNum-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IRANYekanX';
+  src: url('/fonts/IRANYekanXFaNum-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IRANYekanX';
+  src: url('/fonts/IRANYekanXFaNum-DemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IRANYekanX';
+  src: url('/fonts/IRANYekanXFaNum-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IRANYekanX';
+  src: url('/fonts/IRANYekanXFaNum-ExtraBold.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IRANYekanX';
+  src: url('/fonts/IRANYekanXFaNum-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IRANYekanX';
+  src: url('/fonts/IRANYekanXFaNum-ExtraBlack.woff2') format('woff2');
+  font-weight: 950;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IRANYekanX';
+  src: url('/fonts/IRANYekanXFaNum-Heavy.woff2') format('woff2');
+  font-weight: 1000;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Light Mode Variables */
 :root {
   --background: #ffffff;
@@ -130,6 +223,60 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* ===========================
+   Persian (Farsi) Font Styles
+   Applied only when lang="fa" is set on HTML or any parent element
+   =========================== */
+
+/* Apply IRANYekan font for Persian language */
+html[lang="fa"],
+html[lang="fa"] body,
+[lang="fa"],
+[dir="rtl"]:lang(fa) {
+  font-family: 'IRANYekanX', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+/* Ensure all text elements use Persian font */
+html[lang="fa"] h1,
+html[lang="fa"] h2,
+html[lang="fa"] h3,
+html[lang="fa"] h4,
+html[lang="fa"] h5,
+html[lang="fa"] h6,
+html[lang="fa"] p,
+html[lang="fa"] span,
+html[lang="fa"] div,
+html[lang="fa"] label,
+html[lang="fa"] input,
+html[lang="fa"] textarea,
+html[lang="fa"] button,
+html[lang="fa"] a {
+  font-family: 'IRANYekanX', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Persian number formatting - use Farsi numerals from the font */
+html[lang="fa"] {
+  --font-feature-settings: "ss01" on, "ss02" on;
+  font-feature-settings: var(--font-feature-settings);
+}
+
+/* Better line-height for Persian text */
+html[lang="fa"] {
+  line-height: 1.8;
+}
+
+html[lang="fa"] h1,
+html[lang="fa"] h2,
+html[lang="fa"] h3 {
+  line-height: 1.5;
+}
+
+/* Placeholder text in Persian */
+html[lang="fa"] input::placeholder,
+html[lang="fa"] textarea::placeholder {
+  font-family: 'IRANYekanX', sans-serif;
 }
 
 /* Ensure all text has proper contrast */
