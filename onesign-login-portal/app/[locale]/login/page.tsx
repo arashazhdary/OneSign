@@ -578,14 +578,13 @@ export default function LoginPage() {
           className="flex flex-col items-center gap-4"
         >
           <div className="relative">
-            <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center"
-              style={{ background: gradientStyle }}
-            >
-              <svg className="w-8 h-8 text-white animate-pulse" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-              </svg>
-            </div>
+            <motion.img
+              src="/logo.svg"
+              alt="OneSign"
+              className="w-20 h-20"
+              animate={{ scale: [1, 1.05, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
           </div>
           <p className="text-white/60 text-sm">{t('common.loading')}</p>
         </motion.div>
@@ -652,14 +651,11 @@ export default function LoginPage() {
                 {logoUrl ? (
                   <img src={logoUrl} alt={branding.tenantName || 'Logo'} className="h-12 object-contain" />
                 ) : (
-                  <div
-                    className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg"
-                    style={{ background: gradientStyle }}
-                  >
-                    <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                    </svg>
-                  </div>
+                  <img
+                    src="/logo.svg"
+                    alt="OneSign"
+                    className="h-16 w-16 object-contain"
+                  />
                 )}
               </div>
               <h1 className="text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white mb-2">

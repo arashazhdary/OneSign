@@ -101,15 +101,14 @@ export default function MagicLinkVerifyPage() {
         {loading ? (
           <>
             <div className="relative">
-              <div
-                className="w-20 h-20 rounded-2xl flex items-center justify-center"
-                style={{ background: gradientStyle }}
-              >
-                <svg className="w-10 h-10 text-white animate-pulse" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                </svg>
-              </div>
-              <div className="absolute inset-0 rounded-2xl animate-ping opacity-25" style={{ background: gradientStyle }} />
+              <motion.img
+                src="/logo.svg"
+                alt="OneSign"
+                className="w-24 h-24"
+                animate={{ scale: [1, 1.08, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              />
+              <div className="absolute inset-0 rounded-full animate-ping opacity-15" style={{ background: gradientStyle }} />
             </div>
             <div className="text-center">
               <h2 className="text-2xl font-bold text-white mb-2">{t('magicLink.verifying')}</h2>

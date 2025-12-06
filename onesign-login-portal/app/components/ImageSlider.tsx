@@ -194,12 +194,12 @@ export default function ImageSlider({
             />
           ) : (
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                <svg className="w-6 h-6 lg:w-7 lg:h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                </svg>
-              </div>
-              <span className="text-white text-xl lg:text-2xl font-bold tracking-tight">
+              <img
+                src="/logo.svg"
+                alt="OneSign"
+                className="h-12 lg:h-14 w-12 lg:w-14 object-contain drop-shadow-lg"
+              />
+              <span className="text-white text-xl lg:text-2xl font-bold tracking-tight drop-shadow-lg">
                 {tenantName || 'OneSign'}
               </span>
             </div>
