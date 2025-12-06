@@ -26,7 +26,8 @@
     "invalidCredentials": "Invalid email or password",
     "securityNote": "Protected by enterprise-grade security",
     "noAccount": "Don't have an account?",
-    "createAccount": "Create one"
+    "createAccount": "Create one",
+    "trustThisDevice": "Trust this device"
   },
   "forgotPassword": {
     "title": "Forgot Password",
@@ -105,6 +106,5 @@
     "emailRequired": "Email is required for passkey registration",
     "registerInfo": "Use Face ID, Touch ID, or your device security to create a passkey",
     "authInfo": "Use your registered passkey to sign in securely"
-  },
-  "login.trustThisDevice": "Trust this device"
+  }
 }

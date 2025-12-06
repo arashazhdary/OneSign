@@ -26,7 +26,8 @@
     "invalidCredentials": "رایانامه یا گذرواژه نامعتبر است",
     "securityNote": "محافظت شده با امنیت سازمانی",
     "noAccount": "حساب کاربری ندارید؟",
-    "createAccount": "ایجاد حساب"
+    "createAccount": "ایجاد حساب",
+    "trustThisDevice": "به این دستگاه اعتماد کن"
   },
   "forgotPassword": {
     "title": "فراموشی گذرواژه",
@@ -105,6 +106,5 @@
     "emailRequired": "رایانامه برای ثبت کلید عبور الزامی است",
     "registerInfo": "از Face ID، Touch ID یا امنیت دستگاه خود برای ایجاد کلید عبور استفاده کنید",
     "authInfo": "از کلید عبور ثبت شده خود برای ورود امن استفاده کنید"
-  },
-  "login.trustThisDevice": "به این دستگاه اعتماد کن"
+  }
 }
