@@ -44,7 +44,7 @@ public class RemoveTrustedDeviceCommandHandler : IRequestHandler<RemoveTrustedDe
                 return Result.Failure<bool>("UNAUTHORIZED", "Device does not belong to this user");
             }
 
-            await _trustedDeviceRepository.DeleteAsync(device, cancellationToken);
+            await _trustedDeviceRepository.DeleteAsync(device.Id, cancellationToken);
 
             _logger.LogInformation(
                 "Trusted device removed. UserId: {UserId}, DeviceId: {DeviceId}",

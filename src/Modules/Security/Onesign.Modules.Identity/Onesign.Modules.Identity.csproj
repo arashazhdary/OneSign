@@ -8,17 +8,20 @@
 
   <ItemGroup>
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
-    <PackageReference Include="Fido2.NetFramework" Version="3.0.1" />
+    <PackageReference Include="Fido2" Version="4.0.0" />
     <PackageReference Include="FluentValidation" Version="12.1.0" />
-    <PackageReference Include="MediatR" Version="13.1.0" />
+    <PackageReference Include="MediatR" Version="14.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.0" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.15.0" />
+    <PackageReference Include="UAParser" Version="3.1.47" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Onesign.Shared\Onesign.Shared.csproj" />
     <ProjectReference Include="..\..\Integration\Onesign.Modules.Audit\Onesign.Modules.Audit.csproj" />
     <ProjectReference Include="..\Onesign.Modules.Security\Onesign.Modules.Security.csproj" />
+    <ProjectReference Include="..\..\Platform\Onesign.Modules.Tenants\Onesign.Modules.Tenants.csproj" />
   </ItemGroup>
 
 </Project>

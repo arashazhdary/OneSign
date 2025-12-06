@@ -3,7 +3,7 @@ using Onesign.Shared.Result;
 
 namespace Onesign.Modules.Tenants.Application.Commands;
 
-public class SendTestEmailCommand : IRequest<Result>
+public class SendTestEmailCommand : IRequest<Result<bool>>
 {
     public Guid TenantId { get; set; }
     public string Type { get; set; } = string.Empty;

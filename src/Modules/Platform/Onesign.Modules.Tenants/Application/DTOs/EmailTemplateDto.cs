@@ -12,6 +12,8 @@ public class EmailTemplateDto
     public string? Body { get; set; }
     public string? HtmlBody { get; set; }
     public bool IsEnabled { get; set; } = true;
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 }
 
 /// <summary>

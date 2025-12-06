@@ -1,5 +1,4 @@
-using Fido2NetLib;
-using Fido2NetLib.Objects;
+using Fido2;
 using MediatR;
 using Microsoft.Extensions.Caching.Memory;
 using Onesign.Modules.Identity.Domain.Repositories;
