@@ -11,5 +11,7 @@ public class PasswordLoginCommand : IRequest<Result<LoginResponse>>
     public string Password { get; set; } = string.Empty;
     public Guid? ClientId { get; set; }
     public string? DeviceFingerprint { get; set; }
+    public string? RecaptchaToken { get; set; }
+    public bool TrustThisDevice { get; set; }
 }
 

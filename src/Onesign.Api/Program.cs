@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Onesign.Api.Authentication;
 using Onesign.Api.BackgroundServices;
+using Onesign.Api.Configuration;
+using Onesign.Api.Services;
 using Onesign.Data.Contexts;
 using Onesign.Modules.AccessRequests.Application.Services;
 using Onesign.Modules.AccessRequests.Domain.Repositories;
@@ -323,6 +325,10 @@ static void ConfigureSharedServices(WebApplicationBuilder builder)
     // HttpClient برای سرویس‌های خارجی
     // =====================================================
     builder.Services.AddHttpClient();
+    builder.Services.AddHttpClient("RecaptchaClient", client =>
+    {
+        client.Timeout = TimeSpan.FromSeconds(10);
+    });
 
     // =====================================================
     // سرویس‌های پلتفرم - سخت‌سازی و مقیاس‌پذیری
@@ -330,6 +336,20 @@ static void ConfigureSharedServices(WebApplicationBuilder builder)
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddScoped<ITenantContextAccessor, TenantContextAccessor>();
     builder.Services.AddSingleton<IResourceQuotaService, ResourceQuotaService>();
+
+    // =====================================================
+    // سرویس‌های محدودیت نرخ و قفل ورود
+    // مدیریت تلاش‌های ناموفق ورود و قفل کردن IP
+    // =====================================================
+    var rateLimitOptions = builder.Configuration.GetSection(RateLimitOptions.SectionName).Get<RateLimitOptions>() ?? new RateLimitOptions();
+    var loginLockoutOptions = new LoginLockoutOptions
+    {
+        MaxFailedAttempts = rateLimitOptions.Lockout.MaxFailedAttempts,
+        TrackingWindowMinutes = rateLimitOptions.Lockout.TrackingWindowMinutes,
+        LockoutDurationMinutes = rateLimitOptions.Lockout.LockoutDurationMinutes
+    };
+    builder.Services.AddSingleton(loginLockoutOptions);
+    builder.Services.AddSingleton<ILoginAttemptTracker, LoginAttemptTracker>();
 }
 
 // سرویس‌های امنیتی
@@ -372,6 +392,7 @@ static void ConfigureSecurityServices(WebApplicationBuilder builder)
         new AuthService(
             sp.GetRequiredService<Onesign.Shared.Security.IJwtSigningKeyProvider>(),
             sp.GetRequiredService<Onesign.Modules.Identity.Domain.Repositories.IAuthorizationCodeRepository>()));
+    builder.Services.AddScoped<IRecaptchaService, RecaptchaService>();
 
     // =====================================================
     // ریپازیتوری‌های ماژول امنیت
@@ -1008,6 +1029,12 @@ static void ConfigureMiddleware(WebApplication app)
     // محافظت پایه در برابر حملات
     // =====================================================
     app.UseMiddleware<RateLimitMiddleware>();
+
+    // =====================================================
+    // میدلور قفل ورود
+    // جلوگیری از تلاش‌های ورود بیش از حد از IP های قفل شده
+    // =====================================================
+    app.UseMiddleware<LoginLockoutMiddleware>();
 
     // =====================================================
     // میدلور محلی‌سازی

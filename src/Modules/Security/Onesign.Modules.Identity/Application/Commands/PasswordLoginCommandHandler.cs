@@ -9,6 +9,7 @@ using Onesign.Modules.Identity.Domain.Services;
 using Onesign.Modules.Security.Application.Commands;
 using Onesign.Modules.Security.Application.Queries;
 using Onesign.Modules.Security.Domain.Enums;
+using Onesign.Modules.Tenants.Application.Queries;
 using Onesign.Shared.Result;
 using System.Security.Cryptography;
 
@@ -23,6 +24,7 @@ public class PasswordLoginCommandHandler : IRequestHandler<PasswordLoginCommand,
     private readonly IUserLoginSessionRepository _userLoginSessionRepository;
     private readonly IMediator _mediator;
     private readonly ILogger<PasswordLoginCommandHandler> _logger;
+    private readonly IRecaptchaService _recaptchaService;
 
     public PasswordLoginCommandHandler(
         IGlobalUserRepository globalUserRepository,
@@ -31,7 +33,8 @@ public class PasswordLoginCommandHandler : IRequestHandler<PasswordLoginCommand,
         IAuthService authService,
         IUserLoginSessionRepository userLoginSessionRepository,
         IMediator mediator,
-        ILogger<PasswordLoginCommandHandler> logger)
+        ILogger<PasswordLoginCommandHandler> logger,
+        IRecaptchaService recaptchaService)
     {
         _globalUserRepository = globalUserRepository;
         _tenantUserRepository = tenantUserRepository;
@@ -40,12 +43,50 @@ public class PasswordLoginCommandHandler : IRequestHandler<PasswordLoginCommand,
         _userLoginSessionRepository = userLoginSessionRepository;
         _mediator = mediator;
         _logger = logger;
+        _recaptchaService = recaptchaService;
     }
 
     public async Task<Result<LoginResponse>> Handle(PasswordLoginCommand request, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Login attempt for email: {Email}, TenantId: {TenantId}", request.Email, request.TenantId);
-        
+
+        // Verify reCAPTCHA if token is provided and enabled for tenant
+        if (!string.IsNullOrEmpty(request.RecaptchaToken))
+        {
+            try
+            {
+                var brandingQuery = new GetTenantBrandingQuery { TenantId = request.TenantId };
+                var branding = await _mediator.Send(brandingQuery, cancellationToken);
+
+                if (branding?.Features?.EnableRecaptcha == true)
+                {
+                    var recaptchaValid = await _recaptchaService.VerifyTokenAsync(
+                        request.RecaptchaToken,
+                        expectedAction: "login",
+                        minimumScore: 0.5,
+                        cancellationToken: cancellationToken);
+
+                    if (!recaptchaValid)
+                    {
+                        _logger.LogWarning("reCAPTCHA verification failed for login attempt. Email: {Email}, TenantId: {TenantId}",
+                            request.Email, request.TenantId);
+                        return Result.Failure<LoginResponse>("RECAPTCHA_VERIFICATION_FAILED",
+                            "reCAPTCHA verification failed. Please try again.");
+                    }
+
+                    _logger.LogInformation("reCAPTCHA verification successful for email: {Email}, TenantId: {TenantId}",
+                        request.Email, request.TenantId);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during reCAPTCHA verification for email: {Email}, TenantId: {TenantId}",
+                    request.Email, request.TenantId);
+                // Continue with login if reCAPTCHA service fails (fail open strategy)
+                // You can change this to fail closed if you prefer stricter security
+            }
+        }
+
         var globalUser = await _globalUserRepository.GetByEmailAsync(request.Email, cancellationToken);
         if (globalUser == null || string.IsNullOrEmpty(globalUser.PasswordHash))
         {
@@ -145,6 +186,28 @@ public class PasswordLoginCommandHandler : IRequestHandler<PasswordLoginCommand,
             tenantUser.FirstLoginAt = DateTime.UtcNow;
         }
         await _tenantUserRepository.UpdateAsync(tenantUser, cancellationToken);
+
+        // Trust this device if requested and device fingerprint is provided
+        if (request.TrustThisDevice && !string.IsNullOrEmpty(request.DeviceFingerprint))
+        {
+            try
+            {
+                var trustDeviceCommand = new Onesign.Modules.Security.Application.Commands.TrustDeviceCommand
+                {
+                    UserId = tenantUser.Id,
+                    DeviceFingerprint = request.DeviceFingerprint,
+                    DeviceName = "Trusted Device",
+                    RememberDays = 30
+                };
+                await _mediator.Send(trustDeviceCommand, cancellationToken);
+                _logger.LogInformation("Device marked as trusted for user {TenantUserId}", tenantUser.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to mark device as trusted for user {TenantUserId}", tenantUser.Id);
+                // Don't fail the login if device trust fails
+            }
+        }
 
         // Create login session
         var sessionToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32))

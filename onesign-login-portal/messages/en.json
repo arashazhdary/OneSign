@@ -10,12 +10,24 @@
   },
   "login": {
     "title": "Sign In",
+    "welcomeBack": "Welcome Back",
+    "subtitle": "Sign in to continue to your account",
     "emailPlaceholder": "Enter your email",
     "passwordPlaceholder": "Enter your password",
     "forgotPassword": "Forgot password?",
+    "rememberMe": "Remember me",
     "signIn": "Sign In",
+    "signingIn": "Signing you in...",
     "signInWithGoogle": "Sign in with Google",
-    "invalidCredentials": "Invalid email or password"
+    "signInWithMicrosoft": "Sign in with Microsoft",
+    "signInWithApple": "Sign in with Apple",
+    "signInWithEmail": "Sign in with Email (Magic Link)",
+    "orContinueWith": "Or continue with",
+    "invalidCredentials": "Invalid email or password",
+    "securityNote": "Protected by enterprise-grade security",
+    "noAccount": "Don't have an account?",
+    "createAccount": "Create one",
+    "trustThisDevice": "Trust this device"
   },
   "forgotPassword": {
     "title": "Forgot Password",
@@ -52,6 +64,47 @@
     "verify": "Verify",
     "invalidCode": "Invalid verification code",
     "backToLogin": "Back to Login"
+  },
+  "slider": {
+    "enterprise": "Enterprise Security",
+    "enterpriseDesc": "Protect your organization with world-class identity management",
+    "integration": "Seamless Integration",
+    "integrationDesc": "Connect all your applications with single sign-on",
+    "global": "Global Access",
+    "globalDesc": "Secure authentication from anywhere in the world"
+  },
+  "magicLink": {
+    "title": "Sign in with Magic Link",
+    "subtitle": "We'll send you a secure link to sign in without a password",
+    "emailPlaceholder": "Enter your email",
+    "sendLink": "Send Magic Link",
+    "sendingLink": "Sending magic link...",
+    "checkYourEmail": "Check Your Email",
+    "emailSent": "We've sent a magic link to your email. Click the link to sign in.",
+    "linkExpiresIn": "This link will expire in 15 minutes",
+    "backToLogin": "Back to Login",
+    "verifying": "Verifying Magic Link",
+    "verifyingSubtitle": "Please wait while we verify your link...",
+    "verificationFailed": "Verification Failed",
+    "invalidToken": "Invalid or expired magic link",
+    "tokenExpired": "This magic link has expired",
+    "tokenUsed": "This magic link has already been used"
+  },
+  "passkey": {
+    "signInWithPasskey": "Sign in with Passkey",
+    "addPasskey": "Add Passkey",
+    "register": "Register Passkey",
+    "deviceName": "Device Name",
+    "deviceNameHint": "Give this passkey a name to identify it later",
+    "authenticating": "Authenticating...",
+    "notSupported": "Passkeys are not supported in this browser",
+    "faceIdSupported": "Face ID / Touch ID",
+    "cancelled": "Authentication was cancelled",
+    "authFailed": "Authentication failed",
+    "registrationFailed": "Registration failed",
+    "alreadyRegistered": "A passkey is already registered for this device",
+    "emailRequired": "Email is required for passkey registration",
+    "registerInfo": "Use Face ID, Touch ID, or your device security to create a passkey",
+    "authInfo": "Use your registered passkey to sign in securely"
   }
 }
-

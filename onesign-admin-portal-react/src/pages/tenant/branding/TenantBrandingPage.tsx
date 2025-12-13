@@ -16,11 +16,15 @@ import {
   AlertCircle,
   Layout,
   Lock,
-  X
+  X,
+  Images
 } from 'lucide-react';
+import SliderImageManager, { SliderImage } from '@/components/branding/SliderImageManager';
+import EmailTemplateEditor, { EmailTemplate, EmailTemplateType } from '@/components/branding/EmailTemplateEditor';
 import { getTenantId } from '@/lib/tenant-context';
 import { tenantService } from '@/lib/api/services/tenant.service';
 import Modal from '@/components/common/Modal';
+import { DEFAULT_EMAIL_TEMPLATES } from '@/lib/constants/emailTemplates';
 
 interface BrandingConfig {
   logoLightUrl?: string;
@@ -34,16 +38,8 @@ interface BrandingConfig {
   loginPageConfig?: LoginPageConfig;
 }
 
-interface EmailTemplate {
-  id: string;
-  name: string;
-  subject: string;
-  body: string;
-  type: string;
-}
-
 interface LoginPageConfig {
-  backgroundType: 'color' | 'gradient' | 'image';
+  backgroundType: 'color' | 'gradient' | 'image' | 'slider';
   backgroundColor?: string;
   gradientStart?: string;
   gradientEnd?: string;
@@ -51,11 +47,15 @@ interface LoginPageConfig {
   showLogo: boolean;
   title?: string;
   subtitle?: string;
+  sliderImages?: SliderImage[];
+  sliderAutoPlay?: boolean;
+  sliderInterval?: number;
+  layout?: 'split' | 'centered' | 'overlay';
+  formPosition?: 'left' | 'right';
 }
 
-const DEFAULT_EMAIL_TEMPLATES: EmailTemplate[] = [];
 
-type Tab = 'logos' | 'colors' | 'login' | 'emails' | 'domain';
+type Tab = 'logos' | 'colors' | 'login' | 'slider' | 'emails' | 'domain';
 
 export default function TenantBrandingPage() {
   const { t } = useTranslation();
@@ -96,7 +96,11 @@ export default function TenantBrandingPage() {
     if (!tenantId) return;
     try {
       const data = await tenantService.getBranding();
-      setBranding({ ...branding, ...data });
+      // Merge with default templates if none exist
+      const emailTemplates = data.emailTemplates?.length > 0
+        ? data.emailTemplates
+        : DEFAULT_EMAIL_TEMPLATES;
+      setBranding({ ...branding, ...data, emailTemplates });
     } catch (error: any) {
       console.error('Error fetching branding:', error);
       setError(error?.message || t('common.failedToFetchBranding'));
@@ -124,19 +128,29 @@ export default function TenantBrandingPage() {
     }
   };
 
-  const handleSaveEmailTemplate = () => {
-    if (!selectedTemplate) return;
+  const handleSaveEmailTemplate = async () => {
+    if (!selectedTemplate || !tenantId) return;
 
-    setBranding({
-      ...branding,
-      emailTemplates: branding.emailTemplates?.map((t) =>
-        t.id === selectedTemplate.id ? selectedTemplate : t
-      ),
-    });
+    try {
+      setSaving(true);
+      await tenantService.updateEmailTemplate(selectedTemplate.type, selectedTemplate);
 
-    setShowEmailEditor(false);
-    setSelectedTemplate(null);
-    setSuccess(t('tenant.branding.emailTemplateUpdated'));
+      setBranding({
+        ...branding,
+        emailTemplates: branding.emailTemplates?.map((t) =>
+          t.id === selectedTemplate.id ? selectedTemplate : t
+        ),
+      });
+
+      setShowEmailEditor(false);
+      setSelectedTemplate(null);
+      setSuccess(t('tenant.branding.emailTemplateUpdated'));
+    } catch (error: any) {
+      setError(error?.message || t('common.failedToSaveEmailTemplate'));
+      console.error('Error saving email template:', error);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleEditEmailTemplate = (template: EmailTemplate) => {
@@ -148,6 +162,7 @@ export default function TenantBrandingPage() {
     { id: 'logos', label: t('tenant.branding.tabs.logos'), icon: Image },
     { id: 'colors', label: t('tenant.branding.tabs.colors'), icon: Palette },
     { id: 'login', label: t('tenant.branding.tabs.login'), icon: Layout },
+    { id: 'slider', label: t('tenant.branding.tabs.slider', 'Slider'), icon: Images },
     { id: 'emails', label: t('tenant.branding.tabs.emails'), icon: Mail },
     { id: 'domain', label: t('tenant.branding.tabs.domain'), icon: Globe },
   ];
@@ -223,18 +238,24 @@ export default function TenantBrandingPage() {
     if (!selectedTemplate) return null;
 
     return (
-      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-8 max-w-2xl mx-auto">
-        <div className="border-b border-slate-200 dark:border-slate-700 pb-4 mb-4">
-          <div className="flex items-center gap-4 mb-2">
+      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-8 max-w-4xl mx-auto">
+        <div className="border-b border-slate-200 dark:border-slate-700 pb-4 mb-6">
+          <div className="flex items-center justify-between gap-4 mb-3">
             {branding.logoLightUrl && (
-              <img src={branding.logoLightUrl} alt="Logo" className="h-8 object-contain" />
+              <img src={branding.logoLightUrl} alt="Logo" className="h-10 object-contain" />
             )}
+            <span className="text-xs text-slate-500 dark:text-slate-400">
+              {new Date().toLocaleDateString()}
+            </span>
           </div>
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">{selectedTemplate.subject}</h3>
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white">{selectedTemplate.subject}</h3>
         </div>
-        <div className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300">{selectedTemplate.body}</div>
-        <div className="border-t border-slate-200 dark:border-slate-700 pt-4 mt-8 text-xs text-slate-500">
-          <p>{t('tenant.branding.emailPreview.disclaimer')}</p>
+        <div
+          className="prose prose-slate dark:prose-invert max-w-none"
+          dangerouslySetInnerHTML={{ __html: selectedTemplate.htmlBody || selectedTemplate.body }}
+        />
+        <div className="border-t border-slate-200 dark:border-slate-700 pt-6 mt-8 text-xs text-slate-500 dark:text-slate-400">
+          <p>{t('tenant.branding.emailPreview.disclaimer', 'This is a preview. Actual emails may vary slightly based on email client.')}</p>
         </div>
       </div>
     );
@@ -575,6 +596,7 @@ export default function TenantBrandingPage() {
                     <option value="color">{t('tenant.branding.login.backgroundTypes.color')}</option>
                     <option value="gradient">{t('tenant.branding.login.backgroundTypes.gradient')}</option>
                     <option value="image">{t('tenant.branding.login.backgroundTypes.image')}</option>
+                    <option value="slider">{t('tenant.branding.login.backgroundTypes.slider', 'Image Slider')}</option>
                   </select>
                 </div>
 
@@ -739,6 +761,126 @@ export default function TenantBrandingPage() {
             </div>
           )}
 
+          {/* Slider Tab */}
+          {activeTab === 'slider' && (
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
+              <SliderImageManager
+                images={branding.loginPageConfig?.sliderImages || []}
+                onChange={(images) =>
+                  setBranding({
+                    ...branding,
+                    loginPageConfig: {
+                      ...branding.loginPageConfig!,
+                      sliderImages: images,
+                    },
+                  })
+                }
+                primaryColor={branding.primaryColor}
+              />
+
+              {/* Slider Settings */}
+              <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700 space-y-4">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
+                  {t('tenant.branding.slider.settings', 'Slider Settings')}
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={branding.loginPageConfig?.sliderAutoPlay ?? true}
+                        onChange={(e) =>
+                          setBranding({
+                            ...branding,
+                            loginPageConfig: {
+                              ...branding.loginPageConfig!,
+                              sliderAutoPlay: e.target.checked,
+                            },
+                          })
+                        }
+                        className="rounded border-slate-300 text-purple-600 focus:ring-purple-500"
+                      />
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        {t('tenant.branding.slider.autoPlay', 'Auto-play slides')}
+                      </span>
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      {t('tenant.branding.slider.interval', 'Slide interval (ms)')}
+                    </label>
+                    <input
+                      type="number"
+                      value={branding.loginPageConfig?.sliderInterval || 5000}
+                      onChange={(e) =>
+                        setBranding({
+                          ...branding,
+                          loginPageConfig: {
+                            ...branding.loginPageConfig!,
+                            sliderInterval: parseInt(e.target.value) || 5000,
+                          },
+                        })
+                      }
+                      min={1000}
+                      max={15000}
+                      step={500}
+                      className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      {t('tenant.branding.slider.layout', 'Page Layout')}
+                    </label>
+                    <select
+                      value={branding.loginPageConfig?.layout || 'split'}
+                      onChange={(e) =>
+                        setBranding({
+                          ...branding,
+                          loginPageConfig: {
+                            ...branding.loginPageConfig!,
+                            layout: e.target.value as any,
+                          },
+                        })
+                      }
+                      className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white"
+                    >
+                      <option value="split">{t('tenant.branding.slider.layouts.split', 'Split Screen')}</option>
+                      <option value="centered">{t('tenant.branding.slider.layouts.centered', 'Centered')}</option>
+                      <option value="overlay">{t('tenant.branding.slider.layouts.overlay', 'Overlay')}</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      {t('tenant.branding.slider.formPosition', 'Form Position')}
+                    </label>
+                    <select
+                      value={branding.loginPageConfig?.formPosition || 'right'}
+                      onChange={(e) =>
+                        setBranding({
+                          ...branding,
+                          loginPageConfig: {
+                            ...branding.loginPageConfig!,
+                            formPosition: e.target.value as any,
+                          },
+                        })
+                      }
+                      className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white"
+                    >
+                      <option value="left">{t('tenant.branding.slider.positions.left', 'Left')}</option>
+                      <option value="right">{t('tenant.branding.slider.positions.right', 'Right')}</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Emails Tab */}
           {activeTab === 'emails' && (
             <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 space-y-4">
@@ -747,7 +889,7 @@ export default function TenantBrandingPage() {
                 {t('tenant.branding.emails.title')}
               </h2>
 
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 gap-3">
                 {branding.emailTemplates?.map((template) => (
                   <motion.div
                     key={template.id}
@@ -755,13 +897,22 @@ export default function TenantBrandingPage() {
                     animate={{ opacity: 1, y: 0 }}
                     className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
                   >
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h3 className="font-medium text-slate-900 dark:text-white">{template.name}</h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{t('tenant.branding.emails.subject')}: {template.subject}</p>
-                        <p className="text-xs text-slate-400 mt-1">{t('tenant.branding.emails.type')}: {template.type}</p>
+                    <div className="flex justify-between items-start gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <FileText className="w-4 h-4 text-purple-600 flex-shrink-0" />
+                          <h3 className="font-medium text-slate-900 dark:text-white truncate">{template.name}</h3>
+                        </div>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 truncate">
+                          <span className="font-medium">{t('tenant.branding.emails.subject')}:</span> {template.subject}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300">
+                            {template.type.replace(/_/g, ' ').toUpperCase()}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-shrink-0">
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
@@ -770,16 +921,18 @@ export default function TenantBrandingPage() {
                             setPreviewMode('email');
                             setShowPreview(true);
                           }}
-                          className="px-3 py-1 text-sm border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
+                          className="flex items-center gap-1 px-3 py-1.5 text-sm border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
                         >
+                          <Eye className="w-3.5 h-3.5" />
                           {t('common.preview')}
                         </motion.button>
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                           onClick={() => handleEditEmailTemplate(template)}
-                          className="px-3 py-1 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                          className="flex items-center gap-1 px-3 py-1.5 text-sm bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-colors shadow-sm"
                         >
+                          <FileText className="w-3.5 h-3.5" />
                           {t('common.edit')}
                         </motion.button>
                       </div>
@@ -852,72 +1005,35 @@ export default function TenantBrandingPage() {
             setShowEmailEditor(false);
             setSelectedTemplate(null);
           }}
-          title={t('tenant.branding.emails.editTemplate')}
-          size="lg"
+          title={t('tenant.branding.emails.editTemplate', 'Edit Email Template')}
+          size="xl"
         >
           {selectedTemplate && (
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  {t('tenant.branding.emails.templateName')}
-                </label>
-                <input
-                  type="text"
-                  value={selectedTemplate.name}
-                  onChange={(e) =>
-                    setSelectedTemplate({ ...selectedTemplate, name: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white"
-                />
-              </div>
+              <EmailTemplateEditor
+                template={selectedTemplate}
+                onChange={setSelectedTemplate}
+                primaryColor={branding.primaryColor}
+              />
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  {t('tenant.branding.emails.subject')}
-                </label>
-                <input
-                  type="text"
-                  value={selectedTemplate.subject}
-                  onChange={(e) =>
-                    setSelectedTemplate({ ...selectedTemplate, subject: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  {t('tenant.branding.emails.body')}
-                </label>
-                <textarea
-                  value={selectedTemplate.body}
-                  onChange={(e) =>
-                    setSelectedTemplate({ ...selectedTemplate, body: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white font-mono text-sm"
-                  rows={12}
-                  dir="ltr"
-                />
-                <p className="text-xs text-slate-500 mt-2">
-                  {t('tenant.branding.emails.availableVariables')}
-                </p>
-              </div>
-
-              <div className="flex gap-3 justify-end pt-4">
+              <div className="flex gap-3 justify-end pt-4 border-t border-slate-200 dark:border-slate-700">
                 <button
                   onClick={() => {
                     setShowEmailEditor(false);
                     setSelectedTemplate(null);
                   }}
-                  className="px-4 py-2 border border-slate-200 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+                  disabled={saving}
+                  className="px-6 py-2.5 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all disabled:opacity-50"
                 >
                   {t('common.cancel')}
                 </button>
                 <button
                   onClick={handleSaveEmailTemplate}
-                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all"
+                  disabled={saving}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50"
                 >
-                  {t('common.save')}
+                  <Save className="w-4 h-4" />
+                  {saving ? t('common.saving') : t('common.save')}
                 </button>
               </div>
             </div>
