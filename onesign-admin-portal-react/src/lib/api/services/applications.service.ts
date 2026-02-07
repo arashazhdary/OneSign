@@ -26,10 +26,9 @@ export interface ClientSecretDto {
 }
 
 export interface CreateApplicationDto {
-  tenantId?: string;
   name: string;
   applicationType: number;
-  grantType?: number;
+  grantType: number;
   redirectUris?: string[];
 }
 
@@ -93,8 +92,9 @@ export const applicationsService = {
   /**
    * PUT /api/tenant/applications/{id} - به‌روزرسانی اپلیکیشن
    */
-  updateApplication: async (tenantId: string, appId: string, data: UpdateApplicationDto): Promise<ApplicationDto> => {
-    const response = await apiClient.put(`/api/tenant/applications/${appId}`, data);
+  updateApplication: async (appId: string, data: UpdateApplicationDto, tenantId?: string): Promise<ApplicationDto> => {
+    const params = tenantId ? { tenantId } : {};
+    const response = await apiClient.put(`/api/tenant/applications/${appId}`, data, { params });
     return response.data;
   },
 

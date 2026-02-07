@@ -53,7 +53,7 @@ export interface TenantUserDto {
   firstName: string;
   lastName: string;
   displayName?: string;
-  status: 'Active' | 'Inactive' | 'Suspended' | 'Pending';
+  status: 'Active' | 'Inactive' | 'Suspended' | 'Pending' | 'Invited' | 'Disabled' | number;
   roles: string[];
   lastLoginAt?: string;
   createdAt: string;

@@ -125,7 +125,9 @@ public class PasskeysController : ControllerBase
         var command = new AuthenticatePasskeyVerifyCommand
         {
             TenantId = tenantId,
-            ClientId = request.ClientId,
+            ClientId = !string.IsNullOrEmpty(request.ClientId) && Guid.TryParse(request.ClientId, out var clientId)
+                ? clientId
+                : null,
             AssertionResponse = request.AssertionResponse
         };
 

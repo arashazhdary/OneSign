@@ -255,14 +255,44 @@ export default function TenantUsersPage() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const statusLower = status?.toLowerCase() || '';
+  // Helper function to convert status to lowercase string
+  const getStatusString = (status: string | number): string => {
+    if (typeof status === 'number') {
+      const statusMap: Record<number, string> = {
+        1: 'invited',
+        2: 'active',
+        3: 'suspended',
+        4: 'disabled'
+      };
+      return statusMap[status] || 'unknown';
+    }
+    return typeof status === 'string' ? status.toLowerCase() : 'unknown';
+  };
+
+  // Helper function to get display string for status
+  const getStatusDisplay = (status: string | number): string => {
+    if (typeof status === 'number') {
+      const statusMap: Record<number, string> = {
+        1: 'Invited',
+        2: 'Active',
+        3: 'Suspended',
+        4: 'Disabled'
+      };
+      return statusMap[status] || 'Unknown';
+    }
+    return typeof status === 'string' ? status : 'Unknown';
+  };
+
+  const getStatusBadge = (status: string | number) => {
+    const statusLower = getStatusString(status);
     if (statusLower === 'active') {
       return 'bg-green-100 text-green-800 border-green-200';
     } else if (statusLower === 'suspended') {
       return 'bg-red-100 text-red-800 border-red-200';
-    } else if (statusLower === 'pending') {
+    } else if (statusLower === 'pending' || statusLower === 'invited') {
       return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    } else if (statusLower === 'disabled') {
+      return 'bg-gray-100 text-gray-800 border-gray-200';
     }
     return 'bg-gray-100 text-gray-800 border-gray-200';
   };
@@ -275,8 +305,8 @@ export default function TenantUsersPage() {
 
   // Calculate stats
   const totalUsers = users.length;
-  const activeUsers = users.filter(u => u.status?.toLowerCase() === 'active').length;
-  const suspendedUsers = users.filter(u => u.status?.toLowerCase() === 'suspended').length;
+  const activeUsers = users.filter(u => getStatusString(u.status) === 'active').length;
+  const suspendedUsers = users.filter(u => getStatusString(u.status) === 'suspended').length;
   const adminUsers = users.filter(u => u.roles?.includes('admin')).length;
 
   if (loading || scopeLoading) {
@@ -507,7 +537,7 @@ export default function TenantUsersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusBadge(user.status || '')}`}>
-                        {user.status}
+                        {getStatusDisplay(user.status)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -535,7 +565,7 @@ export default function TenantUsersPage() {
                         >
                           {t('tenant.userOrgUnits.assignOrgUnits')}
                         </button>
-                        {user.status !== t('common.disabled') && (
+                        {getStatusString(user.status) !== 'disabled' && (
                           <button
                             onClick={() => handleDisableUser(user.id)}
                             className="px-3 py-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-lg transition-colors font-medium"

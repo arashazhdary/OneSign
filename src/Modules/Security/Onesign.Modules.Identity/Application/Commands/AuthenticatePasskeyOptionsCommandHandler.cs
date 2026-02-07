@@ -1,4 +1,5 @@
 using Fido2NetLib;
+using Fido2NetLib.Objects;
 using MediatR;
 using Microsoft.Extensions.Caching.Memory;
 using Onesign.Modules.Identity.Domain.Repositories;
@@ -70,10 +71,11 @@ public class AuthenticatePasskeyOptionsCommandHandler : IRequestHandler<Authenti
         }
 
         // Create assertion options
-        var options = _fido2.GetAssertionOptions(
-            allowedCredentials,
-            UserVerificationRequirement.Preferred
-        );
+        var options = _fido2.GetAssertionOptions(new GetAssertionOptionsParams
+        {
+            AllowedCredentials = allowedCredentials,
+            UserVerification = UserVerificationRequirement.Preferred,
+        });
 
         // Cache the options for verification later (5 minute expiration)
         _cache.Set(cacheKey, options.ToJson(), TimeSpan.FromMinutes(5));

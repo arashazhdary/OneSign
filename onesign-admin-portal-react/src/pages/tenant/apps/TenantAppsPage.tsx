@@ -255,10 +255,17 @@ export default function TenantAppsPage() {
     if (!tenantId) return;
 
     try {
+      // Map applicationType string to enum number
+      const appTypeMap: Record<string, number> = {
+        'Web': 1,
+        'Mobile': 2,
+        'SPA': 3
+      };
+
       await applicationsService.createApplication({
-        tenantId,
         name: newAppName,
-        applicationType: newAppType,
+        applicationType: appTypeMap[newAppType] || 1,
+        grantType: 1, // AuthorizationCode
         redirectUris: newRedirectUris.filter(uri => uri.trim() !== '')
       });
       setShowCreateModal(false);
@@ -296,9 +303,16 @@ export default function TenantAppsPage() {
     if (!tenantId || !editingApp) return;
 
     try {
+      // Map applicationType string to enum number
+      const appTypeMap: Record<string, number> = {
+        'Web': 1,
+        'Mobile': 2,
+        'SPA': 3
+      };
+
       await applicationsService.updateApplication(editingApp.id, {
         name: editAppName,
-        applicationType: editAppType
+        applicationType: appTypeMap[editAppType] || 1
       });
       setShowEditModal(false);
       setEditingApp(null);

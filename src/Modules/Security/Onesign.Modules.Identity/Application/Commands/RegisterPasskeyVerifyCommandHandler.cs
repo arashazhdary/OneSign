@@ -1,10 +1,11 @@
-using Fido2;
+using Fido2NetLib;
 using MediatR;
 using Microsoft.Extensions.Caching.Memory;
 using Onesign.Modules.Identity.Domain.Entities;
 using Onesign.Modules.Identity.Domain.Repositories;
 using Onesign.Shared.Result;
 using System.Text.Json;
+using Fido2NetLib.Objects;
 
 namespace Onesign.Modules.Identity.Application.Commands;
 
@@ -57,39 +58,35 @@ public class RegisterPasskeyVerifyCommandHandler : IRequestHandler<RegisterPassk
             var options = CredentialCreateOptions.FromJson(optionsJson);
 
             // Parse the attestation response
-            var attestationResponse = JsonSerializer.Serialize(request.AttestationResponse);
-            var attestation = AuthenticatorAttestationRawResponse.Parse(attestationResponse);
+            var attestation = JsonSerializer.Deserialize<AuthenticatorAttestationRawResponse>(
+                JsonSerializer.Serialize(request.AttestationResponse))
+                ?? throw new InvalidOperationException("Failed to deserialize attestation response");
 
             // Verify the attestation
-            var success = await _fido2.MakeNewCredentialAsync(
-                attestation,
-                options,
-                async (args, cancellationToken) =>
-                {
-                    // Check if credential already exists
-                    var existingCredential = await _passkeyCredentialRepository
-                        .GetByCredentialIdAsync(args.CredentialId, cancellationToken);
-                    return existingCredential == null;
-                },
-                cancellationToken
-            );
-
-            if (success.Result == null)
+            var registeredCredential = await _fido2.MakeNewCredentialAsync(new MakeNewCredentialParams
             {
-                return Result.Failure<bool>("VERIFICATION_FAILED", "Failed to verify passkey registration");
-            }
+                AttestationResponse = attestation,
+                OriginalOptions = options,
+                IsCredentialIdUniqueToUserCallback = async (args, ct) =>
+                {
+                    // Check if credential already exists (return true if unique)
+                    var existingCredential = await _passkeyCredentialRepository
+                        .GetByCredentialIdAsync(args.CredentialId, ct);
+                    return existingCredential == null;
+                }
+            });
 
             // Store the credential
             var credential = new PasskeyCredential
             {
                 Id = Guid.NewGuid(),
                 TenantUserId = tenantUser.Id,
-                CredentialId = success.Result.CredentialId,
-                PublicKey = success.Result.PublicKey,
-                SignCounter = success.Result.Counter,
-                CredType = success.Result.CredType,
-                AaGuid = success.Result.Aaguid,
-                UserHandle = success.Result.User?.Id != null ? Convert.ToBase64String(success.Result.User.Id) : null,
+                CredentialId = registeredCredential.Id,
+                PublicKey = registeredCredential.PublicKey,
+                SignCounter = registeredCredential.SignCount,
+                CredType = registeredCredential.Type.ToString(),
+                AaGuid = registeredCredential.AaGuid,
+                UserHandle = registeredCredential.User?.Id != null ? Convert.ToBase64String(registeredCredential.User.Id) : null,
                 DeviceName = request.DeviceName,
                 CreatedAt = DateTime.UtcNow,
                 Transports = string.Join(",", attestation.Response.Transports ?? Array.Empty<AuthenticatorTransport>())

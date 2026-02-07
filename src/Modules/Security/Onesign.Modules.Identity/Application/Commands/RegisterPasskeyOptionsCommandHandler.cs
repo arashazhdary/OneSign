@@ -1,4 +1,5 @@
-using Fido2;
+using Fido2NetLib;
+using Fido2NetLib.Objects;
 using MediatR;
 using Microsoft.Extensions.Caching.Memory;
 using Onesign.Modules.Identity.Domain.Repositories;
@@ -60,16 +61,17 @@ public class RegisterPasskeyOptionsCommandHandler : IRequestHandler<RegisterPass
         // Create attestation options
         var authenticatorSelection = new AuthenticatorSelection
         {
-            RequireResidentKey = false,
+            ResidentKey = ResidentKeyRequirement.Discouraged,
             UserVerification = UserVerificationRequirement.Preferred
         };
 
-        var options = _fido2.RequestNewCredential(
-            fido2User,
-            excludeCredentials,
-            authenticatorSelection,
-            AttestationConveyancePreference.None
-        );
+        var options = _fido2.RequestNewCredential(new RequestNewCredentialParams
+        {
+            User = fido2User,
+            ExcludeCredentials = excludeCredentials,
+            AuthenticatorSelection = authenticatorSelection,
+            AttestationPreference = AttestationConveyancePreference.None
+        });
 
         // Cache the options for verification later (5 minute expiration)
         var cacheKey = $"passkey_registration_{request.Email}_{request.TenantId}";

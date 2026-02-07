@@ -1,3 +1,4 @@
+using Fido2NetLib;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using MediatR;
@@ -218,7 +219,10 @@ static void ConfigureSharedServices(WebApplicationBuilder builder)
     {
         options.AddDefaultPolicy(policy =>
         {
-            policy.AllowAnyOrigin()
+            var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+                ?? new[] { "http://localhost:3001", "https://localhost:3001" };
+
+            policy.WithOrigins(allowedOrigins)
                   .AllowAnyMethod()
                   .AllowAnyHeader()
                   .AllowCredentials();
@@ -376,6 +380,10 @@ static void ConfigureSecurityServices(WebApplicationBuilder builder)
 
     builder.Services.AddScoped<IPasswordResetTokenRepository>(sp =>
         new PasswordResetTokenRepository(sp.GetRequiredService<OnesignDbContext>()));
+    builder.Services.AddScoped<IMagicLinkTokenRepository>(sp =>
+        new MagicLinkTokenRepository(sp.GetRequiredService<OnesignDbContext>()));
+    builder.Services.AddScoped<IPasskeyCredentialRepository>(sp =>
+        new PasskeyCredentialRepository(sp.GetRequiredService<OnesignDbContext>()));
     builder.Services.AddScoped<IUserLoginSessionRepository>(sp =>
         new UserLoginSessionRepository(sp.GetRequiredService<OnesignDbContext>()));
     builder.Services.AddScoped<IExternalLoginRepository>(sp =>
@@ -393,6 +401,20 @@ static void ConfigureSecurityServices(WebApplicationBuilder builder)
             sp.GetRequiredService<Onesign.Shared.Security.IJwtSigningKeyProvider>(),
             sp.GetRequiredService<Onesign.Modules.Identity.Domain.Repositories.IAuthorizationCodeRepository>()));
     builder.Services.AddScoped<IRecaptchaService, RecaptchaService>();
+
+    // FIDO2/WebAuthn configuration for Passkeys
+    builder.Services.AddScoped<IFido2>(sp =>
+    {
+        var config = new Fido2Configuration
+        {
+            ServerDomain = builder.Configuration["Fido2:ServerDomain"] ?? "localhost",
+            ServerName = builder.Configuration["Fido2:ServerName"] ?? "OneSign",
+            Origins = builder.Configuration.GetSection("Fido2:Origins").Get<HashSet<string>>()
+                ?? new HashSet<string> { "https://localhost:5001" },
+            TimestampDriftTolerance = builder.Configuration.GetValue<int>("Fido2:TimestampDriftTolerance", 300000)
+        };
+        return new Fido2(config);
+    });
 
     // =====================================================
     // ریپازیتوری‌های ماژول امنیت
@@ -678,6 +700,8 @@ static void ConfigurePlatformServices(WebApplicationBuilder builder)
         new TenantRepository(sp.GetRequiredService<OnesignDbContext>()));
     builder.Services.AddScoped<ITenantConfigRepository>(sp =>
         new TenantConfigRepository(sp.GetRequiredService<OnesignDbContext>()));
+    builder.Services.AddScoped<IEmailTemplateRepository>(sp =>
+        new EmailTemplateRepository(sp.GetRequiredService<OnesignDbContext>()));
 
     // =====================================================
     // ریپازیتوری‌های ماژول پلتفرم

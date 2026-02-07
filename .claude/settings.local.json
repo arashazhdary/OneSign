@@ -40,7 +40,20 @@
       "Bash(taskkill /F /PID 31784)",
       "Bash(taskkill //F //PID 31784)",
       "Bash(python:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(dotnet add:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(dotnet run:*)",
+      "Bash(dotnet ef migrations list:*)",
+      "Bash(taskkill:*)",
+      "Bash(powershell -Command \"Get-Process | Where-Object {$_ProcessName -like ''*Onesign.Api*''} | Stop-Process -Force\")",
+      "Bash(dotnet clean:*)",
+      "Bash(powershell -Command \"Stop-Process -Id 36184 -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 2\")",
+      "Bash({ grep -roh \"t\\(''[^'']*''\\)\" --include=\"*.tsx\" --include=\"*.ts\")",
+      "Bash(})",
+      "Bash(for namespace in admin adminDashboard alerts analytics apiKeys applications apps audit auth automation backups changeManagement common dashboard delegatedAdmins diagnostics errors global globalAudit globalObservability globalSettings hunting insights integrations licenses maintenance migrations nav quotas rateLimiting roles security serviceAccountDetail settings sidebar templates tenant tenants users webhooks)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

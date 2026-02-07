@@ -1,4 +1,5 @@
-using Fido2;
+using Fido2NetLib;
+using Fido2NetLib.Objects;
 using MediatR;
 using Microsoft.Extensions.Caching.Memory;
 using Onesign.Modules.Identity.Application.DTOs;
@@ -14,6 +15,7 @@ public class AuthenticatePasskeyVerifyCommandHandler : IRequestHandler<Authentic
     private readonly IFido2 _fido2;
     private readonly IPasskeyCredentialRepository _passkeyCredentialRepository;
     private readonly ITenantUserRepository _tenantUserRepository;
+    private readonly IGlobalUserRepository _globalUserRepository;
     private readonly IAuthService _authService;
     private readonly IMemoryCache _cache;
 
@@ -21,12 +23,14 @@ public class AuthenticatePasskeyVerifyCommandHandler : IRequestHandler<Authentic
         IFido2 fido2,
         IPasskeyCredentialRepository passkeyCredentialRepository,
         ITenantUserRepository tenantUserRepository,
+        IGlobalUserRepository globalUserRepository,
         IAuthService authService,
         IMemoryCache cache)
     {
         _fido2 = fido2;
         _passkeyCredentialRepository = passkeyCredentialRepository;
         _tenantUserRepository = tenantUserRepository;
+        _globalUserRepository = globalUserRepository;
         _authService = authService;
         _cache = cache;
     }
@@ -36,11 +40,12 @@ public class AuthenticatePasskeyVerifyCommandHandler : IRequestHandler<Authentic
         try
         {
             // Parse the assertion response
-            var assertionResponse = JsonSerializer.Serialize(request.AssertionResponse);
-            var clientResponse = AuthenticatorAssertionRawResponse.Parse(assertionResponse);
+            var clientResponse = JsonSerializer.Deserialize<AuthenticatorAssertionRawResponse>(
+                JsonSerializer.Serialize(request.AssertionResponse))
+                ?? throw new InvalidOperationException("Failed to deserialize assertion response");
 
-            // Get the credential ID from the response
-            var credentialId = clientResponse.Id;
+            // Get the credential ID from the response (RawId is byte[])
+            var credentialId = clientResponse.RawId;
 
             // Find the credential in the database
             var storedCredential = await _passkeyCredentialRepository.GetByCredentialIdAsync(
@@ -58,9 +63,6 @@ public class AuthenticatePasskeyVerifyCommandHandler : IRequestHandler<Authentic
                 return Result.Failure<LoginResponse>("USER_NOT_FOUND", "User not found");
             }
 
-            // Retrieve cached options - try to find the options by trying different cache key patterns
-            string? optionsJson = null;
-
             // The client should send back the challengeId, but we need to extract it from the assertion response
             // For now, we'll try to find it in cache (this is a simplified approach)
             // In production, the challengeId should be sent from the client
@@ -75,50 +77,55 @@ public class AuthenticatePasskeyVerifyCommandHandler : IRequestHandler<Authentic
             };
 
             // Create assertion options for verification
-            var options = _fido2.GetAssertionOptions(
-                storedCredentials,
-                UserVerificationRequirement.Preferred
-            );
+            var options = _fido2.GetAssertionOptions(new GetAssertionOptionsParams
+            {
+                AllowedCredentials = storedCredentials,
+                UserVerification = UserVerificationRequirement.Preferred
+            });
 
             // Verify the assertion
-            var success = await _fido2.MakeAssertionAsync(
-                clientResponse,
-                options,
-                storedCredential.PublicKey,
-                storedCredential.SignCounter,
-                async (args, cancellationToken) =>
+            var assertionResult = await _fido2.MakeAssertionAsync(new MakeAssertionParams
+            {
+                AssertionResponse = clientResponse,
+                OriginalOptions = options,
+                StoredPublicKey = storedCredential.PublicKey,
+                StoredSignatureCounter = storedCredential.SignCounter,
+                IsUserHandleOwnerOfCredentialIdCallback = async (args, ct) =>
                 {
                     // Verify the credential exists and hasn't been revoked
                     var credential = await _passkeyCredentialRepository
-                        .GetByCredentialIdAsync(args.CredentialId, cancellationToken);
+                        .GetByCredentialIdAsync(args.CredentialId, ct);
                     return credential != null;
-                },
-                cancellationToken
-            );
-
-            if (success.Status != "ok")
-            {
-                return Result.Failure<LoginResponse>("VERIFICATION_FAILED", "Failed to verify passkey authentication");
-            }
+                }
+            }, cancellationToken);
 
             // Update the credential's sign counter and last used time
-            storedCredential.SignCounter = success.Counter;
+            storedCredential.SignCounter = assertionResult.SignCount;
             storedCredential.LastUsedAt = DateTime.UtcNow;
             await _passkeyCredentialRepository.UpdateAsync(storedCredential, cancellationToken);
 
             // Generate tokens
-            var tokens = await _authService.GenerateTokensAsync(
+            var accessToken = await _authService.GenerateAccessTokenAsync(
                 tenantUser.Id,
                 tenantUser.TenantId,
-                request.ClientId,
+                request.ClientId ?? Guid.Empty,
+                cancellationToken
+            );
+
+            var globalUser = await _globalUserRepository.GetByIdAsync(tenantUser.GlobalUserId, cancellationToken);
+            var idToken = await _authService.GenerateIdTokenAsync(
+                tenantUser.Id,
+                tenantUser.TenantId,
+                request.ClientId ?? Guid.Empty,
+                globalUser?.Email,
                 cancellationToken
             );
 
             var loginResponse = new LoginResponse
             {
-                AccessToken = tokens.AccessToken,
-                IdToken = tokens.IdToken,
-                ExpiresIn = tokens.ExpiresIn,
+                AccessToken = accessToken,
+                IdToken = idToken,
+                ExpiresIn = 3600,
                 MfaRequired = false
             };
 
