@@ -330,9 +330,7 @@ export default function GlobalRegionsPage() {
     setLoading(true);
     setError('');
     try {
-      // Note: getRegionBackupsById is not available in globalService
-      // Using fallback with getBackups
-      const data = await globalService.getBackups();
+      const data = await globalService.getRegionBackupsById(regionId);
       setBackups((data || []) as any);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -346,9 +344,7 @@ export default function GlobalRegionsPage() {
     setError('');
     setSuccess('');
     try {
-      // Note: createRegionBackupById is not available in globalService
-      // Using createBackup instead
-      await globalService.createBackup({ name: `Region-${regionId}`, type: 'region', retentionDays: 30 });
+      await globalService.createRegionBackupById(regionId);
       setSuccess(t('global.regions.messages.regionBackupCreated'));
       fetchRegionBackups(regionId);
     } catch (err: any) {
@@ -359,12 +355,12 @@ export default function GlobalRegionsPage() {
   };
 
   const fetchTenantDataResidency = async () => {
+    if (!selectedTenant) return;
     setLoading(true);
     setError('');
     try {
-      // Note: getTenantDataResidency is not available in globalService
-      // Using fallback with empty data
-      setTenantDataResidency([]);
+      const data = await globalService.getTenantDataResidency(selectedTenant);
+      setTenantDataResidency(data ? [data] : []);
     } catch (err: any) {
       setError(err.message || t('common.error'));
     } finally {
@@ -377,9 +373,7 @@ export default function GlobalRegionsPage() {
     setLoading(true);
     setError('');
     try {
-      // Note: getTenantBackups is not available in globalService
-      // Using fallback with getBackups
-      const data = await globalService.getBackups();
+      const data = await globalService.getTenantBackups(selectedTenant);
       setTenantBackups((data || []) as any);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -398,9 +392,7 @@ export default function GlobalRegionsPage() {
     setError('');
     setSuccess('');
     try {
-      // Note: createTenantBackup is not available in globalService
-      // Using createBackup instead
-      await globalService.createBackup({ name: `Tenant-${selectedTenant}`, type: 'tenant', retentionDays: 30 });
+      await globalService.createTenantBackup(selectedTenant);
       setSuccess(t('global.regions.messages.tenantBackupCreated'));
       fetchTenantBackups();
     } catch (err: any) {
@@ -419,9 +411,7 @@ export default function GlobalRegionsPage() {
     setError('');
     setSuccess('');
     try {
-      // Note: restoreTenant is not available in globalService
-      // Using restoreBackup instead
-      await globalService.restoreBackup(tenantId);
+      await globalService.restoreTenant(tenantId);
       setSuccess(t('global.regions.messages.tenantRestoreStarted'));
     } catch (err: any) {
       setError(err.message || t('common.error'));

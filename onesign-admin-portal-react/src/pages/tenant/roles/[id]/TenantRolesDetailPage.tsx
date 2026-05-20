@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { tenantService } from '@/lib/api/services/tenant.service';
+import { rolesService } from '@/lib/api/services/roles.service';
+import { auditService } from '@/lib/api/services';
 import { getTenantId } from '@/lib/tenant-context';
 import Breadcrumbs from '@/components/common/Breadcrumbs';
 import { Helmet } from 'react-helmet-async';
@@ -134,126 +135,82 @@ export default function TenantRolesDetailPage() {
 
     try {
       setLoading(true);
-      const result = await tenantService.getRoleById(id);
+      const result = await rolesService.getRoleById(id);
+      if (!result) {
+        setNotFound(true);
+        return;
+      }
+
+      const permList: Permission[] = (result.permissions ?? []).map((p: string | Permission) =>
+        typeof p === 'string'
+          ? { id: p, resource: p.split(':')[0] ?? p, action: p.split(':')[1] ?? '', description: p }
+          : p,
+      );
 
       const roleData: RoleDetails = {
         id: result.id,
-        name: result.name || result.displayName,
+        name: result.name,
         description: result.description || '',
-        type: result.type,
-        isBuiltIn: result.isBuiltIn,
-        scope: result.scope,
-        permissions: result.permissions || [],
-        userCount: 0,
-        createdAt: result.createdAt,
-        updatedAt: result.updatedAt,
+        type: result.isSystem ? 'system' : 'custom',
+        isBuiltIn: result.isSystem,
+        scope: 'tenant',
+        permissions: permList,
+        userCount: result.userCount ?? 0,
+        createdAt: result.createdAt ?? '',
+        updatedAt: result.updatedAt ?? '',
       };
 
       setRole(roleData);
       setEditName(roleData.name);
       setEditDescription(roleData.description);
-      setSelectedPermissions(roleData.permissions.map(p => p.id));
+      setSelectedPermissions(permList.map((p) => p.id));
 
-      await Promise.all([
-        fetchUsers(),
-        fetchAuditLogs(),
-        fetchAvailablePermissions(),
-      ]);
+      await Promise.all([fetchUsers(), fetchAuditLogs(), fetchAvailablePermissions()]);
     } catch (err: any) {
       console.error('Error fetching role:', err);
-      if (err.status === 404 || err.response?.status === 404) {
+      setError(err.message || t('common.error'));
+      if (err.response?.status === 404) {
         setNotFound(true);
-      } else {
-        loadMockData();
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const loadMockData = () => {
-    const mockRole: RoleDetails = {
-      id,
-      name: 'Administrator',
-      description: 'Full access to all resources and settings',
-      type: 'system',
-      isBuiltIn: true,
-      scope: 'tenant',
-      permissions: [
-        { id: 'users:read', resource: 'Users', action: 'Read', description: 'View users' },
-        { id: 'users:write', resource: 'Users', action: 'Write', description: 'Create and edit users' },
-        { id: 'users:delete', resource: 'Users', action: 'Delete', description: 'Delete users' },
-        { id: 'roles:read', resource: 'Roles', action: 'Read', description: 'View roles' },
-        { id: 'roles:write', resource: 'Roles', action: 'Write', description: 'Create and edit roles' },
-        { id: 'settings:read', resource: 'Settings', action: 'Read', description: 'View settings' },
-        { id: 'settings:write', resource: 'Settings', action: 'Write', description: 'Edit settings' },
-      ],
-      userCount: 5,
-      createdAt: '2024-01-15T10:00:00Z',
-      updatedAt: '2024-03-20T14:30:00Z',
-    };
-
-    const mockUsers: User[] = [
-      { id: '1', name: 'John Doe', email: 'john.doe@example.com', assignedAt: '2024-01-20T10:00:00Z' },
-      { id: '2', name: 'Jane Smith', email: 'jane.smith@example.com', assignedAt: '2024-02-10T14:30:00Z' },
-      { id: '3', name: 'Bob Johnson', email: 'bob.johnson@example.com', assignedAt: '2024-03-05T09:15:00Z' },
-    ];
-
-    const mockAuditLogs: AuditLog[] = [
-      { id: '1', action: 'Role Updated', performedBy: 'admin@example.com', timestamp: '2024-03-20T14:30:00Z', details: 'Updated role description' },
-      { id: '2', action: 'Permission Added', performedBy: 'admin@example.com', timestamp: '2024-02-15T11:20:00Z', details: 'Added settings:write permission' },
-      { id: '3', action: 'User Assigned', performedBy: 'admin@example.com', timestamp: '2024-01-20T10:00:00Z', details: 'Assigned role to john.doe@example.com' },
-    ];
-
-    const mockPermissions: Permission[] = [
-      { id: 'users:read', resource: 'Users', action: 'Read', description: 'View users' },
-      { id: 'users:write', resource: 'Users', action: 'Write', description: 'Create and edit users' },
-      { id: 'users:delete', resource: 'Users', action: 'Delete', description: 'Delete users' },
-      { id: 'roles:read', resource: 'Roles', action: 'Read', description: 'View roles' },
-      { id: 'roles:write', resource: 'Roles', action: 'Write', description: 'Create and edit roles' },
-      { id: 'roles:delete', resource: 'Roles', action: 'Delete', description: 'Delete roles' },
-      { id: 'settings:read', resource: 'Settings', action: 'Read', description: 'View settings' },
-      { id: 'settings:write', resource: 'Settings', action: 'Write', description: 'Edit settings' },
-      { id: 'audit:read', resource: 'Audit', action: 'Read', description: 'View audit logs' },
-      { id: 'apps:read', resource: 'Applications', action: 'Read', description: 'View applications' },
-    ];
-
-    setRole(mockRole);
-    setUsers(mockUsers);
-    setAuditLogs(mockAuditLogs);
-    setAvailablePermissions(mockPermissions);
-    setEditName(mockRole.name);
-    setEditDescription(mockRole.description);
-    setSelectedPermissions(mockRole.permissions.map(p => p.id));
-  };
-
   const fetchUsers = async () => {
-    const mockUsers: User[] = [
-      { id: '1', name: 'John Doe', email: 'john.doe@example.com', assignedAt: '2024-01-20T10:00:00Z' },
-      { id: '2', name: 'Jane Smith', email: 'jane.smith@example.com', assignedAt: '2024-02-10T14:30:00Z' },
-    ];
-    setUsers(mockUsers);
+    const data = await rolesService.getRoleUsers(id);
+    const items = data?.items ?? data ?? [];
+    setUsers(
+      items.map((u: { id: string; name?: string; email?: string; assignedAt?: string }) => ({
+        id: u.id,
+        name: u.name ?? u.email ?? u.id,
+        email: u.email ?? '',
+        assignedAt: u.assignedAt ?? '',
+      })),
+    );
   };
 
   const fetchAuditLogs = async () => {
-    const mockAuditLogs: AuditLog[] = [
-      { id: '1', action: 'Role Updated', performedBy: 'admin@example.com', timestamp: '2024-03-20T14:30:00Z', details: 'Updated role description' },
-      { id: '2', action: 'Permission Added', performedBy: 'admin@example.com', timestamp: '2024-02-15T11:20:00Z', details: 'Added settings:write permission' },
-    ];
-    setAuditLogs(mockAuditLogs);
+    const logs = await auditService.getAuditLogs({
+      page: 1,
+      pageSize: 20,
+      resourceType: 'Role',
+      search: id,
+    });
+    const items = logs?.data ?? [];
+    setAuditLogs(
+      items.map((log: { id: string; action?: string; userId?: string; timestamp?: string; description?: string }) => ({
+        id: log.id,
+        action: log.action ?? 'Update',
+        performedBy: log.userId ?? '—',
+        timestamp: log.timestamp ?? '',
+        details: log.description ?? '',
+      })),
+    );
   };
 
   const fetchAvailablePermissions = async () => {
-    const mockPermissions: Permission[] = [
-      { id: 'users:read', resource: 'Users', action: 'Read', description: 'View users' },
-      { id: 'users:write', resource: 'Users', action: 'Write', description: 'Create and edit users' },
-      { id: 'users:delete', resource: 'Users', action: 'Delete', description: 'Delete users' },
-      { id: 'roles:read', resource: 'Roles', action: 'Read', description: 'View roles' },
-      { id: 'roles:write', resource: 'Roles', action: 'Write', description: 'Create and edit roles' },
-      { id: 'settings:read', resource: 'Settings', action: 'Read', description: 'View settings' },
-      { id: 'settings:write', resource: 'Settings', action: 'Write', description: 'Edit settings' },
-    ];
-    setAvailablePermissions(mockPermissions);
+    setAvailablePermissions(await rolesService.getPermissions());
   };
 
   const handleUpdateRole = async (e: React.FormEvent) => {
@@ -264,7 +221,7 @@ export default function TenantRolesDetailPage() {
     setSuccess('');
 
     try {
-      await tenantService.updateRole(id, {
+      await rolesService.updateRole(id, {
         name: editName,
         description: editDescription,
       });
@@ -284,7 +241,7 @@ export default function TenantRolesDetailPage() {
     setSuccess('');
 
     try {
-      await tenantService.updateRole(id, {
+      await rolesService.updateRole(id, {
         permissions: selectedPermissions,
       });
 
@@ -303,7 +260,7 @@ export default function TenantRolesDetailPage() {
     setSuccess('');
 
     try {
-      await tenantService.deleteRole(id);
+      await rolesService.deleteRole(id);
       setSuccess(t('tenant.roles.messages.deleted'));
       setTimeout(() => {
         navigate('/tenant/roles');

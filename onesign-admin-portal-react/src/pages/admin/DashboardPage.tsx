@@ -71,37 +71,8 @@ const DashboardPage: React.FC = () => {
         }
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
-        // Fallback to mock data if API fails
-        setStats({
-          totalTenants: 45,
-          activeTenants: 42,
-          totalUsers: 1250,
-          apiCallsToday: 125430,
-        });
-
-        setActivities([
-          {
-            id: '1',
-            type: 'Tenant Created',
-            description: 'New tenant "Acme Corp" has been created',
-            timestamp: new Date(Date.now() - 300000).toISOString(),
-            severity: 'info',
-          },
-          {
-            id: '2',
-            type: 'Security Alert',
-            description: 'Multiple failed login attempts detected',
-            timestamp: new Date(Date.now() - 900000).toISOString(),
-            severity: 'warning',
-          },
-          {
-            id: '3',
-            type: 'System Update',
-            description: 'Platform updated to version 2.5.1',
-            timestamp: new Date(Date.now() - 1800000).toISOString(),
-            severity: 'info',
-          },
-        ]);
+        setStats({ totalTenants: 0, activeTenants: 0, totalUsers: 0, apiCallsToday: 0 });
+        setActivities([]);
       } finally {
         setLoading(false);
       }

@@ -1,87 +1,56 @@
 # OneSign — GitHub Issues Backlog
 
-این سند خروجی بررسی معماری/کد/مستندات پروژه OneSign برای **کارهای باقیمانده** است. issueهای متناظر با اسکریپت زیر در GitHub ایجاد می‌شوند.
+وضعیت به‌روز: **۲۰۲۶-۰۵-۲۰** — اکثر issueهای backlog در `master` پیاده شده‌اند.
 
-## وضعیت فعلی پروژه
+## وضعیت کلی
 
-| لایه | وضعیت کلی |
-|------|-----------|
-| **Backend (.NET 10)** | ۳۲+ ماژول پیاده شده؛ بدون `NotImplementedException` در `src/` |
-| **Admin Portal (React)** | UI گسترده (~۱۳۶ صفحه)؛ **۵۰+ صفحه** هنوز mock/fallback دارند |
-| **Login Portal (Next.js)** | SSO flows + branding cache (فرانت آماده؛ backend ETag ناقص) |
-| **SDK** | `Onesign.Sdk.DotNet`, `Onesign.Sdk.AspNetCore`, `@onesign/sdk-node`, `@onesign/react-sdk`, `onesign` CLI |
-| **Phases 1–29** | spec و کد backend/modules عمدتاً موجود |
-| **Phase 30** | Copilot پایه هست؛ Sidebar/Guided Security ناقص |
+| لایه | وضعیت |
+|------|--------|
+| **Backend** | ماژول‌ها و APIهای اصلی ✅ |
+| **Admin Portal** | صفحات کلیدی به API وصل شده؛ برخی صفحات فرعی هنوز mock جزئی دارند |
+| **SDK / CLI / Sandbox** | ✅ (#64–#67) |
+| **Platform / CI / Helm / Email** | ✅ (`69db5f3` و بعد) |
 
-## ایجاد issueها در GitHub
+## بستن issueها در GitHub
 
 ```bash
-# ۱. احراز هویت (یک بار)
-/home/arash/PV/Projects/Arashazhdary/OneSign/.tools/gh_2.63.2_linux_amd64/bin/gh auth login
-
-# ۲. پیش‌نمایش
-./scripts/create-github-issues.sh --dry-run
-
-# ۳. ایجاد (issue تکراری با همان عنوان skip می‌شود)
-./scripts/create-github-issues.sh
+export GH_TOKEN=ghp_xxxx
+./scripts/github-close-completed-issues.sh
 ```
 
-با token:
+## فهرست backlog (۲۲ مورد) — وضعیت پیاده‌سازی
 
-```bash
-GH_TOKEN=ghp_xxxx ./scripts/create-github-issues.sh
-```
+| # | عنوان | وضعیت کد |
+|---|--------|----------|
+| 1 | Admin: Users/Tenants/Roles/Apps → API | ✅ (#54) |
+| 2 | Admin: Policy Engine UI | ✅ (#55) |
+| 3 | Admin: Change Management → API | ✅ (#56) |
+| 4 | Admin: Global Operations — حذف mock | ✅ (#57) + تکمیل جزئی |
+| 5 | Admin: Tenant Ops دسته ۱ | ✅ (#58) |
+| 6 | Admin: Tenant Ops دسته ۲ | ✅ (#59) |
+| 7 | Phase 30: Copilot Sidebar | ✅ (#60) |
+| 8 | Backend: Branding ETag/304 | ✅ (#61) |
+| 9 | Backend: SendTestEmail | ✅ (#62) |
+| 10 | Backend: SMS Provider | ✅ (#63) |
+| 11–13 | SDKs + CLI | ✅ (#64–#66) |
+| 14 | Dev Sandbox + Samples | ✅ (#67) |
+| 15 | Platform Completion | ✅ (#68) |
+| 16 | CI/CD یکپارچه | ✅ `monorepo-ci.yml` |
+| 17 | Helm/K8s | ✅ `deploy/helm/onesign/` |
+| 18 | Integration tests گسترش | ✅ + InMemory در Testing |
+| 19 | Docs LICENSE/CONTRIBUTING | ✅ |
+| 20 | OpenAPI + Postman | ✅ |
+| 21 | Email production | ✅ SendGrid + health |
 
-## فهرست issueها (۲۲ مورد)
+## کارهای باقی‌مانده (جزئی)
 
-| # | عنوان | اولویت | برچسب‌ها |
-|---|--------|--------|----------|
-| 1 | Admin: Users/Tenants/Roles/Apps → API | High | frontend |
-| 2 | Admin: Policy Engine UI | High | frontend |
-| 3 | Admin: Change Management → API | High | frontend |
-| 4 | Admin: Global Operations — حذف mock | Medium | frontend |
-| 5 | Admin: Tenant Ops دسته ۱ | Medium | frontend |
-| 6 | Admin: Tenant Ops دسته ۲ | Medium | frontend |
-| 7 | Phase 30: Copilot Sidebar + Guided Security | Medium | frontend, backend |
-| 8 | Backend: Branding ETag/304 | Medium | backend |
-| 9 | Backend: SendTestEmail + IEmailService | Medium | backend |
-| 10 | Backend: SMS Provider production | Medium | backend |
-| 11 | Phase 14: Onesign.Sdk.AspNetCore | Medium | sdk |
-| 12 | Phase 14: @onesign/sdk-node | Medium | sdk |
-| 13 | Phase 14: onesign-cli | Low | sdk |
-| 14 | Phase 14: Dev Sandbox + Samples | Low | sdk |
-| 15 | Phase 24: Platform Completion | Medium | backend, frontend |
-| 16 | CI/CD: pipeline یکپارچه | Medium | infra |
-| 17 | Infra: Helm/K8s production | Medium | infra |
-| 18 | Testing: Integration/E2E گسترش | Medium | backend |
-| 19 | Docs: README/License/Contributing | Low | docs |
-| 20 | Docs: OpenAPI + Postman | Low | docs |
-| 21 | Email: production IEmailService | Medium | backend, infra |
+- بستن issueهای باز در GitHub (نیاز به `GH_TOKEN`)
+- صفحات Admin با mock جزئی: `TenantBackupsPage`, `TenantAuditPage`, `TenantAppsDetailPage`, `TenantAnalyticsPage`, …
+- `CustomWebApplicationFactory` + Testcontainers برای CI با SQL Server (اختیاری)
+- Login Portal Dockerfile: فعال‌سازی `output: 'standalone'` در Next برای image کوچک‌تر
 
-## شواهد کلیدی در کد
+## مراجع
 
-### TODOهای صریح در Admin Portal
-- `onesign-admin-portal-react/src/pages/tenant/policies/TenantPoliciesPage.tsx` (۶ TODO)
-- `onesign-admin-portal-react/src/pages/admin/UsersPage.tsx`, `TenantsPage.tsx`, `RolesPage.tsx`
-- `onesign-admin-portal-react/src/pages/tenant/UsersPage.tsx`, `RolesPage.tsx`, `AppsPage.tsx`
-- `onesign-admin-portal-react/src/pages/tenant/risk-events/TenantRiskEventsPage.tsx`
-
-### TODO در Backend
-- `src/Modules/Platform/Onesign.Modules.Tenants/Application/Commands/SendTestEmailCommandHandler.cs`
-
-### Mock data (نمونه)
-- `TenantChangeManagementPage.tsx`, `GlobalChangeManagementPage.tsx`
-- `GlobalSecurityPage.tsx`, `GlobalMonitoringPage.tsx`, `GlobalAuditPage.tsx`
-- `TenantIntegrationsPage.tsx`, `TenantIncidentsPage.tsx`, `admin/RolesPage.tsx`
-
-## فازهای مستندات (مرجع)
-
-همه در `Phases/`:
-- Phase 14 — SDKs
-- Phase 24 — Platform Completion
-- Phase 27 — Change Management (backend ✅، UI mock)
-- Phase 30 — Copilot Guided Experience (ناقص در UI layout)
-
----
-
-*آخرین بررسی: ۲۰۲۶-۰۵-۲۰*
+- [`docs/DEV-SANDBOX-QUICKSTART.md`](DEV-SANDBOX-QUICKSTART.md)
+- [`docs/DEPLOYMENT.md`](DEPLOYMENT.md)
+- [`docs/EMAIL-PRODUCTION.md`](EMAIL-PRODUCTION.md)

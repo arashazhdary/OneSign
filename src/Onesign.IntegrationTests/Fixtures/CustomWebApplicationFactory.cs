@@ -22,26 +22,10 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
     {
         builder.ConfigureServices(services =>
         {
-            // Remove existing DbContext registration
-            var descriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(DbContextOptions<OnesignDbContext>));
-
-            if (descriptor != null)
-            {
-                services.Remove(descriptor);
-            }
-
-            // Add DbContext with test connection string
+            DbContextTestHelper.RemoveOnesignDbContext(services);
             services.AddDbContext<OnesignDbContext>(options =>
-            {
-                options.UseSqlServer(_msSqlContainer.GetConnectionString());
-            });
-
-            // Ensure database is created and migrated
-            var sp = services.BuildServiceProvider();
-            using var scope = sp.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<OnesignDbContext>();
-            db.Database.Migrate();
+                options.UseSqlServer(_msSqlContainer.GetConnectionString(),
+                    b => b.MigrationsAssembly("Onesign.Api")));
         });
 
         builder.ConfigureAppConfiguration((_, config) =>
@@ -49,20 +33,25 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
             config.AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["Sms:Provider"] = SmsProviders.Logging,
+                ["ConnectionStrings:DefaultConnection"] = _msSqlContainer.GetConnectionString(),
             });
         });
 
-        builder.UseEnvironment("Testing");
+        builder.UseEnvironment("Development");
     }
 
     public async Task InitializeAsync()
     {
         await _msSqlContainer.StartAsync();
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<OnesignDbContext>();
+        await db.Database.MigrateAsync();
     }
 
     public new async Task DisposeAsync()
     {
         await _msSqlContainer.DisposeAsync();
+        await base.DisposeAsync();
     }
 }
 
@@ -70,29 +59,7 @@ public class InMemoryWebApplicationFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.ConfigureServices(services =>
-        {
-            // Remove existing DbContext registration
-            var descriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(DbContextOptions<OnesignDbContext>));
-
-            if (descriptor != null)
-            {
-                services.Remove(descriptor);
-            }
-
-            // Add in-memory database
-            services.AddDbContext<OnesignDbContext>(options =>
-            {
-                options.UseInMemoryDatabase("TestDb_" + Guid.NewGuid().ToString());
-            });
-
-            // Ensure database is created
-            var sp = services.BuildServiceProvider();
-            using var scope = sp.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<OnesignDbContext>();
-            db.Database.EnsureCreated();
-        });
+        // DbContext is configured for InMemory in Program when Environment is Testing
 
         builder.ConfigureAppConfiguration((_, config) =>
         {
@@ -104,4 +71,5 @@ public class InMemoryWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.UseEnvironment("Testing");
     }
+
 }

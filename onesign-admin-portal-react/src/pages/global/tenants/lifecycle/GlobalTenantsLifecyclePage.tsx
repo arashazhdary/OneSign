@@ -60,18 +60,16 @@ export default function GlobalTenantsLifecyclePage() {
     setLoading(true);
     setError('');
     try {
-      // getTenantHealthGlobal method not available in globalService
-      // Providing fallback data
-      const data: TenantHealth = {
+      const data = await globalService.getTenantHealthGlobal(tenantId);
+      setTenantHealth({
         tenantId,
-        status: 'Healthy',
-        usersCount: 0,
+        status: (data?.health === 'Healthy' ? 'Healthy' : data?.status) || 'Healthy',
+        usersCount: data?.statistics?.users ?? 0,
         activeSessionsCount: 0,
-        storageUsed: 0,
-        lastActivityAt: new Date().toISOString(),
+        storageUsed: data?.statistics?.storageUsedBytes ?? 0,
+        lastActivityAt: data?.lastActivity ?? new Date().toISOString(),
         issues: [],
-      };
-      setTenantHealth(data);
+      });
     } catch (err: any) {
       setError(err.message || t('common.error'));
     } finally {
@@ -85,15 +83,15 @@ export default function GlobalTenantsLifecyclePage() {
     setLoading(true);
     setError('');
     try {
-      // getTenantMetricsGlobal method not available in globalService
-      // Providing fallback metrics data
-      const fallbackMetrics: TenantMetric[] = [
-        { metric: 'CPU Usage', value: 45, unit: '%', trend: 'stable' },
-        { metric: 'Memory Usage', value: 62, unit: '%', trend: 'up' },
-        { metric: 'Request Rate', value: 1200, unit: 'req/s', trend: 'stable' },
-        { metric: 'Response Time', value: 145, unit: 'ms', trend: 'down' },
-      ];
-      setTenantMetrics(fallbackMetrics);
+      const health = await globalService.getTenantHealthGlobal(tenantId);
+      const stats = health?.statistics ?? {};
+      const quota = health?.quotaUsage ?? {};
+      setTenantMetrics([
+        { metric: 'Users', value: stats.users ?? 0, unit: '', trend: 'stable' },
+        { metric: 'Applications', value: stats.applications ?? 0, unit: '', trend: 'stable' },
+        { metric: 'API calls (month)', value: stats.apiCallsThisMonth ?? 0, unit: '', trend: 'stable' },
+        { metric: 'User quota %', value: quota.usersPercent ?? 0, unit: '%', trend: 'stable' },
+      ]);
     } catch (err: any) {
       setError(err.message || t('common.error'));
     } finally {
@@ -110,15 +108,15 @@ export default function GlobalTenantsLifecyclePage() {
     setLoading(true);
     setError('');
     try {
-      // getTenantMigrationStatus method not available in globalService
-      // Providing fallback migration status data
-      const fallbackStatus: MigrationStatus = {
-        migrationId,
-        status: 'InProgress',
-        progress: 65,
-        startedAt: new Date().toISOString(),
-      };
-      setMigrationStatus(fallbackStatus);
+      const data = await globalService.getTenantMigrationStatus(tenantId, migrationId);
+      setMigrationStatus({
+        migrationId: data.migrationId ?? migrationId,
+        status: data.status ?? 'InProgress',
+        progress: data.progress ?? 0,
+        startedAt: data.startedAt,
+        completedAt: data.completedAt,
+        errorMessage: data.errorMessage,
+      });
     } catch (err: any) {
       setError(err.message || t('common.error'));
     } finally {
@@ -135,15 +133,14 @@ export default function GlobalTenantsLifecyclePage() {
     setLoading(true);
     setError('');
     try {
-      // getTenantExportStatus method not available in globalService
-      // Providing fallback export status data
-      const fallbackStatus: ExportJob = {
-        exportId,
-        status: 'InProgress',
-        progress: 50,
-        createdAt: new Date().toISOString(),
-      };
-      setExportStatus(fallbackStatus);
+      const data = await globalService.getTenantExportStatus(tenantId, exportId);
+      setExportStatus({
+        exportId: data.exportId ?? exportId,
+        status: data.status ?? 'InProgress',
+        progress: data.progress ?? (data.status === 'Completed' ? 100 : 50),
+        downloadUrl: data.downloadUrl,
+        createdAt: data.completedAt ?? new Date().toISOString(),
+      });
     } catch (err: any) {
       setError(err.message || t('common.error'));
     } finally {
@@ -208,17 +205,17 @@ export default function GlobalTenantsLifecyclePage() {
     setError('');
     setSuccess('');
     try {
-      // migrateTenant method not available in globalService
-      // Providing fallback migration status data
-      const migrationId = `migration-${Date.now()}`;
-      const data: MigrationStatus = {
-        migrationId,
-        status: 'Pending',
+      const result = await globalService.migrateTenant(tenantId, {
+        targetRegion: 'us-east-1',
+        migrationType: 'Full',
+      });
+      setMigrationId(String(result.migrationId));
+      setMigrationStatus({
+        migrationId: String(result.migrationId),
+        status: result.status ?? 'Initiated',
         progress: 0,
         startedAt: new Date().toISOString(),
-      };
-      setMigrationStatus(data);
-      setMigrationId(migrationId);
+      });
       setSuccess(t('global.lifecycle.messages.migrationStarted'));
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -237,17 +234,21 @@ export default function GlobalTenantsLifecyclePage() {
     setError('');
     setSuccess('');
     try {
-      // exportTenantData method not available in globalService
-      // Providing fallback export job data
-      const exportId = `export-${Date.now()}`;
-      const data: ExportJob = {
-        exportId,
-        status: 'Pending',
+      const result = await globalService.exportTenantData(tenantId, {
+        format: 'json',
+        includeUsers: true,
+        includeApplications: true,
+        includeAuditLogs: false,
+        includeSettings: true,
+      });
+      const job: ExportJob = {
+        exportId: result.exportId,
+        status: result.status ?? 'Processing',
         progress: 0,
         createdAt: new Date().toISOString(),
       };
-      setExportJobs([data, ...exportJobs]);
-      setExportId(exportId);
+      setExportId(String(result.exportId));
+      setExportJobs([job, ...exportJobs]);
       setSuccess(t('global.lifecycle.messages.exportStarted'));
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -266,10 +267,7 @@ export default function GlobalTenantsLifecyclePage() {
     setError('');
     setSuccess('');
     try {
-      // importTenantData method not available in globalService
-      // Placeholder implementation for import functionality
-      console.warn('importTenantData method not yet implemented');
-      setSuccess(t('global.lifecycle.messages.importStarted'));
+      setError(t('global.lifecycle.messages.importNotAvailable', { defaultValue: 'Tenant import API is not yet available.' }));
     } catch (err: any) {
       setError(err.message || t('common.error'));
     } finally {

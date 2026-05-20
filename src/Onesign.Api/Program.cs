@@ -246,9 +246,17 @@ static void ConfigureSharedServices(WebApplicationBuilder builder)
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
         ?? "Server=(localdb)\\mssqllocaldb;Database=OnesignDb;Trusted_Connection=True;MultipleActiveResultSets=true";
 
-    builder.Services.AddDbContext<OnesignDbContext>(options =>
-        options.UseSqlServer(connectionString,
-            b => b.MigrationsAssembly("Onesign.Api")));
+    if (builder.Environment.IsEnvironment("Testing"))
+    {
+        builder.Services.AddDbContext<OnesignDbContext>(options =>
+            options.UseInMemoryDatabase("OnesignIntegrationTests"));
+    }
+    else
+    {
+        builder.Services.AddDbContext<OnesignDbContext>(options =>
+            options.UseSqlServer(connectionString,
+                b => b.MigrationsAssembly("Onesign.Api")));
+    }
 
     // ثبت DbContext برای هندلرهایی که به نوع پایه نیاز دارند
     builder.Services.AddScoped<DbContext>(sp => sp.GetRequiredService<OnesignDbContext>());

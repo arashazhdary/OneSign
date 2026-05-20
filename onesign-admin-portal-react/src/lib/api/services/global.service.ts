@@ -284,6 +284,70 @@ export const globalService = {
     }
   },
 
+  getRegionBackupsById: async (regionId: string): Promise<any[]> => {
+    const response = await apiClient.get(`/api/global/regions/${regionId}/backups`);
+    return response.data ?? [];
+  },
+
+  createRegionBackupById: async (regionId: string): Promise<any> => {
+    const response = await apiClient.post(`/api/global/regions/${regionId}/backups`);
+    return response.data;
+  },
+
+  getTenantDataResidency: async (tenantId: string): Promise<any> => {
+    const response = await apiClient.get(`/api/global/regions/tenants/${tenantId}/data-residency`);
+    return response.data;
+  },
+
+  getTenantBackups: async (tenantId: string): Promise<any[]> => {
+    const response = await apiClient.get(`/api/global/regions/tenants/${tenantId}/backups`);
+    return response.data ?? [];
+  },
+
+  createTenantBackup: async (tenantId: string, data?: Record<string, unknown>): Promise<any> => {
+    const response = await apiClient.post(`/api/global/regions/tenants/${tenantId}/backups`, data ?? {});
+    return response.data;
+  },
+
+  restoreTenant: async (tenantId: string, data?: Record<string, unknown>): Promise<any> => {
+    const response = await apiClient.post(`/api/global/regions/tenants/${tenantId}/restore`, data ?? {});
+    return response.data;
+  },
+
+  getTenantHealthGlobal: async (tenantId: string): Promise<any> => {
+    const response = await apiClient.get(`/api/global/tenants/${tenantId}/health`);
+    return response.data;
+  },
+
+  migrateTenant: async (tenantId: string, data: Record<string, unknown>): Promise<any> => {
+    const response = await apiClient.post(`/api/global/tenants/${tenantId}/migrate`, data);
+    return response.data;
+  },
+
+  getTenantMigrationStatus: async (tenantId: string, migrationId: string): Promise<any> => {
+    const response = await apiClient.get(`/api/global/tenants/${tenantId}/migrations/${migrationId}`);
+    return response.data;
+  },
+
+  exportTenantData: async (tenantId: string, data: Record<string, unknown>): Promise<any> => {
+    const response = await apiClient.post(`/api/global/tenants/${tenantId}/export`, data);
+    return response.data;
+  },
+
+  getTenantExportStatus: async (tenantId: string, exportId: string): Promise<any> => {
+    const response = await apiClient.get(`/api/global/tenants/${tenantId}/exports/${exportId}`);
+    return response.data;
+  },
+
+  revokeCryptoKeyVersion: async (keyVersionId: string, autoCreateNew = true): Promise<any> => {
+    const response = await apiClient.post(
+      `/api/global/crypto/keyversions/${keyVersionId}/revoke`,
+      null,
+      { params: { autoCreateNew } },
+    );
+    return response.data;
+  },
+
   /**
    * POST /api/global/regions/{id}/failover - Failover
    */

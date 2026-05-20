@@ -118,10 +118,9 @@ export default function GlobalCryptoPage() {
     setError('');
     setSuccess('');
     try {
-      // revokeKeyVersion method not available in globalService
-      // This would need to be implemented in the backend
-      console.warn('revokeKeyVersion not yet implemented');
-      setError('Key version revocation is not yet implemented');
+      await globalService.revokeCryptoKeyVersion(versionId);
+      setSuccess(t('global.crypto.messages.keyRevoked', { defaultValue: 'Key version revoked.' }));
+      await fetchKeySets();
     } catch (err) {
       setError(t('common.error'));
     }
