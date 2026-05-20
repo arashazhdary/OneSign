@@ -290,44 +290,10 @@ export default function TenantChangeManagementPage() {
       setChangeSets(data.items || []);
       setTotalItems(data.totalCount || 0);
     } catch (err) {
-      const mockData: ChangeSet[] = [
-        {
-          id: '1',
-          name: 'Update User Permissions',
-          description: 'Bulk update of user permissions for finance team',
-          status: 'InReview',
-          targetModule: 'Users',
-          changesJson: '{"action": "updatePermissions", "users": 15}',
-          createdBy: 'admin@example.com',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          name: 'New Security Policy',
-          description: 'Implement MFA requirement for all admin users',
-          status: 'Draft',
-          targetModule: 'Security',
-          changesJson: '{"action": "enableMFA", "scope": "admins"}',
-          createdBy: 'admin@example.com',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: '3',
-          name: 'Application Configuration',
-          description: 'Update OAuth settings for marketing app',
-          status: 'Approved',
-          targetModule: 'Applications',
-          changesJson: '{"action": "updateOAuth", "app": "marketing"}',
-          scheduledAt: new Date(Date.now() + 86400000).toISOString(),
-          createdBy: 'admin@example.com',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      ];
-      setChangeSets(statusFilter === 'All' ? mockData : mockData.filter(c => c.status === statusFilter));
-      setTotalItems(mockData.length);
+      console.error('Failed to fetch change sets:', err);
+      setError(t('common.error'));
+      setChangeSets([]);
+      setTotalItems(0);
     }
   };
 
@@ -336,56 +302,22 @@ export default function TenantChangeManagementPage() {
       const data = await changeManagementService.getTenantChangeSet(tenantId, id);
       setChangeSetDetails(data as any);
     } catch (err) {
-      const mockData: ChangeSetDetails = {
-        ...selectedChangeSet!,
-        changes: [
-          {
-            id: '1',
-            type: 'Permission Update',
-            entity: 'User',
-            operation: 'UPDATE',
-            before: { permissions: ['read'] },
-            after: { permissions: ['read', 'write'] },
-          },
-          {
-            id: '2',
-            type: 'Role Assignment',
-            entity: 'Group',
-            operation: 'CREATE',
-            before: null,
-            after: { role: 'Editor', users: 15 },
-          },
-        ],
-        metadata: {
-          estimatedImpact: 'Medium',
-          affectedResources: 25,
-          requiredDowntime: '0 minutes',
-        },
-      };
-      setChangeSetDetails(mockData);
+      console.error('Failed to fetch change set details:', err);
+      setError(t('common.error'));
+      setChangeSetDetails(null);
     }
   };
 
   const handleSimulate = async (id: string) => {
     setLoading(true);
     try {
-      const data = await changeManagementService.simulateTenantChangeSet(tenantId, id);
+      const data = await changeManagementService.simulateTenantChangeSet(tenantId, id, userId);
       setSimulationResult(data as any);
       setSuccess(t('tenant.changeManagement.messages.simulationCompleted'));
     } catch (err) {
-      const mockResult: SimulationResult = {
-        success: true,
-        warnings: ['Some users may experience temporary access delays'],
-        errors: [],
-        affectedEntities: [
-          { type: 'User', id: 'u1', name: 'John Doe', change: 'Permissions updated' },
-          { type: 'User', id: 'u2', name: 'Jane Smith', change: 'Permissions updated' },
-          { type: 'Group', id: 'g1', name: 'Finance Team', change: 'Members added' },
-        ],
-        estimatedDuration: '2 minutes',
-      };
-      setSimulationResult(mockResult);
-      setSuccess(t('tenant.changeManagement.messages.simulationCompletedMock'));
+      console.error('Simulation failed:', err);
+      setError(t('common.error'));
+      setSimulationResult(null);
     } finally {
       setLoading(false);
     }
@@ -396,31 +328,9 @@ export default function TenantChangeManagementPage() {
       const data = await changeManagementService.getTenantExecutionLog(tenantId, id);
       setExecutionLogs(data || []);
     } catch (err) {
-      const mockLogs: ExecutionLog[] = [
-        {
-          id: '1',
-          timestamp: new Date().toISOString(),
-          action: 'Validation Started',
-          status: 'Success',
-          message: 'All validations passed',
-        },
-        {
-          id: '2',
-          timestamp: new Date(Date.now() - 60000).toISOString(),
-          action: 'Simulation Completed',
-          status: 'Warning',
-          message: 'Minor warnings detected',
-          details: 'Some users may experience delays',
-        },
-        {
-          id: '3',
-          timestamp: new Date(Date.now() - 120000).toISOString(),
-          action: 'Approval Received',
-          status: 'Success',
-          message: 'Approved by admin@example.com',
-        },
-      ];
-      setExecutionLogs(mockLogs);
+      console.error('Failed to fetch execution logs:', err);
+      setError(t('common.error'));
+      setExecutionLogs([]);
     }
   };
 
@@ -530,27 +440,9 @@ export default function TenantChangeManagementPage() {
       const data = await changeManagementService.getTenantApprovals(tenantId, id);
       setApprovals(data || []);
     } catch (err) {
-      const mockApprovals: Approval[] = [
-        {
-          id: '1',
-          approverId: 'u1',
-          approverName: 'John Admin',
-          approverRole: 'GlobalAdmin',
-          decision: 'Approved',
-          comment: 'Looks good to me',
-          timestamp: new Date(Date.now() - 3600000).toISOString(),
-        },
-        {
-          id: '2',
-          approverId: 'u2',
-          approverName: 'Jane Security',
-          approverRole: 'SecurityAdmin',
-          decision: 'Pending',
-          comment: '',
-          timestamp: new Date().toISOString(),
-        },
-      ];
-      setApprovals(mockApprovals);
+      console.error('Failed to fetch approvals:', err);
+      setError(t('common.error'));
+      setApprovals([]);
     }
   };
 
@@ -559,22 +451,9 @@ export default function TenantChangeManagementPage() {
       const data = await changeManagementService.getTenantImpactAnalysis(tenantId, id);
       setImpactAnalysis(data as any);
     } catch (err) {
-      const mockImpact: ImpactAnalysis = {
-        riskLevel: 'Medium',
-        affectedUsers: 42,
-        affectedGroups: 5,
-        affectedApplications: 3,
-        dependencies: [
-          { type: 'Application', name: 'Finance App', impact: 'Users will need re-authentication' },
-          { type: 'Group', name: 'Finance Team', impact: 'Permissions will be updated' },
-        ],
-        recommendations: [
-          'Schedule during off-peak hours',
-          'Notify affected users in advance',
-          'Have rollback plan ready',
-        ],
-      };
-      setImpactAnalysis(mockImpact);
+      console.error('Failed to fetch impact analysis:', err);
+      setError(t('common.error'));
+      setImpactAnalysis(null);
     }
   };
 
@@ -608,39 +487,8 @@ export default function TenantChangeManagementPage() {
       const data = await changeManagementService.getTenantTemplates(tenantId);
       setTemplates(data || []);
     } catch (err) {
-      const mockTemplates: Template[] = [
-        {
-          id: '1',
-          name: 'Bulk User Permission Update',
-          description: 'Update permissions for multiple users at once',
-          category: 'User Management',
-          targetModule: 'Users',
-          templateJson: '{"action": "bulkUpdatePermissions", "permissions": []}',
-          usageCount: 45,
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          name: 'Security Policy Rollout',
-          description: 'Deploy new security policy across organization',
-          category: 'Security',
-          targetModule: 'Security',
-          templateJson: '{"action": "deployPolicy", "policy": {}}',
-          usageCount: 12,
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: '3',
-          name: 'Application Configuration',
-          description: 'Update application settings and configurations',
-          category: 'Applications',
-          targetModule: 'Applications',
-          templateJson: '{"action": "updateConfig", "settings": {}}',
-          usageCount: 28,
-          createdAt: new Date().toISOString(),
-        },
-      ];
-      setTemplates(mockTemplates);
+      console.error('Failed to fetch templates:', err);
+      setTemplates([]);
     }
   };
 

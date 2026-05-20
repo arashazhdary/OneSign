@@ -226,38 +226,10 @@ export default function GlobalChangeManagementPage() {
       setChangeSets(data.items || []);
       setTotalItems(data.totalCount || 0);
     } catch (err) {
-      // Mock data on error
-      const mockData: ChangeSet[] = [
-        {
-          id: '1',
-          tenantId: 'tenant-1',
-          tenantName: 'Acme Corp',
-          name: 'Update User Permissions',
-          description: 'Bulk update of user permissions for finance team',
-          status: 'InReview',
-          targetModule: 'Users',
-          changesJson: '{"action": "updatePermissions", "users": 15}',
-          createdBy: 'admin@acme.com',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          tenantId: 'tenant-2',
-          tenantName: 'TechStart Inc',
-          name: 'New Security Policy',
-          description: 'Implement MFA requirement for all admin users',
-          status: 'Approved',
-          targetModule: 'Security',
-          changesJson: '{"action": "enableMFA", "scope": "admins"}',
-          scheduledAt: new Date(Date.now() + 86400000).toISOString(),
-          createdBy: 'admin@techstart.com',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      ];
-      setChangeSets(mockData);
-      setTotalItems(mockData.length);
+      console.error('Failed to fetch global change sets:', err);
+      setError(t('common.error'));
+      setChangeSets([]);
+      setTotalItems(0);
     }
   };
 
@@ -267,49 +239,22 @@ export default function GlobalChangeManagementPage() {
       const data = await changeManagementService.getGlobalChangeSet(id);
       setChangeSetDetails(data);
     } catch (err) {
-      // Mock data on error
-      const mockData: ChangeSetDetails = {
-        ...selectedChangeSet!,
-        changes: [
-          {
-            id: '1',
-            type: 'Permission Update',
-            entity: 'User',
-            operation: 'UPDATE',
-            before: { permissions: ['read'] },
-            after: { permissions: ['read', 'write'] },
-          },
-        ],
-        metadata: {
-          estimatedImpact: 'Medium',
-          affectedResources: 25,
-          requiredDowntime: '0 minutes',
-        },
-      };
-      setChangeSetDetails(mockData);
+      console.error('Failed to fetch change set details:', err);
+      setError(t('common.error'));
+      setChangeSetDetails(null);
     }
   };
 
   const handleSimulate = async (id: string) => {
     setLoading(true);
     try {
-      const data = await changeManagementService.simulateGlobalChangeSet(id);
+      const data = await changeManagementService.simulateGlobalChangeSet(id, userId);
       setSimulationResult(data);
       setSuccess(t('global.changeManagement.messages.simulationCompleted'));
     } catch (err) {
-      // Mock data on error
-      const mockResult: SimulationResult = {
-        success: true,
-        warnings: ['Some users may experience temporary access delays'],
-        errors: [],
-        affectedEntities: [
-          { type: 'User', id: 'u1', name: 'John Doe', change: 'Permissions updated' },
-          { type: 'User', id: 'u2', name: 'Jane Smith', change: 'Permissions updated' },
-        ],
-        estimatedDuration: '2 minutes',
-      };
-      setSimulationResult(mockResult);
-      setSuccess(t('global.changeManagement.messages.simulationCompletedMock'));
+      console.error('Simulation failed:', err);
+      setError(t('common.error'));
+      setSimulationResult(null);
     } finally {
       setLoading(false);
     }
@@ -320,17 +265,9 @@ export default function GlobalChangeManagementPage() {
       const data = await changeManagementService.getGlobalExecutionLog(id);
       setExecutionLogs(data || []);
     } catch (err) {
-      // Mock data on error
-      const mockLogs: ExecutionLog[] = [
-        {
-          id: '1',
-          timestamp: new Date().toISOString(),
-          action: 'Validation Started',
-          status: 'Success',
-          message: 'All validations passed',
-        },
-      ];
-      setExecutionLogs(mockLogs);
+      console.error('Failed to fetch execution logs:', err);
+      setError(t('common.error'));
+      setExecutionLogs([]);
     }
   };
 
@@ -359,7 +296,7 @@ export default function GlobalChangeManagementPage() {
 
     setLoading(true);
     try {
-      await changeManagementService.applyGlobalChangeSet(selectedChangeSet.id);
+      await changeManagementService.applyGlobalChangeSet(selectedChangeSet.id, userId);
       setSuccess(t('global.changeManagement.messages.applied'));
       setShowExecuteModal(false);
       fetchData();
@@ -375,7 +312,7 @@ export default function GlobalChangeManagementPage() {
 
     setLoading(true);
     try {
-      await changeManagementService.rollbackGlobalChangeSet(selectedChangeSet.id);
+      await changeManagementService.rollbackGlobalChangeSet(selectedChangeSet.id, userId);
       setSuccess(t('global.changeManagement.messages.rolledBack'));
       setShowRollbackModal(false);
       fetchData();
@@ -391,7 +328,7 @@ export default function GlobalChangeManagementPage() {
 
     setLoading(true);
     try {
-      await changeManagementService.approveGlobalChangeSet(selectedChangeSet.id, approvalComment);
+      await changeManagementService.approveGlobalChangeSet(selectedChangeSet.id, userId, approvalComment);
       setSuccess(t('global.changeManagement.messages.approved'));
       setShowApprovalModal(false);
       setApprovalComment('');
@@ -411,7 +348,7 @@ export default function GlobalChangeManagementPage() {
 
     setLoading(true);
     try {
-      await changeManagementService.rejectGlobalChangeSet(selectedChangeSet.id, rejectReason);
+      await changeManagementService.rejectGlobalChangeSet(selectedChangeSet.id, userId, rejectReason);
       setSuccess(t('global.changeManagement.messages.rejected'));
       setShowRejectModal(false);
       setRejectReason('');
@@ -428,7 +365,7 @@ export default function GlobalChangeManagementPage() {
 
     setLoading(true);
     try {
-      await changeManagementService.submitGlobalChangeSet(selectedChangeSet.id);
+      await changeManagementService.submitGlobalChangeSet(selectedChangeSet.id, userId);
       setSuccess(t('global.changeManagement.messages.submitted'));
       fetchData();
     } catch (err) {
@@ -443,42 +380,20 @@ export default function GlobalChangeManagementPage() {
       const data = await changeManagementService.getGlobalApprovals(id);
       setApprovals(data || []);
     } catch (err) {
-      // Mock data on error
-      const mockApprovals: Approval[] = [
-        {
-          id: '1',
-          approverId: 'u1',
-          approverName: 'John Admin',
-          approverRole: 'GlobalAdmin',
-          decision: 'Approved',
-          comment: 'Looks good to me',
-          timestamp: new Date(Date.now() - 3600000).toISOString(),
-        },
-      ];
-      setApprovals(mockApprovals);
+      console.error('Failed to fetch approvals:', err);
+      setError(t('common.error'));
+      setApprovals([]);
     }
   };
 
   const fetchImpactAnalysis = async (id: string) => {
     try {
-      const data = await changeManagementService.getGlobalImpactAnalysis(id);
+      const data = await changeManagementService.getGlobalImpactAnalysis(id, userId);
       setImpactAnalysis(data);
     } catch (err) {
-      // Mock data on error
-      const mockImpact: ImpactAnalysis = {
-        riskLevel: 'Medium',
-        affectedUsers: 42,
-        affectedGroups: 5,
-        affectedApplications: 3,
-        dependencies: [
-          { type: 'Application', name: 'Finance App', impact: 'Users will need re-authentication' },
-        ],
-        recommendations: [
-          'Schedule during off-peak hours',
-          'Notify affected users in advance',
-        ],
-      };
-      setImpactAnalysis(mockImpact);
+      console.error('Failed to fetch impact analysis:', err);
+      setError(t('common.error'));
+      setImpactAnalysis(null);
     }
   };
 
@@ -487,20 +402,8 @@ export default function GlobalChangeManagementPage() {
       const data = await changeManagementService.getGlobalTemplates();
       setTemplates(data || []);
     } catch (err) {
-      // Mock data on error
-      const mockTemplates: Template[] = [
-        {
-          id: '1',
-          name: 'Bulk User Permission Update',
-          description: 'Update permissions for multiple users at once',
-          category: 'User Management',
-          targetModule: 'Users',
-          templateJson: '{"action": "bulkUpdatePermissions", "permissions": []}',
-          usageCount: 45,
-          createdAt: new Date().toISOString(),
-        },
-      ];
-      setTemplates(mockTemplates);
+      console.error('Failed to fetch templates:', err);
+      setTemplates([]);
     }
   };
 
@@ -509,21 +412,8 @@ export default function GlobalChangeManagementPage() {
       const data = await changeManagementService.getGlobalApprovalRules();
       setGlobalRules(data || []);
     } catch (err) {
-      // Mock data on error
-      const mockData: GlobalApprovalRule[] = [
-        {
-          id: '1',
-          name: 'Critical Security Changes',
-          targetModule: 'Security',
-          requiredApprovers: 3,
-          approverRoles: ['GlobalAdmin', 'SecurityAdmin', 'ComplianceOfficer'],
-          isEnforced: true,
-          tenantCanOverride: false,
-          isActive: true,
-          createdAt: new Date().toISOString(),
-        },
-      ];
-      setGlobalRules(mockData);
+      console.error('Failed to fetch approval rules:', err);
+      setGlobalRules([]);
     }
   };
 
@@ -537,22 +427,10 @@ export default function GlobalChangeManagementPage() {
       setChangeHistory(data.items || []);
       setTotalItems(data.totalCount || 0);
     } catch (err) {
-      // Mock data on error
-      const mockData: ChangeHistory[] = [
-        {
-          id: '1',
-          changeSetId: '3',
-          changeSetName: 'Application Configuration',
-          tenantId: 'tenant-1',
-          tenantName: 'Acme Corp',
-          action: 'Applied',
-          performedBy: 'admin@acme.com',
-          performedAt: new Date(Date.now() - 86400000).toISOString(),
-          details: 'Change set applied successfully. All changes committed.',
-        },
-      ];
-      setChangeHistory(mockData);
-      setTotalItems(mockData.length);
+      console.error('Failed to fetch change history:', err);
+      setError(t('common.error'));
+      setChangeHistory([]);
+      setTotalItems(0);
     }
   };
 

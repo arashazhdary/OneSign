@@ -86,68 +86,11 @@ export default function GlobalChangesAuditPage() {
     try {
       // Use global change management service
       const data = await changeManagementService.getGlobalChangeHistory({
-        ...filters,
         page: 1,
         pageSize: 100,
+        status: filters.status || 'Applied',
       });
-
-      if (data) {
-        setAuditLogs(data as any);
-      } else {
-        // Mock data if API not available
-        setAuditLogs([
-          {
-            id: '1',
-            tenantId: 'tenant-001',
-            tenantName: 'Acme Corp',
-            changeSetId: 'cs-123',
-            changeSetName: 'Update MFA Policies',
-            changeType: 'Security Policy Update',
-            module: 'Security',
-            status: 'Applied',
-            appliedBy: 'admin@platform.com',
-            appliedAt: new Date(Date.now() - 3600000).toISOString(),
-            duration: '2m 34s',
-            affectedResources: 150,
-            details: {
-              before: { mfaRequired: false },
-              after: { mfaRequired: true },
-            },
-          },
-          {
-            id: '2',
-            tenantId: 'tenant-002',
-            tenantName: 'TechStart Inc',
-            changeSetId: 'cs-124',
-            changeSetName: 'Role Permission Updates',
-            changeType: 'Permission Change',
-            module: 'IAM',
-            status: 'Applied',
-            appliedBy: 'admin@platform.com',
-            appliedAt: new Date(Date.now() - 7200000).toISOString(),
-            duration: '5m 12s',
-            affectedResources: 320,
-            details: {},
-          },
-          {
-            id: '3',
-            tenantId: 'tenant-003',
-            tenantName: 'Global Enterprises',
-            changeSetId: 'cs-125',
-            changeSetName: 'Integration Config Update',
-            changeType: 'Configuration Change',
-            module: 'Integrations',
-            status: 'Failed',
-            appliedBy: 'admin@platform.com',
-            appliedAt: new Date(Date.now() - 10800000).toISOString(),
-            duration: '1m 45s',
-            affectedResources: 45,
-            details: {
-              errors: ['Connection timeout to external service', 'Rollback completed successfully'],
-            },
-          },
-        ]);
-      }
+      setAuditLogs((data.items ?? []) as GlobalChangeAudit[]);
     } catch (err: any) {
       console.error('Error fetching audit logs:', err);
       setError(t('global.changes.audit.messages.failedToLoadAuditLogs'));
@@ -159,41 +102,31 @@ export default function GlobalChangesAuditPage() {
   const fetchTenantMetrics = async () => {
     setLoading(true);
     try {
-      // Mock tenant metrics
-      setTenantMetrics([
-        {
-          tenantId: 'tenant-001',
-          tenantName: 'Acme Corp',
-          totalChanges: 45,
-          successfulChanges: 42,
-          failedChanges: 2,
-          rolledBackChanges: 1,
-          lastChangeAt: new Date(Date.now() - 3600000).toISOString(),
-          averageDuration: '3m 22s',
-        },
-        {
-          tenantId: 'tenant-002',
-          tenantName: 'TechStart Inc',
-          totalChanges: 67,
-          successfulChanges: 65,
-          failedChanges: 1,
-          rolledBackChanges: 1,
-          lastChangeAt: new Date(Date.now() - 7200000).toISOString(),
-          averageDuration: '4m 15s',
-        },
-        {
-          tenantId: 'tenant-003',
-          tenantName: 'Global Enterprises',
-          totalChanges: 89,
-          successfulChanges: 85,
-          failedChanges: 3,
-          rolledBackChanges: 1,
-          lastChangeAt: new Date(Date.now() - 10800000).toISOString(),
-          averageDuration: '2m 58s',
-        },
-      ]);
+      const history = await changeManagementService.getGlobalChangeHistory({ page: 1, pageSize: 500 });
+      const byTenant = new Map<string, TenantChangeMetrics>();
+      for (const entry of history.items ?? []) {
+        const tid = entry.tenantId || 'unknown';
+        const existing = byTenant.get(tid) ?? {
+          tenantId: tid,
+          tenantName: entry.tenantName || tid,
+          totalChanges: 0,
+          successfulChanges: 0,
+          failedChanges: 0,
+          rolledBackChanges: 0,
+          lastChangeAt: entry.performedAt,
+          averageDuration: 'N/A',
+        };
+        existing.totalChanges += 1;
+        if (entry.action === 'Applied') existing.successfulChanges += 1;
+        else if (entry.action === 'Failed') existing.failedChanges += 1;
+        else if (entry.action === 'Rolled Back') existing.rolledBackChanges += 1;
+        if (entry.performedAt > existing.lastChangeAt) existing.lastChangeAt = entry.performedAt;
+        byTenant.set(tid, existing);
+      }
+      setTenantMetrics(Array.from(byTenant.values()));
     } catch (err) {
       setError(t('global.changes.audit.messages.failedToLoadTenantMetrics'));
+      setTenantMetrics([]);
     } finally {
       setLoading(false);
     }
@@ -202,39 +135,31 @@ export default function GlobalChangesAuditPage() {
   const fetchImpactAnalyses = async () => {
     setLoading(true);
     try {
-      // Mock impact analyses
-      setImpactAnalyses([
-        {
-          id: '1',
-          changeId: 'cs-123',
-          riskLevel: 'Medium',
-          affectedTenants: 15,
-          affectedUsers: 4500,
-          totalDowntime: '0m',
-          costImpact: '$0',
-          recommendations: [
-            'Monitor MFA adoption rates',
-            'Provide user training materials',
-            'Set up automated alerts for authentication failures',
-          ],
-        },
-        {
-          id: '2',
-          changeId: 'cs-124',
-          riskLevel: 'High',
-          affectedTenants: 32,
-          affectedUsers: 12800,
-          totalDowntime: '2m 15s',
-          costImpact: '$250',
-          recommendations: [
-            'Schedule during off-peak hours',
-            'Implement gradual rollout',
-            'Prepare rollback procedure',
-          ],
-        },
-      ]);
+      const sets = await changeManagementService.getGlobalChangeSets({ page: 1, pageSize: 20 });
+      const analyses: ChangeImpactAnalysis[] = [];
+      for (const cs of sets.items.slice(0, 10)) {
+        try {
+          const impact = await changeManagementService.getGlobalImpactAnalysis(cs.id, user?.id);
+          if (impact) {
+            analyses.push({
+              id: cs.id,
+              changeId: cs.id,
+              riskLevel: impact.riskLevel,
+              affectedTenants: 1,
+              affectedUsers: impact.affectedUsers,
+              totalDowntime: '0m',
+              costImpact: '$0',
+              recommendations: impact.recommendations ?? [],
+            });
+          }
+        } catch {
+          // skip changesets without simulation data
+        }
+      }
+      setImpactAnalyses(analyses);
     } catch (err) {
       setError(t('global.changes.audit.messages.failedToLoadImpactAnalyses'));
+      setImpactAnalyses([]);
     } finally {
       setLoading(false);
     }

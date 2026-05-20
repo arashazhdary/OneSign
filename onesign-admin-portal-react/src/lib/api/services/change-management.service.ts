@@ -1,4 +1,16 @@
 import apiClient from '@/services/apiClient';
+import {
+  buildCreatePayload,
+  mapUiApprovals,
+  mapUiChangeHistory,
+  mapUiChangeSet,
+  mapUiChangeSetDetails,
+  mapUiExecutionLogs,
+  mapUiImpact,
+  mapUiSimulation,
+  type ApiChangeSetDetailDto,
+  type ApiChangeSetDto,
+} from './change-management.mappers';
 
 // Types based on OneSign Technical Specification
 export interface ChangeSetDto {
@@ -161,110 +173,156 @@ export const changeManagementService = {
   approveChangeRequest: async (requestId: string) => changeManagementService.approveChangeSet(requestId),
   rejectChangeRequest: async (requestId: string, reason: string) => changeManagementService.rejectChangeSet(requestId, reason),
 
-  // Tenant-specific methods for backward compatibility with TenantChangeManagementPage
-  getTenantChangeSets: async (tenantId: string, params?: any) => {
-    try {
-      const response = await apiClient.get('/api/tenant/changesets', { params });
-      return { items: response.data, totalCount: response.data?.length || 0 };
-    } catch (error) {
-      console.error('Failed to fetch tenant change sets:', error);
-      throw error;
-    }
+  // Tenant-specific methods for TenantChangeManagementPage
+  getTenantChangeSets: async (tenantId: string, params?: { page?: number; pageSize?: number; status?: string }) => {
+    const response = await apiClient.get<{ items: ApiChangeSetDto[]; totalCount: number }>(
+      '/api/tenant/changesets',
+      {
+        params: {
+          tenantId,
+          page: params?.page ?? 1,
+          pageSize: params?.pageSize ?? 20,
+          status: params?.status,
+        },
+      }
+    );
+    const paged = response.data;
+    return {
+      items: (paged.items ?? []).map((dto) => mapUiChangeSet(dto)),
+      totalCount: paged.totalCount ?? 0,
+    };
   },
 
   getTenantChangeSet: async (tenantId: string, id: string) => {
-    return changeManagementService.getChangeSetById(id);
+    const response = await apiClient.get<ApiChangeSetDetailDto>(`/api/tenant/changesets/${id}`, {
+      params: { tenantId },
+    });
+    return mapUiChangeSetDetails(response.data);
   },
 
   createTenantChangeSet: async (tenantId: string, userId: string, data: any) => {
-    return changeManagementService.createChangeSet(data);
+    const response = await apiClient.post<ApiChangeSetDetailDto>(
+      '/api/tenant/changesets',
+      buildCreatePayload(tenantId, userId, data)
+    );
+    return mapUiChangeSet(response.data);
   },
 
-  deleteTenantChangeSet: async (tenantId: string, id: string) => {
-    try {
-      await apiClient.delete(`/api/tenant/changesets/${id}`);
-    } catch (error) {
-      console.error('Failed to delete change set:', error);
-      throw error;
-    }
+  deleteTenantChangeSet: async (_tenantId: string, _id: string) => {
+    throw new Error('Delete change set is not supported by the API for draft sets.');
   },
 
   submitTenantChangeSet: async (tenantId: string, id: string, userId: string) => {
-    return changeManagementService.submitChangeSet(id);
+    await apiClient.post(`/api/tenant/changesets/${id}/submit`, null, {
+      params: { tenantId, userId },
+    });
   },
 
-  simulateTenantChangeSet: async (tenantId: string, id: string) => {
-    return changeManagementService.simulateChangeSet(id);
+  simulateTenantChangeSet: async (tenantId: string, id: string, userId?: string) => {
+    const response = await apiClient.post(`/api/tenant/changesets/${id}/simulate`, null, {
+      params: { tenantId, userId: userId ?? tenantId },
+    });
+    return mapUiSimulation(response.data);
   },
 
   getTenantExecutionLog: async (tenantId: string, id: string) => {
-    try {
-      const response = await apiClient.get(`/api/tenant/changesets/${id}/execution-log`);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch execution log:', error);
-      throw error;
-    }
+    const response = await apiClient.get(`/api/tenant/changesets/${id}/execution-log`, {
+      params: { tenantId },
+    });
+    return mapUiExecutionLogs(response.data ?? []);
   },
 
-  scheduleTenantChangeSet: async (tenantId: string, id: string, userId: string, data: any) => {
-    try {
-      const response = await apiClient.post(`/api/tenant/changesets/${id}/schedule`, data);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to schedule change set:', error);
-      throw error;
-    }
+  scheduleTenantChangeSet: async (tenantId: string, id: string, userId: string, data: { scheduledFor: string }) => {
+    await apiClient.post(`/api/tenant/changesets/${id}/schedule`, {
+      tenantId,
+      userId,
+      scheduledFor: data.scheduledFor,
+    });
   },
 
   executeTenantChangeSet: async (tenantId: string, id: string, userId: string) => {
-    return changeManagementService.applyChangeSet(id);
+    await apiClient.post(`/api/tenant/changesets/${id}/apply`, null, {
+      params: { tenantId, userId },
+    });
   },
 
-  rollbackTenantChangeSet: async (tenantId: string, id: string, userId: string) => {
-    return changeManagementService.rollbackChangeSet(id);
+  rollbackTenantChangeSet: async (tenantId: string, id: string, userId: string, reason?: string) => {
+    await apiClient.post(`/api/tenant/changesets/${id}/rollback`, {
+      tenantId,
+      userId,
+      reason: reason ?? 'Rollback requested',
+    });
   },
 
   approveTenantChangeSet: async (tenantId: string, id: string, userId: string, comment: string) => {
-    return changeManagementService.approveChangeSet(id, comment);
+    await apiClient.post(`/api/tenant/changesets/${id}/approve`, {
+      tenantId,
+      userId,
+      reason: comment,
+    });
   },
 
   rejectTenantChangeSet: async (tenantId: string, id: string, userId: string, reason: string) => {
-    return changeManagementService.rejectChangeSet(id, reason);
+    await apiClient.post(`/api/tenant/changesets/${id}/reject`, {
+      tenantId,
+      userId,
+      reason,
+    });
   },
 
   getTenantApprovals: async (tenantId: string, id: string) => {
-    try {
-      const response = await apiClient.get(`/api/tenant/changesets/${id}/approvals`);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch approvals:', error);
-      throw error;
-    }
+    const raw = await apiClient.get<ApiChangeSetDetailDto>(`/api/tenant/changesets/${id}`, {
+      params: { tenantId },
+    });
+    return mapUiApprovals(raw.data.approvals ?? []);
   },
 
   getTenantImpactAnalysis: async (tenantId: string, id: string) => {
-    return changeManagementService.getImpactAnalysis(id);
+    const raw = await apiClient.get<ApiChangeSetDetailDto>(`/api/tenant/changesets/${id}`, {
+      params: { tenantId },
+    });
+    if (raw.data.simulationResult) {
+      return mapUiImpact(raw.data.simulationResult);
+    }
+    const simulated = await changeManagementService.simulateTenantChangeSet(tenantId, id, tenantId);
+    return mapUiImpact({
+      impactedUsersCount: 0,
+      impactedAppsCount: 0,
+      privilegedUsersAffectedCount: 0,
+      policiesAffected: simulated.affectedEntities.filter((e) => e.type === 'Policy').map((e) => e.name),
+      automationWorkflowsAffected: simulated.affectedEntities
+        .filter((e) => e.type === 'Automation')
+        .map((e) => e.name),
+      riskDirection: 'Neutral',
+      warnings: simulated.warnings,
+      recommendations: [],
+    });
   },
 
   cloneTenantChangeSet: async (tenantId: string, id: string, userId: string, newName: string) => {
-    try {
-      const response = await apiClient.post(`/api/tenant/changesets/${id}/clone`, { name: newName });
-      return response.data;
-    } catch (error) {
-      console.error('Failed to clone change set:', error);
-      throw error;
-    }
+    const source = await apiClient.get<ApiChangeSetDetailDto>(`/api/tenant/changesets/${id}`, {
+      params: { tenantId },
+    });
+    const response = await apiClient.post<ApiChangeSetDetailDto>('/api/tenant/changesets', {
+      tenantId,
+      userId,
+      title: newName,
+      description: source.data.description,
+      category: source.data.category,
+      items: (source.data.items ?? []).map((item, index) => ({
+        targetType: item.targetType,
+        targetId: item.targetId,
+        operation: item.operation,
+        currentValueJson: item.currentValueJson,
+        proposedValueJson: item.proposedValueJson,
+        order: index,
+      })),
+    });
+    return mapUiChangeSet(response.data);
   },
 
-  getTenantTemplates: async (tenantId: string) => {
-    try {
-      const response = await apiClient.get('/api/tenant/changesets/templates');
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch templates:', error);
-      throw error;
-    }
+  getTenantTemplates: async (_tenantId: string) => {
+    return [];
   },
 
   getTenantPendingApprovals: async (tenantId: string, userId: string, params?: any) => {
@@ -332,44 +390,33 @@ export const changeManagementService = {
   },
 
   // ==================== GLOBAL CHANGE MANAGEMENT ====================
-  getGlobalChangeSets: async (params?: any) => {
-    try {
-      const response = await apiClient.get('/api/global/changesets', { params });
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch global change sets:', error);
-      return [];
-    }
+  getGlobalChangeSets: async (params?: { page?: number; pageSize?: number; status?: string }) => {
+    const response = await apiClient.get<{ items: ApiChangeSetDto[]; totalCount: number }>(
+      '/api/global/changesets',
+      { params }
+    );
+    const paged = response.data;
+    return {
+      items: (paged.items ?? []).map((dto) => mapUiChangeSet(dto)),
+      totalCount: paged.totalCount ?? 0,
+    };
   },
 
   getGlobalChangeSet: async (id: string) => {
-    try {
-      const response = await apiClient.get(`/api/global/changesets/${id}`);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch global change set:', error);
-      return null;
-    }
+    const response = await apiClient.get<ApiChangeSetDetailDto>(`/api/global/changesets/${id}`);
+    return mapUiChangeSetDetails(response.data);
   },
 
-  simulateGlobalChangeSet: async (id: string) => {
-    try {
-      const response = await apiClient.get(`/api/global/changesets/${id}/simulate`);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to simulate global change set:', error);
-      return { success: false, errors: ['Simulation failed'] };
-    }
+  simulateGlobalChangeSet: async (id: string, userId?: string) => {
+    const response = await apiClient.post(`/api/global/changesets/${id}/simulate`, null, {
+      params: { userId: userId ?? '00000000-0000-0000-0000-000000000001' },
+    });
+    return mapUiSimulation(response.data);
   },
 
   getGlobalExecutionLog: async (id: string) => {
-    try {
-      const response = await apiClient.get(`/api/global/changesets/${id}/execution-log`);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch global execution log:', error);
-      return [];
-    }
+    const response = await apiClient.get(`/api/global/changesets/${id}/execution-log`);
+    return mapUiExecutionLogs(response.data ?? []);
   },
 
   scheduleGlobalChangeSet: async (id: string, data: any) => {
@@ -377,70 +424,57 @@ export const changeManagementService = {
     return response.data;
   },
 
-  applyGlobalChangeSet: async (id: string) => {
-    const response = await apiClient.post(`/api/global/changesets/${id}/apply`);
-    return response.data;
+  applyGlobalChangeSet: async (id: string, userId: string) => {
+    await apiClient.post(`/api/global/changesets/${id}/apply`, null, { params: { userId } });
   },
 
-  rollbackGlobalChangeSet: async (id: string) => {
-    const response = await apiClient.post(`/api/global/changesets/${id}/rollback`);
-    return response.data;
+  rollbackGlobalChangeSet: async (id: string, userId: string, reason?: string) => {
+    await apiClient.post(`/api/global/changesets/${id}/rollback`, {
+      userId,
+      reason: reason ?? 'Rollback requested',
+    });
   },
 
-  approveGlobalChangeSet: async (id: string, comment?: string) => {
-    const response = await apiClient.post(`/api/global/changesets/${id}/approve`, { comment });
-    return response.data;
+  approveGlobalChangeSet: async (id: string, userId: string, comment?: string) => {
+    await apiClient.post(`/api/global/changesets/${id}/approve`, { userId, reason: comment });
   },
 
-  rejectGlobalChangeSet: async (id: string, reason: string) => {
-    const response = await apiClient.post(`/api/global/changesets/${id}/reject`, { reason });
-    return response.data;
+  rejectGlobalChangeSet: async (id: string, userId: string, reason: string) => {
+    await apiClient.post(`/api/global/changesets/${id}/reject`, { userId, reason });
   },
 
-  submitGlobalChangeSet: async (id: string) => {
-    const response = await apiClient.post(`/api/global/changesets/${id}/submit`);
-    return response.data;
+  submitGlobalChangeSet: async (id: string, userId: string) => {
+    await apiClient.post(`/api/global/changesets/${id}/submit`, null, { params: { userId } });
   },
 
   getGlobalApprovals: async (id: string) => {
-    try {
-      const response = await apiClient.get(`/api/global/changesets/${id}/approvals`);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch global approvals:', error);
-      return [];
-    }
+    const response = await apiClient.get<ApiChangeSetDetailDto>(`/api/global/changesets/${id}`);
+    return mapUiApprovals(response.data.approvals ?? []);
   },
 
-  getGlobalImpactAnalysis: async (id: string) => {
-    try {
-      const response = await apiClient.get(`/api/global/changesets/${id}/impact`);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to get global impact analysis:', error);
-      return null;
+  getGlobalImpactAnalysis: async (id: string, userId?: string) => {
+    const response = await apiClient.get<ApiChangeSetDetailDto>(`/api/global/changesets/${id}`);
+    if (response.data.simulationResult) {
+      return mapUiImpact(response.data.simulationResult);
     }
+    const simulated = await changeManagementService.simulateGlobalChangeSet(id, userId);
+    return mapUiImpact({
+      impactedUsersCount: 0,
+      impactedAppsCount: 0,
+      privilegedUsersAffectedCount: 0,
+      policiesAffected: simulated.affectedEntities.filter((e) => e.type === 'Policy').map((e) => e.name),
+      automationWorkflowsAffected: simulated.affectedEntities
+        .filter((e) => e.type === 'Automation')
+        .map((e) => e.name),
+      riskDirection: 'Neutral',
+      warnings: simulated.warnings,
+      recommendations: [],
+    });
   },
 
-  getGlobalTemplates: async () => {
-    try {
-      const response = await apiClient.get('/api/global/changesets/templates');
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch global templates:', error);
-      return [];
-    }
-  },
+  getGlobalTemplates: async () => [],
 
-  getGlobalApprovalRules: async () => {
-    try {
-      const response = await apiClient.get('/api/global/changesets/approval-rules');
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch global approval rules:', error);
-      return [];
-    }
-  },
+  getGlobalApprovalRules: async () => [],
 
   createGlobalApprovalRule: async (data: any) => {
     const response = await apiClient.post('/api/global/changesets/approval-rules', data);
@@ -457,14 +491,27 @@ export const changeManagementService = {
     return response.data;
   },
 
-  getGlobalChangeHistory: async (params?: any) => {
-    try {
-      const response = await apiClient.get('/api/global/changesets/history', { params });
-      return response.data;
-    } catch (error) {
-      console.error('Failed to fetch global change history:', error);
-      return [];
-    }
+  getGlobalChangeHistory: async (params?: { page?: number; pageSize?: number; status?: string }) => {
+    const result = await changeManagementService.getGlobalChangeSets({
+      page: params?.page,
+      pageSize: params?.pageSize,
+      status: params?.status ?? 'Applied',
+    });
+    return {
+      items: result.items.map((item: ReturnType<typeof mapUiChangeSet>) => mapUiChangeHistory({
+        id: item.id,
+        title: item.name,
+        description: item.description,
+        category: item.targetModule,
+        status: item.status,
+        scopeId: item.tenantId,
+        requestedByUserId: item.createdBy,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+        appliedAt: item.appliedAt,
+      } as ApiChangeSetDto)),
+      totalCount: result.totalCount,
+    };
   },
 };
 
