@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
-import { accessService } from '@/lib/api/services';
+import { privilegedAccessService } from '@/lib/api/services/privileged-access.service';
 import Modal from '@/components/common/Modal';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -188,32 +188,22 @@ export default function TenantPrivilegedAccessPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const data = await accessService.getPrivilegedSessions('Active');
-      setSessions(data || []);
+      const data = await privilegedAccessService.getSessions({ status: 'Active' });
+      setSessions(
+        (data.items || []).map((s: any) => ({
+          id: s.id,
+          userId: s.userId,
+          userEmail: s.userName || s.userEmail || '',
+          resourceType: s.sessionType || s.resourceType || '',
+          resourceId: s.resourceId || '',
+          startedAt: s.startedAt,
+          expiresAt: s.endedAt || s.expiresAt || '',
+          status: s.status,
+        }))
+      );
     } catch (err) {
-      // Mock data for demo
-      setSessions([
-        {
-          id: '1',
-          userId: 'u1',
-          userEmail: 'admin@example.com',
-          resourceType: 'Server',
-          resourceId: 'srv-prod-001',
-          startedAt: new Date(Date.now() - 3600000).toISOString(),
-          expiresAt: new Date(Date.now() + 3600000).toISOString(),
-          status: 'Active'
-        },
-        {
-          id: '2',
-          userId: 'u2',
-          userEmail: 'ops@example.com',
-          resourceType: 'Database',
-          resourceId: 'db-main-prod',
-          startedAt: new Date(Date.now() - 1800000).toISOString(),
-          expiresAt: new Date(Date.now() + 5400000).toISOString(),
-          status: 'Active'
-        }
-      ]);
+      console.error('Error fetching sessions:', err);
+      setSessions([]);
     } finally {
       setLoading(false);
     }
@@ -223,24 +213,19 @@ export default function TenantPrivilegedAccessPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      setBreakGlassAccounts([
-        {
-          id: '1',
-          username: 'emergency-admin-01',
-          description: 'Emergency admin access for critical infrastructure',
-          isActivated: false,
-          lastActivatedAt: undefined
-        },
-        {
-          id: '2',
-          username: 'emergency-admin-02',
-          description: 'Backup emergency access for DR scenarios',
-          isActivated: false,
-          lastActivatedAt: '2024-01-15T10:30:00Z'
-        }
-      ]);
+      const data = await privilegedAccessService.getBreakGlassAccounts();
+      setBreakGlassAccounts(
+        (data || []).map((a: any) => ({
+          id: a.id,
+          username: a.name || a.username,
+          description: a.description || '',
+          isActivated: a.status === 'Active',
+          lastActivatedAt: a.lastActivatedAt,
+        }))
+      );
     } catch (err) {
       console.error('Error fetching break-glass accounts:', err);
+      setBreakGlassAccounts([]);
     } finally {
       setLoading(false);
     }
@@ -250,32 +235,23 @@ export default function TenantPrivilegedAccessPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      setAccessRequests([
-        {
-          id: '1',
-          requesterId: 'u1',
-          requesterEmail: 'developer@example.com',
-          resourceType: 'Database',
-          resourceId: 'db-staging',
-          reason: 'Need to debug production issue',
+      const data = await privilegedAccessService.getJitGrants({ status: 'Pending' });
+      setAccessRequests(
+        (data.items || []).map((g: any) => ({
+          id: g.id,
+          requesterId: g.userId,
+          requesterEmail: g.userName || '',
+          resourceType: g.resourceType,
+          resourceId: g.resourceId,
+          reason: g.justification || '',
           duration: 3600,
-          status: 'Pending',
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: '2',
-          requesterId: 'u2',
-          requesterEmail: 'sre@example.com',
-          resourceType: 'Server',
-          resourceId: 'srv-monitoring',
-          reason: 'Server maintenance',
-          duration: 7200,
-          status: 'Approved',
-          createdAt: new Date(Date.now() - 86400000).toISOString()
-        }
-      ]);
+          status: g.status,
+          createdAt: g.grantedAt,
+        }))
+      );
     } catch (err) {
       console.error('Error fetching access requests:', err);
+      setAccessRequests([]);
     } finally {
       setLoading(false);
     }
@@ -285,15 +261,21 @@ export default function TenantPrivilegedAccessPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      setDashboardData({
-        activeSessions: 5,
-        activeGrants: 12,
-        pendingRequests: 3,
-        breakGlassActivations: 0,
-        totalRequests: 47
-      });
+      const data = await privilegedAccessService.getDashboard();
+      if (data) {
+        setDashboardData({
+          activeSessions: data.activeSessions ?? 0,
+          activeGrants: data.activeJitGrants ?? 0,
+          pendingRequests: 0,
+          breakGlassActivations: data.activeBreakGlassAccounts ?? 0,
+          totalRequests: data.totalJitGrantsToday ?? 0,
+        });
+      } else {
+        setDashboardData(null);
+      }
     } catch (err) {
       console.error('Error fetching dashboard:', err);
+      setDashboardData(null);
     } finally {
       setLoading(false);
     }
@@ -303,30 +285,22 @@ export default function TenantPrivilegedAccessPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      setJitGrants([
-        {
-          id: '1',
-          userId: 'u1',
-          userEmail: 'admin@example.com',
-          resourceType: 'Kubernetes',
-          resourceId: 'prod-cluster',
-          grantedAt: new Date(Date.now() - 7200000).toISOString(),
-          expiresAt: new Date(Date.now() + 7200000).toISOString(),
-          status: 'Active'
-        },
-        {
-          id: '2',
-          userId: 'u2',
-          userEmail: 'devops@example.com',
-          resourceType: 'AWS',
-          resourceId: 'production-account',
-          grantedAt: new Date(Date.now() - 14400000).toISOString(),
-          expiresAt: new Date(Date.now() - 3600000).toISOString(),
-          status: 'Expired'
-        }
-      ]);
+      const data = await privilegedAccessService.getJitGrants();
+      setJitGrants(
+        (data.items || []).map((g: any) => ({
+          id: g.id,
+          userId: g.userId,
+          userEmail: g.userName || '',
+          resourceType: g.resourceType,
+          resourceId: g.resourceId,
+          grantedAt: g.grantedAt,
+          expiresAt: g.expiresAt,
+          status: g.status,
+        }))
+      );
     } catch (err) {
       console.error('Error fetching JIT grants:', err);
+      setJitGrants([]);
     } finally {
       setLoading(false);
     }
@@ -337,6 +311,12 @@ export default function TenantPrivilegedAccessPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
+      await privilegedAccessService.requestJitAccess({
+        resourceType: requestForm.resourceType,
+        resourceId: requestForm.resourceId,
+        justification: requestForm.reason,
+        durationMinutes: Math.ceil(requestForm.duration / 60),
+      });
       setSuccess(t('tenant.privilegedAccess.jitAccessRequestSuccess'));
       setShowRequestModal(false);
       fetchAccessRequests();
@@ -352,6 +332,7 @@ export default function TenantPrivilegedAccessPage() {
     if (!tenantId || !confirm(t('tenant.privilegedAccess.confirmRevokeGrant'))) return;
     setLoading(true);
     try {
+      await privilegedAccessService.revokeJitGrant(grantId);
       setSuccess(t('tenant.privilegedAccess.grantRevokedSuccess'));
       fetchJITGrants();
     } catch (err) {
@@ -365,6 +346,7 @@ export default function TenantPrivilegedAccessPage() {
     if (!tenantId || !confirm(t('tenant.privilegedAccess.confirmRevokeSession'))) return;
     setLoading(true);
     try {
+      await privilegedAccessService.terminateSession(sessionId);
       setSuccess(t('tenant.privilegedAccess.sessionRevokedSuccess'));
       fetchSessions();
     } catch (err) {

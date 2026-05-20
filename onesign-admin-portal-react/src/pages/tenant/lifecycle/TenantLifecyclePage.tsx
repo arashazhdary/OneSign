@@ -157,35 +157,20 @@ export default function TenantLifecyclePage() {
   const fetchAccessPackages = async () => {
     if (!tenantId) return;
     try {
-      // Mock data
-      setAccessPackages([
-        {
-          id: '1',
-          name: 'Standard Employee',
-          description: 'Basic access for new employees',
-          roles: ['Employee', 'User'],
-          duration: 365,
-          approvalRequired: false
-        },
-        {
-          id: '2',
-          name: 'Engineering Team',
-          description: 'Access for engineering department',
-          roles: ['Developer', 'CodeReviewer'],
-          duration: 180,
-          approvalRequired: true
-        },
-        {
-          id: '3',
-          name: 'Manager Package',
-          description: 'Enhanced access for managers',
-          roles: ['Manager', 'ReportViewer', 'TeamLead'],
-          duration: 365,
-          approvalRequired: true
-        }
-      ]);
+      const data = await lifecycleService.getAccessPackages();
+      setAccessPackages(
+        (data || []).map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          description: p.description || '',
+          roles: (p.resources || []).map((r: any) => r.name || r.type),
+          duration: p.validityPeriod ?? 0,
+          approvalRequired: !p.autoApproval,
+        }))
+      );
     } catch (error) {
       console.error('Error fetching access packages:', error);
+      setAccessPackages([]);
     }
   };
 
@@ -193,49 +178,58 @@ export default function TenantLifecyclePage() {
     if (!tenantId) return;
     try {
       const data = await lifecycleService.getLifecyclePolicies();
-      if (Array.isArray(data) && data.length > 0) {
-        setLifecyclePolicies(data);
-      } else {
-        // Mock data
-        setLifecyclePolicies([
-          { id: '1', name: 'New Hire Onboarding', trigger: 'OnHire', actions: ['GrantAccess', 'SendWelcome'], enabled: true },
-          { id: '2', name: 'Termination Offboarding', trigger: 'OnTermination', actions: ['RevokeAccess', 'ArchiveData'], enabled: true },
-          { id: '3', name: 'Department Transfer', trigger: 'OnTransfer', actions: ['UpdatePermissions', 'NotifyManager'], enabled: false }
-        ]);
-      }
+      setLifecyclePolicies(
+        (data || []).map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          trigger: p.eventType || p.trigger || '',
+          actions: (p.actions || []).map((a: any) => a.type || String(a)),
+          enabled: p.enabled ?? true,
+        }))
+      );
     } catch (error) {
-      setLifecyclePolicies([
-        { id: '1', name: 'New Hire Onboarding', trigger: 'OnHire', actions: ['GrantAccess', 'SendWelcome'], enabled: true },
-        { id: '2', name: 'Termination Offboarding', trigger: 'OnTermination', actions: ['RevokeAccess', 'ArchiveData'], enabled: true }
-      ]);
+      console.error('Error fetching lifecycle policies:', error);
+      setLifecyclePolicies([]);
     }
   };
 
   const fetchHRSyncStatus = async () => {
     if (!tenantId) return;
     try {
-      setHRSyncStatus({
-        status: 'Completed',
-        recordsSynced: 1247,
-        errors: 3,
-        lastSyncAt: new Date(Date.now() - 3600000).toISOString(),
-        nextSyncAt: new Date(Date.now() + 3600000).toISOString()
-      });
+      const data = await lifecycleService.getProcessingStatus();
+      if (data) {
+        setHRSyncStatus({
+          status: data.status || 'Unknown',
+          recordsSynced: data.recordsSynced ?? data.synced ?? 0,
+          errors: data.errors ?? data.failed ?? 0,
+          lastSyncAt: data.lastSyncAt,
+          nextSyncAt: data.nextSyncAt,
+        });
+      } else {
+        setHRSyncStatus(null);
+      }
     } catch (error) {
       console.error('Error fetching HR sync status:', error);
+      setHRSyncStatus(null);
     }
   };
 
   const fetchUserTimeline = async () => {
     if (!tenantId || !selectedUserId) return;
     try {
-      setUserTimeline([
-        { id: '1', timestamp: new Date(Date.now() - 86400000).toISOString(), eventType: 'Account Created', description: 'User account was created', actor: 'System' },
-        { id: '2', timestamp: new Date(Date.now() - 82800000).toISOString(), eventType: 'Role Assigned', description: 'Assigned Employee role', actor: 'HR Admin' },
-        { id: '3', timestamp: new Date(Date.now() - 43200000).toISOString(), eventType: 'MFA Enrolled', description: 'User enrolled in MFA', actor: 'User' }
-      ]);
+      const data = await lifecycleService.getUserTimeline(selectedUserId);
+      setUserTimeline(
+        (data || []).map((e: any, i: number) => ({
+          id: e.id || String(i),
+          timestamp: e.timestamp || e.createdAt,
+          eventType: e.eventType || e.type,
+          description: e.description || '',
+          actor: e.actor || e.triggeredBy || 'System',
+        }))
+      );
     } catch (error) {
       console.error('Error fetching user timeline:', error);
+      setUserTimeline([]);
     }
   };
 
@@ -243,19 +237,19 @@ export default function TenantLifecyclePage() {
     if (!tenantId) return;
     try {
       const data = await lifecycleService.getLifecycleEvents();
-      if (Array.isArray(data) && data.length > 0) {
-        setLifecycleEvents(data);
-      } else {
-        // Mock data
-        setLifecycleEvents([
-          { id: '1', eventType: 'OnHire', userId: 'user-001', timestamp: new Date().toISOString(), details: { department: 'Engineering' } },
-          { id: '2', eventType: 'OnTransfer', userId: 'user-002', timestamp: new Date(Date.now() - 86400000).toISOString(), details: { from: 'Sales', to: 'Marketing' } }
-        ]);
-      }
+      const items = Array.isArray(data) ? data : data?.items || [];
+      setLifecycleEvents(
+        items.map((e: any) => ({
+          id: e.id,
+          eventType: e.type || e.eventType,
+          userId: e.userId,
+          timestamp: e.triggeredAt || e.timestamp,
+          details: e.details,
+        }))
+      );
     } catch (error) {
-      setLifecycleEvents([
-        { id: '1', eventType: 'OnHire', userId: 'user-001', timestamp: new Date().toISOString(), details: { department: 'Engineering' } }
-      ]);
+      console.error('Error fetching lifecycle events:', error);
+      setLifecycleEvents([]);
     }
   };
 
@@ -266,6 +260,16 @@ export default function TenantLifecyclePage() {
     if (!tenantId) return;
 
     try {
+      await lifecycleService.createAccessPackage({
+        name: packageName,
+        description: packageDescription,
+        resources: packageRoles.split(',').map((r) => r.trim()).filter(Boolean).map((name) => ({
+          type: 'Role',
+          resourceId: name,
+        })),
+        validityPeriod: packageDuration,
+        autoApproval: !packageApprovalRequired,
+      });
       setShowPackageModal(false);
       setPackageName('');
       setPackageDescription('');
@@ -313,13 +317,12 @@ export default function TenantLifecyclePage() {
     setIsSyncing(true);
 
     try {
-      setTimeout(() => {
-        setSuccess(t('tenant.lifecycle.hrSyncTriggered') || 'HR Sync triggered successfully');
-        setIsSyncing(false);
-        fetchHRSyncStatus();
-      }, 2000);
+      await lifecycleService.syncAllHrRecords();
+      setSuccess(t('tenant.lifecycle.hrSyncTriggered') || 'HR Sync triggered successfully');
+      fetchHRSyncStatus();
     } catch (error) {
       setError(t('common.error'));
+    } finally {
       setIsSyncing(false);
     }
   };

@@ -251,6 +251,25 @@ export const securityService = {
     return response.data;
   },
 
+  getUserRiskScore: async (userId: string, tenantId: string): Promise<{ riskScore: number }> => {
+    try {
+      const response = await apiClient.get(`/api/tenant/adaptive-security/users/${userId}/risk-score`, {
+        params: { tenantId },
+      });
+      return { riskScore: response.data?.riskScore ?? response.data?.RiskScore ?? 0 };
+    } catch (error) {
+      console.error('Failed to fetch user risk score:', error);
+      return { riskScore: 0 };
+    }
+  },
+
+  evaluateUser: async (userId: string, tenantId: string): Promise<any> => {
+    const response = await apiClient.post('/api/tenant/adaptive-security/evaluate', null, {
+      params: { tenantId, userId },
+    });
+    return response.data;
+  },
+
   // ==================== IP WHITELIST ====================
 
   /**

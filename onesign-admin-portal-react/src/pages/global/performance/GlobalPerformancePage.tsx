@@ -88,16 +88,17 @@ export default function GlobalPerformancePage() {
   //   }
   // };
 
-  // const resolveAlert = async (alertId: string) => {
-  //   try {
-  //     await globalService.resolvePerformanceAlert(alertId);
-  //     setAlerts(prev => prev.map(alert =>
-  //       alert.id === alertId ? { ...alert, resolved: true } : alert
-  //     ));
-  //   } catch (err) {
-  //     console.error('Failed to resolve alert');
-  //   }
-  // };
+  const resolveAlert = async (alertId: string) => {
+    try {
+      await globalService.resolveAlert(alertId);
+      setAlerts((prev) =>
+        prev.map((alert) => (alert.id === alertId ? { ...alert, resolved: true } : alert))
+      );
+    } catch (err) {
+      console.error('Failed to resolve alert', err);
+      setError(t('common.error'));
+    }
+  };
 
   // Simulate real-time data updates
   useEffect(() => {
@@ -326,7 +327,7 @@ export default function GlobalPerformancePage() {
                 </div>
                 {!alert.resolved && (
                   <button
-                    onClick={() => {}} // resolveAlert is not available
+                    onClick={() => resolveAlert(alert.id)}
                     className="ml-4 px-3 py-1 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm"
                   >
                     Resolve

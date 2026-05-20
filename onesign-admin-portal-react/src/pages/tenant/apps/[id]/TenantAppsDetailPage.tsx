@@ -5,6 +5,7 @@ import { getTenantId } from '@/lib/tenant-context';
 import Modal from '@/components/common/Modal';
 import StatusBadge from '@/components/common/StatusBadge';
 import { applicationsService } from '@/lib/api/services/applications.service';
+import { tenantService } from '@/lib/api/services/tenant.service';
 import type { Application } from '@/lib/api/types/applications';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -229,14 +230,19 @@ export default function TenantAppsDetailPage() {
 
   const fetchPermissions = async () => {
     try {
-      const mockPermissions: Permission[] = [
-        { id: '1', scope: 'read:profile', description: 'Read user profile', isGranted: true, grantedAt: new Date().toISOString() },
-        { id: '2', scope: 'write:profile', description: 'Write user profile', isGranted: true, grantedAt: new Date().toISOString() },
-        { id: '3', scope: 'admin:access', description: 'Admin access', isGranted: false },
-      ];
-      setPermissions(mockPermissions);
+      const data = await tenantService.getAvailablePermissions();
+      setPermissions(
+        (data || []).map((p: any, i: number) => ({
+          id: p.id || String(i),
+          scope: p.scope || p.name || '',
+          description: p.description || '',
+          isGranted: p.isGranted ?? false,
+          grantedAt: p.grantedAt,
+        }))
+      );
     } catch (err) {
       console.error('Failed to fetch permissions:', err);
+      setPermissions([]);
     }
   };
 
@@ -259,38 +265,34 @@ export default function TenantAppsDetailPage() {
 
   const fetchAuditLog = async () => {
     try {
-      const mockAuditLog: AuditLogEntry[] = [
-        {
-          id: '1',
-          action: 'Application Created',
-          actorId: 'user-1',
-          actorName: 'Admin User',
-          changes: { name: application?.name },
-          timestamp: new Date().toISOString(),
-          ipAddress: '192.168.1.1',
-        },
-      ];
-      setAuditLog(mockAuditLog);
+      const data = await tenantService.getAuditLogs({
+        page: 1,
+        pageSize: 50,
+        resource: applicationId,
+      });
+      setAuditLog(
+        (data.items || []).map((e: any) => ({
+          id: e.id,
+          action: e.action || e.eventType || '',
+          actorId: e.userId || e.actorId,
+          actorName: e.userName || e.actorName,
+          changes: e.changes || e.details,
+          timestamp: e.timestamp || e.createdAt,
+          ipAddress: e.ipAddress,
+        }))
+      );
     } catch (err) {
       console.error('Failed to fetch audit log:', err);
+      setAuditLog([]);
     }
   };
 
   const fetchUsageStats = async () => {
     try {
-      const mockStats = {
-        totalUsers: 1234,
-        activeUsers: 567,
-        totalSessions: 8901,
-        avgSessionDuration: 45,
-        stats: [
-          { date: '2025-01-01', users: 100, sessions: 200 },
-          { date: '2025-01-02', users: 120, sessions: 230 },
-        ],
-      };
-      setUsageStats(mockStats);
+      setUsageStats(null);
     } catch (err) {
       console.error('Failed to fetch usage stats:', err);
+      setUsageStats(null);
     }
   };
 

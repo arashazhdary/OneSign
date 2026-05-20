@@ -2743,12 +2743,42 @@ export const incidentsService = {
 
 // Lifecycle Service
 export const lifecycleService = {
-  getLifecycleEvents: async (params?: any) => {
+  getLifecycleEvents: async (params?: { tenantId?: string }) => {
     try {
-      const response = await apiClient.get('/api/lifecycle/events', { params });
+      const response = await apiClient.get('/api/tenant/lifecycle/events', { params });
       return response.data;
     } catch (error) {
       console.error('Failed to fetch lifecycle events:', error);
+      return [];
+    }
+  },
+
+  getAccessPackages: async (params?: { tenantId?: string }) => {
+    try {
+      const response = await apiClient.get('/api/tenant/lifecycle/access-packages', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch access packages:', error);
+      return [];
+    }
+  },
+
+  getProcessingStatus: async (params?: { tenantId?: string }) => {
+    try {
+      const response = await apiClient.get('/api/tenant/lifecycle/processing-status', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch processing status:', error);
+      return null;
+    }
+  },
+
+  getUserTimeline: async (userId: string, params?: { tenantId?: string }) => {
+    try {
+      const response = await apiClient.get(`/api/tenant/lifecycle/users/${userId}/timeline`, { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user timeline:', error);
       return [];
     }
   },
@@ -2763,9 +2793,9 @@ export const lifecycleService = {
     }
   },
 
-  getLifecyclePolicies: async () => {
+  getLifecyclePolicies: async (params?: { tenantId?: string }) => {
     try {
-      const response = await apiClient.get('/api/lifecycle/policies');
+      const response = await apiClient.get('/api/tenant/lifecycle/policies', { params });
       return response.data;
     } catch (error) {
       console.error('Failed to fetch lifecycle policies:', error);

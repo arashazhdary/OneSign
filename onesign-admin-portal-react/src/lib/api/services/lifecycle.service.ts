@@ -305,6 +305,42 @@ export const lifecycleService = {
     const response = await apiClient.post('/api/tenant/lifecycle/hr-records/sync-all');
     return response.data;
   },
+
+  getProcessingStatus: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/tenant/lifecycle/processing-status');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch processing status:', error);
+      return null;
+    }
+  },
+
+  getUserTimeline: async (userId: string): Promise<any[]> => {
+    try {
+      const response = await apiClient.get(`/api/tenant/lifecycle/users/${userId}/timeline`);
+      return Array.isArray(response.data) ? response.data : response.data?.items || [];
+    } catch (error) {
+      console.error('Failed to fetch user timeline:', error);
+      return [];
+    }
+  },
+
+  /** @deprecated use getPolicies */
+  getLifecyclePolicies: async (): Promise<LifecyclePolicyDto[]> => {
+    return lifecycleService.getPolicies();
+  },
+
+  /** @deprecated use getEvents */
+  getLifecycleEvents: async (params?: { type?: string; status?: string; page?: number; pageSize?: number }) => {
+    const result = await lifecycleService.getEvents(params);
+    return result.items ?? result;
+  },
+
+  /** @deprecated use createPolicy */
+  createLifecyclePolicy: async (data: CreateLifecyclePolicyDto): Promise<LifecyclePolicyDto> => {
+    return lifecycleService.createPolicy(data);
+  },
 };
 
 export default lifecycleService;

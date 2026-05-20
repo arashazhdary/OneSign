@@ -112,72 +112,6 @@ interface BackupSchedule {
   lastRun?: string;
 }
 
-// Mock data for fallback
-const mockScheduleFallback: BackupSchedule = {
-  id: '1',
-  frequency: 'Daily',
-  time: '02:00',
-  retention: 30,
-  enabled: true,
-  nextRun: new Date(Date.now() + 3600000 * 8).toISOString(),
-  lastRun: new Date(Date.now() - 86400000).toISOString(),
-};
-
-// Note: Mock data backup names will use translation keys when rendered
-const mockBackupsFallback: Backup[] = [
-  {
-    id: '1',
-    name: 'backup_pre_migration',
-    type: 'Pre-Migration',
-    status: 'Verified',
-    size: 2048000,
-    createdAt: new Date(Date.now() - 86400000 * 7).toISOString(),
-    createdBy: 'admin@example.com',
-    expiresAt: new Date(Date.now() + 86400000 * 23).toISOString(),
-    includesUsers: true,
-    includesApps: true,
-    includesSettings: true,
-    verifiedAt: new Date(Date.now() - 86400000 * 7).toISOString(),
-  },
-  {
-    id: '2',
-    name: 'backup_daily_20231214',
-    type: 'Scheduled',
-    status: 'Completed',
-    size: 1843200,
-    createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
-    createdBy: 'System',
-    expiresAt: new Date(Date.now() + 86400000 * 27).toISOString(),
-    includesUsers: true,
-    includesApps: true,
-    includesSettings: true,
-  },
-  {
-    id: '3',
-    name: 'backup_before_changes',
-    type: 'Manual',
-    status: 'Completed',
-    size: 1920000,
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-    createdBy: 'john.doe@example.com',
-    includesUsers: false,
-    includesApps: true,
-    includesSettings: true,
-  },
-  {
-    id: '4',
-    name: 'backup_daily_20231215',
-    type: 'Scheduled',
-    status: 'In Progress',
-    size: 0,
-    createdAt: new Date().toISOString(),
-    createdBy: 'System',
-    includesUsers: true,
-    includesApps: true,
-    includesSettings: true,
-  },
-];
-
 export default function TenantBackupsPage() {
   const { t } = useTranslation();
   const { currentTenant } = useTenantStore();
@@ -235,11 +169,11 @@ export default function TenantBackupsPage() {
 
     try {
       const data = await tenantService.getBackups();
-      setBackups(data || mockBackupsFallback);
+      setBackups(Array.isArray(data) ? data : []);
     } catch (err: any) {
       setError(err?.message || t('common.failedToFetchBackups'));
       console.error('Error fetching backups:', err);
-      setBackups(mockBackupsFallback);
+      setBackups([]);
     }
   };
 
@@ -248,20 +182,18 @@ export default function TenantBackupsPage() {
 
     try {
       const data = await tenantService.getBackupSchedule();
-      const scheduleData = data || mockScheduleFallback;
-
-      setSchedule(scheduleData);
-      setScheduleFrequency(scheduleData.frequency);
-      setScheduleTime(scheduleData.time);
-      setScheduleRetention(scheduleData.retention);
-      setScheduleEnabled(scheduleData.enabled);
+      if (data) {
+        setSchedule(data);
+        setScheduleFrequency(data.frequency);
+        setScheduleTime(data.time);
+        setScheduleRetention(data.retention);
+        setScheduleEnabled(data.enabled);
+      } else {
+        setSchedule(null);
+      }
     } catch (err: any) {
       console.error('Error fetching schedule:', err);
-      setSchedule(mockScheduleFallback);
-      setScheduleFrequency(mockScheduleFallback.frequency);
-      setScheduleTime(mockScheduleFallback.time);
-      setScheduleRetention(mockScheduleFallback.retention);
-      setScheduleEnabled(mockScheduleFallback.enabled);
+      setSchedule(null);
     }
   };
 
@@ -277,7 +209,12 @@ export default function TenantBackupsPage() {
     setSuccess('');
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await tenantService.createBackup({
+        name: backupName,
+        includesUsers: includeUsers,
+        includesApps: includeApps,
+        includesSettings: includeSettings,
+      });
       setSuccess(t('tenant.backups.success.created'));
       setShowCreateModal(false);
       setBackupName('');
@@ -298,7 +235,7 @@ export default function TenantBackupsPage() {
     setSuccess('');
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await tenantService.restoreBackup(selectedBackup.id);
       setSuccess(t('tenant.backups.success.restored'));
       setShowRestoreModal(false);
       setSelectedBackup(null);
@@ -318,8 +255,7 @@ export default function TenantBackupsPage() {
     setSuccess('');
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setSuccess(t('tenant.backups.success.verified'));
+      setError(t('tenant.backups.errors.verifyNotAvailable') || 'Backup verification is not available via API');
       fetchBackups();
     } catch (err) {
       setError(t('tenant.backups.errors.verifyFailed'));

@@ -226,11 +226,7 @@ export default function GlobalBillingPage() {
     setSuccess('');
 
     try {
-      // Note: generateInvoice not in spec - functionality not available
-      // This would need a custom endpoint implementation
-      console.warn('generateInvoice endpoint not implemented');
-      setSuccess(t('global.billing.invoiceGenerated'));
-      fetchInvoices();
+      setError(t('global.billing.invoiceNotAvailable') || 'Invoice generation is not available yet');
     } catch (err: any) {
       setError(err?.message || t('common.error'));
       console.error('Error generating invoice:', err);

@@ -181,10 +181,22 @@ export default function TenantAdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      setPolicies([]);
+      const data = await securityService.getAdaptivePolicies();
+      setPolicies(
+        (data || []).map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          policyType: p.policyType || 'RiskBased',
+          isEnabled: p.isEnabled ?? true,
+          riskLevel: p.riskLevel || 'Medium',
+          action: p.action || 'RequireMFA',
+          createdAt: p.createdAt || new Date().toISOString(),
+        }))
+      );
     } catch (err) {
       console.error('Error fetching policies:', err);
       setError(t('tenant.adaptiveSecurity.messages.failedToFetchPolicies'));
+      setPolicies([]);
     } finally {
       setLoading(false);
     }
@@ -194,10 +206,22 @@ export default function TenantAdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      setSignals([]);
+      const data = await securityService.getSignals();
+      const items = data?.items || data || [];
+      setSignals(
+        items.map((s: any) => ({
+          id: s.id,
+          signalType: s.signalType,
+          description: s.description,
+          severity: s.riskLevel || s.severity || 'Medium',
+          isEnabled: s.isEnabled ?? true,
+          weight: s.weight ?? 1,
+        }))
+      );
     } catch (err) {
       console.error('Error fetching signals:', err);
       setError(t('tenant.adaptiveSecurity.messages.failedToFetchSignals'));
+      setSignals([]);
     } finally {
       setLoading(false);
     }
@@ -207,10 +231,26 @@ export default function TenantAdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      setContexts([]);
+      const users = await securityService.getHighRiskUsers();
+      const ctxList: SecurityContext[] = [];
+      for (const u of (users || []).slice(0, 20)) {
+        const ctx = await securityService.getUserSecurityContext(u.userId);
+        if (ctx) {
+          ctxList.push({
+            userId: ctx.userId,
+            contextData: {
+              riskScore: ctx.riskScore,
+              lastAssessment: new Date().toISOString(),
+              factors: (ctx.recentSignals || []).map((s: any) => s.description || s.signalType),
+            },
+          });
+        }
+      }
+      setContexts(ctxList);
     } catch (err) {
       console.error('Error fetching contexts:', err);
       setError(t('tenant.adaptiveSecurity.messages.failedToFetchContexts'));
+      setContexts([]);
     } finally {
       setLoading(false);
     }
@@ -220,16 +260,22 @@ export default function TenantAdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      setDashboardData({
-        totalPolicies: 12,
-        activePolicies: 8,
-        highRiskUsers: 3,
-        recentEvaluations: 1247,
-        averageRiskScore: 32.5
-      });
+      const data = await securityService.getDashboard();
+      if (data) {
+        setDashboardData({
+          totalPolicies: data.totalPolicies ?? 0,
+          activePolicies: data.activePolicies ?? 0,
+          highRiskUsers: data.highRiskUsers ?? 0,
+          recentEvaluations: data.recentEvaluations ?? 0,
+          averageRiskScore: data.averageRiskScore ?? 0,
+        });
+      } else {
+        setDashboardData(null);
+      }
     } catch (err) {
       console.error('Error fetching dashboard:', err);
       setError(t('tenant.adaptiveSecurity.messages.failedToFetchDashboard'));
+      setDashboardData(null);
     } finally {
       setLoading(false);
     }
@@ -239,10 +285,20 @@ export default function TenantAdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      setHighRiskUsers([]);
+      const data = await securityService.getHighRiskUsers();
+      setHighRiskUsers(
+        (data || []).map((u: any) => ({
+          userId: u.userId,
+          email: u.email,
+          riskScore: u.riskScore,
+          riskFactors: u.riskFactors || [],
+          lastEvaluation: u.lastActivity || new Date().toISOString(),
+        }))
+      );
     } catch (err) {
       console.error('Error fetching high-risk users:', err);
       setError(t('tenant.adaptiveSecurity.messages.failedToFetchHighRisk'));
+      setHighRiskUsers([]);
     } finally {
       setLoading(false);
     }
@@ -252,11 +308,13 @@ export default function TenantAdaptiveSecurityPage() {
     if (!tenantId || !userId) return;
     setLoading(true);
     try {
-      setUserRiskScore(null);
-      setSuccess(`Risk score retrieval not available`);
+      const { riskScore } = await securityService.getUserRiskScore(userId, tenantId);
+      setUserRiskScore(riskScore);
+      setSuccess(t('tenant.adaptiveSecurity.messages.riskScoreLoaded') || 'Risk score loaded');
     } catch (err) {
       console.error('Error fetching user risk score:', err);
       setError('Failed to fetch user risk score');
+      setUserRiskScore(null);
     } finally {
       setLoading(false);
     }
@@ -266,6 +324,10 @@ export default function TenantAdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
+      await securityService.updateAdaptivePolicy(policyId, {
+        name: data.name,
+        isEnabled: data.isEnabled,
+      } as any);
       setSuccess(t('tenant.adaptiveSecurity.messages.policyUpdated'));
       fetchPolicies();
       setEditingPolicy(null);
@@ -280,6 +342,7 @@ export default function TenantAdaptiveSecurityPage() {
     if (!tenantId || !confirm(t('tenant.adaptiveSecurity.confirmDeletePolicy'))) return;
     setLoading(true);
     try {
+      await securityService.deleteAdaptivePolicy(policyId);
       setSuccess(t('tenant.adaptiveSecurity.messages.policyDeleted'));
       fetchPolicies();
     } catch (err) {
@@ -293,6 +356,7 @@ export default function TenantAdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
+      await securityService.updateAdaptivePolicy(policyId, { isEnabled: true });
       setSuccess(t('tenant.adaptiveSecurity.messages.policyEnabled'));
       fetchPolicies();
     } catch (err) {
@@ -306,6 +370,7 @@ export default function TenantAdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
+      await securityService.updateAdaptivePolicy(policyId, { isEnabled: false });
       setSuccess(t('tenant.adaptiveSecurity.messages.policyDisabled'));
       fetchPolicies();
     } catch (err) {
@@ -319,7 +384,8 @@ export default function TenantAdaptiveSecurityPage() {
     if (!tenantId || !userId) return;
     setLoading(true);
     try {
-      setSuccess(`User evaluation not available`);
+      await securityService.evaluateUser(userId, tenantId);
+      setSuccess(t('tenant.adaptiveSecurity.messages.userEvaluated') || 'User evaluated');
       fetchContexts();
     } catch (err) {
       setError('Failed to evaluate user');
@@ -360,6 +426,12 @@ export default function TenantAdaptiveSecurityPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
+      await securityService.createAdaptivePolicy({
+        name: policyForm.name,
+        isEnabled: policyForm.isEnabled,
+        conditions: { policyType: policyForm.policyType, riskLevel: policyForm.riskLevel },
+        actions: { action: policyForm.action },
+      });
       setSuccess(t('tenant.adaptiveSecurity.messages.policyCreated'));
       setShowPolicyModal(false);
       setPolicyForm({ name: '', policyType: 'RiskBased', riskLevel: 'Medium', action: 'RequireMFA', isEnabled: true });

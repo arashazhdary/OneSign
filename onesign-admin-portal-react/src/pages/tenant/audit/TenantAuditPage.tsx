@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '@/hooks/useLocale';
 import { getTenantId } from '@/lib/tenant-context';
-import { securityService } from '@/lib/api/services';
+import { tenantService } from '@/lib/api/services/tenant.service';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -123,36 +123,31 @@ export default function TenantAuditPage() {
 
     try {
       setLoading(true);
-      const params: any = { pageNumber: currentPage, pageSize };
-      if (fromDate) params.fromDate = fromDate;
-      if (toDate) params.toDate = toDate;
-      if (eventTypeFilter) params.eventType = eventTypeFilter;
+      const params: any = { page: currentPage, pageSize };
+      if (fromDate) params.startDate = fromDate;
+      if (toDate) params.endDate = toDate;
+      if (eventTypeFilter) params.action = eventTypeFilter;
 
-      // Mock data for demonstration
-      const mockEvents: AuditEvent[] = Array.from({ length: 15 }, (_, i) => ({
-        id: `event-${i + 1}`,
-        eventType: eventTypes[Math.floor(Math.random() * eventTypes.length)],
-        description: `Sample audit event description ${i + 1}`,
-        actorId: `user-${Math.floor(Math.random() * 100)}`,
-        actorName: `User ${Math.floor(Math.random() * 100)}`,
-        ipAddress: `192.168.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        resourceType: ['User', 'Role', 'Application', 'Settings'][Math.floor(Math.random() * 4)],
-        resourceId: `resource-${Math.floor(Math.random() * 1000)}`,
-        severity: ['low', 'medium', 'high', 'critical'][Math.floor(Math.random() * 4)] as any,
-        status: ['success', 'failure', 'warning'][Math.floor(Math.random() * 3)] as any,
-        createdAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
-      }));
-
-      setEvents(mockEvents);
-      setTotalPages(5);
-
-      // Uncomment when API is ready:
-      // const data = await securityService.getAuditLogs(params);
-      // setEvents(data.items || []);
-      // setTotalPages(Math.ceil(data.totalCount / pageSize));
+      const data = await tenantService.getAuditLogs(params);
+      const items = (data.items || []).map((e: any) => ({
+        id: e.id,
+        eventType: e.action || e.eventType || '',
+        description: e.description || e.message || '',
+        actorId: e.userId || e.actorId,
+        actorName: e.userName || e.actorName,
+        ipAddress: e.ipAddress,
+        userAgent: e.userAgent,
+        resourceType: e.resourceType || e.resource,
+        resourceId: e.resourceId,
+        severity: e.severity,
+        status: e.status,
+        createdAt: e.timestamp || e.createdAt,
+      })) as AuditEvent[];
+      setEvents(items);
+      setTotalPages(data.totalPages || Math.max(1, Math.ceil((data.total || 0) / pageSize)));
     } catch (error) {
       console.error('Error fetching audit events:', error);
+      setEvents([]);
     } finally {
       setLoading(false);
     }

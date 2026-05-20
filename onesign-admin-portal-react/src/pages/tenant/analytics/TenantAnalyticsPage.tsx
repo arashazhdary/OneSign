@@ -171,33 +171,8 @@ export default function TenantAnalyticsPage() {
     } catch (err: any) {
       console.error('Error fetching analytics:', err);
       setError(t('tenant.analytics.errors.failedToLoad'));
-      // Use mock data on error
-      setStats({
-        totalUsers: 1250,
-        activeUsers: 847,
-        totalSignIns: 15230,
-        mfaAdoptionPercent: 78.5,
-        riskScore: 42,
-        highRiskEvents: 12,
-        topApplicationsCount: 45,
-        avgResponseTime: 145,
-      });
-      setTopApplications([
-        { appName: 'HR Portal', signInCount: 3420, uniqueUsers: 420 },
-        { appName: 'CRM System', signInCount: 2870, uniqueUsers: 315 },
-        { appName: 'Email System', signInCount: 2150, uniqueUsers: 680 },
-        { appName: 'Finance App', signInCount: 1890, uniqueUsers: 145 },
-        { appName: 'Dev Tools', signInCount: 1230, uniqueUsers: 89 },
-      ]);
-      setSignInTrend([
-        { date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(), count: 2100 },
-        { date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), count: 2300 },
-        { date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(), count: 1950 },
-        { date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), count: 2400 },
-        { date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), count: 2200 },
-        { date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), count: 2500 },
-        { date: new Date().toISOString(), count: 2180 },
-      ]);
+      setTopApplications([]);
+      setSignInTrend([]);
     } finally {
       setLoading(false);
     }
