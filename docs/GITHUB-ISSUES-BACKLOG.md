@@ -9,7 +9,7 @@
 | **Backend (.NET 10)** | ۳۲+ ماژول پیاده شده؛ بدون `NotImplementedException` در `src/` |
 | **Admin Portal (React)** | UI گسترده (~۱۳۶ صفحه)؛ **۵۰+ صفحه** هنوز mock/fallback دارند |
 | **Login Portal (Next.js)** | SSO flows + branding cache (فرانت آماده؛ backend ETag ناقص) |
-| **SDK** | `Onesign.Sdk.DotNet`, `Onesign.Sdk.AspNetCore`, `@onesign/sdk-node`, `@onesign/react-sdk`؛ CLI **ندارد** |
+| **SDK** | `Onesign.Sdk.DotNet`, `Onesign.Sdk.AspNetCore`, `@onesign/sdk-node`, `@onesign/react-sdk`, `onesign` CLI |
 | **Phases 1–29** | spec و کد backend/modules عمدتاً موجود |
 | **Phase 30** | Copilot پایه هست؛ Sidebar/Guided Security ناقص |
 

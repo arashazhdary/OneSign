@@ -1,16 +1,18 @@
-using System;
+using Onesign.Cli.Commands;
+using System.CommandLine;
 
-namespace Onesign.Cli;
+return await BuildRootCommand().Parse(args).InvokeAsync();
 
-class Program
+static RootCommand BuildRootCommand()
 {
-    static int Main(string[] args)
-    {
-        // Temporary stub implementation to ensure the CLI project builds cleanly.
-        // All backend services (API, modules, data, integration tests) already build without errors.
-        // Full CLI command routing via System.CommandLine can be re-enabled in a later iteration.
+    var root = new RootCommand("OneSign CLI — login, applications, and integration config export");
 
-        Console.WriteLine("OneSign CLI is currently a minimal stub. Backend services build without errors.");
-        return 0;
-    }
+    root.Add(new LoginCommand());
+    root.Add(new LogoutCommand());
+    root.Add(new ConfigCommand());
+    root.Add(new AppsCommand());
+    root.Add(new TenantsCommand());
+    root.Add(new UsersCommand());
+
+    return root;
 }
