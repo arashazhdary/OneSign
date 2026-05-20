@@ -358,6 +358,16 @@ Persian integration guide: [`docs/OneSign-Integration-Guide-FA.md`](docs/OneSign
 
 ## SDKs
 
+**Developer quickstart** (sandbox tenants, sample apps, Postman): [`docs/DEV-SANDBOX-QUICKSTART.md`](docs/DEV-SANDBOX-QUICKSTART.md) · **All samples:** [`samples/README.md`](samples/README.md)
+
+| Package | Purpose |
+|---------|---------|
+| `Onesign.Sdk.DotNet` | OAuth client / API calls |
+| `Onesign.Sdk.AspNetCore` | ASP.NET Core JWT bearer |
+| `@onesign/sdk-node` | Express middleware |
+| `@onesign/react-sdk` | React SPA auth hook |
+| `onesign` CLI | Login, apps, config export |
+
 ### .NET
 
 ```csharp
@@ -392,6 +402,14 @@ const { login, handleCallback, tokenInfo, isAuthenticated } = useOnesignAuth({
 ```
 
 → [`sdk/react-sdk/README.md`](sdk/react-sdk/README.md)
+
+### ASP.NET Core API protection
+
+→ [`src/Onesign.Sdk.AspNetCore/README.md`](src/Onesign.Sdk.AspNetCore/README.md)
+
+### Node.js (Express)
+
+→ [`sdk/node-sdk/README.md`](sdk/node-sdk/README.md)
 
 ---
 

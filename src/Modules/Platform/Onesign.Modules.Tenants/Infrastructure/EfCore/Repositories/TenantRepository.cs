@@ -51,6 +51,7 @@ public class TenantRepository : ITenantRepository
             entity.Name = tenant.Name;
             entity.Slug = tenant.Slug;
             entity.Status = tenant.Status;
+            entity.IsSandbox = tenant.IsSandbox;
             entity.UpdatedAt = DateTime.UtcNow;
             await _dbContext.SaveChangesAsync(cancellationToken);
         }
@@ -73,6 +74,7 @@ public class TenantRepository : ITenantRepository
         Name = entity.Name,
         Slug = entity.Slug,
         Status = entity.Status,
+        IsSandbox = entity.IsSandbox,
         CreatedAt = entity.CreatedAt,
         UpdatedAt = entity.UpdatedAt
     };
@@ -83,6 +85,7 @@ public class TenantRepository : ITenantRepository
         Name = tenant.Name,
         Slug = tenant.Slug,
         Status = tenant.Status,
+        IsSandbox = tenant.IsSandbox,
         CreatedAt = tenant.CreatedAt,
         UpdatedAt = tenant.UpdatedAt
     };

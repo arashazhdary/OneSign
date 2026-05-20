@@ -64,7 +64,8 @@ public class TenantsController : ControllerBase
         var command = new CreateTenantCommand
         {
             Name = request.Name,
-            Slug = request.Slug
+            Slug = request.Slug,
+            IsSandbox = request.IsSandbox
         };
         var result = await _mediator.Send(command);
         

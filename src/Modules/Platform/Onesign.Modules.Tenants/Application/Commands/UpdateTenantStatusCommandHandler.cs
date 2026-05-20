@@ -46,6 +46,7 @@ public class UpdateTenantStatusCommandHandler : IRequestHandler<UpdateTenantStat
             Name = tenant.Name,
             Slug = tenant.Slug,
             Status = tenant.Status,
+            IsSandbox = tenant.IsSandbox,
             CreatedAt = tenant.CreatedAt,
             UpdatedAt = tenant.UpdatedAt
         });

@@ -2,6 +2,8 @@
 
 A minimal but clean React SDK for integrating Onesign SSO into React applications.
 
+**Sample app:** [`samples/onesign-react-spa-sample`](../../samples/onesign-react-spa-sample) · **Developer guide:** [`docs/DEV-SANDBOX-QUICKSTART.md`](../../docs/DEV-SANDBOX-QUICKSTART.md)
+
 ## Installation
 
 ```bash

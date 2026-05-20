@@ -46,6 +46,7 @@ public class CreateTenantCommandHandler : IRequestHandler<CreateTenantCommand, R
             Name = request.Name,
             Slug = request.Slug,
             Status = TenantStatus.Active,
+            IsSandbox = request.IsSandbox,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -77,6 +78,7 @@ public class CreateTenantCommandHandler : IRequestHandler<CreateTenantCommand, R
             Name = createdTenant.Name,
             Slug = createdTenant.Slug,
             Status = createdTenant.Status,
+            IsSandbox = createdTenant.IsSandbox,
             CreatedAt = createdTenant.CreatedAt,
             UpdatedAt = createdTenant.UpdatedAt
         });

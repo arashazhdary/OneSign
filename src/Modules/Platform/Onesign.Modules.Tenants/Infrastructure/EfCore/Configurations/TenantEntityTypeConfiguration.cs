@@ -14,6 +14,7 @@ public class TenantEntityTypeConfiguration : IEntityTypeConfiguration<TenantEnti
         builder.Property(x => x.Slug).IsRequired().HasMaxLength(100);
         builder.HasIndex(x => x.Slug).IsUnique();
         builder.Property(x => x.Status).IsRequired();
+        builder.Property(x => x.IsSandbox).IsRequired().HasDefaultValue(false);
         builder.Property(x => x.CreatedAt).IsRequired();
     }
 }

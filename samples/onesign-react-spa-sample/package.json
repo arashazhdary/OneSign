@@ -1,0 +1,24 @@
+{
+  "name": "onesign-react-spa-sample",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Minimal React SPA sample using @onesign/react-sdk",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@onesign/react-sdk": "file:../../sdk/react-sdk",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.9.3",
+    "vite": "^6.0.0"
+  }
+}

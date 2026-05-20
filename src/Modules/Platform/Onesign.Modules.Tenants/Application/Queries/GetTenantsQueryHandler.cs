@@ -32,7 +32,8 @@ public class GetTenantsQueryHandler : IRequestHandler<GetTenantsQuery, PagedResu
                 Id = x.Id,
                 Name = x.Name,
                 Slug = x.Slug,
-                Status = x.Status
+                Status = x.Status,
+                IsSandbox = x.IsSandbox
             }).ToList(),
             TotalCount = totalCount,
             PageNumber = request.PageNumber,
