@@ -4,11 +4,14 @@ import { persist } from 'zustand/middleware';
 interface UIState {
   sidebarCollapsed: boolean;
   darkMode: boolean;
+  copilotOpen: boolean;
 
   toggleSidebar: () => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
   toggleDarkMode: () => void;
   setDarkMode: (enabled: boolean) => void;
+  toggleCopilot: () => void;
+  setCopilotOpen: (open: boolean) => void;
 }
 
 export const useUIStore = create<UIState>()(
@@ -16,6 +19,7 @@ export const useUIStore = create<UIState>()(
     (set) => ({
       sidebarCollapsed: false,
       darkMode: false,
+      copilotOpen: false,
 
       toggleSidebar: () =>
         set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
@@ -42,6 +46,11 @@ export const useUIStore = create<UIState>()(
         }
         set({ darkMode: enabled });
       },
+
+      toggleCopilot: () =>
+        set((state) => ({ copilotOpen: !state.copilotOpen })),
+
+      setCopilotOpen: (open) => set({ copilotOpen: open }),
     }),
     {
       name: 'ui-storage',

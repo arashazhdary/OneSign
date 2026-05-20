@@ -1,18 +1,21 @@
 import { motion } from 'framer-motion';
-import { Bell, Moon, Sun, LogOut, User, Languages } from 'lucide-react';
+import { Bell, Moon, Sun, LogOut, User, Languages, Bot } from 'lucide-react';
 import { useUIStore } from '@/stores/uiStore';
 import { useAuthStore } from '@/stores/authStore';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/utils/cn';
 import { useDirection } from '@/hooks/useDirection';
 
 const TopBar: React.FC = () => {
-  const { darkMode, toggleDarkMode, sidebarCollapsed } = useUIStore();
+  const { darkMode, toggleDarkMode, sidebarCollapsed, copilotOpen, toggleCopilot } = useUIStore();
   const { user, logout } = useAuthStore();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
+  const showCopilotToggle =
+    location.pathname.startsWith('/tenant') || location.pathname.startsWith('/global');
   const { isRTL } = useDirection();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -67,6 +70,24 @@ const TopBar: React.FC = () => {
       </div>
 
       <div className="flex items-center gap-3">
+        {showCopilotToggle && (
+          <motion.button
+            onClick={toggleCopilot}
+            className={cn(
+              'p-2 rounded-lg transition-colors',
+              copilotOpen
+                ? 'bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-300'
+                : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400'
+            )}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            title={t('tenant.copilot.title', 'OneSign Copilot')}
+            aria-pressed={copilotOpen}
+          >
+            <Bot className="w-5 h-5" />
+          </motion.button>
+        )}
+
         {/* Dark mode toggle */}
         <motion.button
           onClick={toggleDarkMode}

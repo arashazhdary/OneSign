@@ -1,45 +1,98 @@
 import apiClient from '@/services/apiClient';
 
+export type CopilotScope = 'tenant' | 'global';
+
+export interface CopilotQueryRequest {
+  message: string;
+  contextType: string;
+  contextId?: string;
+  conversationId?: string;
+  locale?: string;
+}
+
+export interface CopilotSuggestedAction {
+  type: string;
+  label: string;
+  parameters?: Record<string, string>;
+}
+
+export interface CopilotQueryResult {
+  conversationId: string;
+  messageId: string;
+  answerText: string;
+  suggestedActions: CopilotSuggestedAction[];
+}
+
+const scopePrefix = (scope: CopilotScope) =>
+  scope === 'global' ? '/api/global/copilot' : '/api/tenant/copilot';
+
 export const copilotService = {
-  query: async (query: string) => {
-    try {
-      const response = await apiClient.post('/api/copilot/query', { query });
-      return response.data;
-    } catch (error) {
-      console.error('Failed to query copilot:', error);
-      throw error;
-    }
+  sendQuery: async (scope: CopilotScope, request: CopilotQueryRequest): Promise<CopilotQueryResult> => {
+    const response = await apiClient.post(`${scopePrefix(scope)}/query`, {
+      message: request.message,
+      contextType: request.contextType,
+      contextId: request.contextId || undefined,
+      conversationId: request.conversationId || undefined,
+      locale: request.locale || 'en',
+    });
+    const data = response.data;
+    return {
+      conversationId: data.conversationId,
+      messageId: data.messageId,
+      answerText: data.answerText ?? data.response ?? '',
+      suggestedActions: (data.suggestedActions ?? []).map((a: any) => ({
+        type: a.type ?? a.actionType ?? '',
+        label: a.label ?? String(a.type ?? ''),
+        parameters: a.parameters ?? {},
+      })),
+    };
   },
 
-  getSuggestions: async (context: string) => {
+  getConversations: async (scope: CopilotScope, limit = 10) => {
     try {
-      const response = await apiClient.post('/api/copilot/suggestions', { context });
-      return response.data;
+      const response = await apiClient.get(`${scopePrefix(scope)}/conversations`, {
+        params: { limit },
+      });
+      return response.data ?? [];
     } catch (error) {
-      console.error('Failed to get suggestions:', error);
+      console.error('Failed to fetch copilot conversations:', error);
       return [];
     }
   },
 
-  getConversationHistory: async () => {
+  getConversation: async (scope: CopilotScope, conversationId: string) => {
     try {
-      const response = await apiClient.get('/api/copilot/history');
+      const response = await apiClient.get(`${scopePrefix(scope)}/conversations/${conversationId}`);
       return response.data;
     } catch (error) {
-      console.error('Failed to get conversation history:', error);
-      return [];
+      console.error('Failed to fetch copilot conversation:', error);
+      return null;
     }
   },
 
-  clearHistory: async () => {
-    try {
-      const response = await apiClient.delete('/api/copilot/history');
-      return response.data;
-    } catch (error) {
-      console.error('Failed to clear history:', error);
-      throw error;
-    }
+  executeAction: async (
+    scope: CopilotScope,
+    actionType: string,
+    parameters: Record<string, string> = {}
+  ) => {
+    const response = await apiClient.post(`${scopePrefix(scope)}/actions/execute`, {
+      actionType,
+      parameters,
+    });
+    return response.data;
   },
+
+  // Legacy aliases (tenant)
+  query: async (message: string, options?: Partial<CopilotQueryRequest>) =>
+    copilotService.sendQuery('tenant', {
+      message,
+      contextType: options?.contextType ?? 'Generic',
+      contextId: options?.contextId,
+      conversationId: options?.conversationId,
+      locale: options?.locale,
+    }),
+
+  getConversationHistory: async () => copilotService.getConversations('tenant'),
 
   // ==================== GLOBAL COPILOT METHODS ====================
   getGlobalSettings: async () => {

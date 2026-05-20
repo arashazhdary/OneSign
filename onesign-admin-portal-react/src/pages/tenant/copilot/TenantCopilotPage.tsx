@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { getTenantId } from '@/lib/tenant-context';
-import { copilotService } from '@/lib/api/services/copilot.service';
+import { copilotService, type CopilotSuggestedAction } from '@/lib/api/services/copilot.service';
 import { useAuth } from '@/app/contexts/AuthContext';
+import { useCopilotContext } from '@/app/contexts/CopilotContext';
 import { Helmet } from 'react-helmet-async';
 import {
   Bot,
@@ -32,7 +34,7 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
-  suggestedActions?: string[];
+  suggestedActions?: CopilotSuggestedAction[];
 }
 
 interface Conversation {
@@ -66,12 +68,24 @@ interface AnalysisResult {
   score: number;
 }
 
-type ContextType = 'Dashboard' | 'User' | 'Application' | 'Incident' | 'Policy' | 'Hunt' | 'Generic';
+type ContextType = 'Dashboard' | 'Incident' | 'Policy' | 'ChangeSet' | 'Hunting' | 'Automation' | 'Generic';
 type SidebarTab = 'suggestions' | 'insights' | 'analysis';
 
+const CONTEXT_PROMPTS: Record<ContextType, string[]> = {
+  Dashboard: ['Summarize tenant security posture', 'What should I review today?'],
+  Incident: ['Summarize this incident', 'Suggest remediation steps'],
+  Policy: ['Explain this policy impact', 'Who is affected by this policy?'],
+  ChangeSet: ['What is the blast radius of pending changes?', 'Simulate this change set'],
+  Hunting: ['Suggest hunt queries for suspicious sign-ins', 'Draft a threat hunt'],
+  Automation: ['Suggest automation for repetitive tasks'],
+  Generic: ['How can I improve MFA adoption?', 'List open high-severity alerts'],
+};
+
 export default function TenantCopilotPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const { user } = useAuth();
+  const { pageContext } = useCopilotContext();
   const [tenantId, setTenantIdState] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -92,7 +106,11 @@ export default function TenantCopilotPage() {
   const [analyzing, setAnalyzing] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const contextTypes: ContextType[] = ['Dashboard', 'User', 'Application', 'Incident', 'Policy', 'Hunt', 'Generic'];
+  const contextTypes: ContextType[] = ['Dashboard', 'Incident', 'Policy', 'ChangeSet', 'Hunting', 'Automation', 'Generic'];
+
+  useEffect(() => {
+    setSelectedContext(pageContext.contextType as ContextType);
+  }, [pageContext.contextType]);
 
   useEffect(() => {
     const contextTenantId = getTenantId();
@@ -116,8 +134,16 @@ export default function TenantCopilotPage() {
   const fetchConversations = async () => {
     setLoading(true);
     try {
-      const data = await copilotService.getConversationHistory();
-      setConversations(data.map(conv => ({ id: conv.id, title: conv.title || t('tenant.copilot.untitledConversation'), contextType: conv.context || 'Generic', createdAt: conv.createdAt || new Date().toISOString(), lastMessageAt: conv.updatedAt || conv.createdAt || new Date().toISOString() })));
+      const data = await copilotService.getConversations('tenant');
+      setConversations(
+        data.map((conv: { conversationId: string; createdAt: string; lastMessageAt: string }) => ({
+          id: conv.conversationId,
+          title: t('tenant.copilot.untitledConversation'),
+          contextType: 'Generic',
+          createdAt: conv.createdAt,
+          lastMessageAt: conv.lastMessageAt,
+        }))
+      );
     } catch (err) {
       console.error('Error fetching conversations:', err);
     } finally {
@@ -126,8 +152,33 @@ export default function TenantCopilotPage() {
   };
 
   const fetchMessages = async (conversationId: string) => {
-    const data: any[] = [];
-    setMessages(data.map(msg => ({ id: msg.id, role: msg.role as 'user' | 'assistant', content: msg.content, timestamp: new Date(msg.timestamp || Date.now()), suggestedActions: undefined })));
+    const conv = await copilotService.getConversation('tenant', conversationId);
+    if (!conv?.messages) {
+      setMessages([]);
+      return;
+    }
+    setMessages(
+      conv.messages.map(
+        (msg: {
+          messageId: string;
+          role: string;
+          content: string;
+          createdAt: string;
+          suggestedActions?: CopilotSuggestedAction[];
+        }) => ({
+          id: msg.messageId,
+          role: msg.role.toLowerCase() === 'user' ? 'user' : 'assistant',
+          content: msg.content,
+          timestamp: new Date(msg.createdAt),
+          suggestedActions: (msg.suggestedActions ?? []).map((a: { type: string; label: string; parameters?: Record<string, string> }) => ({
+            type: a.type,
+            label: a.label,
+            parameters: a.parameters,
+          })),
+        })
+      )
+    );
+    setActiveConversationId(conversationId);
   };
 
   const handleSelectConversation = async (conversation: Conversation) => {
@@ -138,6 +189,34 @@ export default function TenantCopilotPage() {
 
   const handleNewConversation = () => { setActiveConversationId(null); setMessages([]); setSelectedContext('Generic'); };
 
+  const runSuggestedAction = useCallback(
+    async (action: CopilotSuggestedAction) => {
+      const params: Record<string, string> = { ...(action.parameters ?? {}) };
+      if (pageContext.contextId && !params.contextId) {
+        params.contextId = pageContext.contextId;
+      }
+      try {
+        const result = await copilotService.executeAction('tenant', action.type, params);
+        if (result?.resultUrl) {
+          const url = result.resultUrl.startsWith('/tenant')
+            ? result.resultUrl
+            : `/tenant${result.resultUrl.startsWith('/') ? result.resultUrl : `/${result.resultUrl}`}`;
+          navigate(url);
+          return;
+        }
+        if (result?.message) {
+          setMessages((prev) => [
+            ...prev,
+            { id: `act-${Date.now()}`, role: 'assistant', content: result.message, timestamp: new Date() },
+          ]);
+        }
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : t('common.error'));
+      }
+    },
+    [navigate, pageContext.contextId, t]
+  );
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputMessage.trim() || sending) return;
@@ -145,29 +224,55 @@ export default function TenantCopilotPage() {
     setSending(true);
     const userMessage: Message = { id: `temp-${Date.now()}`, role: 'user', content: inputMessage, timestamp: new Date() };
     setMessages(prev => [...prev, userMessage]);
+    const text = inputMessage;
     setInputMessage('');
 
     try {
-      const data = { messageId: `assistant-${Date.now()}`, response: 'I apologize, but the copilot query functionality is not currently available.', suggestions: [] };
-      const assistantMessage: Message = { id: data.messageId, role: 'assistant', content: data.response, timestamp: new Date(), suggestedActions: data.suggestions };
+      const data = await copilotService.sendQuery('tenant', {
+        message: text,
+        contextType: selectedContext,
+        contextId: pageContext.contextId,
+        conversationId: activeConversationId ?? undefined,
+        locale: i18n.language?.startsWith('fa') ? 'fa' : 'en',
+      });
+      const assistantMessage: Message = {
+        id: data.messageId,
+        role: 'assistant',
+        content: data.answerText,
+        timestamp: new Date(),
+        suggestedActions: data.suggestedActions,
+      };
       setMessages(prev => [...prev, assistantMessage]);
-      if (!activeConversationId && (data as any).conversationId) { setActiveConversationId((data as any).conversationId); fetchConversations(); }
-    } catch (err: any) {
-      setError(err?.message || t('common.error'));
+      if (!activeConversationId) {
+        setActiveConversationId(data.conversationId);
+        fetchConversations();
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t('common.error'));
     } finally {
       setSending(false);
     }
   };
 
-  const handleSuggestedAction = (action: string) => setInputMessage(action);
+  const handleSuggestedAction = (action: CopilotSuggestedAction | string) => {
+    if (typeof action === 'string') {
+      setInputMessage(action);
+      return;
+    }
+    void runSuggestedAction(action);
+  };
 
   const fetchSuggestions = async () => {
-    try {
-      const data = await copilotService.getSuggestions(selectedContext);
-      setSuggestions(data.map((s: any) => ({ id: s.id || `suggestion-${Date.now()}`, title: s.title || s.label || 'Suggestion', description: s.description || '', category: s.category || 'General', priority: s.priority || 'Medium' })));
-    } catch (err) {
-      console.error('Error fetching suggestions:', err);
-    }
+    const prompts = CONTEXT_PROMPTS[selectedContext] ?? CONTEXT_PROMPTS.Generic;
+    setSuggestions(
+      prompts.map((title, index) => ({
+        id: `prompt-${index}`,
+        title,
+        description: '',
+        category: selectedContext,
+        priority: 'Medium',
+      }))
+    );
   };
 
   const fetchInsights = async () => {
@@ -179,11 +284,21 @@ export default function TenantCopilotPage() {
     setAnalyzing(true);
     setError('');
     try {
-      const data = { results: { summary: 'Analysis functionality not currently available', findings: [] } };
-      setAnalysisResult({ summary: data.results?.summary || '', findings: data.results?.findings?.map((f: any) => ({ category: f.type || 'General', severity: f.severity || 'medium', description: f.description || '', recommendation: f.recommendation || '' })) || [], score: 0 });
+      const data = await copilotService.sendQuery('tenant', {
+        message: t('tenant.copilot.analyzePrompt', 'Analyze current security context and list top risks.'),
+        contextType: selectedContext,
+        contextId: pageContext.contextId,
+        conversationId: activeConversationId ?? undefined,
+        locale: i18n.language?.startsWith('fa') ? 'fa' : 'en',
+      });
+      setAnalysisResult({
+        summary: data.answerText,
+        findings: [],
+        score: 0,
+      });
       setSidebarTab('analysis');
-    } catch (err: any) {
-      setError(err?.message || t('common.error'));
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t('common.error'));
     } finally {
       setAnalyzing(false);
     }
@@ -200,7 +315,7 @@ export default function TenantCopilotPage() {
   };
 
   const getContextIcon = (context: ContextType) => {
-    const icons: Record<string, React.ReactNode> = { Dashboard: <BarChart3 className="w-4 h-4" />, User: <User className="w-4 h-4" />, Application: <AppWindow className="w-4 h-4" />, Incident: <AlertTriangle className="w-4 h-4" />, Policy: <FileText className="w-4 h-4" />, Hunt: <Search className="w-4 h-4" />, Generic: <MessageSquare className="w-4 h-4" /> };
+    const icons: Record<string, React.ReactNode> = { Dashboard: <BarChart3 className="w-4 h-4" />, Incident: <AlertTriangle className="w-4 h-4" />, Policy: <FileText className="w-4 h-4" />, ChangeSet: <FileText className="w-4 h-4" />, Hunting: <Search className="w-4 h-4" />, Automation: <Activity className="w-4 h-4" />, Generic: <MessageSquare className="w-4 h-4" /> };
     return icons[context] || <MessageSquare className="w-4 h-4" />;
   };
 
@@ -320,7 +435,7 @@ export default function TenantCopilotPage() {
                         <div className="flex flex-wrap gap-2">
                           {message.suggestedActions.map((action, i) => (
                             <motion.button key={i} whileHover={{ scale: 1.05 }} onClick={() => handleSuggestedAction(action)} className="px-3 py-1 text-xs bg-gray-100 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-full hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors">
-                              {action}
+                              {action.label || action.type}
                             </motion.button>
                           ))}
                         </div>
