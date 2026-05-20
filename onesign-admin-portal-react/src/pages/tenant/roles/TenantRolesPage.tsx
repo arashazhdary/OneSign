@@ -24,6 +24,7 @@ import {
   Eye,
   ChevronRight
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { getTenantId } from '@/lib/tenant-context';
 import { rolesService } from '@/lib/api/services/roles.service';
 
@@ -133,6 +134,7 @@ const StatCard = ({ title, value, icon, color, delay = 0 }: {
 
 export default function TenantRolesPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { isRTL } = useDirection();
   const [tenantId, setTenantIdState] = useState<string | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
@@ -566,6 +568,13 @@ export default function TenantRolesPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex gap-2">
+                        <button
+                          onClick={() => navigate(`/tenant/roles/${role.id}`)}
+                          className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                          title={t('common.view')}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
                         <button
                           onClick={() => handleEditRole(role)}
                           disabled={role.isSystem}

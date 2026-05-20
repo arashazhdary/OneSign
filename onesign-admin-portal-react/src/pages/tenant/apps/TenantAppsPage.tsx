@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useLocale } from '@/hooks/useLocale';
 import { getTenantId } from '@/lib/tenant-context';
 import { getCurrentUserScope, CurrentUserScopeDto } from '@/lib/api/users';
@@ -74,6 +75,7 @@ const StatCard = ({ title, value, icon, color, delay }: StatCardProps) => (
 
 export default function TenantAppsPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const locale = useLocale();
   const [applications, setApplications] = useState<Application[]>([]);
   const [orgTree, setOrgTree] = useState<OrgUnitTreeNode[]>([]);
@@ -647,7 +649,13 @@ export default function TenantAppsPage() {
                         {getAppTypeIcon(app.applicationType)}
                       </div>
                       <div>
-                        <p className="font-medium text-gray-900">{app.name}</p>
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/tenant/apps/${app.id}`)}
+                          className="font-medium text-gray-900 hover:text-indigo-600 text-start"
+                        >
+                          {app.name}
+                        </button>
                       </div>
                     </div>
                   </td>
@@ -666,6 +674,13 @@ export default function TenantAppsPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => navigate(`/tenant/apps/${app.id}`)}
+                        className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                        title={t('common.view')}
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </button>
                       <button
                         onClick={() => handleEditApplication(app)}
                         className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"

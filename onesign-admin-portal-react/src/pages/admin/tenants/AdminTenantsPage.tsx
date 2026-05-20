@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { adminService } from '@/lib/api/services/admin.service';
 
 interface Tenant {
@@ -11,6 +12,7 @@ interface Tenant {
 
 export default function AdminTenantsPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -64,6 +66,20 @@ export default function AdminTenantsPage() {
     } catch (error: any) {
       setError(error.errorMessage || t('common.error'));
       console.error('Error updating tenant status:', error);
+    }
+  };
+
+  const handleDeleteTenant = async (tenantId: string, tenantName: string) => {
+    if (!confirm(t('admin.tenants.confirmDelete', { name: tenantName }) || `Delete ${tenantName}?`)) return;
+    setError('');
+    setSuccess('');
+    try {
+      await adminService.deleteAdminTenant(tenantId);
+      setSuccess(t('admin.tenants.tenantDeleted') || t('common.deleted'));
+      fetchTenants();
+    } catch (error: any) {
+      setError(error.response?.data?.message || error.errorMessage || t('common.error'));
+      console.error('Error deleting tenant:', error);
     }
   };
 
@@ -154,15 +170,38 @@ export default function AdminTenantsPage() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{tenant.slug}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{tenant.status}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <select
-                    value={tenant.status}
-                    onChange={(e) => handleUpdateStatus(tenant.id, e.target.value)}
-                    className="text-sm border rounded px-2 py-1"
-                  >
-                    <option value="Active">Active</option>
-                    <option value="Suspended">Suspended</option>
-                    <option value="Inactive">Inactive</option>
-                  </select>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <select
+                      value={tenant.status}
+                      onChange={(e) => handleUpdateStatus(tenant.id, e.target.value)}
+                      className="text-sm border rounded px-2 py-1"
+                    >
+                      <option value="Active">Active</option>
+                      <option value="Suspended">Suspended</option>
+                      <option value="Inactive">Inactive</option>
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/global/tenants?tenantId=${tenant.id}`)}
+                      className="text-indigo-600 hover:text-indigo-800 text-xs font-medium"
+                    >
+                      {t('common.view')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/global/settings?tenantId=${tenant.id}`)}
+                      className="text-gray-600 hover:text-gray-800 text-xs font-medium"
+                    >
+                      {t('common.settings')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteTenant(tenant.id, tenant.name)}
+                      className="text-red-600 hover:text-red-800 text-xs font-medium"
+                    >
+                      {t('common.delete')}
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

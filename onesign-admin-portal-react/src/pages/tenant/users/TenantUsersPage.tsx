@@ -19,6 +19,7 @@ import {
   Check,
   AlertCircle
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useLocale } from '@/hooks/useLocale';
 import { getTenantId } from '@/lib/tenant-context';
 import { usersService } from '@/lib/api/services/users.service';
@@ -73,6 +74,7 @@ const StatCard = ({ title, value, icon, color, delay = 0 }: {
 
 export default function TenantUsersPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const locale = useLocale();
   const [users, setUsers] = useState<TenantUserDto[]>([]);
   const [orgTree, setOrgTree] = useState<OrgUnitTreeNode[]>([]);
@@ -203,6 +205,10 @@ export default function TenantUsersPage() {
       setError(error?.message || t('common.error'));
       console.error('Error inviting user:', error);
     }
+  };
+
+  const handleViewUser = (userId: string) => {
+    navigate(`/tenant/users/${userId}`);
   };
 
   const handleDisableUser = async (userId: string) => {
@@ -520,9 +526,13 @@ export default function TenantUsersPage() {
                           {user.firstName?.[0] || user.email?.[0]?.toUpperCase()}
                         </div>
                         <div>
-                          <div className="text-sm font-semibold text-gray-900">
+                          <button
+                            type="button"
+                            onClick={() => handleViewUser(user.id)}
+                            className="text-sm font-semibold text-gray-900 hover:text-indigo-600 text-start"
+                          >
                             {user.firstName} {user.lastName}
-                          </div>
+                          </button>
                           <div className="text-xs text-gray-500">
                             {user.id?.slice(0, 8)}...
                           </div>
@@ -559,6 +569,12 @@ export default function TenantUsersPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <div className="flex gap-2">
+                        <button
+                          onClick={() => handleViewUser(user.id)}
+                          className="px-3 py-1 text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 rounded-lg transition-colors font-medium"
+                        >
+                          {t('common.view')}
+                        </button>
                         <button
                           onClick={() => handleAssignOrgUnits(user)}
                           className="px-3 py-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors font-medium"

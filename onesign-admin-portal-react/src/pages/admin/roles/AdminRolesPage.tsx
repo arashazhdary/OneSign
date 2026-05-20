@@ -12,6 +12,8 @@ export default function AdminRolesPage() {
   const [roles, setRoles] = useState<PlatformRoleDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+  const [editingRoleId, setEditingRoleId] = useState<string | null>(null);
   const [selectedRole, setSelectedRole] = useState<PlatformRoleDto | null>(null);
   const [newRoleName, setNewRoleName] = useState('');
   const [newRoleDescription, setNewRoleDescription] = useState('');
@@ -64,6 +66,42 @@ export default function AdminRolesPage() {
       fetchRoles();
     } catch (err: any) {
       console.error('Failed to create platform role:', err);
+      setError(err.response?.data?.message || t('common.failedToSaveRole'));
+    }
+  };
+
+  const openEditModal = (role: PlatformRoleDto) => {
+    setEditingRoleId(role.id);
+    setNewRoleName(role.name);
+    setNewRoleDescription(role.description);
+    setNewRolePermissions([...role.permissions]);
+    setNewRoleIsDefault(role.isDefault);
+    setSelectedRole(null);
+    setShowEdit(true);
+  };
+
+  const handleUpdate = async () => {
+    if (!editingRoleId || !newRoleName.trim()) {
+      setError(t('admin.roles.validation.nameRequired'));
+      return;
+    }
+    setError('');
+    try {
+      await adminService.updatePlatformRole(editingRoleId, {
+        name: newRoleName,
+        description: newRoleDescription,
+        permissions: newRolePermissions,
+        isDefault: newRoleIsDefault,
+      });
+      setShowEdit(false);
+      setEditingRoleId(null);
+      setNewRoleName('');
+      setNewRoleDescription('');
+      setNewRolePermissions([]);
+      setNewRoleIsDefault(false);
+      fetchRoles();
+    } catch (err: any) {
+      console.error('Failed to update platform role:', err);
       setError(err.response?.data?.message || t('common.failedToSaveRole'));
     }
   };
@@ -225,7 +263,10 @@ export default function AdminRolesPage() {
                 </button>
                 {role.type === 'custom' && (
                   <>
-                    <button className="px-3 py-1 text-sm border border-blue-300 text-blue-600 rounded hover:bg-blue-50">
+                    <button
+                      onClick={() => openEditModal(role)}
+                      className="px-3 py-1 text-sm border border-blue-300 text-blue-600 rounded hover:bg-blue-50"
+                    >
                       {t('admin.roles.buttons.edit')}
                     </button>
                     <button
@@ -308,10 +349,82 @@ export default function AdminRolesPage() {
                   {t('admin.roles.buttons.close')}
                 </button>
                 {selectedRole.type === 'custom' && (
-                  <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                  <button
+                    onClick={() => openEditModal(selectedRole)}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  >
                     {t('admin.roles.buttons.editRole')}
                   </button>
                 )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {showEdit && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4">{t('admin.roles.buttons.editRole')}</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">{t('admin.roles.createModal.roleName')}</label>
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                  value={newRoleName}
+                  onChange={(e) => setNewRoleName(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">{t('admin.roles.createModal.description')}</label>
+                <textarea
+                  className="w-full border border-gray-300 rounded-lg p-2"
+                  rows={3}
+                  value={newRoleDescription}
+                  onChange={(e) => setNewRoleDescription(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">{t('admin.roles.createModal.permissions')}</label>
+                <div className="border border-gray-300 rounded-lg p-4 max-h-96 overflow-y-auto">
+                  {allPermissions.map((group, idx) => (
+                    <div key={idx} className="mb-4">
+                      <h4 className="font-semibold text-sm mb-2">{group.category}</h4>
+                      <div className="space-y-1 ml-4">
+                        {group.perms.map((perm, pidx) => (
+                          <label key={pidx} className="flex items-center text-sm">
+                            <input
+                              type="checkbox"
+                              className="mr-2"
+                              checked={newRolePermissions.includes(perm)}
+                              onChange={() => togglePermission(perm)}
+                            />
+                            <span className="font-mono">{perm}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex justify-end space-x-2 pt-4">
+                <button
+                  onClick={() => {
+                    setShowEdit(false);
+                    setEditingRoleId(null);
+                  }}
+                  className="px-4 py-2 border border-gray-300 rounded-lg"
+                >
+                  {t('admin.roles.buttons.cancel')}
+                </button>
+                <button
+                  onClick={handleUpdate}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  {t('common.save')}
+                </button>
               </div>
             </div>
           </div>

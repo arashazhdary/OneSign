@@ -420,3 +420,6 @@ obj/
 #Nuget packages folder
 packages/
 /nul
+
+# Local tooling (gh CLI download, etc.)
+.tools/
