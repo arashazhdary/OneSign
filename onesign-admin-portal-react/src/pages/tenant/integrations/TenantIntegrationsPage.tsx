@@ -150,92 +150,6 @@ const AVAILABLE_INTEGRATIONS: AvailableIntegration[] = [
   },
 ];
 
-// Mock active integrations
-const mockActiveIntegrations: Integration[] = [
-  {
-    id: '1',
-    type: 'active-directory',
-    name: 'Corporate AD',
-    description: 'Main Active Directory for corporate users',
-    isActive: true,
-    status: 'healthy',
-    lastSyncAt: '2024-02-15T10:30:00Z',
-    config: {},
-    syncedUsers: 1250,
-    errorCount: 0,
-  },
-  {
-    id: '2',
-    type: 'okta',
-    name: 'Okta SSO',
-    description: 'Single Sign-On provider',
-    isActive: true,
-    status: 'healthy',
-    lastSyncAt: '2024-02-15T11:00:00Z',
-    config: {},
-    syncedUsers: 850,
-    errorCount: 2,
-  },
-];
-
-// Mock sync logs
-const mockSyncLogs: SyncLog[] = [
-  {
-    id: '1',
-    integrationId: '1',
-    timestamp: '2024-02-15T10:30:00Z',
-    status: 'success',
-    message: 'Full sync completed successfully',
-    usersProcessed: 1250,
-    errors: 0,
-  },
-  {
-    id: '2',
-    integrationId: '2',
-    timestamp: '2024-02-15T11:00:00Z',
-    status: 'success',
-    message: 'Incremental sync completed with warnings',
-    usersProcessed: 45,
-    errors: 2,
-  },
-  {
-    id: '3',
-    integrationId: '1',
-    timestamp: '2024-02-15T04:00:00Z',
-    status: 'success',
-    message: 'Scheduled sync completed',
-    usersProcessed: 1248,
-    errors: 0,
-  },
-];
-
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ElementType;
-  color: string;
-  delay: number;
-}
-
-const StatCard = ({ title, value, icon: Icon, color, delay }: StatCardProps) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: delay * 0.1 }}
-    className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all duration-300"
-  >
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-sm font-medium text-gray-500">{title}</p>
-        <p className="text-3xl font-bold text-gray-900 mt-1">{value}</p>
-      </div>
-      <div className={`p-4 rounded-xl bg-gradient-to-br ${color}`}>
-        <Icon className="w-6 h-6 text-white" />
-      </div>
-    </div>
-  </motion.div>
-);
-
 export default function TenantIntegrationsPage() {
   const { t } = useTranslation();
   const locale = useLocale();
@@ -272,10 +186,10 @@ export default function TenantIntegrationsPage() {
     if (!tenantId) return;
     try {
       const data = await tenantService.getIntegrations();
-      setIntegrations(data?.length ? data : mockActiveIntegrations);
+      setIntegrations(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching integrations:', error);
-      setIntegrations(mockActiveIntegrations);
+      setIntegrations([]);
     } finally {
       setLoading(false);
     }
@@ -284,7 +198,7 @@ export default function TenantIntegrationsPage() {
   const fetchSyncLogs = async () => {
     if (!tenantId) return;
     try {
-      setSyncLogs(mockSyncLogs);
+      setSyncLogs([]);
     } catch (error) {
       console.error('Error fetching sync logs:', error);
     }
@@ -335,15 +249,8 @@ export default function TenantIntegrationsPage() {
     setShowTestModal(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      const mockData = {
-        status: 'success',
-        message: 'Connection test successful',
-        integration: integration.name,
-        latency: '45ms',
-        serverVersion: '3.2.1',
-      };
-      setTestResult(JSON.stringify(mockData, null, 2));
+      const result = await tenantService.getIntegrationById(integration.id);
+      setTestResult(JSON.stringify(result ?? { status: integration.status, name: integration.name }, null, 2));
       setTestStatus('success');
     } catch (error: any) {
       setTestResult(error?.message || 'Connection failed');

@@ -152,58 +152,12 @@ export default function TenantAlertsPage() {
     setLoading(true);
     try {
       const data = await securityService.getAlertRules();
+      setAlertRules(Array.isArray(data) ? data : []);
 
-      const mockRules: AlertRule[] = [
-        {
-          id: '1',
-          name: 'High CPU Usage Alert',
-          description: 'Alert when CPU usage exceeds 80%',
-          condition: { type: 'threshold', metric: 'cpu_usage', operator: '>', value: 80 },
-          channels: [
-            { type: 'email', config: { recipients: ['admin@example.com'] } },
-            { type: 'slack', config: { webhook: 'https://hooks.slack.com/...' } },
-          ],
-          isEnabled: true,
-          isMuted: false,
-          severity: 'high',
-          createdAt: new Date().toISOString(),
-          lastTriggered: new Date(Date.now() - 3600000).toISOString(),
-          triggerCount: 12,
-        },
-        {
-          id: '2',
-          name: 'Failed Login Attempts',
-          description: 'Alert on 5 or more failed login attempts',
-          condition: { type: 'pattern', metric: 'failed_logins', operator: '>=', value: 5 },
-          channels: [{ type: 'email', config: { recipients: ['security@example.com'] } }],
-          isEnabled: true,
-          isMuted: false,
-          severity: 'critical',
-          createdAt: new Date(Date.now() - 86400000).toISOString(),
-          lastTriggered: new Date(Date.now() - 7200000).toISOString(),
-          triggerCount: 45,
-        },
-      ];
-
-      setAlertRules(data || mockRules);
     } catch (err: any) {
       console.error('Error fetching alert rules:', err);
       setError(err?.message || t('common.failedToFetchAlertRules'));
-      setAlertRules([
-        {
-          id: '1',
-          name: 'High CPU Usage Alert',
-          description: 'Alert when CPU usage exceeds 80%',
-          condition: { type: 'threshold', metric: 'cpu_usage', operator: '>', value: 80 },
-          channels: [{ type: 'email', config: { recipients: ['admin@example.com'] } }],
-          isEnabled: true,
-          isMuted: false,
-          severity: 'high',
-          createdAt: new Date().toISOString(),
-          lastTriggered: new Date(Date.now() - 3600000).toISOString(),
-          triggerCount: 12,
-        },
-      ]);
+      setAlertRules([]);
     } finally {
       setLoading(false);
     }
@@ -223,42 +177,13 @@ export default function TenantAlertsPage() {
         severity: alert.severity,
         message: alert.message || alert.description,
         status: alert.status,
-      })) || [
-        {
-          id: '1',
-          alertRuleId: '1',
-          alertRuleName: 'High CPU Usage Alert',
-          triggeredAt: new Date(Date.now() - 3600000).toISOString(),
-          severity: 'high',
-          message: 'CPU usage reached 85%',
-          status: 'resolved',
-        },
-        {
-          id: '2',
-          alertRuleId: '2',
-          alertRuleName: 'Failed Login Attempts',
-          triggeredAt: new Date(Date.now() - 7200000).toISOString(),
-          severity: 'critical',
-          message: '7 failed login attempts detected',
-          status: 'acknowledged',
-        },
-      ];
+      })) || [];
 
       setAlertHistory(historyData);
     } catch (err: any) {
       console.error('Error fetching alert history:', err);
       setError(err?.message || t('common.failedToFetchAlertHistory'));
-      setAlertHistory([
-        {
-          id: '1',
-          alertRuleId: '1',
-          alertRuleName: 'High CPU Usage Alert',
-          triggeredAt: new Date(Date.now() - 3600000).toISOString(),
-          severity: 'high',
-          message: 'CPU usage reached 85%',
-          status: 'resolved',
-        },
-      ]);
+      setAlertHistory([]);
     } finally {
       setLoading(false);
     }

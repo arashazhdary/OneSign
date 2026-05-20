@@ -179,9 +179,13 @@ export default function TenantHuntingPage() {
         });
         setScheduledHunts(data.items || data || []);
       } else if (activeTab === 'runs') {
-        const mockRuns: HuntRun[] = [];
-        setHuntRuns(mockRuns);
-        setTotalRuns(0);
+        const data = await HuntingAPI.huntingService.getHuntRuns({
+          pageNumber: 1,
+          pageSize: 100,
+        });
+        const runs = data?.items ?? data ?? [];
+        setHuntRuns(runs);
+        setTotalRuns(data?.total ?? runs.length);
       }
     } catch (err) {
       setError(t('common.error'));

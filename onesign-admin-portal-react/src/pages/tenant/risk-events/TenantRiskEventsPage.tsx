@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '@/hooks/useLocale';
 import { getTenantId } from '@/lib/tenant-context';
-import { securityService } from '@/lib/api/services';
+import { securityService } from '@/lib/api/services/security.service';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   AlertTriangle,
@@ -40,70 +40,6 @@ interface RiskEvent {
   details: string | null;
   occurredAt: string;
 }
-
-// Mock data for demonstration
-const mockRiskEvents: RiskEvent[] = [
-  {
-    id: '1',
-    userId: 'user-001',
-    userName: 'John Doe',
-    eventType: 1,
-    riskLevel: 1,
-    ipAddress: '192.168.1.100',
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0',
-    location: 'New York, US',
-    details: 'New device detected: Windows Desktop',
-    occurredAt: '2024-02-15T10:30:00Z',
-  },
-  {
-    id: '2',
-    userId: 'user-002',
-    userName: 'Jane Smith',
-    eventType: 2,
-    riskLevel: 2,
-    ipAddress: '10.0.0.50',
-    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Safari/605.1.15',
-    location: 'London, UK',
-    details: 'Login from unusual location - 5000km from last login',
-    occurredAt: '2024-02-15T09:15:00Z',
-  },
-  {
-    id: '3',
-    userId: 'user-003',
-    userName: 'Bob Wilson',
-    eventType: 3,
-    riskLevel: 2,
-    ipAddress: '172.16.0.25',
-    userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X)',
-    location: 'Los Angeles, US',
-    details: '5 failed login attempts in 10 minutes',
-    occurredAt: '2024-02-15T08:45:00Z',
-  },
-  {
-    id: '4',
-    userId: 'user-001',
-    userName: 'John Doe',
-    eventType: 4,
-    riskLevel: 1,
-    ipAddress: '192.168.1.105',
-    userAgent: 'Mozilla/5.0 (Linux; Android 14)',
-    location: 'San Francisco, US',
-    details: 'Unusual data access pattern detected',
-    occurredAt: '2024-02-14T16:20:00Z',
-  },
-  {
-    id: '5',
-    userId: 'user-004',
-    userName: 'Alice Brown',
-    eventType: 5,
-    riskLevel: 2,
-    ipAddress: '203.0.113.50',
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Edge/120.0.0.0',
-    location: 'Tokyo, JP',
-    details: 'Account locked after 10 failed attempts',
-    occurredAt: '2024-02-14T03:10:00Z',
-  },
-];
 
 interface StatCardProps {
   title: string;
@@ -165,25 +101,33 @@ export default function TenantRiskEventsPage() {
   }, [eventTypeFilter, riskLevelFilter, pageNumber]);
 
   const fetchRiskEvents = async () => {
+    if (!tenantId) return;
     setLoading(true);
     setError('');
     try {
-      // Use mock data for demonstration
-      setTimeout(() => {
-        let filteredEvents = [...mockRiskEvents];
-
-        if (eventTypeFilter !== '') {
-          filteredEvents = filteredEvents.filter(e => e.eventType === eventTypeFilter);
-        }
-        if (riskLevelFilter !== '') {
-          filteredEvents = filteredEvents.filter(e => e.riskLevel === riskLevelFilter);
-        }
-
-        setEvents(filteredEvents);
-        setLoading(false);
-      }, 500);
+      const data = await securityService.getRiskEvents({
+        tenantId,
+        eventType: eventTypeFilter !== '' ? eventTypeFilter : undefined,
+        riskLevel: riskLevelFilter !== '' ? riskLevelFilter : undefined,
+        pageNumber,
+        pageSize: 100,
+      });
+      const mapped: RiskEvent[] = (data ?? []).map((e: any) => ({
+        id: String(e.id),
+        userId: String(e.userId),
+        eventType: e.eventType,
+        riskLevel: e.riskLevel,
+        ipAddress: e.ipAddress ?? null,
+        userAgent: e.userAgent ?? null,
+        location: e.location ?? null,
+        details: e.details ?? null,
+        occurredAt: e.occurredAt ?? e.createdAt,
+      }));
+      setEvents(mapped);
     } catch (err) {
       setError(t('common.error', 'An error occurred'));
+      setEvents([]);
+    } finally {
       setLoading(false);
     }
   };
@@ -217,7 +161,16 @@ export default function TenantRiskEventsPage() {
     setError('');
     setSuccess('');
     try {
-      // TODO: Implement when API is available
+      if (!tenantId) return;
+      await securityService.recordRiskEvent({
+        userId: newEventUserId,
+        eventType: newEventType,
+        riskLevel: newRiskLevel,
+        ipAddress: newIpAddress || undefined,
+        userAgent: newUserAgent || undefined,
+        location: newLocation || undefined,
+        details: newDetails || undefined,
+      });
       setSuccess(t('riskEvents.eventCreated', 'Risk event created successfully'));
       setShowCreateModal(false);
       setNewEventUserId('');

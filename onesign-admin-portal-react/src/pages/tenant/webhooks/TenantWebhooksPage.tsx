@@ -53,120 +53,6 @@ interface WebhookDelivery {
   error?: string;
 }
 
-const mockWebhooksFallback: WebhookData[] = [
-  {
-    id: '1',
-    url: 'https://api.example.com/webhooks/onesign',
-    events: ['user.created', 'user.updated', 'user.deleted'],
-    secret: '••••••••••••••••',
-    isActive: true,
-    lastDelivery: '2025-11-23T10:30:00Z',
-    successCount: 1234,
-    failureCount: 12,
-    createdAt: '2025-01-15T08:00:00Z',
-  },
-  {
-    id: '2',
-    url: 'https://webhooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXX',
-    events: ['security.alert', 'incident.created'],
-    secret: '••••••••••••••••',
-    isActive: true,
-    lastDelivery: '2025-11-23T09:15:00Z',
-    successCount: 567,
-    failureCount: 3,
-    createdAt: '2025-02-01T12:00:00Z',
-  },
-  {
-    id: '3',
-    url: 'https://api.internal.com/events',
-    events: ['application.created', 'role.assigned'],
-    secret: '••••••••••••••••',
-    isActive: false,
-    lastDelivery: '2025-11-20T14:22:00Z',
-    successCount: 89,
-    failureCount: 45,
-    createdAt: '2025-03-10T09:30:00Z',
-  },
-];
-
-const mockDeliveries: WebhookDelivery[] = [
-  {
-    id: '1',
-    webhookId: '1',
-    event: 'user.created',
-    status: 'success',
-    statusCode: 200,
-    requestBody: '{"event":"user.created","userId":"123"}',
-    responseBody: '{"received":true}',
-    attemptCount: 1,
-    deliveredAt: '2025-11-23T10:30:00Z',
-  },
-  {
-    id: '2',
-    webhookId: '1',
-    event: 'user.updated',
-    status: 'failed',
-    statusCode: 500,
-    requestBody: '{"event":"user.updated","userId":"456"}',
-    responseBody: '{"error":"Internal Server Error"}',
-    attemptCount: 3,
-    deliveredAt: '2025-11-23T09:45:00Z',
-    error: 'Connection timeout after 3 attempts',
-  },
-  {
-    id: '3',
-    webhookId: '2',
-    event: 'security.alert',
-    status: 'success',
-    statusCode: 200,
-    requestBody: '{"event":"security.alert","severity":"high"}',
-    responseBody: '{"ok":true}',
-    attemptCount: 1,
-    deliveredAt: '2025-11-23T09:15:00Z',
-  },
-];
-
-const availableEvents = [
-  'user.created',
-  'user.updated',
-  'user.deleted',
-  'user.suspended',
-  'application.created',
-  'application.updated',
-  'role.assigned',
-  'role.revoked',
-  'security.alert',
-  'incident.created',
-  'audit.log',
-];
-
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ElementType;
-  color: string;
-  delay?: number;
-}
-
-const StatCard = ({ title, value, icon: Icon, color, delay = 0 }: StatCardProps) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: delay * 0.1 }}
-    className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 hover:shadow-lg transition-all"
-  >
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-sm font-medium text-slate-600 dark:text-slate-400">{title}</p>
-        <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{value}</p>
-      </div>
-      <div className={`p-3 rounded-xl ${color}`}>
-        <Icon className="w-6 h-6 text-white" />
-      </div>
-    </div>
-  </motion.div>
-);
-
 export default function TenantWebhooksPage() {
   const { t } = useTranslation();
   const [webhooks, setWebhooks] = useState<WebhookData[]>([]);
@@ -208,10 +94,10 @@ export default function TenantWebhooksPage() {
 
     try {
       const data = await tenantService.getWebhooks();
-      setWebhooks(data);
+      setWebhooks(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching webhooks:', error);
-      setWebhooks(mockWebhooksFallback);
+      setWebhooks([]);
     } finally {
       setLoading(false);
     }
@@ -222,10 +108,10 @@ export default function TenantWebhooksPage() {
 
     try {
       const data = await tenantService.getWebhookEvents(webhookId);
-      setDeliveries(data);
+      setDeliveries(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching webhook deliveries:', error);
-      setDeliveries(mockDeliveries.filter(d => d.webhookId === webhookId));
+      setDeliveries([]);
     }
   };
 

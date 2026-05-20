@@ -393,6 +393,45 @@ export const securityService = {
     const response = await apiClient.post(`/api/tenant/security/alerts/rules/${ruleId}/mute`);
     return response.data;
   },
+
+  // ==================== RISK EVENTS (Spec: /api/tenant/risk-events) ====================
+
+  /**
+   * GET /api/tenant/risk-events - لیست رویدادهای ریسک
+   */
+  getRiskEvents: async (params: {
+    tenantId: string;
+    userId?: string;
+    eventType?: number;
+    riskLevel?: number;
+    startDate?: string;
+    endDate?: string;
+    pageNumber?: number;
+    pageSize?: number;
+  }): Promise<any[]> => {
+    try {
+      const response = await apiClient.get('/api/tenant/risk-events', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch risk events:', error);
+      return [];
+    }
+  },
+
+  /**
+   * POST /api/tenant/risk-events - ثبت رویداد ریسک
+   */
+  recordRiskEvent: async (data: {
+    userId: string;
+    eventType: number;
+    riskLevel: number;
+    ipAddress?: string;
+    userAgent?: string;
+    location?: string;
+    details?: string;
+  }): Promise<void> => {
+    await apiClient.post('/api/tenant/risk-events', data);
+  },
 };
 
 export default securityService;

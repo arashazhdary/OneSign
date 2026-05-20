@@ -155,76 +155,11 @@ export default function TenantIntegrationsDetailPage() {
       if (err.status === 404 || err.response?.status === 404) {
         setNotFound(true);
       } else {
-        loadMockData();
+        setError(err?.message || t('common.error'));
       }
     } finally {
       setLoading(false);
     }
-  };
-
-  const loadMockData = () => {
-    const mockIntegration: IntegrationDetails = {
-      id,
-      name: 'Azure AD Sync',
-      type: 'directory',
-      provider: 'azure-ad',
-      status: 'active',
-      config: {
-        tenantId: 'azure-tenant-123',
-        clientId: 'client-456',
-        syncInterval: 3600,
-        syncUsers: true,
-        syncGroups: true,
-        mappings: {
-          email: 'mail',
-          firstName: 'givenName',
-          lastName: 'surname',
-        },
-      },
-      lastSyncAt: '2024-03-20T10:30:00Z',
-      createdAt: '2024-01-15T08:00:00Z',
-      updatedAt: '2024-03-20T10:30:00Z',
-    };
-
-    const mockSyncLogs: SyncLog[] = [
-      {
-        id: '1',
-        timestamp: '2024-03-20T10:30:00Z',
-        status: 'success',
-        recordsSynced: 150,
-        errors: [],
-        duration: 45,
-      },
-      {
-        id: '2',
-        timestamp: '2024-03-19T10:30:00Z',
-        status: 'success',
-        recordsSynced: 148,
-        errors: [],
-        duration: 42,
-      },
-      {
-        id: '3',
-        timestamp: '2024-03-18T10:30:00Z',
-        status: 'partial',
-        recordsSynced: 145,
-        errors: ['Failed to sync 3 users due to invalid email addresses'],
-        duration: 50,
-      },
-      {
-        id: '4',
-        timestamp: '2024-03-17T10:30:00Z',
-        status: 'failed',
-        recordsSynced: 0,
-        errors: ['Connection timeout', 'Unable to authenticate with Azure AD'],
-        duration: 10,
-      },
-    ];
-
-    setIntegration(mockIntegration);
-    setSyncLogs(mockSyncLogs);
-    setEditName(mockIntegration.name);
-    setEditConfig(JSON.stringify(mockIntegration.config, null, 2));
   };
 
   const fetchSyncLogs = async () => {
@@ -234,17 +169,7 @@ export default function TenantIntegrationsDetailPage() {
       setSyncLogs([]);
     } catch (err) {
       console.error('Error fetching sync logs:', err);
-      const mockSyncLogs: SyncLog[] = [
-        {
-          id: '1',
-          timestamp: '2024-03-20T10:30:00Z',
-          status: 'success',
-          recordsSynced: 150,
-          errors: [],
-          duration: 45,
-        },
-      ];
-      setSyncLogs(mockSyncLogs);
+      setSyncLogs([]);
     }
   };
 

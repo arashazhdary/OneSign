@@ -63,111 +63,6 @@ interface PlaybookRun {
 
 type Tab = 'active' | 'details' | 'playbooks';
 
-// Mock data for demonstration
-const mockIncidents: Incident[] = [
-  {
-    id: '1',
-    title: 'Suspicious Login Attempt',
-    description: 'Multiple failed login attempts detected from unknown IP',
-    severity: 3,
-    status: 0,
-    type: 'Security',
-    category: 'Authentication',
-    source: 'Auth Service',
-    detectedAt: '2024-02-15T10:30:00Z',
-    createdAt: '2024-02-15T10:30:00Z',
-    updatedAt: '2024-02-15T10:30:00Z',
-    assignedToUserName: undefined,
-    linkedEntities: [],
-    notes: [],
-  },
-  {
-    id: '2',
-    title: 'Unauthorized Access Attempt',
-    description: 'User tried to access restricted resource',
-    severity: 2,
-    status: 1,
-    type: 'Security',
-    category: 'Authorization',
-    source: 'Access Control',
-    detectedAt: '2024-02-15T09:15:00Z',
-    createdAt: '2024-02-15T09:15:00Z',
-    updatedAt: '2024-02-15T09:15:00Z',
-    assignedToUserName: 'John Doe',
-    linkedEntities: [],
-    notes: [],
-  },
-  {
-    id: '3',
-    title: 'Data Export Anomaly',
-    description: 'Large data export detected outside normal hours',
-    severity: 2,
-    status: 2,
-    type: 'Data',
-    category: 'Data Breach',
-    source: 'DLP System',
-    detectedAt: '2024-02-14T23:45:00Z',
-    createdAt: '2024-02-14T23:45:00Z',
-    updatedAt: '2024-02-14T23:45:00Z',
-    assignedToUserName: 'Jane Smith',
-    linkedEntities: [],
-    notes: [],
-  },
-  {
-    id: '4',
-    title: 'Compliance Violation',
-    description: 'Password policy not enforced for new users',
-    severity: 1,
-    status: 3,
-    type: 'Compliance',
-    category: 'Compliance',
-    source: 'Policy Engine',
-    detectedAt: '2024-02-14T14:20:00Z',
-    createdAt: '2024-02-14T14:20:00Z',
-    updatedAt: '2024-02-14T14:20:00Z',
-    assignedToUserName: 'John Doe',
-    linkedEntities: [],
-    notes: [],
-  },
-];
-
-const mockStats: IncidentStats = {
-  totalActive: 12,
-  critical: 2,
-  high: 4,
-  medium: 4,
-  low: 2,
-};
-
-const mockPlaybookRuns: PlaybookRun[] = [
-  {
-    id: '1',
-    incidentId: '1',
-    incidentTitle: 'Suspicious Login Attempt',
-    playbookId: 'pb-1',
-    playbookName: 'Account Lockout Response',
-    status: 'Completed',
-    startedAt: '2024-02-15T10:35:00Z',
-    completedAt: '2024-02-15T10:40:00Z',
-    stepsCompleted: 5,
-    totalSteps: 5,
-    errorMessage: null,
-  },
-  {
-    id: '2',
-    incidentId: '2',
-    incidentTitle: 'Unauthorized Access Attempt',
-    playbookId: 'pb-2',
-    playbookName: 'Access Investigation',
-    status: 'Running',
-    startedAt: '2024-02-15T09:20:00Z',
-    completedAt: null,
-    stepsCompleted: 3,
-    totalSteps: 7,
-    errorMessage: null,
-  },
-];
-
 interface StatCardProps {
   title: string;
   value: number;
@@ -267,9 +162,9 @@ export default function TenantIncidentsPage() {
         status: statusFilter !== '' ? statusFilter : undefined,
         category: categoryFilter || undefined,
       });
-      setIncidents(data.items?.length ? data.items : mockIncidents);
+      setIncidents(data.items ?? []);
     } catch (err) {
-      setIncidents(mockIncidents);
+      setIncidents([]);
     } finally {
       setLoading(false);
     }
@@ -280,9 +175,9 @@ export default function TenantIncidentsPage() {
 
     try {
       const data = await incidentsService.getIncidentStats(tenantId);
-      setStats(data || mockStats);
+      setStats(data ?? { totalActive: 0, critical: 0, high: 0, medium: 0, low: 0 });
     } catch (err) {
-      setStats(mockStats);
+      setStats({ totalActive: 0, critical: 0, high: 0, medium: 0, low: 0 });
     }
   };
 
@@ -308,9 +203,9 @@ export default function TenantIncidentsPage() {
         pageNumber: playbookPageNumber,
         pageSize,
       });
-      setPlaybookRuns(data.items?.length ? data.items : mockPlaybookRuns);
+      setPlaybookRuns(data.items ?? []);
     } catch (err) {
-      setPlaybookRuns(mockPlaybookRuns);
+      setPlaybookRuns([]);
     } finally {
       setLoading(false);
     }

@@ -85,138 +85,6 @@ const StatCard = ({ title, value, icon, color, delay, action }: StatCardProps) =
   </motion.div>
 );
 
-// Mock data for fallback
-const mockSessionsFallback: UserSession[] = [
-  {
-    id: '1',
-    userId: 'user-1',
-    userName: 'John Doe',
-    userEmail: 'john.doe@example.com',
-    ipAddress: '192.168.1.100',
-    deviceType: 'Desktop',
-    deviceName: 'Windows 11',
-    browser: 'Chrome 120.0',
-    location: 'New York, USA',
-    country: 'United States',
-    city: 'New York',
-    isCurrentSession: false,
-    isSuspicious: false,
-    loginAt: '2025-11-23T08:30:00Z',
-    lastActivityAt: '2025-11-23T11:45:00Z',
-    expiresAt: '2025-11-24T08:30:00Z',
-    duration: '3h 15m',
-  },
-  {
-    id: '2',
-    userId: 'user-2',
-    userName: 'Jane Smith',
-    userEmail: 'jane.smith@example.com',
-    ipAddress: '10.0.0.50',
-    deviceType: 'Mobile',
-    deviceName: 'iPhone 15 Pro',
-    browser: 'Safari 17.1',
-    location: 'San Francisco, USA',
-    country: 'United States',
-    city: 'San Francisco',
-    isCurrentSession: false,
-    isSuspicious: false,
-    loginAt: '2025-11-23T09:00:00Z',
-    lastActivityAt: '2025-11-23T11:40:00Z',
-    expiresAt: '2025-11-24T09:00:00Z',
-    duration: '2h 40m',
-  },
-  {
-    id: '3',
-    userId: 'user-3',
-    userName: 'Bob Johnson',
-    userEmail: 'bob.johnson@example.com',
-    ipAddress: '203.45.67.89',
-    deviceType: 'Desktop',
-    deviceName: 'macOS Sonoma',
-    browser: 'Firefox 121.0',
-    location: 'London, UK',
-    country: 'United Kingdom',
-    city: 'London',
-    isCurrentSession: false,
-    isSuspicious: true,
-    suspiciousReasons: ['Unusual location', 'New device'],
-    loginAt: '2025-11-23T10:15:00Z',
-    lastActivityAt: '2025-11-23T11:30:00Z',
-    expiresAt: '2025-11-24T10:15:00Z',
-    duration: '1h 15m',
-  },
-  {
-    id: '4',
-    userId: 'user-1',
-    userName: 'John Doe',
-    userEmail: 'john.doe@example.com',
-    ipAddress: '192.168.1.101',
-    deviceType: 'Tablet',
-    deviceName: 'iPad Pro',
-    browser: 'Safari 17.0',
-    location: 'New York, USA',
-    country: 'United States',
-    city: 'New York',
-    isCurrentSession: false,
-    isSuspicious: false,
-    loginAt: '2025-11-23T07:00:00Z',
-    lastActivityAt: '2025-11-23T11:25:00Z',
-    expiresAt: '2025-11-24T07:00:00Z',
-    duration: '4h 25m',
-  },
-];
-
-const mockHistoryFallback: SessionHistory[] = [
-  {
-    id: 'h1',
-    userId: 'user-1',
-    userName: 'John Doe',
-    ipAddress: '192.168.1.100',
-    device: 'Windows 11 - Chrome',
-    location: 'New York, USA',
-    loginAt: '2025-11-22T14:00:00Z',
-    logoutAt: '2025-11-22T18:30:00Z',
-    duration: '4h 30m',
-    status: 'completed',
-  },
-  {
-    id: 'h2',
-    userId: 'user-2',
-    userName: 'Jane Smith',
-    ipAddress: '10.0.0.50',
-    device: 'iPhone 15 Pro - Safari',
-    location: 'San Francisco, USA',
-    loginAt: '2025-11-22T09:15:00Z',
-    logoutAt: '2025-11-22T17:45:00Z',
-    duration: '8h 30m',
-    status: 'completed',
-  },
-  {
-    id: 'h3',
-    userId: 'user-3',
-    userName: 'Bob Johnson',
-    ipAddress: '203.45.67.88',
-    device: 'macOS Sonoma - Firefox',
-    location: 'London, UK',
-    loginAt: '2025-11-22T12:00:00Z',
-    logoutAt: '2025-11-22T13:30:00Z',
-    duration: '1h 30m',
-    status: 'forced_logout',
-  },
-  {
-    id: 'h4',
-    userId: 'user-4',
-    userName: 'Alice Williams',
-    ipAddress: '45.67.89.12',
-    device: 'Ubuntu - Chrome',
-    location: 'Toronto, Canada',
-    loginAt: '2025-11-21T10:00:00Z',
-    logoutAt: '2025-11-22T10:00:00Z',
-    duration: '24h',
-    status: 'expired',
-  },
-];
-
 export default function TenantSessionsPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
@@ -253,11 +121,11 @@ export default function TenantSessionsPage() {
 
     try {
       const data = await usersService.getAccountSessions();
-      setSessions(data || mockSessionsFallback);
+      setSessions(Array.isArray(data) ? data : []);
     } catch (error: any) {
       console.error('Error fetching sessions:', error);
       setError(error?.message || t('common.failedToLoadSessions'));
-      setSessions(mockSessionsFallback);
+      setSessions([]);
     } finally {
       setLoading(false);
     }
@@ -268,10 +136,10 @@ export default function TenantSessionsPage() {
 
     try {
       const data = await usersService.getSessionHistory();
-      setHistory(data || mockHistoryFallback);
+      setHistory(Array.isArray(data) ? data : []);
     } catch (error: any) {
       console.error('Error fetching session history:', error);
-      setHistory(mockHistoryFallback);
+      setHistory([]);
     }
   };
 

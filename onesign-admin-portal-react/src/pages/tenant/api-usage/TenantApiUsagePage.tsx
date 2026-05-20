@@ -116,111 +116,6 @@ interface UsageChartData {
   errors: number;
 }
 
-// Mock data for fallback
-const mockStatsFallback: ApiUsageStats[] = [
-  {
-    period: 'today',
-    totalCalls: 12543,
-    successCalls: 12389,
-    errorCalls: 154,
-    avgResponseTime: 145,
-    totalCost: 25.08,
-  },
-  {
-    period: 'thisWeek',
-    totalCalls: 87632,
-    successCalls: 86421,
-    errorCalls: 1211,
-    avgResponseTime: 152,
-    totalCost: 175.26,
-  },
-  {
-    period: 'thisMonth',
-    totalCalls: 342156,
-    successCalls: 337890,
-    errorCalls: 4266,
-    avgResponseTime: 148,
-    totalCost: 684.31,
-  },
-];
-
-const mockEndpointsFallback: EndpointUsage[] = [
-  {
-    endpoint: '/api/tenant/users',
-    method: 'GET',
-    calls: 4532,
-    avgResponseTime: 89,
-    errorRate: 0.8,
-    lastCalled: '2025-11-23T11:45:23Z',
-  },
-  {
-    endpoint: '/api/tenant/users',
-    method: 'POST',
-    calls: 1243,
-    avgResponseTime: 234,
-    errorRate: 2.1,
-    lastCalled: '2025-11-23T11:42:15Z',
-  },
-  {
-    endpoint: '/api/tenant/applications',
-    method: 'GET',
-    calls: 2134,
-    avgResponseTime: 112,
-    errorRate: 1.2,
-    lastCalled: '2025-11-23T11:40:08Z',
-  },
-  {
-    endpoint: '/api/tenant/roles',
-    method: 'GET',
-    calls: 1876,
-    avgResponseTime: 67,
-    errorRate: 0.3,
-    lastCalled: '2025-11-23T11:38:42Z',
-  },
-  {
-    endpoint: '/api/tenant/audit-logs',
-    method: 'GET',
-    calls: 987,
-    avgResponseTime: 456,
-    errorRate: 4.5,
-    lastCalled: '2025-11-23T11:35:19Z',
-  },
-];
-
-const mockRateLimitsFallback: RateLimit[] = [
-  {
-    name: 'hourlyApiRequests',
-    limit: 10000,
-    used: 3542,
-    remaining: 6458,
-    resetAt: '2025-11-23T12:00:00Z',
-  },
-  {
-    name: 'dailyApiRequests',
-    limit: 100000,
-    used: 12543,
-    remaining: 87457,
-    resetAt: '2025-11-24T00:00:00Z',
-  },
-  {
-    name: 'concurrentRequests',
-    limit: 100,
-    used: 23,
-    remaining: 77,
-    resetAt: 'realtime',
-  },
-];
-
-const mockChartDataFallback: UsageChartData[] = [
-  { date: '2025-11-17', calls: 11234, errors: 145 },
-  { date: '2025-11-18', calls: 12456, errors: 178 },
-  { date: '2025-11-19', calls: 13123, errors: 203 },
-  { date: '2025-11-20', calls: 11987, errors: 156 },
-  { date: '2025-11-21', calls: 13543, errors: 198 },
-  { date: '2025-11-22', calls: 12746, errors: 177 },
-  { date: '2025-11-23', calls: 12543, errors: 154 },
-];
-
 export default function TenantApiUsagePage() {
   const { t } = useTranslation();
   const [stats, setStats] = useState<ApiUsageStats[]>([]);
@@ -286,23 +181,23 @@ export default function TenantApiUsagePage() {
           },
         ];
 
-        setStats(transformedStats.length > 0 ? transformedStats : mockStatsFallback);
-        setEndpoints(usageData.endpoints || mockEndpointsFallback);
-        setRateLimits(usageData.rateLimits || mockRateLimitsFallback);
-        setChartData(usageData.chartData || mockChartDataFallback);
+        setStats(transformedStats);
+        setEndpoints(usageData.endpoints ?? []);
+        setRateLimits(usageData.rateLimits ?? []);
+        setChartData(usageData.chartData ?? []);
       } else {
-        setStats(mockStatsFallback);
-        setEndpoints(mockEndpointsFallback);
-        setRateLimits(mockRateLimitsFallback);
-        setChartData(mockChartDataFallback);
+        setStats([]);
+        setEndpoints([]);
+        setRateLimits([]);
+        setChartData([]);
       }
     } catch (error: any) {
       console.error('Error fetching API usage data:', error);
       setError(error?.message || t('common.failedToLoadApiUsageData'));
-      setStats(mockStatsFallback);
-      setEndpoints(mockEndpointsFallback);
-      setRateLimits(mockRateLimitsFallback);
-      setChartData(mockChartDataFallback);
+      setStats([]);
+      setEndpoints([]);
+      setRateLimits([]);
+      setChartData([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
