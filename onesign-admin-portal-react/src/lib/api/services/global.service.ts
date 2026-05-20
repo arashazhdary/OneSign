@@ -82,13 +82,18 @@ export interface PlatformVersionDto {
 }
 
 export interface PlatformHealthDto {
-  status: 'Healthy' | 'Degraded' | 'Unhealthy';
-  uptime: string;
-  services: {
+  status: 'Healthy' | 'Degraded' | 'Unhealthy' | string;
+  checkedAt?: string;
+  totalCheckDurationMs?: number;
+  components: {
     name: string;
+    type?: string;
     status: string;
-    latency?: number;
+    responseTimeMs?: number;
+    message?: string;
   }[];
+  warnings?: string[];
+  errors?: string[];
 }
 
 // Billing Types
