@@ -77,122 +77,6 @@ interface StatCardProps {
   delay: number;
 }
 
-// Mock data for fallback
-const mockImportsFallback: ImportJob[] = [
-  {
-    id: '1',
-    fileName: 'users_import_2025-11-23.csv',
-    fileType: 'csv',
-    dataType: 'Users',
-    status: 'completed',
-    totalRecords: 150,
-    processedRecords: 150,
-    successfulRecords: 147,
-    failedRecords: 3,
-    validationErrors: [
-      { row: 23, field: 'email', value: 'invalid-email', error: 'Invalid email format' },
-      { row: 45, field: 'phone', value: '12345', error: 'Invalid phone number format' },
-      { row: 89, field: 'email', value: '', error: 'Email is required' },
-    ],
-    createdBy: 'admin@example.com',
-    createdAt: '2025-11-23T10:00:00Z',
-    completedAt: '2025-11-23T10:05:32Z',
-    canRollback: true,
-  },
-  {
-    id: '2',
-    fileName: 'applications_bulk.json',
-    fileType: 'json',
-    dataType: 'Applications',
-    status: 'processing',
-    totalRecords: 50,
-    processedRecords: 32,
-    successfulRecords: 30,
-    failedRecords: 2,
-    validationErrors: [],
-    createdBy: 'admin@example.com',
-    createdAt: '2025-11-23T11:30:00Z',
-    canRollback: false,
-  },
-  {
-    id: '3',
-    fileName: 'roles_import.xlsx',
-    fileType: 'xlsx',
-    dataType: 'Roles',
-    status: 'failed',
-    totalRecords: 25,
-    processedRecords: 10,
-    successfulRecords: 5,
-    failedRecords: 5,
-    validationErrors: [
-      { row: 5, field: 'name', value: '', error: 'Role name is required' },
-      { row: 8, field: 'permissions', value: 'invalid', error: 'Invalid permission format' },
-    ],
-    createdBy: 'admin@example.com',
-    createdAt: '2025-11-23T09:15:00Z',
-    completedAt: '2025-11-23T09:18:45Z',
-    canRollback: false,
-  },
-];
-
-const mockTemplatesFallback: ImportTemplate[] = [
-  {
-    id: 't1',
-    name: 'User Import Template',
-    dataType: 'Users',
-    fileType: 'csv',
-    fieldMappings: [
-      { sourceField: 'Email', targetField: 'email', required: true, dataType: 'string' },
-      { sourceField: 'FirstName', targetField: 'firstName', required: true, dataType: 'string' },
-      { sourceField: 'LastName', targetField: 'lastName', required: true, dataType: 'string' },
-      { sourceField: 'Phone', targetField: 'phoneNumber', required: false, dataType: 'string' },
-    ],
-    createdAt: '2025-10-15T12:00:00Z',
-  },
-  {
-    id: 't2',
-    name: 'Application Import Template',
-    dataType: 'Applications',
-    fileType: 'json',
-    fieldMappings: [
-      { sourceField: 'name', targetField: 'name', required: true, dataType: 'string' },
-      { sourceField: 'clientId', targetField: 'clientId', required: true, dataType: 'string' },
-      { sourceField: 'redirectUris', targetField: 'redirectUris', required: true, dataType: 'array' },
-    ],
-    createdAt: '2025-10-20T14:30:00Z',
-  },
-];
-
-const dataTypes = ['Users', 'Applications', 'Roles', 'OrgUnits', 'Policies'];
-
-const StatCard = ({ title, value, icon, color, delay }: StatCardProps) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: delay * 0.1 }}
-    className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300"
-  >
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
-        <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
-      </div>
-      <div className={`p-4 rounded-xl bg-gradient-to-br ${color}`}>
-        {icon}
-      </div>
-    </div>
-  </motion.div>
-);
-
-const getFileTypeIcon = (fileType: string) => {
-  switch (fileType) {
-    case 'csv': return <FileText className="w-4 h-4" />;
-    case 'json': return <FileJson className="w-4 h-4" />;
-    case 'xlsx': return <Table className="w-4 h-4" />;
-    default: return <FileText className="w-4 h-4" />;
-  }
-};
-
 export default function TenantImportsPage() {
   const { t } = useTranslation();
   const [imports, setImports] = useState<ImportJob[]>([]);
@@ -237,11 +121,11 @@ export default function TenantImportsPage() {
 
     try {
       const data = await tenantService.getImportJobs(tenantId);
-      setImports(data || mockImportsFallback);
+      setImports(Array.isArray(data) ? data : []);
     } catch (error: any) {
       console.error('Error fetching imports:', error);
       setError(error?.message || t('common.failedToLoadData'));
-      setImports(mockImportsFallback);
+      setImports([]);
     } finally {
       setLoading(false);
     }
@@ -252,10 +136,10 @@ export default function TenantImportsPage() {
 
     try {
       const data = await tenantService.getImportTemplates(tenantId);
-      setTemplates(data || mockTemplatesFallback);
+      setTemplates(Array.isArray(data) ? data : []);
     } catch (error: any) {
       console.error('Error fetching templates:', error);
-      setTemplates(mockTemplatesFallback);
+      setTemplates([]);
     }
   };
 

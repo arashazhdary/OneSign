@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getTenantId } from '@/lib/tenant-context';
+import { getWorkflowExecutions, getExecutionDetail } from '@/lib/api/automation';
 import { Helmet } from 'react-helmet-async';
 import {
   Play,
@@ -138,41 +139,26 @@ export default function TenantAutomationWorkflowsDetailExecutionsPage() {
     setLoading(true);
     setError('');
     try {
-      const mockExecutions: WorkflowExecution[] = Array.from({ length: 15 }, (_, i) => {
-        const statuses: Array<'Success' | 'Failed' | 'Pending' | 'Running'> = ['Success', 'Success', 'Success', 'Failed', 'Pending'];
-        const status = statuses[i % statuses.length];
-        const startedAt = new Date(Date.now() - (i + 1) * 3600000).toISOString();
-        const duration = status === 'Success' || status === 'Failed' ? Math.floor(Math.random() * 30000) + 5000 : null;
-        const completedAt = duration ? new Date(new Date(startedAt).getTime() + duration).toISOString() : null;
-
-        return {
-          id: `exec-${i + 1}`,
-          workflowId,
-          workflowName: 'User Onboarding Workflow',
-          status,
-          startedAt,
-          completedAt,
-          duration,
-          triggeredBy: i % 3 === 0 ? 'API' : i % 3 === 1 ? 'Schedule' : 'Manual',
-          triggerType: i % 3 === 0 ? 'api_call' : i % 3 === 1 ? 'schedule' : 'manual',
-          errorMessage: status === 'Failed' ? 'Failed to send notification: SMTP connection timeout' : null,
-          metadata: { userId: `user-${i + 1}`, email: `user${i + 1}@example.com` },
-          steps: [
-            { stepId: 'step-1', stepNumber: 1, stepName: 'Validate User Data', status: 'Success', startedAt, completedAt: new Date(new Date(startedAt).getTime() + 2000).toISOString(), duration: 2000, output: { valid: true }, errorMessage: null, logs: ['Starting validation', 'User data is valid'] },
-            { stepId: 'step-2', stepNumber: 2, stepName: 'Create User Account', status: 'Success', startedAt: new Date(new Date(startedAt).getTime() + 2000).toISOString(), completedAt: new Date(new Date(startedAt).getTime() + 5000).toISOString(), duration: 3000, output: { userId: `user-${i + 1}` }, errorMessage: null, logs: ['Creating user account', 'Account created successfully'] },
-            { stepId: 'step-3', stepNumber: 3, stepName: 'Send Welcome Email', status: status === 'Failed' ? 'Failed' : 'Success', startedAt: new Date(new Date(startedAt).getTime() + 5000).toISOString(), completedAt: duration ? new Date(new Date(startedAt).getTime() + duration).toISOString() : null, duration: status === 'Failed' ? null : duration ? duration - 5000 : null, output: status === 'Failed' ? null : { emailId: `email-${i + 1}` }, errorMessage: status === 'Failed' ? 'SMTP connection timeout' : null, logs: status === 'Failed' ? ['Attempting to send email', 'Connection timeout', 'Retrying...', 'Failed after 3 attempts'] : ['Sending welcome email', 'Email sent successfully'] },
-          ],
-        };
+      const data = await getWorkflowExecutions(workflowId, {
+        page,
+        pageSize,
+        status: statusFilter !== 'all' ? statusFilter : undefined,
       });
-
-      let filtered = mockExecutions;
-      if (statusFilter !== 'all') filtered = filtered.filter(e => e.status === statusFilter);
-      if (searchQuery) filtered = filtered.filter(e => e.id.toLowerCase().includes(searchQuery.toLowerCase()) || e.triggeredBy.toLowerCase().includes(searchQuery.toLowerCase()));
-
+      const items = (Array.isArray(data) ? data : data?.items ?? []) as WorkflowExecution[];
+      let filtered = items;
+      if (searchQuery) {
+        filtered = filtered.filter(
+          (e) =>
+            e.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (e.triggeredBy ?? '').toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
       setExecutions(filtered);
-      setTotalPages(Math.ceil(filtered.length / pageSize));
+      setTotalPages(data?.totalPages ?? Math.max(1, Math.ceil(filtered.length / pageSize)));
     } catch (err) {
+      console.error('Failed to load executions:', err);
       setError('Failed to load executions');
+      setExecutions([]);
     } finally {
       setLoading(false);
     }
@@ -180,33 +166,49 @@ export default function TenantAutomationWorkflowsDetailExecutionsPage() {
 
   const fetchStats = async () => {
     try {
-      const mockStats: ExecutionStats = {
-        totalExecutions: 1247,
-        successCount: 1089,
-        failedCount: 127,
-        pendingCount: 23,
-        cancelledCount: 8,
-        successRate: 87.3,
-        avgDuration: 12500,
-      };
-      setStats(mockStats);
+      const data = await getWorkflowExecutions(workflowId, { page: 1, pageSize: 500 });
+      const items = (Array.isArray(data) ? data : data?.items ?? []) as WorkflowExecution[];
+      const successCount = items.filter((e) => e.status === 'Success').length;
+      const failedCount = items.filter((e) => e.status === 'Failed').length;
+      const pendingCount = items.filter((e) => e.status === 'Pending' || e.status === 'Running').length;
+      const cancelledCount = items.filter((e) => e.status === 'Cancelled').length;
+      const total = items.length;
+      setStats({
+        totalExecutions: total,
+        successCount,
+        failedCount,
+        pendingCount,
+        cancelledCount,
+        successRate: total ? (successCount / total) * 100 : 0,
+        avgDuration:
+          items.reduce((sum, e) => sum + (e.duration ?? 0), 0) / (items.length || 1),
+      });
     } catch (err) {
       console.error('Failed to fetch stats:', err);
+      setStats(null);
     }
   };
 
   const fetchExecutionLogs = async (executionId: string) => {
-    const mockLogs: ExecutionLog[] = [
-      { id: '1', timestamp: new Date(Date.now() - 10000).toISOString(), level: 'Info', message: 'Workflow execution started', stepId: null, stepName: null, metadata: { triggeredBy: 'API' } },
-      { id: '2', timestamp: new Date(Date.now() - 9000).toISOString(), level: 'Info', message: 'Step 1: Validate User Data - Started', stepId: 'step-1', stepName: 'Validate User Data', metadata: {} },
-      { id: '3', timestamp: new Date(Date.now() - 8000).toISOString(), level: 'Debug', message: 'Validating email format', stepId: 'step-1', stepName: 'Validate User Data', metadata: { field: 'email' } },
-      { id: '4', timestamp: new Date(Date.now() - 7000).toISOString(), level: 'Info', message: 'Step 1: Validate User Data - Completed', stepId: 'step-1', stepName: 'Validate User Data', metadata: { duration: 2000 } },
-      { id: '5', timestamp: new Date(Date.now() - 6000).toISOString(), level: 'Info', message: 'Step 2: Create User Account - Started', stepId: 'step-2', stepName: 'Create User Account', metadata: {} },
-      { id: '6', timestamp: new Date(Date.now() - 3000).toISOString(), level: 'Info', message: 'Step 2: Create User Account - Completed', stepId: 'step-2', stepName: 'Create User Account', metadata: { duration: 3000, userId: 'user-123' } },
-      { id: '7', timestamp: new Date(Date.now() - 2000).toISOString(), level: 'Error', message: 'Step 3: Send Welcome Email - Failed', stepId: 'step-3', stepName: 'Send Welcome Email', metadata: { error: 'SMTP connection timeout' } },
-      { id: '8', timestamp: new Date(Date.now() - 1000).toISOString(), level: 'Error', message: 'Workflow execution failed', stepId: null, stepName: null, metadata: { totalDuration: 9000 } },
-    ];
-    setExecutionLogs(mockLogs);
+    try {
+      const data = await getExecutionDetail(executionId);
+      const logs = (data as any)?.logs ?? [];
+      setExecutionLogs(
+        Array.isArray(logs)
+          ? logs.map((log: any, i: number) => ({
+              id: String(log.id ?? i),
+              timestamp: log.timestamp ?? new Date().toISOString(),
+              level: log.level ?? 'Info',
+              message: log.message ?? '',
+              stepId: log.stepId ?? null,
+              stepName: log.stepName ?? null,
+              metadata: log.metadata ?? {},
+            }))
+          : []
+      );
+    } catch {
+      setExecutionLogs([]);
+    }
   };
 
   const handleRetryExecution = async (executionId: string) => {

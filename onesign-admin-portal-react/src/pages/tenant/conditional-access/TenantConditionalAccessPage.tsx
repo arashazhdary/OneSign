@@ -81,35 +81,7 @@ export default function TenantConditionalAccessPage() {
   const fetchPolicies = async () => {
     try {
       const data = await securityService.getConditionalAccessPolicies();
-      const mockData: ConditionalAccessPolicy[] = [
-        {
-          id: '1',
-          name: 'Block High Risk Locations',
-          description: 'Block access from high-risk countries',
-          conditions: {
-            locations: ['North Korea', 'Iran'],
-            riskLevel: 'high',
-          },
-          action: 'deny',
-          priority: 1,
-          isEnabled: true,
-          createdAt: '2024-01-15T00:00:00Z',
-        },
-        {
-          id: '2',
-          name: 'Require MFA for External Access',
-          description: 'Require MFA when accessing from outside office',
-          conditions: {
-            locations: ['External'],
-            devices: ['Mobile', 'Unknown'],
-          },
-          action: 'mfa_required',
-          priority: 2,
-          isEnabled: true,
-          createdAt: '2024-02-20T00:00:00Z',
-        },
-      ];
-      setPolicies(data || mockData);
+      setPolicies(Array.isArray(data) ? data : []);
     } catch (err: any) {
       console.error('Error fetching conditional access policies:', err);
       setPolicies([]);

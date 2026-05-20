@@ -122,33 +122,7 @@ export default function TenantCertificatesPage() {
 
     try {
       const data = await tenantService.getCertificates();
-      const mockData: Certificate[] = [
-        {
-          id: '1',
-          name: t('tenant.certificates.mockData.mainSSL'),
-          domain: '*.example.com',
-          issuer: "Let's Encrypt Authority X3",
-          expiresAt: '2025-06-15T00:00:00Z',
-          createdAt: '2024-06-15T00:00:00Z',
-          status: 'valid',
-          type: 'ssl',
-          serialNumber: '04:A1:2F:...',
-          fingerprint: 'SHA256:A1:B2:C3:...',
-        },
-        {
-          id: '2',
-          name: t('tenant.certificates.mockData.apiCert'),
-          domain: 'api.example.com',
-          issuer: 'DigiCert Inc',
-          expiresAt: '2025-01-10T00:00:00Z',
-          createdAt: '2024-01-10T00:00:00Z',
-          status: 'expiring',
-          type: 'tls',
-          serialNumber: '05:B2:3G:...',
-          fingerprint: 'SHA256:B2:C3:D4:...',
-        },
-      ];
-      setCertificates(data || mockData);
+      setCertificates(Array.isArray(data) ? data : []);
     } catch (err: any) {
       console.error('Error fetching certificates:', err);
       setError(err.message || t('common.failedToLoadCertificates'));

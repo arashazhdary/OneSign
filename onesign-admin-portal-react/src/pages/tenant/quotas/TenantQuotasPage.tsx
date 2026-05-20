@@ -116,25 +116,14 @@ export default function TenantQuotasPage() {
 
     try {
       const quotaData = await billingService.getQuotaStatus(tenantId);
-      setQuotas(quotaData.quotas || mockQuotasFallback);
+      setQuotas(quotaData?.quotas ?? []);
     } catch (err: any) {
       console.error('Error fetching quotas:', err);
-      setQuotas(mockQuotasFallback);
+      setQuotas([]);
     } finally {
       setLoading(false);
     }
   };
-
-  const mockQuotasFallback: Quota[] = [
-    { id: '1', resourceType: 'users', resourceName: 'Users', limit: 1000, used: 847, unit: 'users', resetDate: new Date(Date.now() + 86400000 * 15).toISOString(), warningThreshold: 80, criticalThreshold: 95 },
-    { id: '2', resourceType: 'storage', resourceName: 'Storage', limit: 100, used: 68.5, unit: 'GB', warningThreshold: 80, criticalThreshold: 90 },
-    { id: '3', resourceType: 'api_calls', resourceName: 'API Calls', limit: 1000000, used: 523456, unit: 'calls/month', resetDate: new Date(Date.now() + 86400000 * 7).toISOString(), warningThreshold: 75, criticalThreshold: 90 },
-    { id: '4', resourceType: 'applications', resourceName: 'Applications', limit: 50, used: 23, unit: 'apps', warningThreshold: 80, criticalThreshold: 95 },
-    { id: '5', resourceType: 'mfa_devices', resourceName: 'MFA Devices', limit: 2000, used: 1234, unit: 'devices', warningThreshold: 80, criticalThreshold: 90 },
-    { id: '6', resourceType: 'roles', resourceName: 'Custom Roles', limit: 100, used: 45, unit: 'roles', warningThreshold: 80, criticalThreshold: 95 },
-    { id: '7', resourceType: 'webhooks', resourceName: 'Webhooks', limit: 25, used: 18, unit: 'webhooks', warningThreshold: 80, criticalThreshold: 90 },
-    { id: '8', resourceType: 'api_keys', resourceName: 'API Keys', limit: 100, used: 32, unit: 'keys', warningThreshold: 80, criticalThreshold: 95 },
-  ];
 
   const fetchQuotaHistory = (quota: Quota) => {
     const history: QuotaHistory[] = [];

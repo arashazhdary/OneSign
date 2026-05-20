@@ -90,15 +90,10 @@ export default function TenantServiceAccountsPage() {
     setLoading(true);
     try {
       const data = await tenantService.getServiceAccounts();
-      setServiceAccounts(data || []);
+      setServiceAccounts(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error fetching service accounts:', err);
-      // Mock data
-      setServiceAccounts([
-        { id: '1', name: 'CI/CD Pipeline', description: 'Used for automated deployments', clientId: 'sa-cicd-12345', isEnabled: true, createdAt: '2024-01-15T10:00:00Z', lastUsed: '2024-11-23T14:30:00Z' },
-        { id: '2', name: 'Monitoring Service', description: 'Collects metrics and logs', clientId: 'sa-monitor-67890', isEnabled: true, createdAt: '2024-02-20T09:00:00Z', lastUsed: '2024-11-23T15:00:00Z' },
-        { id: '3', name: 'Backup Agent', description: 'Automated backup service', clientId: 'sa-backup-54321', isEnabled: false, createdAt: '2024-03-10T11:00:00Z' },
-      ]);
+      setServiceAccounts([]);
     } finally {
       setLoading(false);
     }

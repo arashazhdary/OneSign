@@ -12,6 +12,7 @@ import {
   getChangeSetTemplates,
   ChangeSetTemplate,
 } from '@/lib/api/change-management';
+import { tenantService } from '@/lib/api/services/tenant.service';
 import { Helmet } from 'react-helmet-async';
 import Modal from '@/components/common/Modal';
 import {
@@ -120,9 +121,10 @@ export default function TenantTemplatesPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const [workflowTemplates, changeTemplates] = await Promise.all([
+      const [workflowTemplates, changeTemplates, emailTemplates] = await Promise.all([
         getAvailableTemplates().catch(() => []),
         getChangeSetTemplates(tenantId).catch(() => []),
+        tenantService.getEmailTemplates().catch(() => []),
       ]);
 
       const allTemplates: Template[] = [
@@ -149,13 +151,12 @@ export default function TenantTemplatesPage() {
           createdAt: ct.createdAt,
           updatedAt: ct.updatedAt,
         })),
-        ...getMockEmailTemplates(),
-        ...getMockReportTemplates(),
+
       ];
       setTemplates(allTemplates);
     } catch (err) {
       console.error('Error fetching templates:', err);
-      setTemplates([...getMockEmailTemplates(), ...getMockReportTemplates()]);
+      setTemplates([]);
     } finally {
       setLoading(false);
     }
@@ -172,15 +173,6 @@ export default function TenantTemplatesPage() {
     });
     return [...new Set(variables)];
   };
-
-  const getMockEmailTemplates = (): Template[] => [
-    { id: 'email-1', name: 'Welcome Email', type: 'email', category: 'Onboarding', description: 'Welcome email for new users', content: { subject: 'Welcome to {{tenantName}}', body: 'Hello {{userName}}!', htmlTemplate: '<h1>Welcome {{userName}}</h1>' }, variables: ['tenantName', 'userName'], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-    { id: 'email-2', name: 'Password Reset', type: 'email', category: 'Security', description: 'Password reset notification', content: { subject: 'Password Reset Request', body: 'Click here: {{resetLink}}' }, variables: ['resetLink', 'userName'], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  ];
-
-  const getMockReportTemplates = (): Template[] => [
-    { id: 'report-1', name: 'User Activity Report', type: 'report', category: 'Analytics', description: 'Monthly user activity summary', content: { metrics: ['activeUsers', 'signIns', 'failedLogins'], groupBy: 'day', charts: ['line', 'bar'] }, variables: ['startDate', 'endDate'], createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-  ];
 
   const filterTemplates = () => {
     let filtered = templates;

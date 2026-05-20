@@ -176,122 +176,49 @@ export default function TenantReportsCompliancePage() {
         governanceService.getReports()
       ]);
 
-      if (frameworks && frameworks.length > 0) {
-        const scores: ComplianceScore[] = frameworks.map((framework: any) => ({
-          framework: framework.name || framework.id,
-          score: framework.complianceScore || 85,
-          lastAudit: framework.lastAuditDate || new Date().toISOString(),
-          status: framework.status || 'compliant'
+      const scores: ComplianceScore[] = (frameworks ?? []).map((framework: any) => ({
+        framework: framework.name || framework.id,
+        score: framework.complianceScore ?? 0,
+        lastAudit: framework.lastAuditDate || new Date().toISOString(),
+        status: framework.status || 'compliant',
+      }));
+      setComplianceScores(scores);
+
+      const predefined: PredefinedReport[] = (reports ?? [])
+        .filter((r: any) => r.type === 'predefined')
+        .map((r: any) => ({
+          id: r.id,
+          name: r.name || `${r.framework} Report`,
+          framework: r.framework,
+          description: r.description || '',
+          lastGenerated: r.generatedDate || null,
+          status: r.status || 'available',
         }));
-        setComplianceScores(scores);
-      } else {
-        initializeComplianceScores();
-      }
+      setPredefinedReports(predefined);
 
-      if (reports && reports.length > 0) {
-        const predefined: PredefinedReport[] = reports
-          .filter((r: any) => r.type === 'predefined')
-          .map((r: any) => ({
-            id: r.id,
-            name: r.name || `${r.framework} Report`,
-            framework: r.framework,
-            description: r.description || '',
-            lastGenerated: r.generatedDate || null,
-            status: r.status || 'available'
-          }));
-        setPredefinedReports(predefined.length > 0 ? predefined : mockPredefinedReports());
-
-        const history: ReportHistory[] = reports
-          .filter((r: any) => r.generatedDate)
-          .map((r: any) => ({
-            id: r.id,
-            name: r.name,
-            framework: r.framework,
-            generatedDate: r.generatedDate,
-            generatedBy: r.generatedBy || 'system',
-            format: r.format || 'PDF',
-            size: r.size || '0 KB'
-          }));
-        setReportHistory(history.length > 0 ? history : mockReportHistory());
-      } else {
-        initializePredefinedReports();
-        initializeReportHistory();
-      }
-
-      initializeScheduledReports();
+      const history: ReportHistory[] = (reports ?? [])
+        .filter((r: any) => r.generatedDate)
+        .map((r: any) => ({
+          id: r.id,
+          name: r.name,
+          framework: r.framework,
+          generatedDate: r.generatedDate,
+          generatedBy: r.generatedBy || 'system',
+          format: r.format || 'PDF',
+          size: r.size || '0 KB',
+        }));
+      setReportHistory(history);
+      setScheduledReports([]);
 
     } catch (error) {
       console.error('Error fetching compliance data:', error);
-      initializeComplianceScores();
-      initializePredefinedReports();
-      initializeReportHistory();
-      initializeScheduledReports();
+      setComplianceScores([]);
+      setPredefinedReports([]);
+      setReportHistory([]);
+      setScheduledReports([]);
     } finally {
       setLoading(false);
     }
-  };
-
-  const mockPredefinedReports = (): PredefinedReport[] => [
-    {
-      id: '1',
-      name: 'GDPR Compliance Report',
-      framework: 'GDPR',
-      description: 'Comprehensive report on GDPR compliance',
-      lastGenerated: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      status: 'available'
-    }
-  ];
-
-  const mockReportHistory = (): ReportHistory[] => [
-    {
-      id: '1',
-      name: 'GDPR Compliance Report',
-      framework: 'GDPR',
-      generatedDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      generatedBy: 'admin@example.com',
-      format: 'PDF',
-      size: '2.4 MB'
-    }
-  ];
-
-  const initializeComplianceScores = () => {
-    const scores: ComplianceScore[] = [
-      { framework: 'GDPR', score: 92, lastAudit: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(), status: 'compliant' },
-      { framework: 'SOC2', score: 88, lastAudit: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(), status: 'compliant' },
-      { framework: 'ISO27001', score: 85, lastAudit: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(), status: 'compliant' },
-      { framework: 'HIPAA', score: 78, lastAudit: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), status: 'warning' },
-      { framework: 'PCI DSS', score: 95, lastAudit: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), status: 'compliant' }
-    ];
-    setComplianceScores(scores);
-  };
-
-  const initializePredefinedReports = () => {
-    const reports: PredefinedReport[] = [
-      { id: '1', name: 'GDPR Compliance Report', framework: 'GDPR', description: 'Comprehensive report on GDPR compliance including data processing, consent management, and user rights', lastGenerated: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), status: 'available' },
-      { id: '2', name: 'SOC2 Type II Report', framework: 'SOC2', description: 'Security, availability, processing integrity, confidentiality, and privacy controls audit', lastGenerated: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(), status: 'available' },
-      { id: '3', name: 'ISO27001 Certification Report', framework: 'ISO27001', description: 'Information security management system compliance and certification status', lastGenerated: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString(), status: 'available' },
-      { id: '4', name: 'HIPAA Security Rule Compliance', framework: 'HIPAA', description: 'Protected Health Information (PHI) security and privacy compliance assessment', lastGenerated: null, status: 'available' }
-    ];
-    setPredefinedReports(reports);
-  };
-
-  const initializeReportHistory = () => {
-    const history: ReportHistory[] = [
-      { id: '1', name: 'GDPR Compliance Report', framework: 'GDPR', generatedDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), generatedBy: 'admin@example.com', format: 'PDF', size: '2.4 MB' },
-      { id: '2', name: 'SOC2 Type II Report', framework: 'SOC2', generatedDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), generatedBy: 'compliance@example.com', format: 'Excel', size: '1.8 MB' },
-      { id: '3', name: 'Custom Security Audit', framework: 'Custom', generatedDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), generatedBy: 'security@example.com', format: 'PDF', size: '3.1 MB' },
-      { id: '4', name: 'ISO27001 Certification Report', framework: 'ISO27001', generatedDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(), generatedBy: 'admin@example.com', format: 'PDF', size: '4.2 MB' }
-    ];
-    setReportHistory(history);
-  };
-
-  const initializeScheduledReports = () => {
-    const scheduled: ScheduledReport[] = [
-      { id: '1', name: 'Weekly Security Report', framework: 'Custom', frequency: 'weekly', nextRun: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), recipients: ['security@example.com', 'admin@example.com'] },
-      { id: '2', name: 'Monthly GDPR Report', framework: 'GDPR', frequency: 'monthly', nextRun: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(), recipients: ['compliance@example.com'] },
-      { id: '3', name: 'Quarterly SOC2 Report', framework: 'SOC2', frequency: 'quarterly', nextRun: new Date(Date.now() + 45 * 24 * 60 * 60 * 1000).toISOString(), recipients: ['audit@example.com', 'compliance@example.com'] }
-    ];
-    setScheduledReports(scheduled);
   };
 
   const generateReport = async (reportId: string, format: 'PDF' | 'Excel' | 'JSON') => {

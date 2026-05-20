@@ -80,144 +80,6 @@ interface StatCardProps {
   delay: number;
 }
 
-// Mock data for fallback
-const mockExportsFallback: ExportJob[] = [
-  {
-    id: '1',
-    name: 'All Users Export',
-    dataType: 'Users',
-    fileType: 'csv',
-    status: 'completed',
-    totalRecords: 1543,
-    fileSize: '245 KB',
-    downloadUrl: '/downloads/users_export_1.csv',
-    expiresAt: '2025-11-30T10:00:00Z',
-    createdBy: 'admin@example.com',
-    createdAt: '2025-11-23T10:00:00Z',
-    completedAt: '2025-11-23T10:02:15Z',
-  },
-  {
-    id: '2',
-    name: 'Active Applications',
-    dataType: 'Applications',
-    fileType: 'json',
-    status: 'completed',
-    totalRecords: 89,
-    fileSize: '156 KB',
-    downloadUrl: '/downloads/applications_export_2.json',
-    expiresAt: '2025-11-30T11:30:00Z',
-    createdBy: 'admin@example.com',
-    createdAt: '2025-11-23T11:30:00Z',
-    completedAt: '2025-11-23T11:31:45Z',
-    filters: [{ field: 'status', operator: 'equals', value: 'active' }],
-  },
-  {
-    id: '3',
-    name: 'Roles with Permissions',
-    dataType: 'Roles',
-    fileType: 'xlsx',
-    status: 'processing',
-    totalRecords: 0,
-    createdBy: 'admin@example.com',
-    createdAt: '2025-11-23T11:45:00Z',
-  },
-  {
-    id: '4',
-    name: 'Audit Logs',
-    dataType: 'AuditLogs',
-    fileType: 'csv',
-    status: 'failed',
-    totalRecords: 0,
-    createdBy: 'admin@example.com',
-    createdAt: '2025-11-23T09:00:00Z',
-    completedAt: '2025-11-23T09:01:30Z',
-  },
-];
-
-const mockTemplatesFallback: ExportTemplate[] = [
-  {
-    id: 't1',
-    name: 'User Export - Full Details',
-    dataType: 'Users',
-    fileType: 'csv',
-    fields: ['id', 'email', 'firstName', 'lastName', 'status', 'createdAt'],
-    filters: [],
-    createdAt: '2025-10-15T12:00:00Z',
-  },
-  {
-    id: 't2',
-    name: 'Active Users Only',
-    dataType: 'Users',
-    fileType: 'xlsx',
-    fields: ['email', 'firstName', 'lastName', 'lastLoginAt'],
-    filters: [{ field: 'status', operator: 'equals', value: 'active' }],
-    createdAt: '2025-10-20T14:30:00Z',
-  },
-  {
-    id: 't3',
-    name: 'Application Summary',
-    dataType: 'Applications',
-    fileType: 'json',
-    fields: ['name', 'clientId', 'type', 'createdAt'],
-    filters: [],
-    createdAt: '2025-10-25T09:00:00Z',
-  },
-];
-
-const mockScheduledExportsFallback: ScheduledExport[] = [
-  {
-    id: 's1',
-    name: 'Weekly User Report',
-    templateId: 't1',
-    schedule: 'Every Monday at 8:00 AM',
-    nextRunAt: '2025-11-25T08:00:00Z',
-    lastRunAt: '2025-11-18T08:00:00Z',
-    isActive: true,
-    emailRecipients: ['admin@example.com', 'reports@example.com'],
-  },
-  {
-    id: 's2',
-    name: 'Daily Active Users',
-    templateId: 't2',
-    schedule: 'Daily at 6:00 AM',
-    nextRunAt: '2025-11-24T06:00:00Z',
-    lastRunAt: '2025-11-23T06:00:00Z',
-    isActive: true,
-    emailRecipients: ['admin@example.com'],
-  },
-];
-
-const dataTypes = ['Users', 'Applications', 'Roles', 'OrgUnits', 'AuditLogs', 'Sessions'];
-const fileTypes = ['csv', 'json', 'xlsx'];
-
-const StatCard = ({ title, value, icon, color, delay }: StatCardProps) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: delay * 0.1 }}
-    className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200 dark:border-slate-700 p-6 hover:shadow-xl transition-all duration-300"
-  >
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
-        <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
-      </div>
-      <div className={`p-4 rounded-xl bg-gradient-to-br ${color}`}>
-        {icon}
-      </div>
-    </div>
-  </motion.div>
-);
-
-const getFileTypeIcon = (fileType: string) => {
-  switch (fileType) {
-    case 'csv': return <FileText className="w-4 h-4" />;
-    case 'json': return <FileJson className="w-4 h-4" />;
-    case 'xlsx': return <Table className="w-4 h-4" />;
-    default: return <FileText className="w-4 h-4" />;
-  }
-};
-
 export default function TenantExportsPage() {
   const { t } = useTranslation();
   const [exports, setExports] = useState<ExportJob[]>([]);
@@ -277,11 +139,11 @@ export default function TenantExportsPage() {
 
     try {
       const data = await tenantService.getExportJobs(tenantId);
-      setExports(data || mockExportsFallback);
+      setExports(Array.isArray(data) ? data : []);
     } catch (error: any) {
       console.error('Error fetching exports:', error);
       setError(error?.message || t('common.failedToLoadExports'));
-      setExports(mockExportsFallback);
+      setExports([]);
     } finally {
       setLoading(false);
     }
@@ -292,10 +154,10 @@ export default function TenantExportsPage() {
 
     try {
       const data = await tenantService.getExportTemplates(tenantId);
-      setTemplates(data || mockTemplatesFallback);
+      setTemplates(Array.isArray(data) ? data : []);
     } catch (error: any) {
       console.error('Error fetching templates:', error);
-      setTemplates(mockTemplatesFallback);
+      setTemplates([]);
     }
   };
 
@@ -304,10 +166,10 @@ export default function TenantExportsPage() {
 
     try {
       const data = await tenantService.getScheduledExports(tenantId);
-      setScheduledExports(data || mockScheduledExportsFallback);
+      setScheduledExports(Array.isArray(data) ? data : []);
     } catch (error: any) {
       console.error('Error fetching scheduled exports:', error);
-      setScheduledExports(mockScheduledExportsFallback);
+      setScheduledExports([]);
     }
   };
 

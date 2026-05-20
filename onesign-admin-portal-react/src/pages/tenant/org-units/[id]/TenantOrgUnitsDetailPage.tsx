@@ -5,6 +5,7 @@ import { getTenantId } from '@/lib/tenant-context';
 import Modal from '@/components/common/Modal';
 import StatusBadge from '@/components/common/StatusBadge';
 import { tenantService } from '@/lib/api/services/tenant.service';
+import { orgUnitsService } from '@/lib/api/services/org-units.service';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -196,21 +197,25 @@ export default function TenantOrgUnitsDetailPage() {
     setLoading(true);
     setError('');
     try {
-      // Mock data for demo
+      const data = await orgUnitsService.getById(orgUnitId);
+      if (!data) {
+        setError(t('common.failedToFetchOrgUnit'));
+        return;
+      }
       setOrgUnit({
-        id: orgUnitId,
-        tenantId: tenantId || '',
-        name: 'Engineering Department',
-        description: 'Main engineering organizational unit',
-        path: '/root/engineering',
-        level: 1,
+        id: data.id,
+        tenantId: tenantId || (data as any).tenantId || '',
+        name: data.name,
+        description: data.description || '',
+        path: data.path || '',
+        level: (data as any).level ?? 0,
         status: t('common.active'),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: data.createdAt || new Date().toISOString(),
+        updatedAt: data.updatedAt || new Date().toISOString(),
       });
       setEditForm({
-        name: 'Engineering Department',
-        description: 'Main engineering organizational unit',
+        name: data.name,
+        description: data.description || '',
       });
     } catch (err: any) {
       setError(err?.message || t('common.failedToFetchOrgUnit'));

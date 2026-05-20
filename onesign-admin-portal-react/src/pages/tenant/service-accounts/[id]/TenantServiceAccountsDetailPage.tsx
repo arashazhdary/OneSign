@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getTenantId } from '@/lib/tenant-context';
+import { tenantService } from '@/lib/api/services/tenant.service';
 import { Helmet } from 'react-helmet-async';
 import { motion, AnimatePresence } from 'framer-motion';
 import Modal from '@/components/common/Modal';
@@ -159,26 +160,16 @@ export default function TenantServiceAccountsDetailPage() {
 
   const fetchServiceAccount = async () => {
     setLoading(true);
+    setError('');
     try {
-      const mockData: ServiceAccount = {
-        id: accountId,
-        tenantId: tenantId || '',
-        name: 'Production API Service',
-        description: 'Service account for production API access',
-        clientId: 'sa_' + accountId.substring(0, 24),
-        status: 'Active',
-        createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
-        updatedAt: new Date().toISOString(),
-        createdBy: 'admin@example.com',
-        lastUsedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        permissions: ['api:read', 'api:write', 'users:read', 'workflows:execute'],
-        secrets: [
-          { id: '1', name: 'Primary Secret', hint: '****abc123', createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(), expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), lastUsedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), isActive: true },
-          { id: '2', name: 'Backup Secret', hint: '****xyz789', createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(), lastUsedAt: null, isActive: true },
-        ],
-      };
-      setAccount(mockData);
+      const data = await tenantService.getServiceAccountById(accountId);
+      if (data) {
+        setAccount(data as ServiceAccount);
+      } else {
+        setError(t('serviceAccountDetail.errors.loadFailed'));
+      }
     } catch (err) {
+      console.error('Error fetching service account:', err);
       setError(t('serviceAccountDetail.errors.loadFailed'));
     } finally {
       setLoading(false);
@@ -186,28 +177,11 @@ export default function TenantServiceAccountsDetailPage() {
   };
 
   const fetchUsageStats = async () => {
-    const mockStats: ApiUsageStats = {
-      totalCalls: 125847, callsToday: 3421, callsThisWeek: 24563, callsThisMonth: 98234,
-      rateLimit: 10000, rateLimitRemaining: 7234, rateLimitReset: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-      topEndpoints: [
-        { endpoint: '/api/tenant/users', method: 'GET', calls: 5234, avgResponseTime: 145 },
-        { endpoint: '/api/tenant/workflows', method: 'POST', calls: 3421, avgResponseTime: 267 },
-      ],
-      dailyUsage: Array.from({ length: 7 }, (_, i) => ({
-        date: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        calls: Math.floor(Math.random() * 5000) + 2000,
-        errors: Math.floor(Math.random() * 50),
-      })),
-    };
-    setUsageStats(mockStats);
+    setUsageStats(null);
   };
 
   const fetchAuditLog = async () => {
-    const mockAudit: AuditEntry[] = [
-      { id: '1', timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), action: 'API Call', actor: 'Service Account', ipAddress: '203.0.113.42', userAgent: 'OneSign-SDK/1.0', details: 'GET /api/tenant/users', status: 'Success' },
-      { id: '2', timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), action: 'Secret Rotated', actor: 'admin@example.com', ipAddress: '198.51.100.10', userAgent: 'Mozilla/5.0', details: 'Generated new secret', status: 'Success' },
-    ];
-    setAuditLog(mockAudit);
+    setAuditLog([]);
   };
 
   const handleGenerateSecret = async () => {

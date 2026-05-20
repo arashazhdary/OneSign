@@ -153,68 +153,13 @@ export default function TenantNotificationsTemplatesDetailPage() {
     } catch (err: any) {
       console.error('Error fetching template:', err);
       setError(err?.message || t('common.failedToLoadTemplate'));
-
-      const mockTemplate: any = {
-        id: templateId,
-        tenantId: tenantId || '',
-        name: 'Welcome Email',
-        description: 'Welcome email sent to new users',
-        category: 'User',
-        type: 'Email',
-        subjectTemplate: 'Welcome to {{companyName}}, {{userName}}!',
-        bodyTemplate: 'Hello {{userName}},\n\nWelcome to {{companyName}}! We\'re excited to have you on board.',
-        htmlTemplate: '<html><body><h1>Welcome!</h1></body></html>',
-        variables: ['userName', 'companyName', 'actionUrl'],
-        isActive: true,
-        isGlobalTemplate: false,
-        createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      setTemplate(mockTemplate);
-      setName(mockTemplate.name);
-      setDescription(mockTemplate.description || '');
-      setCategory(mockTemplate.category);
-      setType(mockTemplate.type);
-      setSubject(mockTemplate.subjectTemplate);
-      setBody(mockTemplate.bodyTemplate);
-      setHtmlBody(mockTemplate.htmlTemplate || '');
-      setVariables(mockTemplate.variables);
-      setIsActive(mockTemplate.isActive);
     } finally {
       setLoading(false);
     }
   };
 
   const fetchVersions = async () => {
-    try {
-      const mockVersions: TemplateVersion[] = [
-        {
-          id: '1',
-          version: 3,
-          createdAt: new Date().toISOString(),
-          createdBy: 'admin@example.com',
-          changes: 'Updated HTML formatting',
-        },
-        {
-          id: '2',
-          version: 2,
-          createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-          createdBy: 'admin@example.com',
-          changes: 'Added actionUrl variable',
-        },
-        {
-          id: '3',
-          version: 1,
-          createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-          createdBy: 'admin@example.com',
-          changes: 'Initial version',
-        },
-      ];
-      setVersions(mockVersions);
-    } catch (err) {
-      console.error('Failed to fetch versions:', err);
-    }
+    setVersions([]);
   };
 
   const handleSave = async () => {

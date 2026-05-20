@@ -171,118 +171,15 @@ export default function TenantDelegatedAdminsDetailPage() {
       if (err.status === 404 || err.response?.status === 404) {
         setNotFound(true);
       } else {
-        loadMockData();
+        setError(err?.message || t('common.error'));
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const loadMockData = () => {
-    const mockAdmin: DelegatedAdminDetails = {
-      id,
-      userId: 'user-123',
-      name: 'Sarah Johnson',
-      email: 'sarah.johnson@example.com',
-      status: 'active',
-      scopes: [
-        {
-          id: 'scope-1',
-          type: 'org-unit',
-          name: 'Engineering Department',
-          resourceId: 'ou-eng-001',
-          permissions: ['users:read', 'users:write', 'apps:read'],
-        },
-        {
-          id: 'scope-2',
-          type: 'org-unit',
-          name: 'Product Team',
-          resourceId: 'ou-prod-001',
-          permissions: ['users:read', 'apps:read'],
-        },
-        {
-          id: 'scope-3',
-          type: 'application',
-          name: 'HR Portal',
-          resourceId: 'app-hr-001',
-          permissions: ['apps:read', 'apps:write'],
-        },
-      ],
-      permissions: ['users:read', 'users:write', 'apps:read', 'apps:write', 'audit:read'],
-      assignedAt: '2024-01-15T10:00:00Z',
-      assignedBy: 'admin@example.com',
-      lastActiveAt: '2024-03-20T14:30:00Z',
-      createdAt: '2024-01-15T10:00:00Z',
-      updatedAt: '2024-03-10T09:15:00Z',
-    };
-
-    const mockActivityLogs: ActivityLog[] = [
-      {
-        id: '1',
-        action: 'User Updated',
-        resource: 'john.doe@example.com',
-        timestamp: '2024-03-20T14:30:00Z',
-        details: 'Updated user profile information',
-        ipAddress: '192.168.1.100',
-      },
-      {
-        id: '2',
-        action: 'Application Access Granted',
-        resource: 'HR Portal',
-        timestamp: '2024-03-19T11:20:00Z',
-        details: 'Granted access to HR Portal for new employee',
-        ipAddress: '192.168.1.100',
-      },
-      {
-        id: '3',
-        action: 'User Created',
-        resource: 'jane.smith@example.com',
-        timestamp: '2024-03-18T09:45:00Z',
-        details: 'Created new user account',
-        ipAddress: '192.168.1.101',
-      },
-    ];
-
-    const mockOrgUnits = [
-      { id: 'ou-eng-001', name: 'Engineering Department' },
-      { id: 'ou-prod-001', name: 'Product Team' },
-      { id: 'ou-sales-001', name: 'Sales Team' },
-      { id: 'ou-hr-001', name: 'HR Department' },
-    ];
-
-    const mockApplications = [
-      { id: 'app-hr-001', name: 'HR Portal' },
-      { id: 'app-crm-001', name: 'CRM System' },
-      { id: 'app-pm-001', name: 'Project Management' },
-    ];
-
-    setAdmin(mockAdmin);
-    setActivityLogs(mockActivityLogs);
-    setAvailableOrgUnits(mockOrgUnits);
-    setAvailableApplications(mockApplications);
-    setSelectedScopes(mockAdmin.scopes);
-  };
-
   const fetchActivityLogs = async () => {
-    const mockActivityLogs: ActivityLog[] = [
-      {
-        id: '1',
-        action: 'User Updated',
-        resource: 'john.doe@example.com',
-        timestamp: '2024-03-20T14:30:00Z',
-        details: 'Updated user profile information',
-        ipAddress: '192.168.1.100',
-      },
-      {
-        id: '2',
-        action: 'Application Access Granted',
-        resource: 'HR Portal',
-        timestamp: '2024-03-19T11:20:00Z',
-        details: 'Granted access to HR Portal for new employee',
-        ipAddress: '192.168.1.100',
-      },
-    ];
-    setActivityLogs(mockActivityLogs);
+    setActivityLogs([]);
   };
 
   const fetchAvailableOrgUnits = async () => {
@@ -292,20 +189,18 @@ export default function TenantDelegatedAdminsDetailPage() {
       const orgUnits = await tenantService.getOrgUnitsTree();
       setAvailableOrgUnits(orgUnits);
     } catch (err) {
-      const mockOrgUnits = [
-        { id: 'ou-eng-001', name: 'Engineering Department' },
-        { id: 'ou-prod-001', name: 'Product Team' },
-      ];
-      setAvailableOrgUnits(mockOrgUnits);
+      setAvailableOrgUnits([]);
     }
   };
 
   const fetchAvailableApplications = async () => {
-    const mockApplications = [
-      { id: 'app-hr-001', name: 'HR Portal' },
-      { id: 'app-crm-001', name: 'CRM System' },
-    ];
-    setAvailableApplications(mockApplications);
+    if (!tenantId) return;
+    try {
+      const apps = await tenantService.getApplications({ page: 1, pageSize: 200 });
+      setAvailableApplications((apps.items ?? []).map((a: any) => ({ id: a.id, name: a.name })));
+    } catch {
+      setAvailableApplications([]);
+    }
   };
 
   const handleSuspend = async () => {

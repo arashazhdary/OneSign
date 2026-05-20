@@ -172,75 +172,16 @@ export default function TenantSchedulesPage() {
         }));
         setSchedules(mappedSchedules);
       } else {
-        setSchedules(mockSchedulesFallback);
+        setSchedules([]);
       }
     } catch (err: any) {
       console.error('Error fetching schedules:', err);
       setError(err?.message || t('common.failedToLoadSchedules'));
-      setSchedules(mockSchedulesFallback);
+      setSchedules([]);
     } finally {
       setLoading(false);
     }
   };
-
-  const mockSchedulesFallback: ScheduledJob[] = [
-    {
-      id: '1',
-      name: 'Daily User Sync',
-      description: 'Synchronize user data from external systems',
-      jobType: 'user_sync',
-      cronExpression: '0 2 * * *',
-      enabled: true,
-      nextRun: new Date(Date.now() + 3600000 * 5).toISOString(),
-      lastRun: new Date(Date.now() - 86400000).toISOString(),
-      lastStatus: 'Success',
-      createdAt: new Date(Date.now() - 86400000 * 30).toISOString(),
-      createdBy: 'admin@example.com',
-      executionCount: 30,
-    },
-    {
-      id: '2',
-      name: 'Weekly Report Generation',
-      description: 'Generate and send weekly analytics reports',
-      jobType: 'report_generation',
-      cronExpression: '0 8 * * 1',
-      enabled: true,
-      nextRun: new Date(Date.now() + 86400000 * 2).toISOString(),
-      lastRun: new Date(Date.now() - 86400000 * 7).toISOString(),
-      lastStatus: 'Success',
-      createdAt: new Date(Date.now() - 86400000 * 60).toISOString(),
-      createdBy: 'john.doe@example.com',
-      executionCount: 8,
-    },
-    {
-      id: '3',
-      name: 'Data Cleanup',
-      description: 'Remove old temporary data and expired sessions',
-      jobType: 'data_cleanup',
-      cronExpression: '0 3 * * *',
-      enabled: true,
-      nextRun: new Date(Date.now() + 3600000 * 6).toISOString(),
-      lastRun: new Date(Date.now() - 86400000).toISOString(),
-      lastStatus: 'Success',
-      createdAt: new Date(Date.now() - 86400000 * 90).toISOString(),
-      createdBy: 'system',
-      executionCount: 90,
-    },
-    {
-      id: '4',
-      name: 'Audit Log Export',
-      description: 'Export audit logs for compliance',
-      jobType: 'audit_export',
-      cronExpression: '0 1 1 * *',
-      enabled: false,
-      nextRun: new Date(Date.now() + 86400000 * 15).toISOString(),
-      lastRun: new Date(Date.now() - 86400000 * 30).toISOString(),
-      lastStatus: 'Failed',
-      createdAt: new Date(Date.now() - 86400000 * 120).toISOString(),
-      createdBy: 'admin@example.com',
-      executionCount: 4,
-    },
-  ];
 
   const fetchExecutionHistory = async (jobId: string) => {
     try {
@@ -258,33 +199,7 @@ export default function TenantSchedulesPage() {
         }));
         setExecutions(mappedExecutions);
       } else {
-        const mockExecutions: JobExecution[] = [];
-        const count = 10;
-
-        for (let i = 0; i < count; i++) {
-          const status: JobExecution['status'] = Math.random() > 0.8 ? 'Failed' : 'Success';
-          const startedAt = new Date(Date.now() - 86400000 * i - Math.random() * 86400000);
-          const duration = Math.floor(Math.random() * 60000);
-
-          mockExecutions.push({
-            id: `exec-${i}`,
-            jobId,
-            startedAt: startedAt.toISOString(),
-            completedAt: new Date(startedAt.getTime() + duration).toISOString(),
-            status,
-            duration,
-            errorMessage: status === 'Failed' ? 'Connection timeout to external service' : undefined,
-            logs: [
-              `[${startedAt.toISOString()}] Job started`,
-              `[${new Date(startedAt.getTime() + 1000).toISOString()}] Initializing...`,
-              `[${new Date(startedAt.getTime() + 5000).toISOString()}] Processing records...`,
-              status === 'Failed'
-                ? `[${new Date(startedAt.getTime() + duration).toISOString()}] ERROR: Connection timeout`
-                : `[${new Date(startedAt.getTime() + duration).toISOString()}] Job completed successfully`,
-            ],
-          });
-        }
-        setExecutions(mockExecutions);
+        setExecutions([]);
       }
     } catch (err) {
       console.error('Error fetching execution history:', err);

@@ -117,35 +117,6 @@ const getTypeIcon = (type: string) => {
   }
 };
 
-// Fallback mock data for rules if API is not available
-const mockRules: any[] = [
-  {
-    id: '1',
-    tenantId: '00000000-0000-0000-0000-000000000000',
-    name: 'Failed Login Alert',
-    description: 'Notify admin on 3 failed login attempts',
-    eventType: 'FailedLogin',
-    conditions: ['attemptCount >= 3'],
-    notificationType: 'Email',
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    createdBy: 'system',
-  },
-  {
-    id: '2',
-    tenantId: '00000000-0000-0000-0000-000000000000',
-    name: 'New User Registration',
-    description: 'Send welcome notification to new users',
-    eventType: 'UserRegistered',
-    conditions: [],
-    notificationType: 'Email',
-    templateId: 'welcome-template',
-    isActive: true,
-    createdAt: new Date().toISOString(),
-    createdBy: 'system',
-  },
-];
-
 export default function TenantNotificationsPage() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language;
@@ -456,10 +427,10 @@ export default function TenantNotificationsPage() {
     if (!tenantId) return;
     try {
       const data = await getNotificationRules();
-      setRules(data || mockRules);
+      setRules(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error fetching notification rules:', err);
-      setRules(mockRules);
+      setRules([]);
     }
   };
 

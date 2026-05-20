@@ -75,29 +75,8 @@ export default function TenantIpWhitelistPage() {
   const fetchWhitelist = async () => {
     setLoading(true);
     try {
-      const mockData: IPWhitelist[] = [
-        {
-          id: '1',
-          ipAddress: '192.168.1.100',
-          description: 'Office Network',
-          createdBy: 'admin@example.com',
-          createdAt: '2024-01-15T10:00:00Z',
-          lastAccess: '2024-11-22T14:30:00Z',
-          accessCount: 1523,
-          isActive: true,
-        },
-        {
-          id: '2',
-          ipAddress: '10.0.0.0/24',
-          description: 'VPN Range',
-          createdBy: 'admin@example.com',
-          createdAt: '2024-02-20T09:00:00Z',
-          lastAccess: '2024-11-22T12:00:00Z',
-          accessCount: 856,
-          isActive: true,
-        },
-      ];
-      setWhitelist(mockData);
+      const data = await securityService.getIPWhitelist();
+      setWhitelist(Array.isArray(data) ? data : []);
     } catch (err: any) {
       console.error('Error fetching IP whitelist:', err);
       setWhitelist([]);
