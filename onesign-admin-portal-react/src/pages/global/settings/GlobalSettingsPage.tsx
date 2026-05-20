@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '@/components/common/Modal';
-import { globalService } from '@/lib/api/services/global.service';
+import { adminService } from '@/lib/api/services/admin.service';
 
 type Tab = 'platform' | 'email' | 'sms' | 'oauth' | 'security' | 'backup' | 'logs';
 
@@ -138,14 +138,39 @@ export default function GlobalSettingsPage() {
     remoteLoggingEndpoint: ''
   });
 
+  const applySectionData = (section: Tab, data: any) => {
+    if (!data || typeof data !== 'object' || Object.keys(data).length === 0) return;
+    switch (section) {
+      case 'platform':
+        setPlatformSettings((prev) => ({ ...prev, ...data }));
+        break;
+      case 'email':
+        setEmailSettings((prev) => ({ ...prev, ...data }));
+        break;
+      case 'sms':
+        setSmsSettings((prev) => ({ ...prev, ...data }));
+        break;
+      case 'oauth':
+        if (Array.isArray(data.providers)) setOauthProviders(data.providers);
+        break;
+      case 'security':
+        setSecuritySettings((prev) => ({ ...prev, ...data }));
+        break;
+      case 'backup':
+        setBackupSettings((prev) => ({ ...prev, ...data }));
+        break;
+      case 'logs':
+        setLogSettings((prev) => ({ ...prev, ...data }));
+        break;
+    }
+  };
+
   const fetchSettings = async () => {
     setLoading(true);
     setError('');
     try {
-      // Note: getGlobalSettings method does not exist in globalService
-      // Using default fallback data instead
-      // const data = await globalService.getGlobalSettings(activeTab);
-      // For now, we use the default state values initialized above
+      const data = await adminService.getGlobalSettings(activeTab);
+      applySectionData(activeTab, data);
       setHasChanges(false);
     } catch (err: any) {
       setError(err.message || t('common.error'));
@@ -184,10 +209,7 @@ export default function GlobalSettingsPage() {
           break;
       }
 
-      // Note: updateGlobalSettings method does not exist in globalService
-      // await globalService.updateGlobalSettings(activeTab, payload);
-      // For now, we just show a success message with the prepared payload
-      console.log('Settings to save:', { tab: activeTab, payload });
+      await adminService.updateGlobalSettings(activeTab, payload);
       setSuccess(t('globalSettings.settingsSavedSuccessfully'));
       setHasChanges(false);
     } catch (err: any) {
@@ -201,10 +223,7 @@ export default function GlobalSettingsPage() {
     setLoading(true);
     setError('');
     try {
-      // Note: testEmailConfiguration method does not exist in globalService
-      // await globalService.testEmailConfiguration(emailSettings);
-      // For now, we just show a simulated success message
-      console.log('Testing email configuration:', emailSettings);
+      await adminService.testEmailConfiguration(emailSettings);
       setSuccess(t('globalSettings.email.testEmailSentSuccessfully'));
     } catch (err: any) {
       setError(err.message || t('common.failedToSendTestEmail'));
@@ -217,10 +236,7 @@ export default function GlobalSettingsPage() {
     setLoading(true);
     setError('');
     try {
-      // Note: testSMSConfiguration method does not exist in globalService
-      // await globalService.testSMSConfiguration(smsSettings);
-      // For now, we just show a simulated success message
-      console.log('Testing SMS configuration:', smsSettings);
+      await adminService.testSMSConfiguration(smsSettings);
       setSuccess(t('globalSettings.sms.testSmsSentSuccessfully'));
     } catch (err: any) {
       setError(err.message || t('common.failedToSendTestSMS'));
