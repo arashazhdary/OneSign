@@ -28,6 +28,9 @@ public class GetTenantBrandingQueryHandler : IRequestHandler<GetTenantBrandingQu
 
         var branding = new TenantBrandingDto
         {
+            UpdatedAt = new DateTimeOffset(
+                config.UpdatedAt ?? config.CreatedAt,
+                TimeSpan.Zero),
             LogoUrl = config.LogoUrl,
             LogoDarkUrl = config.LogoDarkUrl,
             FaviconUrl = config.FaviconUrl,

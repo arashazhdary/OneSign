@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Onesign.Modules.Tenants.Application.DTOs;
 
 /// <summary>
@@ -5,6 +7,12 @@ namespace Onesign.Modules.Tenants.Application.DTOs;
 /// </summary>
 public class TenantBrandingDto
 {
+    /// <summary>
+    /// Used for HTTP Last-Modified; not serialized in API body.
+    /// </summary>
+    [JsonIgnore]
+    public DateTimeOffset? UpdatedAt { get; set; }
+
     public string? LogoUrl { get; set; }
     public string? LogoDarkUrl { get; set; }
     public string? FaviconUrl { get; set; }

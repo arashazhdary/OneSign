@@ -1,5 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
+using Onesign.Api.Infrastructure;
 using Onesign.Modules.Tenants.Application.Commands;
 using Onesign.Modules.Tenants.Application.DTOs;
 using Onesign.Modules.Tenants.Application.Queries;
@@ -27,19 +29,40 @@ public class TenantBrandingController : ControllerBase
     /// <returns>Complete branding configuration including slider images</returns>
     [HttpGet]
     [ProducesResponseType(typeof(TenantBrandingDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status304NotModified)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<TenantBrandingDto>> GetBranding([FromQuery] Guid tenantId)
     {
         var query = new GetTenantBrandingQuery { TenantId = tenantId };
         var result = await _mediator.Send(query);
 
-        if (result == null)
+        var branding = result ?? GetDefaultBranding();
+        return RespondWithBrandingCache(branding, tenantId);
+    }
+
+    private ActionResult<TenantBrandingDto> RespondWithBrandingCache(TenantBrandingDto branding, Guid tenantId)
+    {
+        var etag = BrandingHttpCacheHelper.ComputeETag(branding, tenantId);
+        var lastModified = BrandingHttpCacheHelper.ResolveLastModified(branding);
+
+        Response.Headers.CacheControl = BrandingHttpCacheHelper.CacheControlValue;
+        Response.Headers.ETag = etag;
+        Response.Headers.LastModified = lastModified.ToString("R");
+
+        var ifNoneMatch = Request.Headers.IfNoneMatch.ToString();
+        if (BrandingHttpCacheHelper.MatchesIfNoneMatch(ifNoneMatch, etag))
         {
-            // Return default branding if not found
-            return Ok(GetDefaultBranding());
+            return StatusCode(StatusCodes.Status304NotModified);
         }
 
-        return Ok(result);
+        if (Request.Headers.TryGetValue(HeaderNames.IfModifiedSince, out var ifModifiedSinceValues)
+            && DateTimeOffset.TryParse(ifModifiedSinceValues.ToString(), out var ifModifiedSince)
+            && BrandingHttpCacheHelper.IsNotModifiedSince(lastModified, ifModifiedSince))
+        {
+            return StatusCode(StatusCodes.Status304NotModified);
+        }
+
+        return Ok(branding);
     }
 
     /// <summary>
