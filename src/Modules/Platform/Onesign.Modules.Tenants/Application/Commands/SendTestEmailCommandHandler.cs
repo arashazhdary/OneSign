@@ -2,31 +2,32 @@ using System.Text.RegularExpressions;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Onesign.Modules.Tenants.Domain.Repositories;
+using Onesign.Shared.Email;
 using Onesign.Shared.Result;
 
 namespace Onesign.Modules.Tenants.Application.Commands;
-
 
 public class SendTestEmailCommandHandler : IRequestHandler<SendTestEmailCommand, Result<bool>>
 {
     private readonly IEmailTemplateRepository _emailTemplateRepository;
     private readonly ITenantConfigRepository _tenantConfigRepository;
+    private readonly IEmailService _emailService;
     private readonly ILogger<SendTestEmailCommandHandler> _logger;
-    // TODO: Inject IEmailService when available
 
     public SendTestEmailCommandHandler(
         IEmailTemplateRepository emailTemplateRepository,
         ITenantConfigRepository tenantConfigRepository,
+        IEmailService emailService,
         ILogger<SendTestEmailCommandHandler> logger)
     {
         _emailTemplateRepository = emailTemplateRepository;
         _tenantConfigRepository = tenantConfigRepository;
+        _emailService = emailService;
         _logger = logger;
     }
 
     public async Task<Result<bool>> Handle(SendTestEmailCommand request, CancellationToken cancellationToken)
     {
-        // Validate email format
         if (string.IsNullOrWhiteSpace(request.Email) || !IsValidEmail(request.Email))
         {
             return Result.Failure<bool>("INVALID_EMAIL", "Invalid email address");
@@ -44,11 +45,9 @@ public class SendTestEmailCommandHandler : IRequestHandler<SendTestEmailCommand,
             return Result.Failure<bool>("TEMPLATE_DISABLED", "This template is currently disabled");
         }
 
-        // Get tenant config for company name
         var tenantConfig = await _tenantConfigRepository.GetByTenantIdAsync(request.TenantId, cancellationToken);
         var companyName = tenantConfig?.TenantName ?? "Your Company";
 
-        // Build test variables
         var variables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "user.name", "Test User" },
@@ -59,30 +58,45 @@ public class SendTestEmailCommandHandler : IRequestHandler<SendTestEmailCommand,
             { "magic_link", "https://example.com/magic?token=test-token-12345" },
             { "mfa_code", "123456" },
             { "company.name", companyName },
-            { "support.email", $"support@{companyName.ToLowerInvariant().Replace(" ", "")}.com" }
+            { "support.email", $"support@{companyName.ToLowerInvariant().Replace(" ", "")}.com" },
         };
 
-        // Replace variables in subject and content
         var subject = ReplaceVariables($"[TEST] {template.Subject}", variables);
-        var body = ReplaceVariables(template.Body ?? string.Empty, variables);
+        var textBody = ReplaceVariables(template.Body ?? string.Empty, variables);
         var htmlBody = ReplaceVariables(template.HtmlBody ?? string.Empty, variables);
 
-        // TODO: Send actual email using IEmailService
-        // For now, we'll just log the email
+        var useHtml = !string.IsNullOrWhiteSpace(htmlBody);
+        var body = useHtml ? htmlBody : textBody;
+        if (string.IsNullOrWhiteSpace(body))
+        {
+            body = textBody;
+            useHtml = false;
+        }
+
+        var sent = await _emailService.SendEmailAsync(
+            request.Email,
+            "Test User",
+            subject,
+            body,
+            useHtml,
+            cancellationToken);
+
+        if (!sent)
+        {
+            _logger.LogWarning(
+                "Test email was not sent to {Email} for tenant {TenantId} (email provider unavailable or misconfigured)",
+                request.Email,
+                request.TenantId);
+            return Result.Failure<bool>(
+                "EMAIL_SEND_FAILED",
+                "Test email could not be sent. Verify SMTP/email provider configuration.");
+        }
+
         _logger.LogInformation(
-            "Test email would be sent to {Email} with subject '{Subject}' for tenant {TenantId}",
+            "Test email sent to {Email} with subject '{Subject}' for tenant {TenantId}",
             request.Email,
             subject,
             request.TenantId);
-
-        // In production, this would be:
-        // await _emailService.SendAsync(new EmailMessage
-        // {
-        //     To = request.Email,
-        //     Subject = subject,
-        //     TextBody = body,
-        //     HtmlBody = htmlBody
-        // }, cancellationToken);
 
         return Result.Success(true);
     }
@@ -103,9 +117,10 @@ public class SendTestEmailCommandHandler : IRequestHandler<SendTestEmailCommand,
     private static string ReplaceVariables(string content, Dictionary<string, string> variables)
     {
         if (string.IsNullOrEmpty(content))
+        {
             return content;
+        }
 
-        // Replace {{variable.name}} patterns
         var pattern = @"\{\{([^}]+)\}\}";
         return Regex.Replace(content, pattern, match =>
         {
