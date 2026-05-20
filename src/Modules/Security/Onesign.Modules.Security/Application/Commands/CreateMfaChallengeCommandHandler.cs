@@ -10,16 +10,13 @@ public class CreateMfaChallengeCommandHandler : IRequestHandler<CreateMfaChallen
 {
     private readonly IUserMfaMethodRepository _methodRepository;
     private readonly IMfaChallengeService _challengeService;
-    private readonly IMfaService _mfaService;
 
     public CreateMfaChallengeCommandHandler(
         IUserMfaMethodRepository methodRepository,
-        IMfaChallengeService challengeService,
-        IMfaService mfaService)
+        IMfaChallengeService challengeService)
     {
         _methodRepository = methodRepository;
         _challengeService = challengeService;
-        _mfaService = mfaService;
     }
 
     public async Task<MfaChallengeResponse> Handle(CreateMfaChallengeCommand request, CancellationToken cancellationToken)
@@ -41,12 +38,6 @@ public class CreateMfaChallengeCommandHandler : IRequestHandler<CreateMfaChallen
             selectedMethod.MethodType,
             cancellationToken
         );
-
-        if (selectedMethod.MethodType == MfaMethodType.EmailOtp)
-        {
-            var code = _mfaService.GenerateEmailOtpCode();
-            await _challengeService.SetChallengeCodeAsync(challenge.Id, code, cancellationToken);
-        }
 
         string? maskedDestination = selectedMethod.MethodType == MfaMethodType.EmailOtp
             ? MaskEmail(request.UserEmail)

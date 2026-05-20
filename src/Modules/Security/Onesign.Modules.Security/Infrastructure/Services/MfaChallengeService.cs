@@ -170,11 +170,20 @@ public class MfaChallengeService : IMfaChallengeService
         MfaMethodType methodType,
         CancellationToken cancellationToken = default)
     {
+        var codeHash = string.Empty;
+
+        if (methodType == MfaMethodType.EmailOtp || methodType == MfaMethodType.SmsOtp)
+        {
+            var otpCode = _mfaService.GenerateOtpCode();
+            codeHash = _mfaService.HashCode(otpCode);
+            await SendOtpCodeAsync(tenantUserId, methodType, otpCode, cancellationToken);
+        }
+
         var challenge = new MfaChallenge(
             id: Guid.NewGuid(),
             tenantUserId: tenantUserId,
             methodType: methodType,
-            codeHash: string.Empty,
+            codeHash: codeHash,
             expiresAt: DateTime.UtcNow.AddMinutes(5),
             deviceId: string.Empty,
             ipAddress: string.Empty

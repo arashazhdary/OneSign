@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Onesign.Api.Authentication;
 using Onesign.Api.BackgroundServices;
 using Onesign.Api.Configuration;
+using Onesign.Api.Extensions;
 using Onesign.Api.Services;
 using Onesign.Data.Contexts;
 using Onesign.Modules.AccessRequests.Application.Services;
@@ -313,11 +314,9 @@ static void ConfigureSharedServices(WebApplicationBuilder builder)
     }
 
     // =====================================================
-    // سرویس SMS (اختیاری)
-    // فقط در صورت پیکربندی SMS فعال می‌شود
-    // در غیر این صورت از NullSmsService استفاده می‌شود
+    // سرویس SMS (Twilio / Logging dev / Null)
     // =====================================================
-    builder.Services.AddScoped<Onesign.Shared.Sms.ISmsService, Onesign.Shared.Sms.NullSmsService>();
+    builder.Services.AddOnesignSmsServices(builder.Configuration, builder.Environment);
 
     // =====================================================
     // سرویس محلی‌سازی

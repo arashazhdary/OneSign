@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Onesign.Data.Contexts;
+using Onesign.Shared.Sms;
 using Testcontainers.MsSql;
 
 namespace Onesign.IntegrationTests.Fixtures;
@@ -40,6 +42,14 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyn
             using var scope = sp.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<OnesignDbContext>();
             db.Database.Migrate();
+        });
+
+        builder.ConfigureAppConfiguration((_, config) =>
+        {
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Sms:Provider"] = SmsProviders.Logging,
+            });
         });
 
         builder.UseEnvironment("Testing");
@@ -82,6 +92,14 @@ public class InMemoryWebApplicationFactory : WebApplicationFactory<Program>
             using var scope = sp.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<OnesignDbContext>();
             db.Database.EnsureCreated();
+        });
+
+        builder.ConfigureAppConfiguration((_, config) =>
+        {
+            config.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Sms:Provider"] = SmsProviders.Logging,
+            });
         });
 
         builder.UseEnvironment("Testing");
