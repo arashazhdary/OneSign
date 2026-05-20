@@ -9,6 +9,7 @@ export { applicationsService } from './applications.service';
 export { orgUnitsService } from './org-units.service';
 export { rolesService } from './roles.service';
 export { securityService } from './security.service';
+export { policiesService } from './policies.service';
 export { accessService } from './access.service';
 export { privilegedAccessService } from './privileged-access.service';
 export { incidentsService } from './incidents.service';

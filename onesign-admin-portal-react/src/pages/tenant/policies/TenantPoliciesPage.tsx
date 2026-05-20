@@ -2,6 +2,14 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocale } from '@/hooks/useLocale';
 import { getTenantId } from '@/lib/tenant-context';
+import {
+  policiesService,
+  parsePolicyType,
+  stripPolicyTypeTag,
+  withPolicyTypeTag,
+  mapAssignEntityTypeToTargetType,
+  type PolicyDefinitionDto,
+} from '@/lib/api/services/policies.service';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield,
@@ -44,59 +52,15 @@ interface PolicyEvaluationResult {
   matchedRules: string[];
 }
 
-// Mock data for demonstration
-const mockPolicies: Policy[] = [
-  {
-    id: '1',
-    name: 'Admin Access Policy',
-    description: 'Full administrative access to all resources',
-    policyType: 'RBAC',
-    enabled: true,
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-02-01T14:30:00Z',
-    assignedCount: 5,
-  },
-  {
-    id: '2',
-    name: 'Read-Only Policy',
-    description: 'Read-only access for viewers',
-    policyType: 'ABAC',
-    enabled: true,
-    createdAt: '2024-01-20T09:00:00Z',
-    updatedAt: '2024-01-25T11:15:00Z',
-    assignedCount: 12,
-  },
-  {
-    id: '3',
-    name: 'Department-Based Access',
-    description: 'Access based on department attributes',
-    policyType: 'ABAC',
-    enabled: true,
-    createdAt: '2024-02-01T08:00:00Z',
-    updatedAt: '2024-02-10T16:45:00Z',
-    assignedCount: 8,
-  },
-  {
-    id: '4',
-    name: 'Time-Restricted Policy',
-    description: 'Access only during business hours',
-    policyType: 'PBAC',
-    enabled: false,
-    createdAt: '2024-02-05T12:00:00Z',
-    updatedAt: '2024-02-15T09:20:00Z',
-    assignedCount: 3,
-  },
-  {
-    id: '5',
-    name: 'Sensitive Data Policy',
-    description: 'Access control for sensitive data',
-    policyType: 'ABAC',
-    enabled: true,
-    createdAt: '2024-02-10T14:00:00Z',
-    updatedAt: '2024-02-20T10:30:00Z',
-    assignedCount: 6,
-  },
-];
+const mapPolicyDto = (dto: PolicyDefinitionDto): Policy => ({
+  id: dto.id,
+  name: dto.name,
+  description: stripPolicyTypeTag(dto.description),
+  policyType: parsePolicyType(dto.description),
+  enabled: dto.enabled,
+  createdAt: dto.createdAt,
+  updatedAt: dto.createdAt,
+});
 
 interface StatCardProps {
   title: string;
@@ -181,16 +145,13 @@ export default function TenantPoliciesPage() {
 
     try {
       setLoading(true);
-      // TODO: Implement policy fetching when API is available
-      // const data = await securityService.getPolicies(tenantId, filterEnabled ?? undefined);
-      // Use mock data for demonstration
-      setTimeout(() => {
-        setPolicies(mockPolicies);
-        setLoading(false);
-      }, 500);
+      const data = await policiesService.getPolicies(tenantId, filterEnabled ?? undefined);
+      setPolicies(data.map(mapPolicyDto));
     } catch (error) {
       console.error('Error fetching policies:', error);
-      setPolicies(mockPolicies);
+      setError(t('common.failedToLoad') || t('common.error'));
+      setPolicies([]);
+    } finally {
       setLoading(false);
     }
   };
@@ -202,7 +163,15 @@ export default function TenantPoliciesPage() {
     if (!tenantId) return;
 
     try {
-      // TODO: Implement policy creation when API is available
+      await policiesService.createPolicy({
+        tenantId,
+        name: policyName,
+        description: withPolicyTypeTag(policyDescription, policyType),
+        effect: 0,
+        priority: 0,
+        enabled,
+        conditionGroups: [],
+      });
       setShowCreateModal(false);
       setPolicyName('');
       setPolicyDescription('');
@@ -223,7 +192,14 @@ export default function TenantPoliciesPage() {
     if (!tenantId || !selectedPolicy) return;
 
     try {
-      // TODO: Implement policy update when API is available
+      await policiesService.updatePolicy(selectedPolicy.id, {
+        name: policyName,
+        description: withPolicyTypeTag(policyDescription, policyType),
+        effect: 0,
+        priority: 0,
+        enabled,
+        conditionGroups: [],
+      });
       setShowEditModal(false);
       setSelectedPolicy(null);
       setPolicyName('');
@@ -244,7 +220,7 @@ export default function TenantPoliciesPage() {
     if (!tenantId) return;
 
     try {
-      // TODO: Implement policy deletion when API is available
+      await policiesService.deletePolicy(policyId);
       setSuccess(t('common.policyDeleted', 'Policy deleted successfully'));
       fetchPolicies();
     } catch (error: any) {
@@ -260,14 +236,22 @@ export default function TenantPoliciesPage() {
     if (!tenantId || !selectedPolicy) return;
 
     try {
-      // TODO: Implement policy evaluation when API is available
-      // Provide mock evaluation result for UI testing
-      const mockResult: PolicyEvaluationResult = {
-        allowed: true,
-        reason: 'User has required role and attributes match policy conditions',
-        matchedRules: ['role-check', 'attribute-match', 'time-constraint'],
-      };
-      setEvaluationResult(mockResult);
+      const result = await policiesService.evaluatePolicy({
+        tenantId,
+        userId: evaluateUserId,
+        targetKey: evaluateResource || evaluateAction || 'default',
+        targetType: 0,
+        context: {
+          resource: evaluateResource,
+          action: evaluateAction,
+          policyId: selectedPolicy.id,
+        },
+      });
+      setEvaluationResult({
+        allowed: result.isAllowed,
+        reason: result.denyReason || (result.isAllowed ? t('tenant.policies.evaluationAllowed', 'Access allowed') : t('tenant.policies.evaluationDenied', 'Access denied')),
+        matchedRules: result.matchedPolicies ?? [],
+      });
     } catch (error: any) {
       setError(error?.message || t('common.error'));
       console.error('Error evaluating policy:', error);
@@ -281,7 +265,14 @@ export default function TenantPoliciesPage() {
     if (!tenantId || !selectedPolicy) return;
 
     try {
-      // TODO: Implement policy assignment when API is available
+      await policiesService.assignPolicy({
+        tenantId,
+        policyDefinitionId: selectedPolicy.id,
+        targetType: mapAssignEntityTypeToTargetType(assignEntityType),
+        targetKey: `${assignEntityType.toLowerCase()}:${assignEntityId}`,
+        targetName: `${assignEntityType} ${assignEntityId}`,
+        order: 0,
+      });
       setShowAssignModal(false);
       setSelectedPolicy(null);
       setAssignEntityId('');
