@@ -79,10 +79,35 @@ export default function GlobalMigrationsPage() {
     }
   };
 
+  const mapApiMigration = (m: {
+    id: string;
+    migrationName: string;
+    appliedAt: string;
+    status: string;
+    durationMs: number;
+    errorMessage?: string | null;
+  }): Migration => ({
+    id: m.id,
+    name: m.migrationName,
+    version: m.migrationName,
+    description: m.errorMessage ?? '',
+    type: 'Schema',
+    status: (m.status === 'Applied' || m.status === 'Completed' ? 'Completed' : m.status) as Migration['status'],
+    appliedAt: m.appliedAt,
+    rolledBackAt: null,
+    executionTime: m.durationMs,
+    checksum: '—',
+    author: '—',
+    dependencies: [],
+    affectedTables: [],
+    batchNumber: null,
+  });
+
   const fetchMigrations = async () => {
     try {
       const data = await globalService.getPlatformMigrations(1, 100);
-      setMigrations(data.migrations || []);
+      const items = data?.items ?? data?.migrations ?? [];
+      setMigrations(items.map(mapApiMigration));
     } catch (err) {
       console.error('Error fetching migrations:', err);
       setMigrations([]);
@@ -91,9 +116,10 @@ export default function GlobalMigrationsPage() {
 
   const fetchPendingMigrations = async () => {
     try {
-      const data = await globalService.getPlatformMigrations(1, 100);
-      const pending = (data.migrations ?? []).filter((m: any) => m.status === 'Pending');
-      setPendingMigrations(pending);
+      const data = await globalService.getPlatformMigrations(1, 100, 'Pending');
+      const items = data?.items ?? data?.migrations ?? [];
+      const pending = items.filter((m: { status: string }) => m.status === 'Pending');
+      setPendingMigrations(pending.map(mapApiMigration));
     } catch (err) {
       console.error('Error fetching pending migrations:', err);
       setPendingMigrations([]);
@@ -103,9 +129,10 @@ export default function GlobalMigrationsPage() {
   const fetchSchemaVersion = async () => {
     try {
       const data = await globalService.getPlatformMigrations(1, 100);
-      const items = data.migrations ?? [];
-      const applied = items.filter((m: any) => m.status === 'Completed' || m.status === 'Applied');
-      const pending = items.filter((m: any) => m.status === 'Pending');
+      const items = data?.items ?? data?.migrations ?? [];
+      const mapped = items.map(mapApiMigration);
+      const applied = mapped.filter((m) => m.status === 'Completed');
+      const pending = mapped.filter((m) => m.status === 'Pending');
       const last = applied[applied.length - 1];
       setSchemaVersion({
         current: last?.version ?? '—',
@@ -129,7 +156,7 @@ export default function GlobalMigrationsPage() {
     setSuccess('');
 
     try {
-      await globalService.applyPlatformMigration(migrationToRun.id);
+      await globalService.applyPlatformMigration(migrationToRun.name);
       setSuccess(t('migrations.migrationStartedSuccessfully', { name: migrationToRun.name }));
       setShowRunModal(false);
       setMigrationToRun(null);

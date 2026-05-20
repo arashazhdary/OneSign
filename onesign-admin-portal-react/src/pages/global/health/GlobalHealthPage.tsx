@@ -80,26 +80,52 @@ export default function GlobalHealthPage() {
     setError('');
     try {
       // Fetch all health endpoints in parallel using service methods
-      const [healthData, liveData, readyData, regionsData] = await Promise.all([
+      const [healthData, liveData, readyData, regionsData, platformHealth] = await Promise.all([
         globalService.getHealthStatus(),
         globalService.getLivenessProbe(),
         globalService.getReadinessProbe(),
         globalService.getRegionsHealthStatus(),
+        globalService.getHealth(),
       ]);
 
-      if (healthData) {
+      if (platformHealth?.components?.length) {
+        const components: ComponentHealth[] = platformHealth.components.map(
+          (c: { name: string; status: string; responseTimeMs: number; message?: string }) => ({
+            name: c.name,
+            status: c.status as ComponentHealth['status'],
+            responseTime: c.responseTimeMs ?? 0,
+            lastChecked: platformHealth.checkedAt ?? new Date().toISOString(),
+            errorMessage: c.message,
+          }),
+        );
+        const avgResponse =
+          components.reduce((sum, c) => sum + c.responseTime, 0) / (components.length || 1);
+        setHealthStatus({
+          status: (platformHealth.status as HealthStatus['status']) || 'Healthy',
+          uptime: 0,
+          timestamp: platformHealth.checkedAt ?? new Date().toISOString(),
+          components,
+        });
+        setHealthHistory((prev) => {
+          const newPoint: HealthHistoryPoint = {
+            timestamp: new Date().toISOString(),
+            uptime: 0,
+            responseTime: avgResponse,
+          };
+          return [...prev, newPoint].slice(-48);
+        });
+      } else if (healthData) {
         setHealthStatus(healthData);
 
-        // Add to history
-        setHealthHistory(prev => {
+        setHealthHistory((prev) => {
           const newPoint: HealthHistoryPoint = {
             timestamp: new Date().toISOString(),
             uptime: healthData.uptime || 0,
-            responseTime: healthData.components?.reduce((sum: number, c: ComponentHealth) => sum + c.responseTime, 0) / (healthData.components?.length || 1) || 0,
+            responseTime:
+              healthData.components?.reduce((sum: number, c: ComponentHealth) => sum + c.responseTime, 0) /
+                (healthData.components?.length || 1) || 0,
           };
-          const updated = [...prev, newPoint];
-          // Keep only last 48 points for demo
-          return updated.slice(-48);
+          return [...prev, newPoint].slice(-48);
         });
       }
 

@@ -56,6 +56,112 @@ interface OpenAPISpec {
 
 type Tab = 'version' | 'health' | 'migrations' | 'diagnostics' | 'tests' | 'docs';
 
+function mapMigrationRow(m: {
+  id: string;
+  migrationName: string;
+  appliedAt: string;
+  durationMs: number;
+  status: string;
+}): Migration {
+  return {
+    id: m.id,
+    name: m.migrationName,
+    version: m.migrationName,
+    appliedAt: m.appliedAt,
+    executionTime: m.durationMs,
+    status: (m.status === 'Applied' || m.status === 'Completed' ? 'Applied' : m.status) as Migration['status'],
+  };
+}
+
+function mapTestRow(t: {
+  id: string;
+  testName: string;
+  category?: string | null;
+  status: string;
+  durationMs?: number | null;
+  startedAt: string;
+  errorMessage?: string | null;
+}): TestResult {
+  return {
+    id: t.id,
+    testName: t.testName,
+    category: t.category ?? 'General',
+    status: t.status as TestResult['status'],
+    duration: t.durationMs ?? 0,
+    message: t.errorMessage ?? undefined,
+    lastRunAt: t.startedAt,
+  };
+}
+
+function mapDiagnosticsDto(dto: Record<string, any>): DiagnosticInfo[] {
+  const rows: DiagnosticInfo[] = [];
+  const sys = dto.systemInfo;
+  if (sys) {
+    rows.push(
+      { category: 'System', key: 'Environment', value: sys.environment ?? '—' },
+      { category: 'System', key: 'Machine', value: sys.machineName ?? '—' },
+      { category: 'System', key: 'OS', value: sys.osVersion ?? '—' },
+      { category: 'System', key: 'Processors', value: String(sys.processorCount ?? '—') },
+      { category: 'System', key: 'Uptime', value: sys.uptime ?? '—' },
+    );
+  }
+  if (dto.memory) {
+    rows.push(
+      { category: 'Memory', key: 'Used (MB)', value: String(dto.memory.usedMB ?? '—') },
+      { category: 'Memory', key: 'Usage %', value: `${dto.memory.usagePercent ?? 0}%` },
+    );
+  }
+  if (dto.cpu) {
+    rows.push({ category: 'CPU', key: 'Usage %', value: `${dto.cpu.usagePercent ?? 0}%` });
+  }
+  rows.push(
+    { category: 'Traffic', key: 'Active connections', value: String(dto.activeConnections ?? 0) },
+    { category: 'Traffic', key: 'Requests/sec', value: String(dto.requestsPerSecond ?? 0) },
+    { category: 'Traffic', key: 'Avg response (ms)', value: String(dto.averageResponseTimeMs ?? 0) },
+    { category: 'Traffic', key: 'Errors (last hour)', value: String(dto.errorsLastHour ?? 0) },
+  );
+  (dto.modules ?? []).forEach((m: { name: string; status: string; entitiesCount: number }) => {
+    rows.push({
+      category: 'Modules',
+      key: m.name,
+      value: m.status,
+      description: `${m.entitiesCount} entities`,
+    });
+  });
+  (dto.connections ?? []).forEach((c: { name: string; status: string; latencyMs: number; type: string }) => {
+    rows.push({
+      category: 'Connections',
+      key: c.name,
+      value: `${c.status} (${c.latencyMs}ms)`,
+      description: c.type,
+    });
+  });
+  return rows;
+}
+
+function mapOpenApiForUi(spec: Record<string, any> | null): OpenAPISpec | null {
+  if (!spec) return null;
+  if (spec.info?.title) return spec as OpenAPISpec;
+  let paths: Record<string, unknown> = {};
+  if (spec.specificationJson) {
+    try {
+      const parsed = JSON.parse(spec.specificationJson);
+      paths = parsed.paths ?? {};
+    } catch {
+      paths = {};
+    }
+  }
+  return {
+    openapi: spec.version ?? '3.0.3',
+    info: {
+      title: spec.title ?? 'OneSign API',
+      version: spec.version ?? '1.0',
+      description: spec.description ?? '',
+    },
+    paths: paths as Record<string, unknown>,
+  };
+}
+
 export default function GlobalPlatformPage() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('version');
@@ -99,39 +205,35 @@ export default function GlobalPlatformPage() {
         }
       } else if (activeTab === 'migrations') {
         const data = await globalService.getPlatformMigrations(migrationPage, pageSize);
-        setMigrations((data as any).items || []);
-        setTotalMigrations((data as any).totalCount || 0);
+        const items = data?.items ?? [];
+        setMigrations(items.map(mapMigrationRow));
+        setTotalMigrations(data?.totalCount ?? 0);
       } else if (activeTab === 'tests') {
-        // Test endpoints not available in service - use fallback
-        setTestResults([]);
-        setTotalTests(0);
+        const data = await globalService.getPlatformTestResults(testPage, pageSize);
+        const items = data?.items ?? [];
+        setTestResults(items.map(mapTestRow));
+        setTotalTests(data?.totalCount ?? 0);
       } else if (activeTab === 'health') {
         const data = await globalService.getHealth();
-        if (data && data.services) {
-          setSystemHealth(data.services.map((service: any) => ({
-            service: service.name,
-            status: service.status as 'Healthy' | 'Degraded' | 'Unhealthy',
-            latency: service.latency || 0,
-            lastChecked: new Date().toISOString()
-          })));
+        if (data?.components) {
+          setSystemHealth(
+            data.components.map((component: { name: string; status: string; responseTimeMs: number; message?: string }) => ({
+              service: component.name,
+              status: component.status as SystemHealth['status'],
+              latency: component.responseTimeMs ?? 0,
+              lastChecked: data.checkedAt ?? new Date().toISOString(),
+              details: component.message,
+            })),
+          );
+        } else {
+          setSystemHealth([]);
         }
       } else if (activeTab === 'diagnostics') {
         const data = await globalService.getDiagnostics();
-        if (data) {
-          // Convert diagnostics to expected format
-          const diags: DiagnosticInfo[] = [];
-          for (const [key, value] of Object.entries(data)) {
-            diags.push({
-              category: 'System',
-              key: key,
-              value: String(value)
-            });
-          }
-          setDiagnostics(diags);
-        }
+        setDiagnostics(data ? mapDiagnosticsDto(data) : []);
       } else if (activeTab === 'docs') {
-        // API docs endpoint not available - use fallback
-        setOpenApiSpec(null);
+        const spec = await globalService.getPlatformOpenApiSpec();
+        setOpenApiSpec(mapOpenApiForUi(spec));
       }
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -143,22 +245,30 @@ export default function GlobalPlatformPage() {
 
   const runTests = async () => {
     setError('');
+    setLoading(true);
     try {
-      // Test execution not available in service
-      setError(t('global.platform.messages.platformTestsNotAvailable'));
+      const result = await globalService.runPlatformIntegrationTests();
+      if (result?.results?.length) {
+        setTestResults(result.results.map(mapTestRow));
+        setTotalTests(result.results.length);
+      } else {
+        await fetchData();
+      }
     } catch (err: any) {
-      setError(err.response?.data?.errorMessage || t('common.error'));
+      setError(err.response?.data?.error ?? err.response?.data?.errorMessage ?? t('common.error'));
+    } finally {
+      setLoading(false);
     }
   };
 
-  const applyMigration = async (migrationId: string) => {
+  const applyMigration = async (migrationName: string) => {
     setError('');
     setApplyingMigration(true);
     try {
-      await globalService.applyPlatformMigration(migrationId);
-      fetchData();
+      await globalService.applyPlatformMigration(migrationName);
+      await fetchData();
     } catch (err: any) {
-      setError(err.response?.data?.errorMessage || t('common.error'));
+      setError(err.response?.data?.error ?? err.response?.data?.errorMessage ?? t('common.error'));
     } finally {
       setApplyingMigration(false);
     }
@@ -167,31 +277,26 @@ export default function GlobalPlatformPage() {
   const getTestResult = async (testId: string) => {
     setError('');
     try {
-      // Test result retrieval not available in service
-      setError(t('global.platform.messages.testResultRetrievalNotAvailable'));
+      const data = await globalService.getPlatformTestResult(testId);
+      setSingleTestResult(mapTestRow(data));
     } catch (err: any) {
-      setError(err.response?.data?.errorMessage || t('common.error'));
+      setError(err.response?.data?.error ?? err.response?.data?.errorMessage ?? t('common.error'));
     }
   };
 
   const getTestResults = async () => {
     setError('');
-    try {
-      // Test results not available in service
-      setError(t('global.platform.messages.platformTestsNotAvailable'));
-    } catch (err: any) {
-      setError(err.response?.data?.errorMessage || t('common.error'));
-    }
+    await fetchData();
   };
 
   const generateDocs = async () => {
     setError('');
     setGeneratingDocs(true);
     try {
-      // API docs generation not available in service
-      setError(t('global.platform.messages.documentationGenerationNotAvailable'));
+      const spec = await globalService.generatePlatformDocumentation();
+      setOpenApiSpec(mapOpenApiForUi(spec));
     } catch (err: any) {
-      setError(err.response?.data?.errorMessage || t('common.error'));
+      setError(err.response?.data?.error ?? err.response?.data?.errorMessage ?? t('common.error'));
     } finally {
       setGeneratingDocs(false);
     }
@@ -347,9 +452,9 @@ export default function GlobalPlatformPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    {migration.status === 'Pending' && (
+                    {(migration.status === 'Pending' || migration.status === 'Failed') && (
                       <button
-                        onClick={() => applyMigration(migration.id)}
+                        onClick={() => applyMigration(migration.name)}
                         disabled={applyingMigration}
                         className="text-indigo-600 hover:text-indigo-900 disabled:opacity-50"
                       >

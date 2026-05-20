@@ -404,8 +404,67 @@ export const globalService = {
   /**
    * POST /api/global/platform/migrations/apply - اعمال Migration
    */
-  applyMigration: async (migrationId: string): Promise<any> => {
-    const response = await apiClient.post('/api/global/platform/migrations/apply', { migrationId });
+  applyMigration: async (migrationName: string, userId?: string): Promise<any> => {
+    const response = await apiClient.post('/api/global/platform/migrations/apply', {
+      migrationName,
+      userId: userId ?? '00000000-0000-0000-0000-000000000001',
+    });
+    return response.data;
+  },
+
+  /**
+   * POST /api/global/platform/tests/run - اجرای تست‌های یکپارچه
+   */
+  runPlatformIntegrationTests: async (categories?: string[]): Promise<any> => {
+    const response = await apiClient.post('/api/global/platform/tests/run', {
+      categories: categories ?? [],
+    });
+    return response.data;
+  },
+
+  /**
+   * GET /api/global/platform/tests/results - تاریخچه نتایج تست
+   */
+  getPlatformTestResults: async (page: number = 1, pageSize: number = 20): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/global/platform/tests/results', {
+        params: { page, pageSize },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch platform test results:', error);
+      return { items: [], totalCount: 0 };
+    }
+  },
+
+  /**
+   * GET /api/global/platform/tests/{testId} - نتیجه یک تست
+   */
+  getPlatformTestResult: async (testId: string): Promise<any> => {
+    const response = await apiClient.get(`/api/global/platform/tests/${testId}`);
+    return response.data;
+  },
+
+  /**
+   * GET /api/global/platform/docs/openapi - مشخصات OpenAPI
+   */
+  getPlatformOpenApiSpec: async (): Promise<any> => {
+    try {
+      const response = await apiClient.get('/api/global/platform/docs/openapi');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch OpenAPI spec:', error);
+      return null;
+    }
+  },
+
+  /**
+   * POST /api/global/platform/docs/generate - تولید مجدد مستندات
+   */
+  generatePlatformDocumentation: async (): Promise<any> => {
+    const response = await apiClient.post('/api/global/platform/docs/generate', {
+      includeExamples: true,
+    });
     return response.data;
   },
 
@@ -1009,29 +1068,14 @@ export const globalService = {
   },
 
   /**
-   * POST /api/global/platform/diagnostics/run - اجرای تست‌های تشخیصی
+   * Refresh platform diagnostics (GET snapshot; no separate run endpoint on API).
    */
   runDiagnostics: async (): Promise<any> => {
-    try {
-      const response = await apiClient.post('/api/global/platform/diagnostics/run');
-      return response.data;
-    } catch (error) {
-      console.error('Failed to run diagnostics:', error);
-      throw error;
-    }
+    return globalService.getDiagnostics();
   },
 
-  /**
-   * POST /api/global/platform/diagnostics/{testId}/run - اجرای یک تست تشخیصی
-   */
-  runDiagnosticTest: async (testId: string): Promise<any> => {
-    try {
-      const response = await apiClient.post(`/api/global/platform/diagnostics/${testId}/run`);
-      return response.data;
-    } catch (error) {
-      console.error('Failed to run diagnostic test:', error);
-      throw error;
-    }
+  runDiagnosticTest: async (_testId: string): Promise<any> => {
+    return globalService.getDiagnostics();
   },
 
   /**
@@ -1214,24 +1258,23 @@ export const globalService = {
   /**
    * GET /api/global/platform/migrations - لیست Migration‌های پلتفرم با pagination
    */
-  getPlatformMigrations: async (page: number = 1, pageSize: number = 20): Promise<any> => {
+  getPlatformMigrations: async (page: number = 1, pageSize: number = 20, status?: string): Promise<any> => {
     try {
       const response = await apiClient.get('/api/global/platform/migrations', {
-        params: { page, pageSize }
+        params: { page, pageSize, status },
       });
       return response.data;
     } catch (error) {
       console.error('Failed to fetch platform migrations:', error);
-      return { migrations: [], total: 0 };
+      return { items: [], totalCount: 0 };
     }
   },
 
   /**
-   * POST /api/global/platform/migrations/{id}/apply - اعمال Migration خاص
+   * POST /api/global/platform/migrations/apply - اعمال Migration
    */
-  applyPlatformMigration: async (migrationId: string): Promise<any> => {
-    const response = await apiClient.post(`/api/global/platform/migrations/${migrationId}/apply`);
-    return response.data;
+  applyPlatformMigration: async (migrationName: string, userId?: string): Promise<any> => {
+    return globalService.applyMigration(migrationName, userId);
   },
 
   // ==================== AUDIT STATISTICS ====================

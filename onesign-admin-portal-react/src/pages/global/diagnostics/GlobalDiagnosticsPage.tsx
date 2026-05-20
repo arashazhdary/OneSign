@@ -39,8 +39,43 @@ export default function GlobalDiagnosticsPage() {
   const fetchData = async () => {
     try {
       const data = await globalService.getDiagnostics();
-      setHealth(data?.health ?? null);
-      setTests(Array.isArray(data?.tests) ? data.tests : []);
+      if (!data) {
+        setHealth(null);
+        setTests([]);
+        return;
+      }
+      const moduleTests: DiagnosticTest[] = (data.modules ?? []).map(
+        (m: { name: string; status: string; entitiesCount: number; lastActivity?: string }) => ({
+          id: m.name,
+          name: m.name,
+          category: 'services' as DiagnosticTest['category'],
+          status: m.status === 'Healthy' ? 'passed' : m.status === 'Degraded' ? 'warning' : 'failed',
+          lastRun: data.generatedAt,
+          message: `${m.entitiesCount} entities`,
+        }),
+      );
+      const connectionTests: DiagnosticTest[] = (data.connections ?? []).map(
+        (c: { name: string; status: string; latencyMs: number; type: string }) => ({
+          id: c.name,
+          name: c.name,
+          category: 'connectivity' as DiagnosticTest['category'],
+          status: c.status === 'Connected' ? 'passed' : 'failed',
+          duration: c.latencyMs,
+          lastRun: data.generatedAt,
+          message: c.type,
+        }),
+      );
+      setTests([...moduleTests, ...connectionTests]);
+      const degraded = [...moduleTests, ...connectionTests].some((t) => t.status === 'warning' || t.status === 'failed');
+      setHealth({
+        overall: degraded ? 'degraded' : 'healthy',
+        score: degraded ? 72 : 98,
+        components: (data.connections ?? []).map((c: { name: string; status: string; latencyMs: number }) => ({
+          name: c.name,
+          status: c.status === 'Connected' ? 'operational' : 'down',
+          responseTime: c.latencyMs,
+        })),
+      });
     } catch (err) {
       console.error('Error fetching diagnostics data:', err);
       setHealth(null);
