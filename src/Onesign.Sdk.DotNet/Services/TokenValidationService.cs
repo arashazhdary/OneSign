@@ -161,7 +161,17 @@ public class TokenValidationService
                 return _cachedJwks;
             }
 
-            var response = await _httpClient.GetAsync("/.well-known/openid-configuration/jwks", cancellationToken);
+            var discoveryResponse = await _httpClient.GetAsync("/.well-known/openid-configuration", cancellationToken);
+            discoveryResponse.EnsureSuccessStatusCode();
+            using var discoveryDoc = JsonDocument.Parse(await discoveryResponse.Content.ReadAsStringAsync(cancellationToken));
+            var jwksUri = discoveryDoc.RootElement.TryGetProperty("jwks_uri", out var jwksProp)
+                ? jwksProp.GetString()
+                : null;
+            var jwksPath = string.IsNullOrEmpty(jwksUri)
+                ? "/.well-known/jwks.json"
+                : new Uri(jwksUri!).AbsolutePath;
+
+            var response = await _httpClient.GetAsync(jwksPath, cancellationToken);
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync(cancellationToken);

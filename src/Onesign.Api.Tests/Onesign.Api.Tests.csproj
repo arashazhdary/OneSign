@@ -35,6 +35,7 @@
     <ProjectReference Include="..\Onesign.Shared\Onesign.Shared.csproj" />
     <ProjectReference Include="..\Onesign.Cli\Onesign.Cli.csproj" />
     <ProjectReference Include="..\Onesign.Sdk.DotNet\Onesign.Sdk.DotNet.csproj" />
+    <ProjectReference Include="..\Onesign.Sdk.AspNetCore\Onesign.Sdk.AspNetCore.csproj" />
     <!-- Platform Modules -->
     <ProjectReference Include="..\Modules\Platform\Onesign.Modules.Tenants\Onesign.Modules.Tenants.csproj" />
     <ProjectReference Include="..\Modules\Platform\Onesign.Modules.MultiRegion\Onesign.Modules.MultiRegion.csproj" />
