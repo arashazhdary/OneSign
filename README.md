@@ -480,17 +480,18 @@ Coverage highlights: tenant CRUD, user invite/activate, OAuth client & redirect 
 
 ## Contributing & Support
 
-Contributions are welcome. Before opening a pull request:
+See **[CONTRIBUTING.md](CONTRIBUTING.md)** for setup, PR guidelines, and code style.
 
-1. Run relevant `dotnet test` and frontend test suites
-2. Keep changes scoped to a single module or concern when possible
-3. Do not commit secrets, `.env` files, or production keys
+- **CI**: [`.github/workflows/monorepo-ci.yml`](.github/workflows/monorepo-ci.yml) — API + Admin + Login + Landing builds
+- **Deploy**: [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) · Helm chart [`deploy/helm/onesign/`](deploy/helm/onesign/)
+- **API docs**: [`docs/openapi/README.md`](docs/openapi/README.md) · Postman [`docs/postman/OneSign.postman_collection.json`](docs/postman/OneSign.postman_collection.json)
+- **Email ops**: [`docs/EMAIL-PRODUCTION.md`](docs/EMAIL-PRODUCTION.md)
 
 For product or integration questions, open a **GitHub Issue** in this repository.
 
 ### License
 
-License terms are not defined at the repository root. See [`onesign-landing/LICENSE`](onesign-landing/LICENSE) for the landing-site license reference, or add a root `LICENSE` file for the whole monorepo.
+[MIT License](LICENSE) — Copyright (c) OneSign contributors.
 
 ---
 

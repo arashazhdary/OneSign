@@ -60,6 +60,8 @@ public class HealthController : ControllerBase
         var configCheck = CheckConfiguration();
         checks.Add(configCheck);
 
+        checks.Add(CheckEmail());
+
         stopwatch.Stop();
 
         var isHealthy = checks.All(c => c.Status == "Healthy" || c.Status == "Degraded");
@@ -155,6 +157,7 @@ public class HealthController : ControllerBase
         checks.Add(await CheckDatabaseAsync());
         checks.Add(await CheckCacheAsync());
         checks.Add(CheckConfiguration());
+        checks.Add(CheckEmail());
         checks.Add(await CheckBackgroundServicesAsync());
         checks.Add(CheckMemory());
         checks.Add(CheckDiskSpace());
@@ -260,6 +263,69 @@ public class HealthController : ControllerBase
                 Message = ex.Message
             };
         }
+    }
+
+    private HealthCheckResult CheckEmail()
+    {
+        var stopwatch = Stopwatch.StartNew();
+        var provider = (_configuration["Email:Provider"] ?? InferEmailProvider()).Trim();
+        stopwatch.Stop();
+
+        if (provider.Equals("Null", StringComparison.OrdinalIgnoreCase) ||
+            provider.Equals("None", StringComparison.OrdinalIgnoreCase))
+        {
+            return new HealthCheckResult
+            {
+                Name = "Email",
+                Status = "Degraded",
+                DurationMs = stopwatch.ElapsedMilliseconds,
+                Message = "Email provider not configured (NullEmailService)",
+                Data = new { provider = "Null" }
+            };
+        }
+
+        var hasSmtp = !string.IsNullOrWhiteSpace(_configuration["Email:Smtp:Host"]);
+        var hasSendGrid = !string.IsNullOrWhiteSpace(_configuration["Email:SendGrid:ApiKey"]);
+
+        if (provider.Equals("Smtp", StringComparison.OrdinalIgnoreCase) && !hasSmtp)
+        {
+            return new HealthCheckResult
+            {
+                Name = "Email",
+                Status = "Unhealthy",
+                DurationMs = stopwatch.ElapsedMilliseconds,
+                Message = "Email:Provider is Smtp but Email:Smtp:Host is missing"
+            };
+        }
+
+        if (provider.Equals("SendGrid", StringComparison.OrdinalIgnoreCase) && !hasSendGrid)
+        {
+            return new HealthCheckResult
+            {
+                Name = "Email",
+                Status = "Unhealthy",
+                DurationMs = stopwatch.ElapsedMilliseconds,
+                Message = "Email:Provider is SendGrid but Email:SendGrid:ApiKey is missing"
+            };
+        }
+
+        return new HealthCheckResult
+        {
+            Name = "Email",
+            Status = "Healthy",
+            DurationMs = stopwatch.ElapsedMilliseconds,
+            Message = $"Email provider configured: {provider}",
+            Data = new { provider }
+        };
+    }
+
+    private string InferEmailProvider()
+    {
+        if (!string.IsNullOrWhiteSpace(_configuration["Email:SendGrid:ApiKey"]))
+            return "SendGrid";
+        if (!string.IsNullOrWhiteSpace(_configuration["Email:Smtp:Host"]))
+            return "Smtp";
+        return "Null";
     }
 
     private HealthCheckResult CheckConfiguration()

@@ -299,19 +299,9 @@ static void ConfigureSharedServices(WebApplicationBuilder builder)
     builder.Services.AddSingleton<Onesign.Shared.Security.IJwtSigningKeyProvider, Onesign.Shared.Security.ConfigurationJwtSigningKeyProvider>();
 
     // =====================================================
-    // سرویس ایمیل (اختیاری)
-    // فقط در صورت پیکربندی SMTP فعال می‌شود
-    // در غیر این صورت از NullEmailService استفاده می‌شود
+    // سرویس ایمیل (SMTP / SendGrid / Null)
     // =====================================================
-    var smtpHost = builder.Configuration["Email:Smtp:Host"];
-    if (!string.IsNullOrEmpty(smtpHost))
-    {
-        builder.Services.AddScoped<Onesign.Shared.Email.IEmailService, Onesign.Shared.Email.SmtpEmailService>();
-    }
-    else
-    {
-        builder.Services.AddScoped<Onesign.Shared.Email.IEmailService, Onesign.Shared.Email.NullEmailService>();
-    }
+    builder.Services.AddOnesignEmailServices(builder.Configuration);
 
     // =====================================================
     // سرویس SMS (Twilio / Logging dev / Null)
