@@ -249,232 +249,67 @@ export default function GlobalSecurityPage() {
   const fetchPolicies = async () => {
     try {
       const data = await securityService.getSecurityPolicies();
-      setPolicies(data as any);
+      setPolicies(Array.isArray(data) ? (data as any) : []);
     } catch (err) {
       console.error('Error fetching policies:', err);
-      setPolicies([
-        {
-          id: '1',
-          name: t('global.security.mockData.mfaPolicy'),
-          description: t('global.security.mockData.mfaPolicyDesc'),
-          type: 'Security',
-          severity: 'Critical',
-          status: 'Active',
-          scope: 'Global',
-          appliedTenants: 145,
-          violations: 3,
-          createdAt: '2024-01-15T10:00:00Z',
-          updatedAt: '2024-11-20T14:30:00Z',
-        },
-        {
-          id: '2',
-          name: t('global.security.mockData.passwordPolicy'),
-          description: t('global.security.mockData.passwordPolicyDesc'),
-          type: 'Security',
-          severity: 'High',
-          status: 'Active',
-          scope: 'Global',
-          appliedTenants: 145,
-          violations: 8,
-          createdAt: '2024-01-10T09:00:00Z',
-          updatedAt: '2024-11-18T11:20:00Z',
-        },
-        {
-          id: '3',
-          name: t('global.security.mockData.gdprPolicy'),
-          description: t('global.security.mockData.gdprPolicyDesc'),
-          type: 'Compliance',
-          severity: 'Critical',
-          status: 'Active',
-          scope: 'Global',
-          appliedTenants: 98,
-          violations: 1,
-          createdAt: '2024-02-01T08:00:00Z',
-          updatedAt: '2024-11-22T09:15:00Z',
-        },
-        {
-          id: '4',
-          name: t('global.security.mockData.sessionPolicy'),
-          description: t('global.security.mockData.sessionPolicyDesc'),
-          type: 'Access',
-          severity: 'Medium',
-          status: 'Active',
-          scope: 'Global',
-          appliedTenants: 145,
-          violations: 0,
-          createdAt: '2024-01-20T12:00:00Z',
-          updatedAt: '2024-11-15T16:45:00Z',
-        },
-        {
-          id: '5',
-          name: t('global.security.mockData.retentionPolicy'),
-          description: t('global.security.mockData.retentionPolicyDesc'),
-          type: 'Data',
-          severity: 'High',
-          status: 'Active',
-          scope: 'Global',
-          appliedTenants: 145,
-          violations: 2,
-          createdAt: '2024-02-10T14:00:00Z',
-          updatedAt: '2024-11-19T10:30:00Z',
-        },
-      ]);
+      setPolicies([]);
     }
   };
 
+
   const fetchThreats = async () => {
-    setThreats([
-      {
-        id: '1',
-        name: t('global.security.mockData.failedLoginAttempts'),
-        category: 'Brute Force',
-        severity: 'Critical',
-        enabled: true,
-        detections: 234,
-        threshold: t('global.security.mockData.failedLoginThreshold'),
-        actions: [t('global.security.actions.blockIp'), t('global.security.actions.alertAdmin'), t('global.security.actions.requireMfa')],
-        createdAt: '2024-01-15T10:00:00Z',
-      },
-      {
-        id: '2',
-        name: t('global.security.mockData.unusualDataAccess'),
-        category: 'Anomaly',
-        severity: 'High',
-        enabled: true,
-        detections: 89,
-        threshold: t('global.security.mockData.unusualDataAccessThreshold'),
-        actions: [t('global.security.actions.alertAdmin'), t('global.security.actions.limitAccess')],
-        createdAt: '2024-01-20T11:30:00Z',
-      },
-      {
-        id: '3',
-        name: t('global.security.mockData.privilegeEscalation'),
-        category: 'Privilege Escalation',
-        severity: 'Critical',
-        enabled: true,
-        detections: 12,
-        threshold: t('global.security.mockData.privilegeEscalationThreshold'),
-        actions: [t('global.security.actions.blockUser'), t('global.security.actions.alertAdmin'), t('global.security.actions.createIncident')],
-        createdAt: '2024-02-01T09:00:00Z',
-      },
-      {
-        id: '4',
-        name: t('global.security.mockData.bulkExport'),
-        category: 'Data Exfiltration',
-        severity: 'High',
-        enabled: true,
-        detections: 45,
-        threshold: t('global.security.mockData.bulkExportThreshold'),
-        actions: [t('global.security.actions.alertAdmin'), t('global.security.actions.requireApproval')],
-        createdAt: '2024-02-05T14:20:00Z',
-      },
-      {
-        id: '5',
-        name: t('global.security.mockData.impossibleTravel'),
-        category: 'Anomaly',
-        severity: 'High',
-        enabled: true,
-        detections: 67,
-        threshold: t('global.security.mockData.impossibleTravelThreshold'),
-        actions: [t('global.security.actions.blockSession'), t('global.security.actions.alertUser'), t('global.security.actions.requireReauth')],
-        createdAt: '2024-01-25T16:45:00Z',
-      },
-    ]);
+    try {
+      const data = await securityService.getThreatIntelligence();
+      setThreats(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Error fetching threats:', err);
+      setThreats([]);
+    }
   };
+
 
   const fetchFrameworks = async () => {
     try {
       const data = await governanceService.getFrameworks();
-      setFrameworks(data.map((f: any) => ({
+      setFrameworks((data ?? []).map((f: any) => ({
         id: f.id,
         name: f.name,
         description: f.description,
         type: f.type || 'SOC2',
-        controls: 150,
-        compliantControls: 142,
-        complianceRate: 94.7,
-        lastAudit: '2024-10-15',
-        nextAudit: '2025-01-15',
-        status: 'Compliant',
+        controls: f.controls ?? 0,
+        compliantControls: f.compliantControls ?? 0,
+        complianceRate: f.complianceRate ?? 0,
+        lastAudit: f.lastAudit,
+        nextAudit: f.nextAudit,
+        status: f.status ?? 'Compliant',
       })));
     } catch (err) {
-      setFrameworks([
-        {
-          id: '1',
-          name: 'SOC 2 Type II',
-          description: t('global.security.mockData.soc2Desc'),
-          type: 'SOC2',
-          controls: 150,
-          compliantControls: 147,
-          complianceRate: 98.0,
-          lastAudit: '2024-10-15',
-          nextAudit: '2025-01-15',
-          status: 'Compliant',
-        },
-        {
-          id: '2',
-          name: 'ISO 27001:2022',
-          description: t('global.security.mockData.iso27001Desc'),
-          type: 'ISO27001',
-          controls: 114,
-          compliantControls: 109,
-          complianceRate: 95.6,
-          lastAudit: '2024-09-20',
-          nextAudit: '2024-12-20',
-          status: 'Compliant',
-        },
-        {
-          id: '3',
-          name: 'GDPR',
-          description: t('global.security.mockData.gdprDesc'),
-          type: 'GDPR',
-          controls: 88,
-          compliantControls: 86,
-          complianceRate: 97.7,
-          lastAudit: '2024-11-01',
-          nextAudit: '2025-02-01',
-          status: 'Compliant',
-        },
-        {
-          id: '4',
-          name: 'HIPAA',
-          description: t('global.security.mockData.hipaaDesc'),
-          type: 'HIPAA',
-          controls: 164,
-          compliantControls: 155,
-          complianceRate: 94.5,
-          lastAudit: '2024-08-10',
-          nextAudit: '2024-11-10',
-          status: 'In Progress',
-        },
-        {
-          id: '5',
-          name: 'PCI-DSS v4.0',
-          description: t('global.security.mockData.pciDssDesc'),
-          type: 'PCI-DSS',
-          controls: 375,
-          compliantControls: 348,
-          complianceRate: 92.8,
-          lastAudit: '2024-07-15',
-          nextAudit: '2024-10-15',
-          status: 'Compliant',
-        },
-      ]);
+      console.error('Error fetching frameworks:', err);
+      setFrameworks([]);
     }
   };
 
+
   const fetchDashboardStats = async () => {
-    setStats({
-      totalPolicies: 145,
-      activePolicies: 142,
-      totalViolations: 14,
-      criticalViolations: 4,
-      threatDetections: 447,
-      complianceRate: 95.8,
-      tenantsProtected: 145,
-      blockedAttacks: 1247,
-    });
+    try {
+      await securityService.getSecurityIncidents();
+      setStats({
+        totalPolicies: policies.length,
+        activePolicies: policies.filter((p) => p.status === 'Active').length,
+        totalViolations: policies.reduce((sum, p) => sum + (p.violations ?? 0), 0),
+        criticalViolations: policies.filter((p) => p.severity === 'Critical').length,
+        threatDetections: threats.reduce((sum, t) => sum + (t.detections ?? 0), 0),
+        complianceRate: frameworks.length
+          ? frameworks.reduce((sum, f) => sum + (f.complianceRate ?? 0), 0) / frameworks.length
+          : 0,
+        tenantsProtected: policies.reduce((sum, p) => sum + (p.appliedTenants ?? 0), 0),
+        blockedAttacks: threats.length,
+      });
+    } catch (err) {
+      console.error('Error fetching dashboard stats:', err);
+    }
   };
+
 
   const handleCreatePolicy = async (e: React.FormEvent) => {
     e.preventDefault();

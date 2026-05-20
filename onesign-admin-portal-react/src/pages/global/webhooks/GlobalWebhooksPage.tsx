@@ -54,127 +54,13 @@ export default function GlobalWebhooksPage() {
   const fetchData = async () => {
     try {
       const data = await globalService.getGlobalWebhooks();
-      const mockWebhooks: GlobalWebhook[] = [
-        {
-          id: '1',
-          name: 'Global User Events',
-          url: 'https://analytics.company.com/webhooks/users',
-          events: ['user.created', 'user.updated', 'user.deleted'],
-          secret: 'whsec_abc123def456',
-          isActive: true,
-          retryStrategy: 'exponential',
-          maxRetries: 3,
-          timeout: 5000,
-          headers: {
-            'X-Custom-Header': 'value',
-          },
-          createdAt: '2024-01-15T10:00:00Z',
-          updatedAt: '2024-11-20T14:00:00Z',
-          stats: {
-            totalDeliveries: 125678,
-            successfulDeliveries: 124234,
-            failedDeliveries: 1444,
-            lastDelivery: '2024-11-23T10:00:00Z',
-            avgResponseTime: 245,
-          },
-        },
-        {
-          id: '2',
-          name: 'Platform Alerts',
-          url: 'https://ops.company.com/alerts',
-          events: ['alert.triggered', 'alert.resolved', 'system.error'],
-          secret: 'whsec_xyz789ghi012',
-          isActive: true,
-          retryStrategy: 'exponential',
-          maxRetries: 5,
-          timeout: 10000,
-          headers: {},
-          createdAt: '2024-02-01T09:00:00Z',
-          updatedAt: '2024-10-15T16:00:00Z',
-          stats: {
-            totalDeliveries: 8542,
-            successfulDeliveries: 8498,
-            failedDeliveries: 44,
-            lastDelivery: '2024-11-23T09:45:00Z',
-            avgResponseTime: 512,
-          },
-        },
-        {
-          id: '3',
-          name: 'Billing Events',
-          url: 'https://billing.company.com/webhooks',
-          events: ['payment.succeeded', 'payment.failed', 'subscription.created', 'subscription.cancelled'],
-          secret: 'whsec_mno345pqr678',
-          isActive: true,
-          retryStrategy: 'linear',
-          maxRetries: 10,
-          timeout: 8000,
-          headers: {
-            'Authorization': 'Bearer token_***',
-          },
-          createdAt: '2024-03-10T14:00:00Z',
-          updatedAt: '2024-11-18T10:00:00Z',
-          stats: {
-            totalDeliveries: 45678,
-            successfulDeliveries: 45234,
-            failedDeliveries: 444,
-            lastDelivery: '2024-11-23T08:30:00Z',
-            avgResponseTime: 178,
-          },
-        },
-      ];
-      setWebhooks(data || mockWebhooks);
-
-      // Mock logs
-      setLogs([
-        {
-          id: '1',
-          webhookId: '1',
-          event: 'user.created',
-          url: 'https://analytics.company.com/webhooks/users',
-          statusCode: 200,
-          responseTime: 245,
-          attempt: 1,
-          success: true,
-          timestamp: '2024-11-23T10:00:00Z',
-        },
-        {
-          id: '2',
-          webhookId: '2',
-          event: 'alert.triggered',
-          url: 'https://ops.company.com/alerts',
-          statusCode: 200,
-          responseTime: 512,
-          attempt: 1,
-          success: true,
-          timestamp: '2024-11-23T09:45:00Z',
-        },
-        {
-          id: '3',
-          webhookId: '3',
-          event: 'payment.succeeded',
-          url: 'https://billing.company.com/webhooks',
-          statusCode: 500,
-          responseTime: 5000,
-          attempt: 1,
-          success: false,
-          error: 'Internal Server Error',
-          timestamp: '2024-11-23T09:30:00Z',
-        },
-        {
-          id: '4',
-          webhookId: '3',
-          event: 'payment.succeeded',
-          url: 'https://billing.company.com/webhooks',
-          statusCode: 200,
-          responseTime: 178,
-          attempt: 2,
-          success: true,
-          timestamp: '2024-11-23T09:32:00Z',
-        },
-      ]);
+      setWebhooks(Array.isArray(data) ? data : []);
+      const logs = await globalService.getAllWebhookLogs();
+      setLogs(Array.isArray(logs) ? logs : []);
     } catch (err) {
       console.error(err);
+      setWebhooks([]);
+      setLogs([]);
     } finally {
       setLoading(false);
     }

@@ -74,7 +74,6 @@ export default function GlobalMigrationsPage() {
       ]);
     } catch (err) {
       console.error('Error fetching data:', err);
-      loadMockData();
     } finally {
       setLoading(false);
     }
@@ -85,175 +84,43 @@ export default function GlobalMigrationsPage() {
       const data = await globalService.getPlatformMigrations(1, 100);
       setMigrations(data.migrations || []);
     } catch (err) {
-      // Mock data
-      setMigrations([
-        {
-          id: 'mig-001',
-          name: 'AddUserPreferencesTable',
-          version: '1.5.0',
-          description: t('migrations.createUserPreferencesTableDesc'),
-          type: 'Schema',
-          status: 'Completed',
-          appliedAt: '2024-11-20T10:30:00Z',
-          rolledBackAt: null,
-          executionTime: 1234,
-          checksum: 'sha256:abc123def456',
-          author: 'dev-team',
-          dependencies: [],
-          affectedTables: ['user_preferences'],
-          batchNumber: 15,
-        },
-        {
-          id: 'mig-002',
-          name: 'AddIndexOnTenantUsers',
-          version: '1.5.1',
-          description: t('migrations.addIndexOnTenantUsersDesc'),
-          type: 'Index',
-          status: 'Completed',
-          appliedAt: '2024-11-21T14:15:00Z',
-          rolledBackAt: null,
-          executionTime: 567,
-          checksum: 'sha256:def789ghi012',
-          author: 'ops-team',
-          dependencies: ['mig-001'],
-          affectedTables: ['tenant_users'],
-          batchNumber: 16,
-        },
-        {
-          id: 'mig-003',
-          name: 'MigrateOldNotifications',
-          version: '1.5.2',
-          description: t('migrations.migrateOldNotificationsDesc'),
-          type: 'Data',
-          status: 'Failed',
-          appliedAt: '2024-11-22T09:00:00Z',
-          rolledBackAt: '2024-11-22T09:15:00Z',
-          executionTime: 45678,
-          checksum: 'sha256:ghi345jkl678',
-          author: 'data-team',
-          dependencies: ['mig-001', 'mig-002'],
-          affectedTables: ['notifications', 'notification_templates'],
-          batchNumber: 17,
-        },
-        {
-          id: 'mig-004',
-          name: 'AddAuditLogPartitioning',
-          version: '1.5.3',
-          description: t('migrations.addAuditLogPartitioningDesc'),
-          type: 'Schema',
-          status: 'Completed',
-          appliedAt: '2024-11-22T16:30:00Z',
-          rolledBackAt: null,
-          executionTime: 8901,
-          checksum: 'sha256:jkl901mno234',
-          author: 'ops-team',
-          dependencies: [],
-          affectedTables: ['audit_logs'],
-          batchNumber: 18,
-        },
-      ]);
+      console.error('Error fetching migrations:', err);
+      setMigrations([]);
     }
   };
 
   const fetchPendingMigrations = async () => {
     try {
-      // Would fetch from API
-      setPendingMigrations([
-        {
-          id: 'mig-005',
-          name: 'AddTenantBillingTable',
-          version: '1.6.0',
-          description: t('migrations.createTenantBillingTableDesc'),
-          type: 'Schema',
-          status: 'Pending',
-          appliedAt: null,
-          rolledBackAt: null,
-          executionTime: null,
-          checksum: 'sha256:mno567pqr890',
-          author: 'billing-team',
-          dependencies: [],
-          affectedTables: ['tenant_billing', 'tenants'],
-          batchNumber: null,
-        },
-        {
-          id: 'mig-006',
-          name: 'OptimizeTemplateQueries',
-          version: '1.6.1',
-          description: t('migrations.optimizeTemplateQueriesDesc'),
-          type: 'Index',
-          status: 'Pending',
-          appliedAt: null,
-          rolledBackAt: null,
-          executionTime: null,
-          checksum: 'sha256:pqr123stu456',
-          author: 'performance-team',
-          dependencies: ['mig-005'],
-          affectedTables: ['templates', 'template_versions'],
-          batchNumber: null,
-        },
-      ]);
+      const data = await globalService.getPlatformMigrations(1, 100);
+      const pending = (data.migrations ?? []).filter((m: any) => m.status === 'Pending');
+      setPendingMigrations(pending);
     } catch (err) {
       console.error('Error fetching pending migrations:', err);
+      setPendingMigrations([]);
     }
   };
 
   const fetchSchemaVersion = async () => {
-    setSchemaVersion({
-      current: '1.5.3',
-      target: '1.6.1',
-      pendingMigrations: 2,
-      lastMigration: 'AddAuditLogPartitioning',
-      lastMigrationDate: '2024-11-22T16:30:00Z',
-    });
+    try {
+      const data = await globalService.getPlatformMigrations(1, 100);
+      const items = data.migrations ?? [];
+      const applied = items.filter((m: any) => m.status === 'Completed' || m.status === 'Applied');
+      const pending = items.filter((m: any) => m.status === 'Pending');
+      const last = applied[applied.length - 1];
+      setSchemaVersion({
+        current: last?.version ?? '—',
+        target: pending[0]?.version ?? last?.version ?? '—',
+        pendingMigrations: pending.length,
+        lastMigration: last?.name,
+        lastMigrationDate: last?.appliedAt,
+      });
+    } catch {
+      setSchemaVersion(null);
+    }
   };
 
   const fetchLogs = async () => {
-    setLogs([
-      {
-        id: 'log-001',
-        migrationId: 'mig-004',
-        timestamp: '2024-11-22T16:30:05Z',
-        level: 'INFO',
-        message: t('migrations.startingMigration', { name: 'AddAuditLogPartitioning' }),
-        details: { version: '1.5.3' },
-      },
-      {
-        id: 'log-002',
-        migrationId: 'mig-004',
-        timestamp: '2024-11-22T16:30:10Z',
-        level: 'INFO',
-        message: t('migrations.creatingPartitions'),
-        details: { partitions: 12 },
-      },
-      {
-        id: 'log-003',
-        migrationId: 'mig-004',
-        timestamp: '2024-11-22T16:32:45Z',
-        level: 'INFO',
-        message: t('migrations.migrationCompletedSuccessfully'),
-        details: { executionTime: 8901 },
-      },
-      {
-        id: 'log-004',
-        migrationId: 'mig-003',
-        timestamp: '2024-11-22T09:00:05Z',
-        level: 'ERROR',
-        message: t('migrations.migrationFailed', { error: 'Foreign key constraint violation' }),
-        details: { error: 'FK_notification_template_id', table: 'notifications' },
-      },
-      {
-        id: 'log-005',
-        migrationId: 'mig-003',
-        timestamp: '2024-11-22T09:15:00Z',
-        level: 'WARNING',
-        message: t('migrations.rollingBackMigration'),
-        details: { reason: 'Constraint violation' },
-      },
-    ]);
-  };
-
-  const loadMockData = () => {
-    // Already loaded in catch blocks above
+    setLogs([]);
   };
 
   const handleRunMigration = async () => {

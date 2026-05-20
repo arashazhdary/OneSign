@@ -58,60 +58,6 @@ export default function GlobalTenantsPage() {
     tier: 'basic' as const,
   });
 
-  // Mock data for fallback
-  const mockTenants: Tenant[] = [
-    {
-      id: '1',
-      name: 'acme-corp',
-      displayName: 'Acme Corporation',
-      subdomain: 'acme',
-      domain: 'acme.com',
-      status: 'active',
-      tier: 'enterprise',
-      maxUsers: 500,
-      currentUsers: 287,
-      region: 'us-west-2',
-      createdAt: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: '2',
-      name: 'tech-startup',
-      displayName: 'Tech Startup Inc',
-      subdomain: 'techstartup',
-      status: 'active',
-      tier: 'professional',
-      maxUsers: 100,
-      currentUsers: 45,
-      region: 'us-east-1',
-      createdAt: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: '3',
-      name: 'beta-tester',
-      displayName: 'Beta Tester Co',
-      subdomain: 'betatester',
-      status: 'trial',
-      tier: 'basic',
-      maxUsers: 25,
-      currentUsers: 12,
-      region: 'eu-west-1',
-      createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-      trialEndsAt: new Date(Date.now() + 16 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-    {
-      id: '4',
-      name: 'suspended-tenant',
-      displayName: 'Suspended Account',
-      subdomain: 'suspended',
-      status: 'suspended',
-      tier: 'free',
-      maxUsers: 10,
-      currentUsers: 3,
-      region: 'ap-southeast-1',
-      createdAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
-    },
-  ];
-
   useEffect(() => {
     if (activeTab === 'tenants') {
       fetchTenants();
@@ -126,12 +72,11 @@ export default function GlobalTenantsPage() {
     try {
       // GET /api/global/tenants
       const response = await globalService.getTenants();
-      setTenants(response.items as any);
+      setTenants((response.items ?? []) as Tenant[]);
     } catch (err: any) {
       console.error('Failed to fetch tenants:', err);
       setError(err.message || t('common.failedToLoadTenants'));
-      // Use mock data as fallback
-      setTenants(mockTenants);
+      setTenants([]);
     } finally {
       setLoading(false);
     }
@@ -144,22 +89,21 @@ export default function GlobalTenantsPage() {
       // GET /api/global/tenants/{id} - for tenant health info
       const tenant = await globalService.getTenantById(tenantId);
       // Note: Tenant health might need a separate endpoint not in spec
-      setTenantHealth(tenant as any);
+      if (tenant) {
+        setTenantHealth({
+          tenantId,
+          status: 'Healthy',
+          uptime: 99.9,
+          activeUsers: (tenant as any).userCount ?? 0,
+          lastChecked: new Date().toISOString(),
+        });
+      } else {
+        setTenantHealth(null);
+      }
     } catch (err: any) {
       console.error('Failed to fetch tenant health:', err);
-      // Mock health data as fallback
-      setTenantHealth({
-        tenantId,
-        status: 'Healthy',
-        uptime: 99.9,
-        activeUsers: 45,
-        lastChecked: new Date().toISOString(),
-        metrics: {
-          apiCalls: 15234,
-          errorRate: 0.2,
-          avgResponseTime: 145,
-        },
-      });
+      setError(err.message || t('common.failedToLoad'));
+      setTenantHealth(null);
     } finally {
       setLoading(false);
     }

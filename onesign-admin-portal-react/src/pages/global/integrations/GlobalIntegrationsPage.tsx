@@ -47,201 +47,30 @@ export default function GlobalIntegrationsPage() {
   }, []);
 
   const fetchData = async () => {
-    const mockIntegrations: Integration[] = [
-        {
-          id: '1',
-          name: 'Stripe Payment Gateway',
-          provider: 'Stripe',
-          type: 'payment',
-          status: 'active',
-          isEnabled: true,
-          config: {
-            mode: 'live',
-            currency: 'USD',
-            webhookEndpoint: 'https://api.onesign.io/webhooks/stripe',
-          },
-          credentials: {
-            type: 'API Key',
-            lastUpdated: '2024-01-15T10:00:00Z',
-          },
-          usage: {
-            requests: 125678,
-            errors: 45,
-            lastUsed: '2024-11-23T09:30:00Z',
-          },
-          createdAt: '2024-01-15T10:00:00Z',
-          updatedAt: '2024-11-20T14:00:00Z',
-        },
-        {
-          id: '2',
-          name: 'SendGrid Email Service',
-          provider: 'SendGrid',
-          type: 'email',
-          status: 'active',
-          isEnabled: true,
-          config: {
-            defaultFrom: 'noreply@onesign.io',
-            trackOpens: true,
-            trackClicks: true,
-          },
-          credentials: {
-            type: 'API Key',
-            lastUpdated: '2024-02-20T09:00:00Z',
-          },
-          usage: {
-            requests: 456789,
-            errors: 123,
-            lastUsed: '2024-11-23T10:00:00Z',
-          },
-          createdAt: '2024-01-10T08:00:00Z',
-          updatedAt: '2024-11-15T10:00:00Z',
-        },
-        {
-          id: '3',
-          name: 'Twilio SMS',
-          provider: 'Twilio',
-          type: 'sms',
-          status: 'active',
-          isEnabled: true,
-          config: {
-            fromNumber: '+1234567890',
-            region: 'US',
-          },
-          credentials: {
-            type: 'Account SID + Auth Token',
-            lastUpdated: '2024-03-10T14:00:00Z',
-          },
-          usage: {
-            requests: 78901,
-            errors: 234,
-            lastUsed: '2024-11-23T08:45:00Z',
-          },
-          createdAt: '2024-03-10T14:00:00Z',
-          updatedAt: '2024-10-05T16:00:00Z',
-        },
-        {
-          id: '4',
-          name: 'Google Analytics',
-          provider: 'Google',
-          type: 'analytics',
-          status: 'active',
-          isEnabled: true,
-          config: {
-            trackingId: 'UA-12345678-1',
-            dataRetention: '26 months',
-          },
-          credentials: {
-            type: 'OAuth 2.0',
-            lastUpdated: '2024-01-15T10:00:00Z',
-          },
-          usage: {
-            requests: 234567,
-            errors: 12,
-            lastUsed: '2024-11-23T10:05:00Z',
-          },
-          createdAt: '2024-01-15T10:00:00Z',
-          updatedAt: '2024-09-20T12:00:00Z',
-        },
-        {
-          id: '5',
-          name: 'Auth0',
-          provider: 'Auth0',
-          type: 'auth',
-          status: 'active',
-          isEnabled: true,
-          config: {
-            domain: 'onesign.auth0.com',
-            audience: 'https://api.onesign.io',
-          },
-          credentials: {
-            type: 'Client ID + Secret',
-            lastUpdated: '2024-01-01T00:00:00Z',
-          },
-          usage: {
-            requests: 567890,
-            errors: 89,
-            lastUsed: '2024-11-23T10:10:00Z',
-          },
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-08-15T09:00:00Z',
-        },
-        {
-          id: '6',
-          name: 'Amazon S3',
-          provider: 'AWS',
-          type: 'storage',
-          status: 'active',
-          isEnabled: true,
-          config: {
-            region: 'us-east-1',
-            bucket: 'onesign-uploads',
-          },
-          credentials: {
-            type: 'Access Key + Secret',
-            lastUpdated: '2024-06-01T10:00:00Z',
-          },
-          usage: {
-            requests: 1234567,
-            errors: 456,
-            lastUsed: '2024-11-23T10:15:00Z',
-          },
-          createdAt: '2023-12-01T10:00:00Z',
-          updatedAt: '2024-06-01T10:00:00Z',
-        },
-        {
-          id: '7',
-          name: 'Datadog Monitoring',
-          provider: 'Datadog',
-          type: 'monitoring',
-          status: 'active',
-          isEnabled: true,
-          config: {
-            site: 'datadoghq.com',
-            service: 'onesign-platform',
-          },
-          credentials: {
-            type: 'API Key',
-            lastUpdated: '2024-01-20T10:00:00Z',
-          },
-          usage: {
-            requests: 3456789,
-            errors: 234,
-            lastUsed: '2024-11-23T10:20:00Z',
-          },
-          createdAt: '2024-01-20T10:00:00Z',
-          updatedAt: '2024-07-10T14:00:00Z',
-        },
-      ];
-
-    const mockWebhooks: WebhookEndpoint[] = [
-        {
-          id: '1',
-          url: 'https://api.partner.com/webhooks/onesign',
-          events: ['user.created', 'user.updated', 'tenant.created'],
-          secret: 'whsec_abc123def456',
-          isActive: true,
-          lastDelivery: '2024-11-23T09:30:00Z',
-          successRate: 98.5,
-        },
-        {
-          id: '2',
-          url: 'https://monitoring.company.com/events',
-          events: ['alert.triggered', 'system.error'],
-          secret: 'whsec_xyz789ghi012',
-          isActive: true,
-          lastDelivery: '2024-11-23T10:00:00Z',
-          successRate: 99.2,
-        },
-      ];
-
     try {
       const data = await globalService.getGlobalIntegrations();
-      setIntegrations((data as any)?.integrations || mockIntegrations);
-      setWebhooks((data as any)?.webhooks || mockWebhooks);
+      const list = Array.isArray(data) ? data : (data as any)?.integrations;
+      setIntegrations(Array.isArray(list) ? list : []);
+      const webhooks = await globalService.getGlobalWebhooks();
+      setWebhooks(
+        Array.isArray(webhooks)
+          ? webhooks.map((w: any) => ({
+              id: w.id,
+              url: w.url,
+              events: w.events ?? [],
+              secret: w.secret ?? '',
+              isActive: w.isActive ?? true,
+              lastDelivery: w.stats?.lastDelivery,
+              successRate: w.stats?.successfulDeliveries && w.stats?.totalDeliveries
+                ? (w.stats.successfulDeliveries / w.stats.totalDeliveries) * 100
+                : 0,
+            }))
+          : []
+      );
     } catch (err) {
       console.error(err);
-      setIntegrations(mockIntegrations);
-      setWebhooks(mockWebhooks);
+      setIntegrations([]);
+      setWebhooks([]);
     } finally {
       setLoading(false);
     }

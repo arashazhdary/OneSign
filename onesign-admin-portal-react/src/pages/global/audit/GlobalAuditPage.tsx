@@ -84,90 +84,6 @@ export default function GlobalAuditPage() {
   // Export State
   const [exporting, setExporting] = useState(false);
 
-  // Mock data generator for fallback
-  const generateMockAuditEvents = (count: number): AuditEvent[] => {
-    const actions = ['CREATE', 'UPDATE', 'DELETE', 'READ', 'LOGIN', 'LOGOUT', 'EXPORT', 'IMPORT'];
-    const resourceTypes = ['USER', 'TENANT', 'CONFIG', 'API_KEY', 'WEBHOOK', 'TEMPLATE', 'CAMPAIGN'];
-    const categories = ['Authentication', 'Authorization', 'Data Access', 'Configuration', 'Security', 'Compliance'];
-    const severities: Array<'low' | 'medium' | 'high' | 'critical'> = ['low', 'medium', 'high', 'critical'];
-    const statuses: Array<'success' | 'failure'> = ['success', 'failure'];
-    const tenants = [
-      { id: 'tenant-001', name: 'Acme Corp' },
-      { id: 'tenant-002', name: 'TechStart Inc' },
-      { id: 'tenant-003', name: 'Global Solutions' },
-      { id: 'tenant-004', name: 'Enterprise Co' },
-      { id: 'tenant-005', name: 'Digital Ventures' },
-    ];
-
-    return Array.from({ length: count }, (_, i) => {
-      const tenant = tenants[Math.floor(Math.random() * tenants.length)];
-      const action = actions[Math.floor(Math.random() * actions.length)];
-      const resourceType = resourceTypes[Math.floor(Math.random() * resourceTypes.length)];
-      const category = categories[Math.floor(Math.random() * categories.length)];
-      const severity = severities[Math.floor(Math.random() * severities.length)];
-      const status = statuses[Math.floor(Math.random() * statuses.length)];
-
-      return {
-        id: `audit-${Date.now()}-${i}`,
-        timestamp: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-        tenantId: tenant.id,
-        tenantName: tenant.name,
-        userId: `user-${Math.floor(Math.random() * 100)}`,
-        userName: `User ${Math.floor(Math.random() * 100)}`,
-        userEmail: `user${Math.floor(Math.random() * 100)}@example.com`,
-        action,
-        resource: `${resourceType.toLowerCase()}-${Math.floor(Math.random() * 1000)}`,
-        resourceType,
-        ipAddress: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        status,
-        severity,
-        category,
-        geoLocation: {
-          country: ['USA', 'UK', 'Canada', 'Germany', 'Japan'][Math.floor(Math.random() * 5)],
-          city: ['New York', 'London', 'Toronto', 'Berlin', 'Tokyo'][Math.floor(Math.random() * 5)],
-          coordinates: { lat: Math.random() * 180 - 90, lon: Math.random() * 360 - 180 },
-        },
-        details: {
-          description: `${action} operation on ${resourceType}`,
-          changes: { field: 'value' },
-        },
-        requestData: { method: 'POST', endpoint: '/api/v1/resource' },
-        responseData: { status: status === 'success' ? 200 : 400 },
-        relatedEvents: [`related-${i - 1}`, `related-${i + 1}`],
-      };
-    });
-  };
-
-  // Generate mock statistics
-  const generateMockStatistics = (): AuditStatistics => {
-    return {
-      totalEvents: 15420,
-      bySeverity: [
-        { severity: 'low', count: 8234 },
-        { severity: 'medium', count: 5123 },
-        { severity: 'high', count: 1852 },
-        { severity: 'critical', count: 211 },
-      ],
-      byCategory: [
-        { category: 'Authentication', count: 4521 },
-        { category: 'Authorization', count: 3234 },
-        { category: 'Data Access', count: 2987 },
-        { category: 'Configuration', count: 2145 },
-        { category: 'Security', count: 1876 },
-        { category: 'Compliance', count: 657 },
-      ],
-      topTenants: [
-        { tenantId: 'tenant-001', tenantName: 'Acme Corp', count: 3542 },
-        { tenantId: 'tenant-002', tenantName: 'TechStart Inc', count: 2987 },
-        { tenantId: 'tenant-003', tenantName: 'Global Solutions', count: 2654 },
-        { tenantId: 'tenant-004', tenantName: 'Enterprise Co', count: 2234 },
-        { tenantId: 'tenant-005', tenantName: 'Digital Ventures', count: 1876 },
-      ],
-      suspiciousActivities: 47,
-    };
-  };
-
   // Search audit events
   const searchAuditEvents = async () => {
     setLoading(true);
@@ -220,7 +136,7 @@ export default function GlobalAuditPage() {
         }));
         totalCount = data.total || data.totalCount || 0;
       } else {
-        // Fallback to old API format or mock data
+        // Fallback to global audit search API
         try {
           const fallbackData = await observabilityApi.searchGlobalAuditEvents({
             ...filters,
@@ -253,20 +169,18 @@ export default function GlobalAuditPage() {
 
           totalCount = fallbackData.totalCount || 0;
         } catch (fallbackErr) {
-          console.error('Both API calls failed, using mock data:', fallbackErr);
-          mappedEvents = generateMockAuditEvents(pageSize);
-          totalCount = 100;
+          console.error('Both API calls failed:', fallbackErr);
+          mappedEvents = [];
+          totalCount = 0;
         }
       }
 
       setAuditEvents(mappedEvents);
       setTotalEvents(totalCount);
     } catch (err) {
-      console.error('Failed to fetch audit events, using mock data:', err);
-      // Fallback to mock data
-      const mockEvents = generateMockAuditEvents(pageSize);
-      setAuditEvents(mockEvents);
-      setTotalEvents(100);
+      console.error('Failed to fetch audit events:', err);
+      setAuditEvents([]);
+      setTotalEvents(0);
     } finally {
       setLoading(false);
     }
@@ -279,12 +193,11 @@ export default function GlobalAuditPage() {
       if (data) {
         setStatistics(data);
       } else {
-        // Fallback to mock statistics
-        setStatistics(generateMockStatistics());
+        setStatistics(null);
       }
     } catch (err) {
       console.error('Failed to fetch audit statistics:', err);
-      setStatistics(generateMockStatistics());
+      setStatistics(null);
     }
   };
 

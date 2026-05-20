@@ -65,131 +65,82 @@ export default function GlobalMonitoringPage() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [metricHistory, setMetricHistory] = useState<MetricHistory[]>([]);
 
-  // Fetch metrics from API or generate mock data
   const fetchMetrics = useCallback(async () => {
     try {
-      // Fetch from real API
-      const data = await globalService.getPerformanceMetrics();
+      const [perf, health, alertsData] = await Promise.all([
+        globalService.getPerformanceMetrics(),
+        globalService.getHealth(),
+        globalService.getAlerts(),
+      ]);
 
-      // Mock system metrics for fallback
-      const mockMetrics: SystemMetrics = {
-        cpu: {
-          usage: data?.cpu?.usage || Math.random() * 100,
-          cores: data?.cpu?.cores || 8,
-          loadAverage: data?.cpu?.loadAverage || [Math.random() * 4, Math.random() * 4, Math.random() * 4],
-        },
-        memory: {
-          total: data?.memory?.total || 16384,
-          used: data?.memory?.used || 8192 + Math.random() * 4096,
-          free: data?.memory?.free || 8192 - Math.random() * 4096,
-          usagePercent: data?.memory?.usagePercent || 50 + Math.random() * 30,
-        },
-        disk: {
-          total: data?.disk?.total || 512000,
-          used: data?.disk?.used || 256000 + Math.random() * 100000,
-          free: data?.disk?.free || 256000 - Math.random() * 100000,
-          usagePercent: data?.disk?.usagePercent || 50 + Math.random() * 20,
-        },
-      };
+      const metricsPayload: SystemMetrics | null = perf
+        ? {
+            cpu: {
+              usage: perf.cpu?.usage ?? 0,
+              cores: perf.cpu?.cores ?? 0,
+              loadAverage: perf.cpu?.loadAverage ?? [0, 0, 0],
+            },
+            memory: {
+              total: perf.memory?.total ?? 0,
+              used: perf.memory?.used ?? 0,
+              free: perf.memory?.free ?? 0,
+              usagePercent: perf.memory?.usagePercent ?? 0,
+            },
+            disk: {
+              total: perf.disk?.total ?? 0,
+              used: perf.disk?.used ?? 0,
+              free: perf.disk?.free ?? 0,
+              usagePercent: perf.disk?.usagePercent ?? 0,
+            },
+          }
+        : null;
 
-      // Mock services for fallback
-      const mockServices: ServiceHealth[] = data?.services || [
-        {
-          name: 'API Gateway',
-          status: 'Healthy',
-          uptime: 99.98,
-          responseTime: 45 + Math.random() * 20,
-          lastChecked: new Date().toISOString(),
-        },
-        {
-          name: 'Authentication Service',
-          status: 'Healthy',
-          uptime: 99.95,
-          responseTime: 120 + Math.random() * 30,
-          lastChecked: new Date().toISOString(),
-        },
-        {
-          name: 'Database',
-          status: Math.random() > 0.8 ? 'Degraded' : 'Healthy',
-          uptime: 99.92,
-          responseTime: 25 + Math.random() * 15,
-          lastChecked: new Date().toISOString(),
-        },
-        {
-          name: 'Cache Service',
-          status: 'Healthy',
-          uptime: 99.99,
-          responseTime: 5 + Math.random() * 5,
-          lastChecked: new Date().toISOString(),
-        },
-        {
-          name: 'Message Queue',
-          status: 'Healthy',
-          uptime: 99.97,
-          responseTime: 15 + Math.random() * 10,
-          lastChecked: new Date().toISOString(),
-        },
-        {
-          name: 'Storage Service',
-          status: 'Healthy',
-          uptime: 99.96,
-          responseTime: 80 + Math.random() * 40,
-          lastChecked: new Date().toISOString(),
-        },
-      ];
+      const serviceList: ServiceHealth[] = (health?.services ?? perf?.services ?? []).map((s: any) => ({
+        name: s.name,
+        status: s.status,
+        uptime: s.uptime ?? 0,
+        responseTime: s.latency ?? s.responseTime ?? 0,
+        lastChecked: s.lastChecked ?? new Date().toISOString(),
+      }));
 
-      // Mock alerts for fallback
-      const mockAlerts: Alert[] = data?.alerts || [
-        {
-          id: '1',
-          severity: 'Warning',
-          message: 'High memory usage detected on node-3',
-          service: 'Infrastructure',
-          timestamp: new Date(Date.now() - 300000).toISOString(),
-          resolved: false,
-        },
-        {
-          id: '2',
-          severity: 'Info',
-          message: 'Scheduled maintenance completed successfully',
-          service: 'System',
-          timestamp: new Date(Date.now() - 600000).toISOString(),
-          resolved: true,
-        },
-        {
-          id: '3',
-          severity: 'Critical',
-          message: 'Database connection pool exhausted',
-          service: 'Database',
-          timestamp: new Date(Date.now() - 120000).toISOString(),
-          resolved: true,
-        },
-      ];
+      const alertList: Alert[] = (Array.isArray(alertsData) ? alertsData : alertsData?.items ?? []).map((a: any) => ({
+        id: a.id,
+        severity: a.severity,
+        message: a.message ?? a.title,
+        service: a.service ?? a.category ?? 'System',
+        timestamp: a.timestamp ?? a.createdAt,
+        resolved: a.status === 'resolved' || a.resolved === true,
+      }));
 
-      setMetrics(mockMetrics);
-      setServices(mockServices);
-      setAlerts(mockAlerts);
+      setMetrics(metricsPayload);
+      setServices(serviceList);
+      setAlerts(alertList);
 
-      // Add to history
-      setMetricHistory((prev) => {
-        const newPoint: MetricHistory = {
-          timestamp: new Date().toISOString(),
-          cpu: mockMetrics.cpu.usage,
-          memory: mockMetrics.memory.usagePercent,
-          responseTime: mockServices.reduce((sum, s) => sum + s.responseTime, 0) / mockServices.length,
-          requestRate: 1000 + Math.random() * 500,
-          errorRate: Math.random() * 2,
-        };
-        const updated = [...prev, newPoint];
-        return updated.slice(-50);
-      });
+      if (metricsPayload && serviceList.length > 0) {
+        setMetricHistory((prev) => {
+          const newPoint: MetricHistory = {
+            timestamp: new Date().toISOString(),
+            cpu: metricsPayload.cpu.usage,
+            memory: metricsPayload.memory.usagePercent,
+            responseTime:
+              serviceList.reduce((sum, s) => sum + s.responseTime, 0) / serviceList.length,
+            requestRate: perf?.requestRate ?? 0,
+            errorRate: perf?.errorRate ?? 0,
+          };
+          return [...prev, newPoint].slice(-50);
+        });
+      }
 
       setLastRefresh(new Date());
+      setError('');
     } catch (error: any) {
       console.error('Error fetching metrics:', error);
       setError(error?.message || t('common.failedToLoadMetrics'));
+      setMetrics(null);
+      setServices([]);
+      setAlerts([]);
     }
-  }, []);
+  }, [t]);
 
   // Initial fetch
   useEffect(() => {

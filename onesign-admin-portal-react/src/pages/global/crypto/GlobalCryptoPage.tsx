@@ -94,7 +94,6 @@ export default function GlobalCryptoPage() {
   const getKeySet = async (id: string) => {
     setError('');
     try {
-      // getKeySet method not available, returning mock data
       const keySets = await globalService.getKeySets();
       return keySets.find(ks => ks.id === id) || null;
     } catch (err) {
